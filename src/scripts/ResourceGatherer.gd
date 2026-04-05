@@ -5,9 +5,12 @@ const _InventoryService = preload("res://autoload/inventory_service.gd")
 @export var resource_type: String = ""
 
 
-func _ready() -> void:
-	if not body_entered.is_connected(_on_body_entered):
-		body_entered.connect(_on_body_entered)
+func _enter_tree() -> void:
+	# Runs every time this node enters the tree (including after reparent / re-add). Idempotent:
+	# if you already connected body_entered → _on_body_entered in the editor, this does nothing.
+	var on_gather := Callable(self, "_on_body_entered")
+	if not body_entered.is_connected(on_gather):
+		body_entered.connect(on_gather)
 
 
 func _on_body_entered(body: Node3D) -> void:
