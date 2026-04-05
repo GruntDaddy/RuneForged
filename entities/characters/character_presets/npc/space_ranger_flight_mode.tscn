@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://1gsww8b0xnkg"]
+
+[ext_resource type="PackedScene" uid="uid://c3q8x73dqpoxu" path="res://assets/kaykit/characters/raw/SpaceRanger_FlightMode.glb" id="1_dti6a"]
+
+[node name="SpaceRanger_FlightMode" unique_id=2035492809 instance=ExtResource("1_dti6a")]

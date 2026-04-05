@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cft17ahmpe2ca"]
+
+[ext_resource type="PackedScene" uid="uid://dvq5lxeyxj0jj" path="res://assets/kaykit/characters/raw/Tiefling.fbx" id="1_oovr8"]
+
+[node name="Tiefling" unique_id=1363200050 instance=ExtResource("1_oovr8")]

@@ -1,0 +1,126 @@
+[gd_scene format=3 uid="uid://8fl15ush2736"]
+
+[ext_resource type="PackedScene" uid="uid://b7hbt81xmu138" path="res://assets/kaykit/characters/raw/Caveman.fbx" id="1_d0cqu"]
+[ext_resource type="Animation" uid="uid://drvwrqy2hkfro" path="res://assets/animations/rig_medium/simulation/Cheering.res" id="2_7uf5d"]
+[ext_resource type="Animation" uid="uid://cxfyxr5v0c2sk" path="res://assets/animations/rig_medium/general/Idle_A.res" id="3_dacii"]
+[ext_resource type="Animation" uid="uid://cv4sp6esrkaa1" path="res://assets/animations/rig_medium/general/Interact.res" id="4_mvvk0"]
+[ext_resource type="Animation" uid="uid://yo3yha402m7k" path="res://assets/animations/rig_medium/movement/Jump_Full_Short.res" id="5_vr8lt"]
+[ext_resource type="Animation" uid="uid://c73ky5v5deir3" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Chop.res" id="6_f7j45"]
+[ext_resource type="Animation" uid="uid://btib02hn62m65" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Jump_Chop.res" id="7_y6otm"]
+[ext_resource type="Animation" uid="uid://dg6dac7ar3s8l" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Slice_Diagonal.res" id="8_t146k"]
+[ext_resource type="Animation" uid="uid://bg0uk4f3woxh4" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Slice_Horizontal.res" id="9_00loo"]
+[ext_resource type="Animation" uid="uid://0entig14wpy2" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Stab.res" id="10_hyc47"]
+[ext_resource type="Animation" uid="uid://b00o2dnfrul8w" path="res://assets/animations/rig_medium/combat/Melee_2H_Idle.res" id="11_3cfnr"]
+[ext_resource type="Animation" uid="uid://0obryul3svr2" path="res://assets/animations/rig_medium/combat/Melee_Block.res" id="12_jo4t2"]
+[ext_resource type="Animation" uid="uid://m88fr24mqlqv" path="res://assets/animations/rig_medium/combat/Melee_Block_Attack.res" id="13_qqr2q"]
+[ext_resource type="Animation" uid="uid://565g5d0i45vj" path="res://assets/animations/rig_medium/combat/Melee_Block_Hit.res" id="14_8j5e3"]
+[ext_resource type="Animation" uid="uid://bu6ffkd7htxbr" path="res://assets/animations/rig_medium/combat/Melee_Blocking.res" id="15_3lw03"]
+[ext_resource type="Animation" uid="uid://m5s1tiavkv7n" path="res://assets/animations/rig_medium/general/PickUp.res" id="16_0avjp"]
+[ext_resource type="Animation" uid="uid://d3o4ksbp01vk4" path="res://assets/animations/rig_medium/movement/Running_A.res" id="17_0rna1"]
+[ext_resource type="Animation" uid="uid://buec16mcltmv2" path="res://assets/animations/rig_medium/movement/Running_B.res" id="18_g6cea"]
+[ext_resource type="Animation" uid="uid://bis6u5rxqafjl" path="res://assets/animations/rig_medium/general/Spawn_Air.res" id="19_s23kr"]
+[ext_resource type="Animation" uid="uid://cw60ykau83nyh" path="res://assets/animations/rig_medium/general/Spawn_Ground.res" id="20_twjs0"]
+[ext_resource type="Animation" uid="uid://c1ppoxn7spxqu" path="res://assets/animations/rig_medium/movement/T-Pose.res" id="21_4csfw"]
+[ext_resource type="Animation" uid="uid://bp2kdimdsfno6" path="res://assets/animations/rig_medium/general/Use_Item.res" id="22_2anv8"]
+[ext_resource type="Animation" uid="uid://0vp7w3otftki" path="res://assets/animations/rig_medium/movement/Walking_A.res" id="23_okcmc"]
+[ext_resource type="Animation" uid="uid://cflhjeqn0pbxu" path="res://assets/animations/rig_medium/movement/Walking_B.res" id="24_74rf8"]
+[ext_resource type="Animation" uid="uid://bmjbopyrj14dk" path="res://assets/animations/rig_medium/movement/Walking_C.res" id="25_s7bnb"]
+[ext_resource type="Animation" uid="uid://cf8nurgny576w" path="res://assets/animations/rig_medium/simulation/Waving.res" id="26_34lch"]
+[ext_resource type="Animation" uid="uid://bw473kmjfbdl8" path="res://assets/animations/rig_medium/tools/Work_A.res" id="27_yjb7f"]
+[ext_resource type="Animation" uid="uid://c5wjppevv6q6x" path="res://assets/animations/rig_medium/tools/Work_B.res" id="28_6y6pw"]
+[ext_resource type="Animation" uid="uid://dwkyd8v5td7ry" path="res://assets/animations/rig_medium/tools/Work_C.res" id="29_jtkcn"]
+[ext_resource type="Animation" uid="uid://c0p710uytxm81" path="res://assets/animations/rig_medium/tools/Working_A.res" id="30_o4jiu"]
+[ext_resource type="Animation" uid="uid://dlslosfraksc" path="res://assets/animations/rig_medium/tools/Working_B.res" id="31_uwcs0"]
+[ext_resource type="Animation" uid="uid://cch44piu2nrpb" path="res://assets/animations/rig_medium/tools/Working_C.res" id="32_ktyeh"]
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_kthdm"]
+_data = {
+&"Cheering": ExtResource("2_7uf5d"),
+&"Idle_A": ExtResource("3_dacii"),
+&"Interact": ExtResource("4_mvvk0"),
+&"Jump_Full_Short": ExtResource("5_vr8lt"),
+&"Melee_1H_Attack_Chop": ExtResource("6_f7j45"),
+&"Melee_1H_Attack_Jump_Chop": ExtResource("7_y6otm"),
+&"Melee_1H_Attack_Slice_Diagonal": ExtResource("8_t146k"),
+&"Melee_1H_Attack_Slice_Horizontal": ExtResource("9_00loo"),
+&"Melee_1H_Attack_Stab": ExtResource("10_hyc47"),
+&"Melee_2H_Idle": ExtResource("11_3cfnr"),
+&"Melee_Block": ExtResource("12_jo4t2"),
+&"Melee_Block_Attack": ExtResource("13_qqr2q"),
+&"Melee_Block_Hit": ExtResource("14_8j5e3"),
+&"Melee_Blocking": ExtResource("15_3lw03"),
+&"PickUp": ExtResource("16_0avjp"),
+&"Running_A": ExtResource("17_0rna1"),
+&"Running_B": ExtResource("18_g6cea"),
+&"Spawn_Air": ExtResource("19_s23kr"),
+&"Spawn_Ground": ExtResource("20_twjs0"),
+&"T-Pose": ExtResource("21_4csfw"),
+&"Use_Item": ExtResource("22_2anv8"),
+&"Walking_A": ExtResource("23_okcmc"),
+&"Walking_B": ExtResource("24_74rf8"),
+&"Walking_C": ExtResource("25_s7bnb"),
+&"Waving": ExtResource("26_34lch"),
+&"Work_A": ExtResource("27_yjb7f"),
+&"Work_B": ExtResource("28_6y6pw"),
+&"Work_C": ExtResource("29_jtkcn"),
+&"Working_A": ExtResource("30_o4jiu"),
+&"Working_B": ExtResource("31_uwcs0"),
+&"Working_C": ExtResource("32_ktyeh")
+}
+
+[node name="Caveman" unique_id=902253070 instance=ExtResource("1_d0cqu")]
+
+[node name="Skeleton3D" parent="Rig_Medium" parent_id_path=PackedInt32Array(81140976) index="0" unique_id=2090282392]
+bones/0/rotation = Quaternion(6.2117604e-22, 1.19209275e-07, 0, 1)
+bones/1/position = Vector3(0, 0.39206383, 0)
+bones/1/rotation = Quaternion(-1.11122625e-10, 0.043157753, 2.5724098e-09, 0.9990683)
+bones/1/scale = Vector3(0.99999994, 1, 0.99999994)
+bones/2/rotation = Quaternion(-6.938894e-18, 7.1054274e-15, 4.9303807e-32, 1)
+bones/2/scale = Vector3(1.0000001, 1, 1.0000001)
+bones/3/rotation = Quaternion(0.046398327, 1.1071469e-08, 0.004016135, 0.99891496)
+bones/3/scale = Vector3(1, 0.9999999, 1)
+bones/4/rotation = Quaternion(-0.5546738, -0.19844325, -0.7347355, 0.3363348)
+bones/4/scale = Vector3(0.9999991, 0.99999905, 0.99999964)
+bones/5/rotation = Quaternion(4.7995222e-08, -5.2107623e-08, -0.2991361, 0.9542105)
+bones/5/scale = Vector3(1.0000004, 0.9999999, 1)
+bones/6/rotation = Quaternion(2.6356917e-11, 6.2324707e-10, 0.026658094, 0.99964464)
+bones/6/scale = Vector3(1.0000001, 1, 1)
+bones/7/rotation = Quaternion(-0.22725627, -0.25134227, -0.14045878, 0.93029726)
+bones/7/scale = Vector3(0.99999994, 0.9999999, 1.0000002)
+bones/8/position = Vector3(5.138494e-10, 0.096125126, -0.057500064)
+bones/8/rotation = Quaternion(-0.025259208, -0.0006135437, -0.5007622, 0.86521614)
+bones/8/scale = Vector3(1.0000001, 1, 1)
+bones/9/rotation = Quaternion(-0.62623674, 0.12887873, 0.67894024, 0.36091298)
+bones/9/scale = Vector3(0.99999887, 0.99999875, 0.99999964)
+bones/10/rotation = Quaternion(3.3321733e-08, 4.632984e-08, 0.30524194, 0.95227486)
+bones/10/scale = Vector3(1.0000005, 0.9999998, 1.0000002)
+bones/11/rotation = Quaternion(-3.002606e-08, -9.604187e-09, -0.026658088, 0.99964464)
+bones/11/scale = Vector3(1.0000001, 1.0000001, 1)
+bones/12/rotation = Quaternion(-0.1660994, 0.2390854, -0.07152497, 0.9540091)
+bones/12/scale = Vector3(0.99999964, 1, 1.0000005)
+bones/13/position = Vector3(-5.138423e-10, 0.096125096, -0.057500005)
+bones/13/rotation = Quaternion(-6.243148e-10, -3.985498e-09, 0.7071068, 0.7071067)
+bones/13/scale = Vector3(1, 1.0000001, 1)
+bones/14/rotation = Quaternion(0.067226626, -0.04391859, 0.04702597, 0.9956607)
+bones/14/scale = Vector3(1.0000001, 1, 0.99999994)
+bones/15/position = Vector3(0.17094508, 0.1135872, 1.5994095e-08)
+bones/15/rotation = Quaternion(0.9937152, 0.08371457, 0.07350378, 0.010918532)
+bones/15/scale = Vector3(0.99999994, 0.9999997, 1.0000008)
+bones/16/rotation = Quaternion(0.19560215, 6.2622235e-08, -1.3223872e-07, 0.9806834)
+bones/16/scale = Vector3(1.0000004, 0.9999999, 0.99999994)
+bones/17/rotation = Quaternion(-0.517564, -0.2094967, 0.04365487, 0.8284521)
+bones/17/scale = Vector3(0.99999964, 1.0000006, 0.99999946)
+bones/18/rotation = Quaternion(0.00011178441, 0.92025787, -0.39131266, -2.5241658e-05)
+bones/18/scale = Vector3(0.99999994, 0.99999774, 1.0000024)
+bones/19/position = Vector3(-0.17094508, 0.11358732, 1.557549e-08)
+bones/19/rotation = Quaternion(0.99732214, -0.02945736, 0.03152927, 0.059048314)
+bones/19/scale = Vector3(0.9999999, 0.99999976, 1.0000008)
+bones/20/rotation = Quaternion(0.27400813, -6.381295e-08, 1.9276068e-07, 0.96172744)
+bones/20/scale = Vector3(0.99999994, 0.99999976, 0.99999994)
+bones/21/rotation = Quaternion(-0.5590394, 0.11451276, -0.0086276345, 0.82115006)
+bones/21/scale = Vector3(0.99999976, 1.0000006, 0.9999992)
+bones/22/rotation = Quaternion(-8.9348905e-05, 0.9202217, -0.39139766, 2.0290992e-05)
+bones/22/scale = Vector3(1.0000002, 0.9999979, 1.0000024)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="1" unique_id=36347387]
+libraries/Player = SubResource("AnimationLibrary_kthdm")

@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dbcu08vnhflw0"]
+
+[ext_resource type="Texture2D" uid="uid://y58juuqy38t6" path="res://assets/kaykit/characters/raw/Driver_driver_texture.png" id="1_rnhps"]
+
+[resource]
+resource_name = "driver_texture"
+cull_mode = 2
+albedo_texture = ExtResource("1_rnhps")
+roughness = 0.5

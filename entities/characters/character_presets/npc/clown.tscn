@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bqbobr0d2k6sa"]
+
+[ext_resource type="PackedScene" uid="uid://dl1r3rbbkt4vw" path="res://assets/kaykit/characters/raw/Clown.fbx" id="1_sx5qm"]
+
+[node name="Clown" unique_id=1926416747 instance=ExtResource("1_sx5qm")]
+
+[node name="Clown_Hat" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(1710110324) index="0" unique_id=1331625419]
+transform = Transform3D(1, 2.019484e-28, 1.4210855e-14, -6.2117604e-22, 0.99999994, 4.3711392e-08, -1.4210855e-14, -4.371139e-08, 1, 1.8411523e-28, 1.2414254, -5.4264426e-08)
+bone_idx = 14

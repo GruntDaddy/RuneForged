@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://dm8kkxnckkbkh"]
+
+[ext_resource type="PackedScene" uid="uid://ha1uatjm47t3" path="res://assets/kaykit/characters/raw/Rogue_Hooded.glb" id="1_2sxxo"]
+
+[node name="Rogue_Hooded" unique_id=1379864517 instance=ExtResource("1_2sxxo")]

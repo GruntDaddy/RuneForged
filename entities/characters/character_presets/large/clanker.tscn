@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cn2ggmojd8586"]
+
+[ext_resource type="PackedScene" uid="uid://bwk076dtoa1ti" path="res://assets/kaykit/characters/raw/Clanker.fbx" id="1_hejr8"]
+
+[node name="Clanker" unique_id=757728562 instance=ExtResource("1_hejr8")]

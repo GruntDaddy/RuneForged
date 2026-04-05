@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bt8fdch136wft"]
+
+[ext_resource type="Texture2D" uid="uid://34juui3cnvhi" path="res://assets/kaykit/characters/raw/Paladin_with_Helmet_paladin_texture_A.png" id="1_mg312"]
+
+[resource]
+resource_name = "paladin_metallic"
+albedo_texture = ExtResource("1_mg312")
+metallic = 1.0
+roughness = 0.25

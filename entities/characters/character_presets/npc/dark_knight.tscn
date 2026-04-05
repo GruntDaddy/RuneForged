@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://bxfthv6goidyw"]
+
+[ext_resource type="PackedScene" uid="uid://by2dihv026c7p" path="res://entities/characters/character_presets/human/base_knight.tscn" id="1_ynn6k"]
+[ext_resource type="Material" uid="uid://efh8jpryahqq" path="res://shared/materials/BlackKnight.tres" id="2_e2unx"]
+[ext_resource type="Texture2D" uid="uid://bvt4huodivnqv" path="res://assets/kaykit/characters/raw/Skeleton_Warrior_skeleton_texture_A.png" id="3_7f5wg"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_71hmt"]
+resource_name = "skeleton"
+albedo_texture = ExtResource("3_7f5wg")
+roughness = 0.5
+
+[node name="DarkKnight" unique_id=1264149320 instance=ExtResource("1_ynn6k")]
+
+[node name="Knight_ArmLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="0" unique_id=2137874589]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_ArmRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="1" unique_id=1009159868]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_Body" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="2" unique_id=510675508]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_Cape" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="3" unique_id=1053539260]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_Head" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="4" unique_id=1614400112]
+material_override = SubResource("StandardMaterial3D_71hmt")
+
+[node name="Knight_Helmet" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="5" unique_id=97694089]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_HelmetVisor" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="6" unique_id=284845739]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_LegLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="7" unique_id=1299784863]
+material_override = ExtResource("2_e2unx")
+
+[node name="Knight_LegRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="8" unique_id=1381952220]
+material_override = ExtResource("2_e2unx")

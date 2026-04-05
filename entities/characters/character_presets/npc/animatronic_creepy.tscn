@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://dw0ewb5pu6sx2"]
+
+[ext_resource type="PackedScene" uid="uid://bcj540lw5bb87" path="res://assets/kaykit/characters/raw/Animatronic_Creepy.glb" id="1_hrfsi"]
+
+[node name="Animatronic_Creepy" unique_id=792117471 instance=ExtResource("1_hrfsi")]

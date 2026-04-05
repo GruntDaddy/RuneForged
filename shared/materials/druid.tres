@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bvn2w4p2opkwv"]
+
+[ext_resource type="Texture2D" uid="uid://n8ehqao23mcc" path="res://assets/kaykit/characters/raw/Druid_druid_texture.png" id="1_e0nk3"]
+
+[resource]
+resource_name = "druid"
+cull_mode = 2
+albedo_texture = ExtResource("1_e0nk3")
+roughness = 0.5

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://lubvtxmswakn"
+path="res://.godot/imported/Rise of the Dark Lord (LOOP) 24bit.wav-084073613e09e10c1c5bd64cd6a72672.sample"
+
+[deps]
+
+source_file="res://assets/audio/Rise of the Dark Lord (LOOP) 24bit.wav"
+dest_files=["res://.godot/imported/Rise of the Dark Lord (LOOP) 24bit.wav-084073613e09e10c1c5bd64cd6a72672.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://bgwkqwvv2t0es"]
+
+[ext_resource type="PackedScene" uid="uid://bj8h5imvcgd4o" path="res://assets/kaykit/characters/raw/Ninja.fbx" id="1_cd170"]
+[ext_resource type="Texture2D" uid="uid://k10ynlm7pyeg" path="res://assets/kaykit/characters/raw/ninja_texture_D.png" id="2_orh0d"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8rt18"]
+albedo_texture = ExtResource("2_orh0d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5ybqk"]
+albedo_texture = ExtResource("2_orh0d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eo2sr"]
+albedo_texture = ExtResource("2_orh0d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pjbpt"]
+albedo_texture = ExtResource("2_orh0d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2xxwv"]
+albedo_texture = ExtResource("2_orh0d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fjv2x"]
+albedo_texture = ExtResource("2_orh0d")
+
+[node name="NinjaWhite" unique_id=657644800 instance=ExtResource("1_cd170")]
+
+[node name="Ninja_Headband" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="0" unique_id=248372357]
+material_override = SubResource("StandardMaterial3D_8rt18")
+
+[node name="Ninja_Head" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="1" unique_id=1272703712]
+material_override = SubResource("StandardMaterial3D_5ybqk")
+
+[node name="Ninja_Mask" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="2" unique_id=397961724]
+material_override = SubResource("StandardMaterial3D_eo2sr")
+
+[node name="Ninja_ArmLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="3" unique_id=900553824]
+material_override = SubResource("StandardMaterial3D_pjbpt")
+
+[node name="Ninja_ArmRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="4" unique_id=771013831]
+material_override = SubResource("StandardMaterial3D_2xxwv")
+
+[node name="Ninja_Chest" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="7" unique_id=63635488]
+material_override = SubResource("StandardMaterial3D_fjv2x")

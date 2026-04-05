@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://dmvxti80jg2vd"]
+
+[ext_resource type="PackedScene" uid="uid://bw3fjescacdbx" path="res://assets/kaykit/characters/raw/Protagonist_A.glb" id="1_p6r0j"]
+
+[node name="Protagonist_A" unique_id=2034703401 instance=ExtResource("1_p6r0j")]

@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c75eu76vtuavq"]
+
+[ext_resource type="Texture2D" uid="uid://bpvrrx76k8wyw" path="res://assets/kaykit/characters/raw/Skeleton_Golem_skeleton_texture_A.png" id="1_gw38t"]
+
+[resource]
+resource_name = "skeleton"
+albedo_texture = ExtResource("1_gw38t")
+roughness = 0.5

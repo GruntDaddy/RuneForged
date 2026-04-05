@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c2lg6bevpe0ar"]
+
+[ext_resource type="Texture2D" uid="uid://dy50qmfhbmosh" path="res://assets/kaykit/characters/raw/SpaceRanger_spaceranger_texture.png" id="1_uagdv"]
+
+[resource]
+resource_name = "spaceranger"
+albedo_texture = ExtResource("1_uagdv")
+roughness = 0.5

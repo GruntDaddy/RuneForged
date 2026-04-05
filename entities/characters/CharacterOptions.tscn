@@ -1,0 +1,223 @@
+[gd_scene format=3 uid="uid://xe0iewsvu2oy"]
+
+[ext_resource type="PackedScene" uid="uid://bo8teux6iwo3q" path="res://entities/characters/character_presets/npc/necromancer.tscn" id="2_h7u0f"]
+[ext_resource type="PackedScene" uid="uid://drbn77wkfic33" path="res://entities/characters/character_presets/human/base_ranger.tscn" id="2_k4nf8"]
+[ext_resource type="PackedScene" uid="uid://c7k03ux2ywp50" path="res://entities/characters/character_presets/human/base_mage.tscn" id="3_5ba08"]
+[ext_resource type="PackedScene" uid="uid://cmt6j3poaef2k" path="res://entities/characters/character_presets/human/base_barbarian.tscn" id="4_bekou"]
+[ext_resource type="PackedScene" uid="uid://by2dihv026c7p" path="res://entities/characters/character_presets/human/base_knight.tscn" id="5_b4i2p"]
+[ext_resource type="PackedScene" uid="uid://oba7elakukkx" path="res://entities/characters/character_presets/human/base_engineer.tscn" id="6_6yixv"]
+[ext_resource type="PackedScene" uid="uid://b13dka4tdfn5y" path="res://entities/characters/character_presets/npc/skeleton_mage.tscn" id="7_770f4"]
+[ext_resource type="PackedScene" uid="uid://cq6m6dlfhjsem" path="res://entities/characters/character_presets/npc/werewolf_man.tscn" id="7_eyphe"]
+[ext_resource type="PackedScene" uid="uid://dqfvkrkd5y84h" path="res://entities/characters/character_presets/npc/skeleton_minion.tscn" id="8_faoyf"]
+[ext_resource type="PackedScene" uid="uid://f0lcgwxx6ean" path="res://entities/characters/character_presets/npc/werewolf_wolf.tscn" id="8_k4nf8"]
+[ext_resource type="PackedScene" uid="uid://ca2wbpbv1y55" path="res://entities/characters/character_presets/npc/vampire.tscn" id="9_5ba08"]
+[ext_resource type="PackedScene" uid="uid://cfh08y0mxvfrp" path="res://entities/characters/character_presets/npc/skeleton_rogue.tscn" id="9_vqaet"]
+[ext_resource type="PackedScene" uid="uid://17spjo3l1jcj" path="res://entities/characters/character_presets/npc/skeleton_warrior.tscn" id="10_ah6hn"]
+[ext_resource type="PackedScene" uid="uid://s8pdoip7yenq" path="res://entities/characters/character_presets/large/frost_golem.tscn" id="10_v6sah"]
+[ext_resource type="PackedScene" uid="uid://big2ddqn1uaji" path="res://entities/characters/character_presets/large/orc_large.tscn" id="11_stgyv"]
+[ext_resource type="PackedScene" uid="uid://cxuanhfqg5prh" path="res://entities/characters/character_presets/large/barbarian_large.tscn" id="12_0aj6c"]
+[ext_resource type="PackedScene" uid="uid://cfhf7oo0w5io" path="res://entities/characters/character_presets/human/ninja_red.tscn" id="12_faoyf"]
+[ext_resource type="PackedScene" uid="uid://c6w30j8cgseme" path="res://entities/characters/character_presets/large/black_knight.tscn" id="13_jw26b"]
+[ext_resource type="PackedScene" uid="uid://cilb8n0dudk1o" path="res://entities/characters/character_presets/large/skeleton_golem.tscn" id="13_vqaet"]
+[ext_resource type="PackedScene" uid="uid://8fl15ush2736" path="res://entities/characters/character_presets/human/base_caveman.tscn" id="14_ah6hn"]
+[ext_resource type="PackedScene" uid="uid://cwtyn6ogpcvx0" path="res://entities/characters/character_presets/npc/orc_raider.tscn" id="15_5irsk"]
+[ext_resource type="PackedScene" uid="uid://bkajhbb01waqu" path="res://entities/characters/character_presets/human/base_druid.tscn" id="15_v6sah"]
+[ext_resource type="PackedScene" uid="uid://bxfthv6goidyw" path="res://entities/characters/character_presets/npc/dark_knight.tscn" id="16_tiinn"]
+[ext_resource type="PackedScene" uid="uid://cft17ahmpe2ca" path="res://entities/characters/character_presets/npc/tiefling.tscn" id="17_tpi4w"]
+[ext_resource type="PackedScene" uid="uid://bgwkqwvv2t0es" path="res://entities/characters/character_presets/human/ninja_2.tscn" id="20_qgxu5"]
+[ext_resource type="PackedScene" uid="uid://dm8kkxnckkbkh" path="res://entities/characters/character_presets/human/base_rogue_hooded.tscn" id="20_tiinn"]
+[ext_resource type="PackedScene" uid="uid://cvlvm8i40w0o5" path="res://entities/characters/character_presets/human/ninja_3.tscn" id="21_g72bm"]
+[ext_resource type="PackedScene" uid="uid://cehv8x8wr2ok4" path="res://entities/characters/character_presets/human/base_paladin.tscn" id="21_tpi4w"]
+[ext_resource type="PackedScene" uid="uid://y3tx51moka6t" path="res://entities/characters/character_presets/human/ninja_4.tscn" id="22_b0m7h"]
+[ext_resource type="PackedScene" uid="uid://cn2ggmojd8586" path="res://entities/characters/character_presets/large/clanker.tscn" id="22_ph3cf"]
+[ext_resource type="PackedScene" uid="uid://ddpg07455pt7h" path="res://entities/characters/character_presets/npc/robot_one.tscn" id="23_ndab1"]
+[ext_resource type="PackedScene" uid="uid://ci3v20vvpqnmf" path="res://entities/characters/character_presets/npc/robot_two.tscn" id="24_bbjlc"]
+[ext_resource type="PackedScene" uid="uid://d1hhanxojx31w" path="res://entities/characters/character_presets/human/sheamus_rambo.tscn" id="30_ovcjv"]
+[ext_resource type="PackedScene" uid="uid://dk7q7vnomocdr" path="res://entities/characters/character_presets/human/survivalist.tscn" id="31_6tr7a"]
+[ext_resource type="PackedScene" uid="uid://4s0blxmrskml" path="res://entities/characters/character_presets/human/driver.tscn" id="32_uo0a2"]
+[ext_resource type="PackedScene" uid="uid://bv621gv1aoyfa" path="res://entities/characters/character_presets/human/hiker.tscn" id="33_qgxu5"]
+[ext_resource type="PackedScene" uid="uid://bcve7sd8k3ic" path="res://entities/characters/character_presets/npc/space_ranger.tscn" id="34_g72bm"]
+[ext_resource type="PackedScene" uid="uid://1gsww8b0xnkg" path="res://entities/characters/character_presets/npc/space_ranger_flight_mode.tscn" id="35_b0m7h"]
+[ext_resource type="PackedScene" uid="uid://dmvxti80jg2vd" path="res://entities/characters/character_presets/npc/protagonist_a.tscn" id="36_kkulk"]
+[ext_resource type="PackedScene" uid="uid://8rl87eisgl3m" path="res://entities/characters/character_presets/npc/protagonist_b.tscn" id="37_uweou"]
+[ext_resource type="PackedScene" uid="uid://bk0evpl36cbh8" path="res://entities/characters/character_presets/npc/animatronic_normal.tscn" id="38_xtfdf"]
+[ext_resource type="PackedScene" uid="uid://bqbobr0d2k6sa" path="res://entities/characters/character_presets/npc/clown.tscn" id="39_chyq6"]
+[ext_resource type="PackedScene" uid="uid://dw0ewb5pu6sx2" path="res://entities/characters/character_presets/npc/animatronic_creepy.tscn" id="40_i7rwc"]
+[ext_resource type="PackedScene" uid="uid://lua8plgi8ija" path="res://entities/characters/character_presets/npc/Costume_Dinosaur.tscn" id="41_onpuu"]
+[ext_resource type="PackedScene" uid="uid://cwx0iqeuw63sh" path="res://entities/characters/character_presets/npc/costume_dino_openfaced.tscn" id="42_ryl4t"]
+
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_wh0js"]
+ground_color = Color(0.101960786, 0.8039216, 0.03529412, 1)
+
+[sub_resource type="Sky" id="Sky_ubvg0"]
+sky_material = SubResource("PhysicalSkyMaterial_wh0js")
+radiance_size = 1
+
+[sub_resource type="Environment" id="Environment_3n2mw"]
+background_mode = 2
+sky = SubResource("Sky_ubvg0")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_io17d"]
+size = Vector3(50, 1, 50)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2vbpt"]
+albedo_color = Color(0.16862746, 0.3764706, 0.13725491, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_tu6iy"]
+material = SubResource("StandardMaterial3D_2vbpt")
+size = Vector2(50, 50)
+
+[node name="CharacterOptions" type="Node3D" unique_id=1650694019]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1105691643]
+environment = SubResource("Environment_3n2mw")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="WorldEnvironment" unique_id=676643732]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WorldEnvironment/StaticBody3D" unique_id=1441617326]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5191159, 0)
+visible = false
+shape = SubResource("BoxShape3D_io17d")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WorldEnvironment/StaticBody3D" unique_id=1856883703]
+visible = false
+mesh = SubResource("PlaneMesh_tu6iy")
+
+[node name="GameCharacters" type="Node3D" parent="." unique_id=711137178]
+
+[node name="Skeleton_Golem" parent="GameCharacters" unique_id=1066778756 instance=ExtResource("13_vqaet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00851417, -0.01906299, -1.313029)
+
+[node name="Necromancer" parent="GameCharacters" unique_id=727557818 instance=ExtResource("2_h7u0f")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.324467, -0.019089123, 0.17934394)
+
+[node name="Skeleton_Mage" parent="GameCharacters" unique_id=980297661 instance=ExtResource("7_770f4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2065992, -0.01908899, 0.21771741)
+
+[node name="Skeleton_Minion" parent="GameCharacters" unique_id=1860473941 instance=ExtResource("8_faoyf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3264832, -0.019089466, 0.2404952)
+
+[node name="Skeleton_Rogue" parent="GameCharacters" unique_id=467577412 instance=ExtResource("9_vqaet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0458624, -0.019089635, 0.21208334)
+
+[node name="Skeleton_Warrior" parent="GameCharacters" unique_id=436560244 instance=ExtResource("10_ah6hn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2021723, -0.019089397, 0.1502347)
+
+[node name="Werewolf_Man" parent="GameCharacters" unique_id=830764657 instance=ExtResource("7_eyphe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.39862, -0.019089397, -3.7388582)
+
+[node name="Werewolf_Wolf" parent="GameCharacters" unique_id=2088643831 instance=ExtResource("8_k4nf8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.298748, -0.014865749, -3.7466102)
+
+[node name="Vampire" parent="GameCharacters" unique_id=686902476 instance=ExtResource("9_5ba08")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.163671, 0.09250876, -3.7004652)
+
+[node name="FrostGolem" parent="GameCharacters" unique_id=1916108731 instance=ExtResource("10_v6sah")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.784797, 0.073885806, -0.6232567)
+
+[node name="Barbarian_Large" parent="GameCharacters" unique_id=828391269 instance=ExtResource("11_stgyv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.402091, 0.0073546395, -0.6673384)
+
+[node name="Barbarian_Large2" parent="GameCharacters" unique_id=1702248489 instance=ExtResource("12_0aj6c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.05565, -0.019115925, -0.85034466)
+
+[node name="BlackKnight" parent="GameCharacters" unique_id=1168411132 instance=ExtResource("13_jw26b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.579254, 0, -0.7550125)
+
+[node name="Barbarian" parent="GameCharacters" unique_id=57559026 instance=ExtResource("4_bekou")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.727738, 0, 0.38098812)
+
+[node name="OrcRaider" parent="GameCharacters" unique_id=1403912329 instance=ExtResource("15_5irsk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.215784, 0.14095096, 0.57322216)
+
+[node name="DarkKnight" parent="GameCharacters" unique_id=1264149320 instance=ExtResource("16_tiinn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.673336, -0.019115925, 0.8376818)
+
+[node name="Tiefling" parent="GameCharacters" unique_id=1363200050 instance=ExtResource("17_tpi4w")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.224339, 0.18318471, -3.5440283)
+
+[node name="Druid" parent="GameCharacters" unique_id=1714208390 instance=ExtResource("15_v6sah")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.839433, 0, -0.70696974)
+
+[node name="NinjaRed" parent="GameCharacters" unique_id=657644800 instance=ExtResource("12_faoyf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.71017, 0, -0.28673494)
+
+[node name="NinjaYellow" parent="GameCharacters" unique_id=1784364891 instance=ExtResource("20_qgxu5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.238962, 0.15873928, -0.94850254)
+
+[node name="NinjaBlue" parent="GameCharacters" unique_id=727514634 instance=ExtResource("21_g72bm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.718605, 0.15873928, -0.1448363)
+
+[node name="NinjaGreen" parent="GameCharacters" unique_id=1700162880 instance=ExtResource("22_b0m7h")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.00222, 0.15873928, -0.912591)
+
+[node name="Rogue_Hooded" parent="GameCharacters" unique_id=1379864517 instance=ExtResource("20_tiinn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0681462, -0.017090615, 4.296978)
+
+[node name="Paladin_with_Helmet" parent="GameCharacters" unique_id=1945724490 instance=ExtResource("21_tpi4w")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.325615, -0.019089397, 2.421885)
+
+[node name="Clanker" parent="GameCharacters" unique_id=757728562 instance=ExtResource("22_ph3cf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.107985, 0, -1.1752857)
+
+[node name="Robot_One" parent="GameCharacters" unique_id=1801657382 instance=ExtResource("23_ndab1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.449503, 0, -0.27245617)
+
+[node name="Robot_Two" parent="GameCharacters" unique_id=1471221318 instance=ExtResource("24_bbjlc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.669628, -0.01863558, -0.23609567)
+
+[node name="Caveman" parent="GameCharacters" unique_id=902253070 instance=ExtResource("14_ah6hn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.948739, 0.030239794, -0.7246518)
+
+[node name="Knight" parent="GameCharacters" unique_id=1815879540 instance=ExtResource("5_b4i2p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.045541637, -0.019115686, 4.353883)
+
+[node name="Ranger" parent="GameCharacters" unique_id=483519166 instance=ExtResource("2_k4nf8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2499046, -0.017090615, 4.295583)
+
+[node name="Mage" parent="GameCharacters" unique_id=620214316 instance=ExtResource("3_5ba08")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9685552, -0.017090376, 4.5256653)
+
+[node name="Engineer" parent="GameCharacters" unique_id=1608273399 instance=ExtResource("6_6yixv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.81462, -0.019115925, 4.5355415)
+
+[node name="OtherCharacters" type="Node3D" parent="." unique_id=1179801041]
+
+[node name="ActionFigure" parent="." unique_id=614837754 instance=ExtResource("30_ovcjv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01445528, -0.019089436, -10.271706)
+
+[node name="Survivalist" parent="." unique_id=798293628 instance=ExtResource("31_6tr7a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.296092, 0.043297745, -10.25799)
+
+[node name="Driver" parent="." unique_id=33185134 instance=ExtResource("32_uo0a2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.156111, -0.019097026, -10.278158)
+
+[node name="Hiker" parent="." unique_id=34777717 instance=ExtResource("33_qgxu5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.217455, 0.3230487, -9.718512)
+
+[node name="SpaceRanger" parent="." unique_id=1245210200 instance=ExtResource("34_g72bm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.4472146, -0.019115925, -10.892307)
+
+[node name="SpaceRanger_FlightMode" parent="." unique_id=2035492809 instance=ExtResource("35_b0m7h")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.967469, -0.019115686, -11.484465)
+
+[node name="Protagonist_A" parent="." unique_id=2034703401 instance=ExtResource("36_kkulk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.590068, -0.019115686, -9.824532)
+
+[node name="Protagonist_B" parent="." unique_id=2097726173 instance=ExtResource("37_uweou")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.640145, -0.019115686, -9.793732)
+
+[node name="Animatronic_Normal" parent="." unique_id=616759829 instance=ExtResource("38_xtfdf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5173526, -0.014865272, -10.348446)
+
+[node name="Clown" parent="." unique_id=1926416747 instance=ExtResource("39_chyq6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.4070053, -0.018641898, -10.313957)
+
+[node name="Animatronic_Creepy" parent="." unique_id=792117471 instance=ExtResource("40_i7rwc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.151352, -0.01486551, -10.973003)
+
+[node name="Monster" parent="." unique_id=1100529173 instance=ExtResource("41_onpuu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.014618, -0.019089397, -10.296417)
+
+[node name="MonsterCostume" parent="." unique_id=1625186897 instance=ExtResource("42_ryl4t")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.690787, -0.019089397, -11.027462)

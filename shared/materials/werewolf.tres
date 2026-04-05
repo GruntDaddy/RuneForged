@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dcjta74fi8if5"]
+
+[ext_resource type="Texture2D" uid="uid://c6rlkd0mdwnvy" path="res://assets/kaykit/characters/raw/Werewolf_Wolf_werewolf_A.png" id="1_x4ei3"]
+
+[resource]
+resource_name = "werewolf"
+albedo_texture = ExtResource("1_x4ei3")
+roughness = 0.5

@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cilb8n0dudk1o"]
+
+[ext_resource type="PackedScene" uid="uid://dxhkiafrplahh" path="res://assets/kaykit/characters/raw/Skeleton_Golem.glb" id="1_6nr5v"]
+
+[node name="Skeleton_Golem" unique_id=1066778756 instance=ExtResource("1_6nr5v")]

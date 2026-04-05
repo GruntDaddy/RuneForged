@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://dqfvkrkd5y84h"]
+
+[ext_resource type="PackedScene" uid="uid://bac0vru7om1dt" path="res://assets/kaykit/characters/raw/Skeleton_Minion.glb" id="1_17ohv"]
+
+[node name="Skeleton_Minion" unique_id=1860473941 instance=ExtResource("1_17ohv")]

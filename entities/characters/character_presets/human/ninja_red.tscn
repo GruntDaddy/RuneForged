@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cfhf7oo0w5io"]
+
+[ext_resource type="PackedScene" uid="uid://bj8h5imvcgd4o" path="res://assets/kaykit/characters/raw/Ninja.fbx" id="1_1lwsi"]
+
+[node name="NinjaRed" unique_id=657644800 instance=ExtResource("1_1lwsi")]

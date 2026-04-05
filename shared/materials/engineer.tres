@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cuecldedqv0ys"]
+
+[ext_resource type="Texture2D" uid="uid://n4s811wr2nhy" path="res://assets/kaykit/characters/raw/Engineer_engineer_texture.png" id="1_yvw1d"]
+
+[resource]
+resource_name = "engineer"
+cull_mode = 2
+albedo_texture = ExtResource("1_yvw1d")
+roughness = 0.5

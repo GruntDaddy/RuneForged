@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://s8pdoip7yenq"]
+
+[ext_resource type="PackedScene" uid="uid://23gu6t0ooq1s" path="res://assets/kaykit/characters/raw/FrostGolem.fbx" id="1_ve20a"]
+
+[node name="FrostGolem" unique_id=1916108731 instance=ExtResource("1_ve20a")]

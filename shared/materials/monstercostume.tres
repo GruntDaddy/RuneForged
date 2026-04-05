@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://wr4iqhtaphxb"]
+
+[ext_resource type="Texture2D" uid="uid://ci47vftdqnqfn" path="res://assets/kaykit/characters/raw/Monster_monstercostume_texture_A.png" id="1_mhpui"]
+
+[resource]
+resource_name = "monstercostume"
+albedo_texture = ExtResource("1_mhpui")
+roughness = 0.5

@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://d1hhanxojx31w"]
+
+[ext_resource type="PackedScene" uid="uid://6ph8tacj0xow" path="res://assets/kaykit/characters/raw/ActionFigure.glb" id="1_33817"]
+
+[node name="ActionFigure" unique_id=614837754 instance=ExtResource("1_33817")]

@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://cvlvm8i40w0o5"]
+
+[ext_resource type="PackedScene" uid="uid://bj8h5imvcgd4o" path="res://assets/kaykit/characters/raw/Ninja.fbx" id="1_1y13t"]
+[ext_resource type="Texture2D" uid="uid://cob8ncdrrgcv8" path="res://assets/kaykit/characters/raw/ninja_texture_B.png" id="2_jrcwg"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o8rwb"]
+albedo_texture = ExtResource("2_jrcwg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gj32l"]
+albedo_texture = ExtResource("2_jrcwg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_360re"]
+albedo_texture = ExtResource("2_jrcwg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cnknu"]
+albedo_texture = ExtResource("2_jrcwg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mhkab"]
+albedo_texture = ExtResource("2_jrcwg")
+
+[node name="NinjaBlue" unique_id=657644800 instance=ExtResource("1_1y13t")]
+
+[node name="Ninja_Head" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="1" unique_id=1272703712]
+material_override = SubResource("StandardMaterial3D_o8rwb")
+
+[node name="Ninja_Mask" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="2" unique_id=397961724]
+material_override = SubResource("StandardMaterial3D_gj32l")
+
+[node name="Ninja_ArmLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="3" unique_id=900553824]
+material_override = SubResource("StandardMaterial3D_360re")
+
+[node name="Ninja_ArmRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="4" unique_id=771013831]
+material_override = SubResource("StandardMaterial3D_cnknu")
+
+[node name="Ninja_Chest" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(382536967) index="7" unique_id=63635488]
+material_override = SubResource("StandardMaterial3D_mhkab")

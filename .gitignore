@@ -1,0 +1,12 @@
+# Godot 4+
+.godot/
+
+# Android export
+/android/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*~

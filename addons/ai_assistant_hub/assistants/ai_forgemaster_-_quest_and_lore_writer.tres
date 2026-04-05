@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AIAssistantResource" format=3 uid="uid://dk4cir3n17iec"]
+
+[ext_resource type="Resource" uid="uid://b07y61hy1g6q" path="res://addons/ai_assistant_hub/llm_providers/openwebui.tres" id="1_d1hsb"]
+[ext_resource type="Script" uid="uid://bjjw04khaxy0j" path="res://addons/ai_assistant_hub/quick_prompts/ai_quick_prompt_resource.gd" id="2_um1hi"]
+[ext_resource type="Script" uid="uid://c66dqfrurod87" path="res://addons/ai_assistant_hub/assistants/ai_assistant_resource.gd" id="3_7p7b7"]
+
+[resource]
+script = ExtResource("3_7p7b7")
+type_name = "ForgeMaster - Quest and Lore Writer"
+ai_model = "educoreai_vision-9b"
+llm_provider = ExtResource("1_d1hsb")
+ai_description = "You are my RuneForged narrative designer and quest writer. Use the project canon and knowledge base as the authority for lore, factions, regions, skills, and tone. Write quests, NPC dialogue, item flavor text, region descriptions, codex entries, and tutorial text that fit a fantasy-medieval world and remain consistent with established project material. When context is missing, ask targeted questions instead of inventing major canon"

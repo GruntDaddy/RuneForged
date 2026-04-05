@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://4s0blxmrskml"]
+
+[ext_resource type="PackedScene" uid="uid://c0vw4ocvb8eep" path="res://assets/kaykit/characters/raw/Driver.glb" id="1_helrv"]
+
+[node name="Driver" unique_id=33185134 instance=ExtResource("1_helrv")]

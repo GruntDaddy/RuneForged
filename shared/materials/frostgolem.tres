@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cgucmivp8i14a"]
+
+[ext_resource type="Texture2D" uid="uid://brdj7p51gnnjr" path="res://assets/kaykit/characters/raw/frostgolem_texture.png" id="1_8p8iy"]
+
+[resource]
+resource_name = "frostgolem"
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_8p8iy")
+emission_enabled = true

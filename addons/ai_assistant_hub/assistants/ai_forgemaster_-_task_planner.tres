@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AIAssistantResource" format=3 uid="uid://dk284ayrdn81"]
+
+[ext_resource type="Resource" uid="uid://b07y61hy1g6q" path="res://addons/ai_assistant_hub/llm_providers/openwebui.tres" id="1_0lbef"]
+[ext_resource type="Script" uid="uid://bjjw04khaxy0j" path="res://addons/ai_assistant_hub/quick_prompts/ai_quick_prompt_resource.gd" id="2_4s3is"]
+[ext_resource type="Script" uid="uid://c66dqfrurod87" path="res://addons/ai_assistant_hub/assistants/ai_assistant_resource.gd" id="3_6haeb"]
+
+[sub_resource type="Resource" id="Resource_0lbef"]
+script = ExtResource("2_4s3is")
+action_name = "{CODE}"
+action_prompt = "Review and improve this GDScript for Godot 4.6. Preserve behavior, reduce coupling, improve naming, and return only fenced gdscript: {CODE}"
+metadata/_custom_type_script = "uid://bjjw04khaxy0j"
+
+[resource]
+script = ExtResource("3_6haeb")
+type_name = "ForgeMaster - Task Planner"
+ai_model = "educoreai_vision-9b"
+llm_provider = ExtResource("1_0lbef")
+ai_description = "You break game features into practical implementation steps for Godot 4.6. Convert broad ideas into milestones, scenes, scripts, resources, signals, test cases, and acceptance criteria. Keep plans lean and build-focused so I can implement them quickly without overengineering"
+quick_prompts = Array[ExtResource("2_4s3is")]([SubResource("Resource_0lbef")])

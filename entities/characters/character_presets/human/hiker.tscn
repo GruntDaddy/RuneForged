@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://bv621gv1aoyfa"]
+
+[ext_resource type="PackedScene" uid="uid://dg0g3ftby4nww" path="res://assets/kaykit/characters/raw/Hiker.fbx" id="1_4yoit"]
+
+[node name="Hiker" unique_id=34777717 instance=ExtResource("1_4yoit")]

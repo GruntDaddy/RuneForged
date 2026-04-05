@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cehv8x8wr2ok4"]
+
+[ext_resource type="PackedScene" uid="uid://cjr3q6prw48yy" path="res://assets/kaykit/characters/raw/Paladin_with_Helmet.glb" id="1_3xuae"]
+
+[node name="Paladin_with_Helmet" unique_id=1945724490 instance=ExtResource("1_3xuae")]

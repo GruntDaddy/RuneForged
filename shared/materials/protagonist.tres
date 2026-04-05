@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cjryaylackdpu"]
+
+[ext_resource type="Texture2D" uid="uid://bsn1nmg7t4fna" path="res://assets/kaykit/characters/raw/Protagonist_B_protagonist_texture.png" id="1_u4o4k"]
+
+[resource]
+resource_name = "protagonist"
+albedo_texture = ExtResource("1_u4o4k")
+roughness = 0.5

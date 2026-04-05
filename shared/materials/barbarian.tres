@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://t8my3v650kfp"]
+
+[ext_resource type="Texture2D" uid="uid://b4cjpxku4e3vq" path="res://assets/kaykit/characters/raw/Barbarian_Large_barbarian_texture.png" id="1_jv448"]
+
+[resource]
+resource_name = "barbarian"
+cull_mode = 2
+albedo_texture = ExtResource("1_jv448")
+roughness = 0.5

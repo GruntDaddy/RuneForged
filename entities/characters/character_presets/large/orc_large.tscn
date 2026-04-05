@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://big2ddqn1uaji"]
+
+[ext_resource type="PackedScene" uid="uid://py1c0rco56i2" path="res://assets/kaykit/characters/raw/Barbarian_Large.glb" id="1_y8bkc"]
+[ext_resource type="Texture2D" uid="uid://j6k2xunlqon4" path="res://assets/kaykit/characters/raw/orc_texture_A.png" id="2_cbfdx"]
+[ext_resource type="PackedScene" uid="uid://bqe8al20xs6q6" path="res://entities/characters/head_library/head_orc_large.tscn" id="3_hfau3"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjug6"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wlnx8"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vrmih"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beeuq"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r6h8m"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y8bkc"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cbfdx"]
+albedo_texture = ExtResource("2_cbfdx")
+
+[node name="Barbarian_Large" unique_id=828391269 instance=ExtResource("1_y8bkc")]
+
+[node name="Barbarian_Large_ArmLeft" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="0" unique_id=1105675489]
+material_override = SubResource("StandardMaterial3D_hjug6")
+
+[node name="Barbarian_Large_ArmRight" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="1" unique_id=526726070]
+material_override = SubResource("StandardMaterial3D_wlnx8")
+
+[node name="Barbarian_Large_BearHat" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="2" unique_id=439226578]
+visible = false
+
+[node name="Barbarian_Large_Body" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="4" unique_id=1388565039]
+material_override = SubResource("StandardMaterial3D_vrmih")
+
+[node name="Barbarian_Large_Head" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="5" unique_id=1808853204]
+visible = false
+
+[node name="Barbarian_Large_LegLeft" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="6" unique_id=1080971726]
+material_override = SubResource("StandardMaterial3D_beeuq")
+
+[node name="Barbarian_Large_LegRight" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="7" unique_id=1963736975]
+material_override = SubResource("StandardMaterial3D_r6h8m")
+
+[node name="Barbarian_Large_ShoulderpadLeft" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="8" unique_id=755276835]
+material_override = SubResource("StandardMaterial3D_y8bkc")
+
+[node name="Barbarian_Large_ShoulderpadRight" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="9" unique_id=1040034446]
+material_override = SubResource("StandardMaterial3D_cbfdx")
+
+[node name="Orc_Head_Large" parent="Rig_Large/Skeleton3D" parent_id_path=PackedInt32Array(1085479964) index="10" unique_id=178249155 instance=ExtResource("3_hfau3")]

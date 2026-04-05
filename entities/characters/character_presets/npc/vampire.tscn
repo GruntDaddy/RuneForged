@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://ca2wbpbv1y55"]
+
+[ext_resource type="PackedScene" uid="uid://b31prkip0leki" path="res://assets/kaykit/characters/raw/Vampire.fbx" id="1_i6inh"]
+
+[node name="Vampire" unique_id=686902476 instance=ExtResource("1_i6inh")]
+
+[node name="Vampire_WingRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(1344502262) index="0" unique_id=1720183901]
+transform = Transform3D(1, 2.0194838e-28, 1.4210855e-14, -6.2117594e-22, 0.99999994, 4.3711385e-08, -1.4210855e-14, -4.371138e-08, 1, 1.4154976e-28, 0.9726289, -4.2514955e-08)
+bone_idx = 3
+
+[node name="Vampire_WingLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(1344502262) index="1" unique_id=1676457869]
+transform = Transform3D(1, 2.0194838e-28, 1.4210855e-14, -6.2117594e-22, 0.99999994, 4.3711385e-08, -1.4210855e-14, -4.371138e-08, 1, 1.4154976e-28, 0.9726289, -4.2514955e-08)
+bone_idx = 3

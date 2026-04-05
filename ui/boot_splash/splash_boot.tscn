@@ -1,0 +1,379 @@
+[gd_scene format=3 uid="uid://dc8c7orvrb025"]
+
+[ext_resource type="Script" uid="uid://cqedcy4vdlx65" path="res://ui/boot_splash/splash_boot.gd" id="1_kr1xi"]
+[ext_resource type="Texture2D" uid="uid://dvdggbw5borvj" path="res://shared/art/RuneForged_SpinnerLogo.png" id="1_le7t4"]
+[ext_resource type="Texture2D" uid="uid://cxorr30ef7wxj" path="res://shared/art/RuneForged_Logo_2.png" id="2_g17t8"]
+[ext_resource type="FontFile" uid="uid://1giv01mhq8fs" path="res://assets/ui/fonts/MedievalSharp-Regular.ttf" id="3_kr1xi"]
+[ext_resource type="Texture2D" uid="uid://vagh222wum77" path="res://assets/ui/UI Borders/PNG/Double/Border/panel-border-031.png" id="4_0w44u"]
+[ext_resource type="Texture2D" uid="uid://j2hnidak3rjs" path="res://assets/ui/UI Borders/PNG/Double/Border/panel-border-030.png" id="5_3dni1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aaxxq"]
+bg_color = Color(0.050980393, 0.06666667, 0.078431375, 1)
+
+[sub_resource type="Gradient" id="Gradient_w8khx"]
+offsets = PackedFloat32Array(0, 0.5316092, 0.5545977)
+colors = PackedColorArray(0, 0, 0, 0, 0.023529412, 0.03137255, 0.039215688, 0, 0.050980393, 0.06666667, 0.078431375, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_dcxy1"]
+gradient = SubResource("Gradient_w8khx")
+fill = 1
+fill_from = Vector2(0.5098425, 0.47440946)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3apco"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pipll"]
+texture = ExtResource("4_0w44u")
+texture_margin_left = 24.0
+texture_margin_top = 24.0
+texture_margin_right = 24.0
+texture_margin_bottom = 24.0
+modulate_color = Color(0.42352942, 0.9529412, 0.98039216, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dgb66"]
+texture = ExtResource("5_3dni1")
+texture_margin_left = 24.0
+texture_margin_top = 24.0
+texture_margin_right = 24.0
+texture_margin_bottom = 24.0
+modulate_color = Color(0.7490196, 0.25882354, 0.07058824, 0.8862745)
+
+[sub_resource type="Animation" id="Animation_g17t8"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Splash_Bg/SplashLogo:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Splash_Bg/LogoMask:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Splash_Bg:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("StartScreen_Bg:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 1)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("StartScreen_Bg:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("StartScreen_Bg/ButtonPanel:scale")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1e-05, 1e-05)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Splash_Bg:modulate")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath(".:modulate")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_3dni1"]
+resource_name = "fade_out"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(0.4665163, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(0, 0, 0, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_kr1xi"]
+resource_name = "splash_boot"
+length = 4.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Splash_Bg/SplashLogo:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.75, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.283185307179586]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Splash_Bg/LogoMask:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.75, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.283185307179586]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Splash_Bg:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(3.25, 4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(15, 15)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("StartScreen_Bg:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Splash_Bg:modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 1.5, 3.2666667, 4.2),
+"transitions": PackedFloat32Array(2.9281707, 1, 0.3077863, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(0, 0, 0, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_0w44u"]
+resource_name = "start_screen"
+length = 3.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("StartScreen_Bg:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(2.4622886, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 1), Color(0.97881764, 0.97881764, 0.97881764, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("StartScreen_Bg:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.16666667),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("StartScreen_Bg/ButtonPanel:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(1.5333333, 3, 3.5),
+"transitions": PackedFloat32Array(5.856343, 1, 1),
+"update": 0,
+"values": [Vector2(1e-05, 1e-05), Vector2(1.1, 1.1), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0w44u"]
+_data = {
+&"RESET": SubResource("Animation_g17t8"),
+&"fade_out": SubResource("Animation_3dni1"),
+&"splash_boot": SubResource("Animation_kr1xi"),
+&"start_screen": SubResource("Animation_0w44u")
+}
+
+[node name="SplashBoot" type="Control" unique_id=792028371]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kr1xi")
+
+[node name="Splash_Bg" type="Panel" parent="." unique_id=133475488]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_aaxxq")
+
+[node name="SplashLogo" type="TextureRect" parent="Splash_Bg" unique_id=659391194]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -210.0
+offset_right = 210.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.75, 0.75)
+pivot_offset_ratio = Vector2(0.5, 0.5)
+texture = ExtResource("1_le7t4")
+expand_mode = 1
+
+[node name="LogoMask" type="TextureRect" parent="Splash_Bg" unique_id=2004787067]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -237.5
+offset_top = -228.50009
+offset_right = 237.5
+offset_bottom = 246.5
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.75, 0.75)
+pivot_offset_ratio = Vector2(0.5, 0.485)
+texture = SubResource("GradientTexture2D_dcxy1")
+expand_mode = 1
+
+[node name="StartScreen_Bg" type="Panel" parent="." unique_id=1174274421]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="StartScreen_Bg" unique_id=1221558121]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_g17t8")
+expand_mode = 1
+
+[node name="ButtonPanel" type="VBoxContainer" parent="StartScreen_Bg" unique_id=1135112623]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -364.5
+offset_top = -352.0
+offset_right = 258.5
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1e-05, 1e-05)
+pivot_offset_ratio = Vector2(0.5, 0.5)
+alignment = 1
+
+[node name="StartButton" type="Button" parent="StartScreen_Bg/ButtonPanel" unique_id=28191460]
+custom_minimum_size = Vector2(420, 69)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.7921569, 0.79607844, 0.8039216, 0.89411765)
+theme_override_colors/font_pressed_color = Color(0.42745098, 0.9411765, 0.9764706, 1)
+theme_override_colors/font_hover_color = Color(0.5764706, 0.59607846, 0.6156863, 0.8784314)
+theme_override_colors/font_hover_pressed_color = Color(0.45490196, 0.9607843, 0.9764706, 1)
+theme_override_colors/font_outline_color = Color(0.104131244, 0.85733545, 0.9354599, 0.8156863)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("3_kr1xi")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxTexture_3apco")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_pipll")
+theme_override_styles/hover = SubResource("StyleBoxTexture_dgb66")
+text = "START"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=852137946]
+libraries/ = SubResource("AnimationLibrary_0w44u")
+autoplay = &"splash_boot"
+next/splash_boot = &"start_screen"

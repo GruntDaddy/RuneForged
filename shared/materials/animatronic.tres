@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bmhysm1rnp1ja"]
+
+[ext_resource type="Texture2D" uid="uid://cxju8mc82hcgh" path="res://assets/kaykit/characters/raw/Animatronic_Creepy_animatronic_A.png" id="1_h8h3b"]
+
+[resource]
+resource_name = "animatronic"
+albedo_texture = ExtResource("1_h8h3b")
+roughness = 0.5

@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://s2pcrjdh3fc6"]
+
+[ext_resource type="Texture2D" uid="uid://u2ol5voakrbc" path="res://assets/kaykit/characters/raw/survivalist_texture.png" id="1_v7mvs"]
+
+[resource]
+resource_name = "survivalist"
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_v7mvs")
+emission_enabled = true

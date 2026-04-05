@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cxuanhfqg5prh"]
+
+[ext_resource type="PackedScene" uid="uid://py1c0rco56i2" path="res://assets/kaykit/characters/raw/Barbarian_Large.glb" id="1_o1ddk"]
+
+[node name="Barbarian_Large" unique_id=828391269 instance=ExtResource("1_o1ddk")]

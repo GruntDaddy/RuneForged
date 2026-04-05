@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://bk0evpl36cbh8"]
+
+[ext_resource type="PackedScene" uid="uid://b6sor6gotcmuo" path="res://assets/kaykit/characters/raw/Animatronic_Normal.glb" id="1_0d1up"]
+
+[node name="Animatronic_Normal" unique_id=616759829 instance=ExtResource("1_0d1up")]

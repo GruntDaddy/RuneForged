@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://ci3v20vvpqnmf"]
+
+[ext_resource type="PackedScene" uid="uid://l5d1wrfcukd2" path="res://assets/kaykit/characters/raw/Robot_Two.fbx" id="1_yvq0s"]
+
+[node name="Robot_Two" unique_id=1471221318 instance=ExtResource("1_yvq0s")]

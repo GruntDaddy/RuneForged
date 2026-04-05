@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://f0lcgwxx6ean"]
+
+[ext_resource type="PackedScene" uid="uid://dqo68ceq0fxf5" path="res://assets/kaykit/characters/raw/Werewolf_Wolf.glb" id="1_fxc6w"]
+
+[node name="Werewolf_Wolf" unique_id=2088643831 instance=ExtResource("1_fxc6w")]

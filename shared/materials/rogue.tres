@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://1c7orq5mkycq"]
+
+[ext_resource type="Texture2D" uid="uid://os7is152anba" path="res://assets/kaykit/characters/raw/Rogue_Hooded_rogue_texture.png" id="1_q5dnf"]
+
+[resource]
+resource_name = "rogue"
+cull_mode = 2
+albedo_texture = ExtResource("1_q5dnf")
+roughness = 0.5

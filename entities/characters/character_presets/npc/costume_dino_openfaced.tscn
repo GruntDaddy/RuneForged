@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cwx0iqeuw63sh"]
+
+[ext_resource type="PackedScene" uid="uid://bvn578omc8by7" path="res://assets/kaykit/characters/raw/MonsterCostume.glb" id="1_ykr07"]
+
+[node name="MonsterCostume" unique_id=1625186897 instance=ExtResource("1_ykr07")]

@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cfh08y0mxvfrp"]
+
+[ext_resource type="PackedScene" uid="uid://dttpknukesbj0" path="res://assets/kaykit/characters/raw/Skeleton_Rogue.glb" id="1_wyum2"]
+
+[node name="Skeleton_Rogue" unique_id=467577412 instance=ExtResource("1_wyum2")]

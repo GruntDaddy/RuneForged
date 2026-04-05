@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://yt4uwybckf5y"]
+
+[ext_resource type="Texture2D" uid="uid://j6k2xunlqon4" path="res://assets/kaykit/characters/raw/orc_texture_A.png" id="1_swyxb"]
+
+[resource]
+resource_name = "orc_texture_A"
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_swyxb")
+emission_enabled = true

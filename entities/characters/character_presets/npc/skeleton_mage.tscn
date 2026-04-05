@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://b13dka4tdfn5y"]
+
+[ext_resource type="PackedScene" uid="uid://d1bpe4d30f0jd" path="res://assets/kaykit/characters/raw/Skeleton_Mage.glb" id="1_hiycc"]
+
+[node name="Skeleton_Mage" unique_id=980297661 instance=ExtResource("1_hiycc")]
