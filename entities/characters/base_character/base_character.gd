@@ -36,7 +36,7 @@ const PANTS_TINTS: Array[Color] = [
 ## Animation library name in base_character.tscn is "Base".
 const _ANIM_LIB := "Base"
 const _ANIM_WALK := "Walking_B"
-const _ANIM_IDLE := "T-Pose"
+const _ANIM_IDLE := "Idle_A"
 const _ANIM_AIR := "Jump_Idle"
 
 
@@ -132,9 +132,17 @@ func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int) -> void:
 
 
 ## Godot 4: MeshInstance3D has no modulate (CanvasItem-only). Tint via material albedo.
-## Prefer get_active_material (includes overrides from instanced mesh scenes). Stronger tint for textured albedo.
+## Body meshes use a single `material_override`; tint that directly so it isn't masked by override.
+## Limbs often use per-surface mesh materials only.
 func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 	if mi == null or mi.mesh == null:
+		return
+	var mo := mi.material_override
+	if mo is BaseMaterial3D:
+		var dup_m := mo.duplicate() as BaseMaterial3D
+		var mixed_m: Color = dup_m.albedo_color * tint
+		dup_m.albedo_color = mixed_m.lerp(tint, 0.22)
+		mi.material_override = dup_m
 		return
 	for surf_idx in range(mi.mesh.get_surface_count()):
 		var base_mat: Material = mi.get_active_material(surf_idx)
@@ -146,7 +154,6 @@ func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 			continue
 		var dup: Material = base_mat.duplicate()
 		var bm := dup as BaseMaterial3D
-		# Multiply + slight lerp toward tint so colors read on busy texture sheets.
 		var mixed: Color = bm.albedo_color * tint
 		bm.albedo_color = mixed.lerp(tint, 0.22)
 		mi.set_surface_override_material(surf_idx, dup)

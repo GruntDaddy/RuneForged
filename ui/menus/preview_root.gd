@@ -1,7 +1,7 @@
 extends Node3D
 
 @export var rotation_speed: float = 0.0
-@export var float_height: float = 0.08
+@export var float_height: float = 0.0
 @export var float_speed: float = 2.0
 
 @onready var player: CharacterBody3D = get_node_or_null("Player")

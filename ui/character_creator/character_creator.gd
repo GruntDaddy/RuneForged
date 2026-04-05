@@ -17,12 +17,13 @@ extends Control
 # --- Right Details panel ---
 @onready var name_input: LineEdit = $DetailsPanel/NameInput
 
-@onready var origin_button: Button = $DetailsPanel/OriginsRow/OriginButton
-@onready var trait_button: Button = $DetailsPanel/TraitsRow/TraitButton
-@onready var birthsign_button: Button = $DetailsPanel/BirthsignRow/BirthsignButton
+@onready var origin_button: OptionButton = $DetailsPanel/OriginsRow/OriginButton
+@onready var trait_button: OptionButton = $DetailsPanel/TraitsRow/TraitButton
+@onready var birthsign_button: OptionButton = $DetailsPanel/BirthsignRow/BirthsignButton
 
 # --- Bottom controls ---
 @onready var confirm_button: Button = $ConfirmButton
+@onready var back_button: Button = $BackButton
 @onready var rotate_left_button: Button = $PodiumPanel/RotateLeftButton
 @onready var rotate_right_button: Button = $PodiumPanel/RotateRightButton
 
@@ -79,7 +80,9 @@ var birthsign_id: int = 0
 
 func _ready() -> void:
 	_load_from_gamestate()
+	_setup_detail_option_buttons()
 	_connect_signals()
+	_sync_detail_option_buttons()
 	_refresh_all()
 
 
@@ -91,12 +94,38 @@ func _load_from_gamestate() -> void:
 	pants_index = GameState.pants_index
 
 	origin_id = clamp(GameState.origin_id, 0, _origins.size() - 1)
-	trait_id_1 = clamp(GameState.trait_id_1 if GameState.trait_id_1 >= 0 else 0, 0, _traits.size() - 1)
-	trait_id_2 = clamp(GameState.trait_id_2 if GameState.trait_id_2 >= 0 else 1, 0, _traits.size() - 1)
-	if trait_id_2 == trait_id_1:
-		trait_id_2 = (trait_id_1 + 1) % _traits.size()
+	trait_id_1 = clampi(GameState.trait_id_1, 0, _traits.size() - 1)
+	trait_id_2 = (trait_id_1 + 1) % _traits.size()
 
 	birthsign_id = clamp(GameState.birthsign_id, 0, _birthsigns.size() - 1)
+
+
+func _setup_detail_option_buttons() -> void:
+	_fill_option_button(origin_button, _origins)
+	_fill_option_button(birthsign_button, _birthsigns)
+
+	trait_button.clear()
+	var n: int = _traits.size()
+	for i in n:
+		trait_button.add_item("%s / %s" % [_traits[i], _traits[(i + 1) % n]])
+
+
+func _fill_option_button(ob: OptionButton, labels: Array) -> void:
+	ob.clear()
+	for s in labels:
+		ob.add_item(str(s))
+
+
+func _sync_detail_option_buttons() -> void:
+	_select_without_signal(origin_button, origin_id)
+	_select_without_signal(trait_button, trait_id_1)
+	_select_without_signal(birthsign_button, birthsign_id)
+
+
+func _select_without_signal(ob: OptionButton, index: int) -> void:
+	ob.block_signals(true)
+	ob.select(clampi(index, 0, max(0, ob.item_count - 1)))
+	ob.block_signals(false)
 
 
 func _connect_signals() -> void:
@@ -109,22 +138,35 @@ func _connect_signals() -> void:
 	pants_left_button.pressed.connect(_on_pants_left)
 	pants_right_button.pressed.connect(_on_pants_right)
 
-	origin_button.pressed.connect(_on_origin_cycle)
-	trait_button.pressed.connect(_on_trait_cycle)
-	birthsign_button.pressed.connect(_on_birthsign_cycle)
+	origin_button.item_selected.connect(_on_origin_selected)
+	trait_button.item_selected.connect(_on_trait_selected)
+	birthsign_button.item_selected.connect(_on_birthsign_selected)
 
 	rotate_left_button.pressed.connect(_on_rotate_left)
 	rotate_right_button.pressed.connect(_on_rotate_right)
 
 	confirm_button.pressed.connect(_on_confirm_pressed)
+	back_button.pressed.connect(_on_back_pressed)
 
 
 func _refresh_all() -> void:
-	_update_detail_buttons()
 	_apply_visuals()
 
 
 # --- UI callbacks ---
+
+func _on_origin_selected(index: int) -> void:
+	origin_id = index
+
+
+func _on_trait_selected(index: int) -> void:
+	trait_id_1 = index
+	trait_id_2 = (trait_id_1 + 1) % _traits.size()
+
+
+func _on_birthsign_selected(index: int) -> void:
+	birthsign_id = index
+
 
 func _on_head_left() -> void:
 	head_index = max(0, head_index - 1)
@@ -156,28 +198,16 @@ func _on_pants_right() -> void:
 	_apply_visuals()
 
 
-func _on_origin_cycle() -> void:
-	origin_id = (origin_id + 1) % _origins.size()
-	_update_detail_buttons()
-
-
-func _on_trait_cycle() -> void:
-	trait_id_1 = (trait_id_1 + 1) % _traits.size()
-	trait_id_2 = (trait_id_1 + 1) % _traits.size()
-	_update_detail_buttons()
-
-
-func _on_birthsign_cycle() -> void:
-	birthsign_id = (birthsign_id + 1) % _birthsigns.size()
-	_update_detail_buttons()
-
-
 func _on_rotate_left() -> void:
 	player.rotate_y(deg_to_rad(-30))
 
 
 func _on_rotate_right() -> void:
 	player.rotate_y(deg_to_rad(30))
+
+
+func _on_back_pressed() -> void:
+	SceneManager.fade_to_scene("res://ui/menus/main_menu.tscn")
 
 
 func _on_confirm_pressed() -> void:
@@ -199,12 +229,6 @@ func _on_confirm_pressed() -> void:
 
 
 # --- Helpers ---
-
-func _update_detail_buttons() -> void:
-	origin_button.text = _origins[origin_id]
-	trait_button.text = "%s / %s" % [_traits[trait_id_1], _traits[trait_id_2]]
-	birthsign_button.text = _birthsigns[birthsign_id]
-
 
 func _apply_visuals() -> void:
 	var bc: Node = player.get_node_or_null("BaseCharacter")

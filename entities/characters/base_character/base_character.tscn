@@ -13,6 +13,7 @@
 [ext_resource type="Animation" uid="uid://shplmx2jg2pf" path="res://assets/animations/rig_medium/movement/Jump_Idle.res" id="11_ey55c"]
 [ext_resource type="Animation" uid="uid://c1ppoxn7spxqu" path="res://assets/animations/rig_medium/movement/T-Pose.res" id="12_upkct"]
 [ext_resource type="Animation" uid="uid://cflhjeqn0pbxu" path="res://assets/animations/rig_medium/movement/Walking_B.res" id="13_jxcl3"]
+[ext_resource type="Animation" uid="uid://cxfyxr5v0c2sk" path="res://assets/animations/rig_medium/general/Idle_A.res" id="14_idle"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gq86d"]
 albedo_texture = ExtResource("7_k8f6t")
@@ -25,6 +26,7 @@ albedo_texture = ExtResource("7_k8f6t")
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_b0b0v"]
 _data = {
+&"Idle_A": ExtResource("14_idle"),
 &"Jump_Idle": ExtResource("11_ey55c"),
 &"T-Pose": ExtResource("12_upkct"),
 &"Walking_B": ExtResource("13_jxcl3")
