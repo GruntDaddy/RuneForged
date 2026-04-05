@@ -142,10 +142,11 @@ func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 			base_mat = mi.mesh.surface_get_material(surf_idx)
 		if base_mat == null:
 			continue
+		if not (base_mat is BaseMaterial3D):
+			continue
 		var dup: Material = base_mat.duplicate()
-		if dup is BaseMaterial3D:
-			var bm := dup as BaseMaterial3D
-			# Multiply + slight lerp toward tint so colors read on busy texture sheets.
-			var mixed: Color = bm.albedo_color * tint
-			bm.albedo_color = mixed.lerp(tint, 0.22)
+		var bm := dup as BaseMaterial3D
+		# Multiply + slight lerp toward tint so colors read on busy texture sheets.
+		var mixed: Color = bm.albedo_color * tint
+		bm.albedo_color = mixed.lerp(tint, 0.22)
 		mi.set_surface_override_material(surf_idx, dup)
