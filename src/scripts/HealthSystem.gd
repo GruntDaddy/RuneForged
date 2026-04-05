@@ -1,7 +1,8 @@
 extends Node
 
 @export var max_health: int = 100
-var current_health: int = max_health
+## Syncs to exported max_health (parse-time `= max_health` would ignore inspector overrides).
+@onready var current_health: int = max_health
 
 var _regen_accumulator: float = 0.0
 
