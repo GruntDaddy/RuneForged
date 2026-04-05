@@ -103,7 +103,7 @@ func _make_noise_albedo(c0: Color, c1: Color, noise_seed: int) -> ImageTexture:
 			# Alpha = height channel for Terrain3D albedo (mid grey = neutral blend).
 			c.a = 0.48 + noise.get_noise_2d(float(x) + 30.0, float(y) + 40.0) * 0.06
 			img.set_pixel(x, y, c)
-	return ImageTexture.create_from_image(img)
+	return _image_texture_with_mipmaps(img)
 
 
 func _make_flat_normal_roughness(_size: Vector2i) -> ImageTexture:
@@ -111,4 +111,13 @@ func _make_flat_normal_roughness(_size: Vector2i) -> ImageTexture:
 	# OpenGL-style normals, roughness in alpha.
 	var c := Color(0.5, 0.5, 1.0, 0.55)
 	img.fill(c)
-	return ImageTexture.create_from_image(img)
+	return _image_texture_with_mipmaps(img)
+
+
+func _image_texture_with_mipmaps(img: Image) -> ImageTexture:
+	var err := img.generate_mipmaps()
+	if err != OK:
+		push_warning("Tutorial isle: generate_mipmaps failed: ", error_string(err))
+	var tex := ImageTexture.new()
+	tex.set_image(img)
+	return tex

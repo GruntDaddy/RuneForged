@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const _GameState = preload("res://autoload/game_state.gd")
+
 @export var move_speed: float = 5.0
 @export var run_multiplier: float = 1.45
 @export var turn_speed: float = 10.0
@@ -52,12 +54,16 @@ func _physics_process(delta: float) -> void:
 
 
 func _apply_from_gamestate() -> void:
-	if GameState.player_name != "":
-		name = GameState.player_name
+	var gs := get_node_or_null("/root/GameState")
+	if gs == null or not (gs is _GameState):
+		return
+	var state := gs as _GameState
+	if state.player_name != "":
+		name = state.player_name
 	if base_character.has_method("apply_customization"):
 		base_character.apply_customization(
-			GameState.head_index,
-			GameState.shirt_index,
-			GameState.pants_index,
-			GameState.gender
+			state.head_index,
+			state.shirt_index,
+			state.pants_index,
+			state.gender
 		)
