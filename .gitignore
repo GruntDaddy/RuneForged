@@ -1,6 +1,10 @@
 # Godot 4+
 .godot/
 
+# Godot native extensions: temp copies while the editor holds a lock (e.g. ~libterrain*.dll)
+**/bin/~*.dll
+**/bin/~*.so
+
 # Android export
 /android/
 
