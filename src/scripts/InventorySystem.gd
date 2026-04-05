@@ -11,8 +11,8 @@ func add_item(item_name, quantity=1):
 func remove_item(item_name, quantity=1):
 	if item_name in items and items[item_name] > 0:
 		items[item_name] -= quantity
-		if items[item_name] == 0:
-			delete items[item_name]
+		if items[item_name] <= 0:
+			items.erase(item_name)
 
 func has_item(item_name) -> bool:
 	return item_name in items
