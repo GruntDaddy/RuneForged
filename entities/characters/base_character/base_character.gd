@@ -1,6 +1,7 @@
 extends Node3D
 
 @onready var skeleton: Skeleton3D = $Rig_Medium/Skeleton3D
+@onready var anim_player: AnimationPlayer = $AnimationPlayer
 
 @onready var hand_r_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_R
 @onready var hand_l_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_L
@@ -32,6 +33,12 @@ const PANTS_TINTS: Array[Color] = [
 	Color(0.48, 0.55, 0.5),
 ]
 
+## Animation library name in base_character.tscn is "Base".
+const _ANIM_LIB := "Base"
+const _ANIM_WALK := "Walking_B"
+const _ANIM_IDLE := "T-Pose"
+const _ANIM_AIR := "Jump_Idle"
+
 
 func _ready() -> void:
 	if skeleton == null:
@@ -49,6 +56,36 @@ func _ready() -> void:
 		push_warning("BaseCharacter: Legs_Slot not found.")
 	if back_slot == null:
 		push_warning("BaseCharacter: Back_Slot not found.")
+
+	if anim_player and anim_player.has_animation(_anim_path(_ANIM_IDLE)):
+		anim_player.play(_anim_path(_ANIM_IDLE))
+
+
+func _anim_path(clip: String) -> StringName:
+	return StringName("%s/%s" % [_ANIM_LIB, clip])
+
+
+func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
+	if anim_player == null:
+		return
+	if not on_floor:
+		_play_if_needed(_ANIM_AIR, 0.12)
+		return
+	if moving:
+		_play_if_needed(_ANIM_WALK, 0.12)
+		anim_player.speed_scale = 1.28 if running else 1.0
+	else:
+		_play_if_needed(_ANIM_IDLE, 0.12)
+		anim_player.speed_scale = 1.0
+
+
+func _play_if_needed(clip: String, blend: float) -> void:
+	var path := _anim_path(clip)
+	if not anim_player.has_animation(path):
+		return
+	if String(anim_player.current_animation) == String(path) and anim_player.is_playing():
+		return
+	anim_player.play(path, blend)
 
 
 func get_hand_slot(is_right: bool = true) -> BoneAttachment3D:
@@ -71,7 +108,7 @@ func get_back_slot() -> BoneAttachment3D:
 	return back_slot
 
 
-func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int, gender: String = "Male") -> void:
+func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int) -> void:
 	var n_heads: int = _head_paths.size()
 	if n_heads == 0:
 		return
@@ -83,8 +120,6 @@ func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int, gender: 
 
 	var shirt_col: Color = SHIRT_TINTS[posmod(shirt_idx, SHIRT_TINTS.size())]
 	var pants_col: Color = PANTS_TINTS[posmod(pants_idx, PANTS_TINTS.size())]
-	if gender == "Female":
-		shirt_col = shirt_col.lerp(Color(1.0, 0.94, 1.0), 0.15)
 
 	for p in [
 		"Rig_Medium/Base_Body",
@@ -97,17 +132,20 @@ func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int, gender: 
 
 
 ## Godot 4: MeshInstance3D has no modulate (CanvasItem-only). Tint via material albedo.
+## Prefer get_active_material (includes overrides from instanced mesh scenes). Stronger tint for textured albedo.
 func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 	if mi == null or mi.mesh == null:
 		return
 	for surf_idx in range(mi.mesh.get_surface_count()):
-		var base_mat: Material = mi.mesh.surface_get_material(surf_idx)
+		var base_mat: Material = mi.get_active_material(surf_idx)
 		if base_mat == null:
-			base_mat = mi.get_active_material(surf_idx)
+			base_mat = mi.mesh.surface_get_material(surf_idx)
 		if base_mat == null:
 			continue
 		var dup: Material = base_mat.duplicate()
 		if dup is BaseMaterial3D:
 			var bm := dup as BaseMaterial3D
-			bm.albedo_color = bm.albedo_color * tint
+			# Multiply + slight lerp toward tint so colors read on busy texture sheets.
+			var mixed: Color = bm.albedo_color * tint
+			bm.albedo_color = mixed.lerp(tint, 0.22)
 		mi.set_surface_override_material(surf_idx, dup)

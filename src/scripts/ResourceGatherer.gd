@@ -25,7 +25,13 @@ func _on_body_entered(body: Node3D) -> void:
 		)
 	elif not (inv is _InventoryService):
 		var scr: Variant = inv.get_script()
-		var detail: String = (scr as Resource).resource_path if scr else inv.get_class()
+		var detail: String
+		if scr is Resource:
+			detail = (scr as Resource).resource_path
+		elif scr != null:
+			detail = str(scr)
+		else:
+			detail = inv.get_class()
 		push_error(
 			"ResourceGatherer: /root/InventoryService is not inventory_service.gd (got %s). Lost pickup: %s (%s)"
 			% [detail, resource_type, get_path()]

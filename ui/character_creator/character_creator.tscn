@@ -180,46 +180,13 @@ offset_bottom = 107.0
 rotation = -3.1415927
 theme_override_styles/panel = SubResource("StyleBoxTexture_pgmvq")
 
-[node name="GenderRow" type="VBoxContainer" parent="CustomizePanel" unique_id=1321751066]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -106.5
-offset_top = 117.0
-offset_right = 106.5
-offset_bottom = 229.0
-grow_horizontal = 2
-
-[node name="GenderLabel" type="Label" parent="CustomizePanel/GenderRow" unique_id=694519166]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("5_i6ty8")
-theme_override_font_sizes/font_size = 25
-text = "Gender"
-horizontal_alignment = 1
-vertical_alignment = 1
-uppercase = true
-
-[node name="OptionButton" type="OptionButton" parent="CustomizePanel/GenderRow" unique_id=787248787]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("5_i6ty8")
-theme_override_font_sizes/font_size = 25
-alignment = 1
-selected = 0
-item_count = 2
-popup/item_0/text = "Male"
-popup/item_0/id = 0
-popup/item_1/text = "Female"
-popup/item_1/id = 1
-
 [node name="HeadsRow" type="VBoxContainer" parent="CustomizePanel" unique_id=655221699]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -133.0
-offset_top = 241.0
+offset_top = 130.0
 offset_right = 133.0
 offset_bottom = 452.0
 grow_horizontal = 2

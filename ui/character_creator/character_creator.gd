@@ -5,8 +5,6 @@ extends Control
 @onready var player: CharacterBody3D = preview_root.get_node("Player")
 
 # --- Left Customize panel ---
-@onready var gender_option: OptionButton = $CustomizePanel/GenderRow/OptionButton
-
 @onready var head_left_button: Button = $CustomizePanel/HeadsRow/HeadButtons/HeadLeftButton
 @onready var head_right_button: Button = $CustomizePanel/HeadsRow/HeadButtons/HeadRightButton
 
@@ -80,21 +78,9 @@ var birthsign_id: int = 0
 
 
 func _ready() -> void:
-	_setup_gender_option()
 	_load_from_gamestate()
 	_connect_signals()
 	_refresh_all()
-
-
-func _setup_gender_option() -> void:
-	gender_option.clear()
-	gender_option.add_item("Male")
-	gender_option.add_item("Female")
-
-	if GameState.gender == "Female":
-		gender_option.select(1)
-	else:
-		gender_option.select(0)
 
 
 func _load_from_gamestate() -> void:
@@ -114,8 +100,6 @@ func _load_from_gamestate() -> void:
 
 
 func _connect_signals() -> void:
-	gender_option.item_selected.connect(_on_gender_selected)
-
 	head_left_button.pressed.connect(_on_head_left)
 	head_right_button.pressed.connect(_on_head_right)
 
@@ -141,10 +125,6 @@ func _refresh_all() -> void:
 
 
 # --- UI callbacks ---
-
-func _on_gender_selected(_index: int) -> void:
-	_apply_visuals()
-
 
 func _on_head_left() -> void:
 	head_index = max(0, head_index - 1)
@@ -193,16 +173,15 @@ func _on_birthsign_cycle() -> void:
 
 
 func _on_rotate_left() -> void:
-	preview_root.rotate_y(deg_to_rad(-30))
+	player.rotate_y(deg_to_rad(-30))
 
 
 func _on_rotate_right() -> void:
-	preview_root.rotate_y(deg_to_rad(30))
+	player.rotate_y(deg_to_rad(30))
 
 
 func _on_confirm_pressed() -> void:
 	GameState.player_name = name_input.text.strip_edges()
-	GameState.gender = gender_option.get_item_text(gender_option.selected)
 
 	GameState.head_index = head_index
 	GameState.shirt_index = shirt_index
@@ -231,5 +210,4 @@ func _apply_visuals() -> void:
 	var bc: Node = player.get_node_or_null("BaseCharacter")
 	if bc == null or not bc.has_method("apply_customization"):
 		return
-	var gender := gender_option.get_item_text(gender_option.selected)
-	bc.apply_customization(head_index, shirt_index, pants_index, gender)
+	bc.apply_customization(head_index, shirt_index, pants_index)

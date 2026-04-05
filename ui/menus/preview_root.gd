@@ -1,6 +1,6 @@
 extends Node3D
 
-@export var rotation_speed: float = 15.0
+@export var rotation_speed: float = 0.0
 @export var float_height: float = 0.08
 @export var float_speed: float = 2.0
 
@@ -56,7 +56,8 @@ func _setup_preview_lighting() -> void:
 
 
 func _process(delta: float) -> void:
-	rotate_y(deg_to_rad(rotation_speed * delta))
+	if not is_zero_approx(rotation_speed):
+		rotate_y(deg_to_rad(rotation_speed * delta))
 
 	var t := Time.get_ticks_msec() * 0.001
 	position.y = _base_y + sin(t * float_speed) * float_height
