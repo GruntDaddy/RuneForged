@@ -123,9 +123,9 @@ func _sync_detail_option_buttons() -> void:
 
 
 func _select_without_signal(ob: OptionButton, index: int) -> void:
-	ob.block_signals(true)
+	ob.set_block_signals(true)
 	ob.select(clampi(index, 0, max(0, ob.item_count - 1)))
-	ob.block_signals(false)
+	ob.set_block_signals(false)
 
 
 func _connect_signals() -> void:
