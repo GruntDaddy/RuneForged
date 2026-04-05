@@ -91,10 +91,23 @@ func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int, gender: 
 		"Rig_Medium/Base_ArmLeft",
 		"Rig_Medium/Base_ArmRight",
 	]:
-		var node := get_node_or_null(p) as GeometryInstance3D
-		if node:
-			node.modulate = shirt_col
+		_tint_mesh_surfaces(get_node_or_null(p) as MeshInstance3D, shirt_col)
 	for p in ["Rig_Medium/Base_LegLeft", "Rig_Medium/Base_LegRight"]:
-		var node := get_node_or_null(p) as GeometryInstance3D
-		if node:
-			node.modulate = pants_col
+		_tint_mesh_surfaces(get_node_or_null(p) as MeshInstance3D, pants_col)
+
+
+## Godot 4: MeshInstance3D has no modulate (CanvasItem-only). Tint via material albedo.
+func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
+	if mi == null or mi.mesh == null:
+		return
+	for surf_idx in range(mi.mesh.get_surface_count()):
+		var base_mat: Material = mi.mesh.surface_get_material(surf_idx)
+		if base_mat == null:
+			base_mat = mi.get_active_material(surf_idx)
+		if base_mat == null:
+			continue
+		var dup: Material = base_mat.duplicate()
+		if dup is BaseMaterial3D:
+			var bm := dup as BaseMaterial3D
+			bm.albedo_color = bm.albedo_color * tint
+		mi.set_surface_override_material(surf_idx, dup)
