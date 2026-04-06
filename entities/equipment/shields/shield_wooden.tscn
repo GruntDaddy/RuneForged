@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://blyjwmrfcrwst"]
 
-[ext_resource type="Texture2D" uid="uid://brj414wfk4pv6" path="res://assets/items/weapons_bits_texture.png" id="1_hduwi"]
+[ext_resource type="Texture2D" uid="uid://brj414wfk4pv6" path="res://assets/kaykit/items/weapons_bits_texture.png" id="1_hduwi"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_06nvx"]
 resource_name = "weapons"

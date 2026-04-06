@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://cjx4oerhy5u7e"]
 
 [ext_resource type="Material" uid="uid://cg5p7xbkumh0l" path="res://shared/materials/Iron.tres" id="1_5kr5s"]
-[ext_resource type="Texture2D" uid="uid://crrsndgbaafck" path="res://assets/items/knight_texture.png" id="1_sanqq"]
+[ext_resource type="Texture2D" uid="uid://crrsndgbaafck" path="res://assets/kaykit/items/knight_texture.png" id="1_sanqq"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_avado"]
 resource_name = "knight"

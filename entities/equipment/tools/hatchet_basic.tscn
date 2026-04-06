@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://bxwqnpy2nj26j"]
 
-[ext_resource type="Texture2D" uid="uid://bl7e3ql2g5ysu" path="res://assets/items/caveman_texture.png" id="1_euup1"]
+[ext_resource type="Texture2D" uid="uid://bl7e3ql2g5ysu" path="res://assets/kaykit/items/caveman_texture.png" id="1_euup1"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dg1u4"]
 resource_name = "caveman"

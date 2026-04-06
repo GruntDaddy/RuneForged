@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://didfsnir87k1n"]
 
 [ext_resource type="Material" uid="uid://d3a6q2uifsq0v" path="res://shared/materials/Bronze.tres" id="1_sry7t"]
-[ext_resource type="Texture2D" uid="uid://brj414wfk4pv6" path="res://assets/items/weapons_bits_texture.png" id="1_vmbl8"]
+[ext_resource type="Texture2D" uid="uid://brj414wfk4pv6" path="res://assets/kaykit/items/weapons_bits_texture.png" id="1_vmbl8"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_unjkc"]
 resource_name = "weapons"

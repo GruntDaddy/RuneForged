@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://cdd8uih0uirnd"]
 
-[ext_resource type="Texture2D" uid="uid://crrsndgbaafck" path="res://assets/items/knight_texture.png" id="1_kgw48"]
+[ext_resource type="Texture2D" uid="uid://crrsndgbaafck" path="res://assets/kaykit/items/knight_texture.png" id="1_kgw48"]
 [ext_resource type="Material" uid="uid://d3a6q2uifsq0v" path="res://shared/materials/Bronze.tres" id="1_tp2em"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_avado"]

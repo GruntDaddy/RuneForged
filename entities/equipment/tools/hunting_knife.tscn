@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://22n8qq7jyxqe"]
 
-[ext_resource type="Texture2D" uid="uid://bydb2wmwb0svj" path="res://assets/items/tools_bits_texture.png" id="1_hkyhg"]
+[ext_resource type="Texture2D" uid="uid://bydb2wmwb0svj" path="res://assets/kaykit/items/tools_bits_texture.png" id="1_hkyhg"]
 [ext_resource type="Material" uid="uid://bt8fdch136wft" path="res://shared/materials/paladin_metallic.tres" id="1_hx7vx"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2c5ok"]
