@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bwv47f41ihbs"
+path="res://.godot/imported/wall_broken.obj-76a915e064f227d1a53816de1bc3dc26.mesh"
+
+[deps]
+
+files=["res://.godot/imported/wall_broken.obj-76a915e064f227d1a53816de1bc3dc26.mesh"]
+
+source_file="res://assets/kaykit/Dungeon Pack/Models/obj/wall_broken.obj"
+dest_files=["res://.godot/imported/wall_broken.obj-76a915e064f227d1a53816de1bc3dc26.mesh", "res://.godot/imported/wall_broken.obj-76a915e064f227d1a53816de1bc3dc26.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

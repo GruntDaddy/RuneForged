@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cq7htu6lb3cnx"
+path="res://.godot/imported/barrelDark.obj-e9c2f8186aff23f81d8ffe1cc15a7cdc.mesh"
+
+[deps]
+
+files=["res://.godot/imported/barrelDark.obj-e9c2f8186aff23f81d8ffe1cc15a7cdc.mesh"]
+
+source_file="res://assets/kaykit/Dungeon Pack/Models/obj/barrelDark.obj"
+dest_files=["res://.godot/imported/barrelDark.obj-e9c2f8186aff23f81d8ffe1cc15a7cdc.mesh", "res://.godot/imported/barrelDark.obj-e9c2f8186aff23f81d8ffe1cc15a7cdc.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

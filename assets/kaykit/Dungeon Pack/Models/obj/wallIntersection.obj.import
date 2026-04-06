@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dbxx77p08b6r1"
+path="res://.godot/imported/wallIntersection.obj-a1dede8a7b20705cbca5f309d6ff3867.mesh"
+
+[deps]
+
+files=["res://.godot/imported/wallIntersection.obj-a1dede8a7b20705cbca5f309d6ff3867.mesh"]
+
+source_file="res://assets/kaykit/Dungeon Pack/Models/obj/wallIntersection.obj"
+dest_files=["res://.godot/imported/wallIntersection.obj-a1dede8a7b20705cbca5f309d6ff3867.mesh", "res://.godot/imported/wallIntersection.obj-a1dede8a7b20705cbca5f309d6ff3867.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://x2cf14btlhgk"
+path="res://.godot/imported/potC_decorated.obj-d9efd4a4cd661fb200df10eebade211e.mesh"
+
+[deps]
+
+files=["res://.godot/imported/potC_decorated.obj-d9efd4a4cd661fb200df10eebade211e.mesh"]
+
+source_file="res://assets/kaykit/Dungeon Pack/Models/obj/potC_decorated.obj"
+dest_files=["res://.godot/imported/potC_decorated.obj-d9efd4a4cd661fb200df10eebade211e.mesh", "res://.godot/imported/potC_decorated.obj-d9efd4a4cd661fb200df10eebade211e.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
