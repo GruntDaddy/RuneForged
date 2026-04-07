@@ -16,6 +16,7 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 @onready var spring_arm: SpringArm3D = $CameraRig/SpringArm3D
 @onready var camera_3d: Camera3D = $CameraRig/SpringArm3D/Camera3D
 @onready var interaction_ray: RayCast3D = $RayCast3D
+@onready var inventory_hud: CanvasLayer = $PlayerInventoryHud
 
 @export var interaction_range: float = 4.0
 
@@ -41,6 +42,10 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _input_enabled:
 		return
+	if event.is_action_pressed("inventory") and inventory_hud:
+		inventory_hud.toggle_inventory()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		camera_rig.rotate_y(-event.relative.x * mouse_sensitivity)
 		spring_arm.rotation.x = clamp(
@@ -63,9 +68,16 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= _gravity * delta
 
 	var input_vec := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var cam_basis := camera_rig.global_transform.basis
-	var dir := cam_basis * Vector3(input_vec.x, 0.0, input_vec.y)
-	dir.y = 0.0
+	var cam_basis := camera_3d.global_transform.basis
+	var forward := -cam_basis.z
+	forward.y = 0.0
+	var right := cam_basis.x
+	right.y = 0.0
+	if forward.length_squared() > 0.0001:
+		forward = forward.normalized()
+	if right.length_squared() > 0.0001:
+		right = right.normalized()
+	var dir := right * input_vec.x + forward * (-input_vec.y)
 
 	var running := Input.is_action_pressed("run")
 	var speed := move_speed * (run_multiplier if running else 1.0)
