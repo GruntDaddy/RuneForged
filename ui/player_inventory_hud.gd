@@ -11,6 +11,40 @@ var _slots: Array[Panel] = []
 var _was_mouse_captured: bool = false
 
 
+#region agent log
+func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
+	var payload := {
+		"sessionId": "c5ea88",
+		"runId": run_id,
+		"hypothesisId": hypothesis_id,
+		"location": location,
+		"message": message,
+		"data": data,
+		"timestamp": Time.get_unix_time_from_system() * 1000
+	}
+	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
+	var f := FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		path = ProjectSettings.globalize_path("res://debug-c5ea88.log")
+		f = FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line(JSON.stringify(payload))
+	f.close()
+	var req := HTTPRequest.new()
+	add_child(req)
+	req.request(
+		"http://127.0.0.1:7780/ingest/aa3393c7-0b4c-4042-9eeb-84c344b7ef69",
+		["Content-Type: application/json", "X-Debug-Session-Id: c5ea88"],
+		HTTPClient.METHOD_POST,
+		JSON.stringify(payload)
+	)
+#endregion
+
+
 func _style_main_panel() -> void:
 	var path := "res://assets/ui/UI Borders/PNG/Double/Panel/panel-000.png"
 	if not ResourceLoader.exists(path):
@@ -42,10 +76,28 @@ func _ready() -> void:
 	_style_main_panel()
 	_build_slots()
 	_refresh_grid()
+	#region agent log
+	_agent_log(
+		"initial",
+		"H1",
+		"player_inventory_hud.gd:_ready",
+		"Inventory HUD ready",
+		{"slotCount": _slots.size(), "panelVisible": visible}
+	)
+	#endregion
 
 
 func toggle_inventory() -> void:
 	visible = not visible
+	#region agent log
+	_agent_log(
+		"initial",
+		"H1",
+		"player_inventory_hud.gd:toggle_inventory",
+		"Inventory toggled",
+		{"visible": visible, "mouseModeBefore": Input.mouse_mode}
+	)
+	#endregion
 	if visible:
 		_was_mouse_captured = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -88,6 +140,15 @@ func _build_slots() -> void:
 
 func _refresh_grid() -> void:
 	var items: Dictionary = InventoryService.get_items_copy()
+	#region agent log
+	_agent_log(
+		"initial",
+		"H1",
+		"player_inventory_hud.gd:_refresh_grid",
+		"Refreshing inventory slots",
+		{"itemTypes": items.size(), "items": items}
+	)
+	#endregion
 	var keys: Array = items.keys()
 	keys.sort()
 	var idx := 0

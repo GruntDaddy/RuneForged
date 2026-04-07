@@ -20,6 +20,40 @@ var _shake_tween: Tween
 var _hit_particles: GPUParticles3D
 
 
+#region agent log
+func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
+	var payload := {
+		"sessionId": "c5ea88",
+		"runId": run_id,
+		"hypothesisId": hypothesis_id,
+		"location": location,
+		"message": message,
+		"data": data,
+		"timestamp": Time.get_unix_time_from_system() * 1000
+	}
+	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
+	var f := FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		path = ProjectSettings.globalize_path("res://debug-c5ea88.log")
+		f = FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line(JSON.stringify(payload))
+	f.close()
+	var req := HTTPRequest.new()
+	add_child(req)
+	req.request(
+		"http://127.0.0.1:7780/ingest/aa3393c7-0b4c-4042-9eeb-84c344b7ef69",
+		["Content-Type: application/json", "X-Debug-Session-Id: c5ea88"],
+		HTTPClient.METHOD_POST,
+		JSON.stringify(payload)
+	)
+#endregion
+
+
 func _ready() -> void:
 	add_to_group("harvestable")
 	collision_layer = 2
@@ -27,6 +61,21 @@ func _ready() -> void:
 	drop_count_min = maxi(1, drop_count_min)
 	drop_count_max = maxi(drop_count_min, drop_count_max)
 	_setup_hit_particles()
+	#region agent log
+	_agent_log(
+		"initial",
+		"H3",
+		"harvestable_resource.gd:_ready",
+		"Harvestable ready",
+		{
+			"name": name,
+			"hitsLeft": _hits_left,
+			"collisionLayer": collision_layer,
+			"dropMin": drop_count_min,
+			"dropMax": drop_count_max
+		}
+	)
+	#endregion
 
 
 func _setup_hit_particles() -> void:
@@ -67,6 +116,15 @@ func harvest_hit() -> void:
 	if _hits_left <= 0:
 		return
 	_hits_left -= 1
+	#region agent log
+	_agent_log(
+		"initial",
+		"H3",
+		"harvestable_resource.gd:harvest_hit",
+		"Harvest hit applied",
+		{"name": name, "hitsLeft": _hits_left}
+	)
+	#endregion
 	_play_hit_feedback()
 	if _hits_left <= 0:
 		_spawn_drops()

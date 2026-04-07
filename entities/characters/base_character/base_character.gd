@@ -65,6 +65,41 @@ const _ANIM_USE_ITEM := "Use_Item"
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–3). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
 var _player_chosen_tool: ToolKind = ToolKind.AXE
+var _last_locomotion_signature: String = ""
+
+
+#region agent log
+func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
+	var payload := {
+		"sessionId": "c5ea88",
+		"runId": run_id,
+		"hypothesisId": hypothesis_id,
+		"location": location,
+		"message": message,
+		"data": data,
+		"timestamp": Time.get_unix_time_from_system() * 1000
+	}
+	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
+	var f := FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		path = ProjectSettings.globalize_path("res://debug-c5ea88.log")
+		f = FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line(JSON.stringify(payload))
+	f.close()
+	var req := HTTPRequest.new()
+	add_child(req)
+	req.request(
+		"http://127.0.0.1:7780/ingest/aa3393c7-0b4c-4042-9eeb-84c344b7ef69",
+		["Content-Type: application/json", "X-Debug-Session-Id: c5ea88"],
+		HTTPClient.METHOD_POST,
+		JSON.stringify(payload)
+	)
+#endregion
 
 
 func _ready() -> void:
@@ -112,6 +147,24 @@ func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
 	else:
 		_play_if_needed(_ANIM_IDLE, 0.12)
 		anim_player.speed_scale = 1.0
+	var sig := "%s|%s|%s|%s|%s" % [str(moving), str(running), str(on_floor), String(anim_player.current_animation), str(anim_player.speed_scale)]
+	if sig != _last_locomotion_signature:
+		_last_locomotion_signature = sig
+		#region agent log
+		_agent_log(
+			"initial",
+			"H4",
+			"base_character.gd:set_locomotion_state",
+			"Locomotion animation state",
+			{
+				"moving": moving,
+				"running": running,
+				"onFloor": on_floor,
+				"currentAnimation": String(anim_player.current_animation),
+				"speedScale": anim_player.speed_scale
+			}
+		)
+		#endregion
 
 
 func _play_if_needed(clip: String, blend: float) -> void:
