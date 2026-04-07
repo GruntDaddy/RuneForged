@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://d4harvestrock01"]
+
+[ext_resource type="Script" path="res://world/props/harvestable_resource.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://d1vry0q64qmpk" path="res://assets/kaykit/Forest & Nature Pack/Color1/Rock_3_C_Color1.gltf" id="2_rock"]
+[ext_resource type="PackedScene" uid="uid://c8n3k2resourceps" path="res://world/props/resource_pickup_stone.tscn" id="3_drop"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
+radius = 0.92
+
+[node name="HarvestableRock" type="StaticBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_script")
+max_hits = 6
+drop_count_min = 1
+drop_count_max = 3
+drop_scene = ExtResource("3_drop")
+particle_color = Color(0.62, 0.62, 0.64, 1)
+particle_height = 0.55
+harvest_interaction = 1
+
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Rock_3_C_Color1" parent="Visual" instance=ExtResource("2_rock")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("SphereShape3D_rock")

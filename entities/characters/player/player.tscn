@@ -4,14 +4,14 @@
 [ext_resource type="PackedScene" uid="uid://c4e26ayvivfoj" path="res://entities/characters/base_character/base_character.tscn" id="1_jiqs4"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eoic6"]
-radius = 0.5576172
-height = 2.359253
+radius = 0.5683594
+height = 2.7848816
 
 [node name="Player" type="CharacterBody3D" unique_id=540399354]
 script = ExtResource("1_eoic6")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1440589262]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1796265, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.142868, 0)
 shape = SubResource("CapsuleShape3D_eoic6")
 
 [node name="BaseCharacter" parent="." unique_id=903195594 instance=ExtResource("1_jiqs4")]
@@ -20,10 +20,13 @@ shape = SubResource("CapsuleShape3D_eoic6")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraRig" unique_id=1575749804]
+transform = Transform3D(-0.9999913, 0, -0.0041713566, 0, 1, 0, 0.0041713566, 0, -0.9999913, 0, 0, -1.1602381)
 spring_length = 4.0
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig/SpringArm3D" unique_id=29609086]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3506992, 2.0297105)
+transform = Transform3D(0.99948597, -0.0039456766, 0.03181338, 0.0023339968, 0.9987193, 0.050539367, -0.031972077, -0.050439138, 0.9982152, -1.4551915e-09, 0.7020049, 2.7110267)
 current = true
 
 [node name="RayCast3D" type="RayCast3D" parent="." unique_id=1399969405]
+target_position = Vector3(0, 0, -4)
+collision_mask = 2

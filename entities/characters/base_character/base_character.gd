@@ -1,14 +1,33 @@
+class_name BaseCharacter
 extends Node3D
+
+## Locomotion + one-shot tool / survival clips share the same AnimationPlayer library **Base**.
+## Action state machine: locomotion updates are skipped while a tool/survival clip is playing.
+
+enum ToolKind {
+	NONE,
+	AXE,
+	PICKAXE,
+}
+
+enum ActionState {
+	LOCOMOTION,
+	TOOL_ACTION,
+}
 
 @onready var skeleton: Skeleton3D = $Rig_Medium/Skeleton3D
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 
 @onready var hand_r_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_R
 @onready var hand_l_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_L
-@onready var head_slot:    BoneAttachment3D = $Rig_Medium/Skeleton3D/Head_Slot
-@onready var chest_slot:   BoneAttachment3D = $Rig_Medium/Skeleton3D/Chest_Slot
-@onready var legs_slot:    BoneAttachment3D = $Rig_Medium/Skeleton3D/Legs_Slot
-@onready var back_slot:    BoneAttachment3D = $Rig_Medium/Skeleton3D/Back_Slot
+@onready var head_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Head_Slot
+@onready var chest_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Chest_Slot
+@onready var legs_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Legs_Slot
+@onready var back_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Back_Slot
+
+@onready var equipped_tool_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight
+@onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Caveman_Axe
+@onready var pickaxe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/pickaxe
 
 ## Order matches cycling in the character creator; one head visible at a time.
 var _head_paths: Array[String] = [
@@ -33,11 +52,19 @@ const PANTS_TINTS: Array[Color] = [
 	Color(0.48, 0.55, 0.5),
 ]
 
-## Animation library name in base_character.tscn is "Base".
 const _ANIM_LIB := "Base"
 const _ANIM_WALK := "Walking_B"
 const _ANIM_IDLE := "Idle_A"
 const _ANIM_AIR := "Jump_Idle"
+const _ANIM_CHOP := "Chop"
+const _ANIM_PICKAXE := "Pickaxe"
+const _ANIM_INTERACT := "Interact"
+const _ANIM_PICKUP := "PickUp"
+const _ANIM_USE_ITEM := "Use_Item"
+
+var _action_state: ActionState = ActionState.LOCOMOTION
+## Player-selected tool (keys 1–3). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
+var _player_chosen_tool: ToolKind = ToolKind.AXE
 
 
 func _ready() -> void:
@@ -57,8 +84,14 @@ func _ready() -> void:
 	if back_slot == null:
 		push_warning("BaseCharacter: Back_Slot not found.")
 
+	if anim_player:
+		if not anim_player.animation_finished.is_connected(_on_animation_finished):
+			anim_player.animation_finished.connect(_on_animation_finished)
+
 	if anim_player and anim_player.has_animation(_anim_path(_ANIM_IDLE)):
 		anim_player.play(_anim_path(_ANIM_IDLE))
+
+	_apply_tool_kind(_player_chosen_tool)
 
 
 func _anim_path(clip: String) -> StringName:
@@ -67,6 +100,8 @@ func _anim_path(clip: String) -> StringName:
 
 func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
 	if anim_player == null:
+		return
+	if _action_state != ActionState.LOCOMOTION:
 		return
 	if not on_floor:
 		_play_if_needed(_ANIM_AIR, 0.12)
@@ -86,6 +121,70 @@ func _play_if_needed(clip: String, blend: float) -> void:
 	if String(anim_player.current_animation) == String(path) and anim_player.is_playing():
 		return
 	anim_player.play(path, blend)
+
+
+func _on_animation_finished(anim_name: StringName) -> void:
+	if _action_state != ActionState.TOOL_ACTION:
+		return
+	var s := String(anim_name)
+	if not s.begins_with(_ANIM_LIB + "/"):
+		return
+	_action_state = ActionState.LOCOMOTION
+	_apply_tool_kind(_player_chosen_tool)
+
+
+func _apply_tool_kind(kind: ToolKind) -> void:
+	if axe_mesh != null:
+		axe_mesh.visible = kind == ToolKind.AXE
+	if pickaxe_mesh != null:
+		pickaxe_mesh.visible = kind == ToolKind.PICKAXE
+	if equipped_tool_root != null:
+		equipped_tool_root.visible = kind != ToolKind.NONE
+
+
+## Player tool selection (keys 1–3): updates which KayKit mesh is shown when idle.
+func set_active_tool(kind: ToolKind) -> void:
+	_player_chosen_tool = kind
+	if _action_state == ActionState.LOCOMOTION:
+		_apply_tool_kind(kind)
+
+
+## Plays a one-shot survival/tool clip. Returns false if a tool action is already playing.
+func try_play_action_for_harvest(harvest_action: String) -> bool:
+	if anim_player == null:
+		return false
+	if _action_state == ActionState.TOOL_ACTION:
+		return false
+	var clip: String = _ANIM_CHOP
+	var swing_tool := ToolKind.AXE
+	match harvest_action:
+		"mine", "pickaxe", "rock":
+			clip = _ANIM_PICKAXE
+			swing_tool = ToolKind.PICKAXE
+		"chop", "tree", "axe", "wood":
+			clip = _ANIM_CHOP
+			swing_tool = ToolKind.AXE
+		"interact":
+			clip = _ANIM_INTERACT
+			swing_tool = _player_chosen_tool
+		"pickup":
+			clip = _ANIM_PICKUP
+			swing_tool = _player_chosen_tool
+		"use_item":
+			clip = _ANIM_USE_ITEM
+			swing_tool = _player_chosen_tool
+		_:
+			clip = _ANIM_CHOP
+			swing_tool = ToolKind.AXE
+	_apply_tool_kind(swing_tool)
+	var path := _anim_path(clip)
+	if not anim_player.has_animation(path):
+		_action_state = ActionState.LOCOMOTION
+		return false
+	_action_state = ActionState.TOOL_ACTION
+	anim_player.speed_scale = 1.0
+	anim_player.play(path, 0.12)
+	return true
 
 
 func get_hand_slot(is_right: bool = true) -> BoneAttachment3D:

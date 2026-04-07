@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://bqm8k2resourcepw"]
+
+[ext_resource type="Script" path="res://world/props/resource_pickup.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://bxfvgbn3huxcv" path="res://assets/kaykit/resources/Wood_Log_A.gltf" id="2_log"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
+radius = 0.38
+
+[node name="ResourcePickupWood" type="Area3D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_script")
+resource_type = "wood"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_pickup")
+
+[node name="Visual" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+
+[node name="Wood_Log_A" parent="Visual" instance=ExtResource("2_log")]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0)

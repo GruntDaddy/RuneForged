@@ -1,0 +1,102 @@
+[gd_scene format=3 uid="uid://cjqnatdecor01"]
+
+[ext_resource type="PackedScene" uid="uid://d4harvesttree01" path="res://world/props/harvestable_tree.tscn" id="1_htree"]
+[ext_resource type="PackedScene" uid="uid://d4harvestrock01" path="res://world/props/harvestable_rock.tscn" id="2_hrock"]
+[ext_resource type="PackedScene" uid="uid://bq662sn0v7yph" path="res://assets/kaykit/Forest & Nature Pack/Color1/Bush_1_A_Color1.gltf" id="3_bush_a"]
+[ext_resource type="PackedScene" uid="uid://lc0ex05x3rxp" path="res://assets/kaykit/Forest & Nature Pack/Color1/Bush_1_B_Color1.gltf" id="4_bush_b"]
+[ext_resource type="PackedScene" uid="uid://dwbwpgynrmmla" path="res://assets/kaykit/Forest & Nature Pack/Color1/Grass_2_A_Singlesided_Color1.gltf" id="5_grass_a"]
+[ext_resource type="PackedScene" uid="uid://bflxxsel0ru5y" path="res://assets/kaykit/Forest & Nature Pack/Color1/Tree_6_A_Color1.gltf" id="6_tree_dec"]
+[ext_resource type="PackedScene" uid="uid://dfwvml3a4musc" path="res://assets/kaykit/Forest & Nature Pack/Color1/Rock_2_B_Color1.gltf" id="7_rock_dec"]
+
+[node name="NatureDecor" type="Node3D"]
+
+[node name="HarvestableTree1" parent="." instance=ExtResource("1_htree")]
+transform = Transform3D(0.8253356, 0, 0.5646425, 0, 1, 0, -0.5646425, 0, 0.8253356, 196.2, 3.15, 133.8)
+
+[node name="HarvestableTree2" parent="." instance=ExtResource("1_htree")]
+transform = Transform3D(-0.3071528, 0, 0.9516633, 0, 1, 0, -0.9516633, 0, -0.3071528, 211.4, 3.08, 146.1)
+
+[node name="HarvestableTree3" parent="." instance=ExtResource("1_htree")]
+transform = Transform3D(0.995, 0, 0.0998334, 0, 1, 0, -0.0998334, 0, 0.995, 191.5, 2.98, 142.4)
+
+[node name="HarvestableTree4" parent="." instance=ExtResource("1_htree")]
+transform = Transform3D(0.3623578, 0, -0.9320391, 0, 1, 0, 0.9320391, 0, 0.3623578, 217.8, 3.18, 137.9)
+
+[node name="HarvestableRock1" parent="." instance=ExtResource("2_hrock")]
+transform = Transform3D(0.936, 0, 0.352, 0, 1, 0, -0.352, 0, 0.936, 199.1, 3.05, 136.7)
+
+[node name="HarvestableRock2" parent="." instance=ExtResource("2_hrock")]
+transform = Transform3D(0.7071068, 0, -0.7071068, 0, 1, 0, 0.7071068, 0, 0.7071068, 205.6, 3.1, 143.8)
+
+[node name="HarvestableRock3" parent="." instance=ExtResource("2_hrock")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 213.9, 2.95, 148.5)
+
+[node name="DecorTree1" type="Node3D" parent="."]
+transform = Transform3D(0.78, 0, 0.625, 0, 1, 0, -0.625, 0, 0.78, 188.0, 2.92, 136.0)
+
+[node name="Tree_6_A_Color1" parent="DecorTree1" instance=ExtResource("6_tree_dec")]
+
+[node name="DecorTree2" type="Node3D" parent="."]
+transform = Transform3D(-0.45, 0, 0.89, 0, 1, 0, -0.89, 0, -0.45, 221.0, 3.05, 144.0)
+
+[node name="Tree_6_A_Color1" parent="DecorTree2" instance=ExtResource("6_tree_dec")]
+
+[node name="DecorRock1" type="Node3D" parent="."]
+transform = Transform3D(0.9, 0, 0.2, 0, 1, 0, -0.2, 0, 0.9, 194.0, 2.88, 148.0)
+
+[node name="Rock_2_B_Color1" parent="DecorRock1" instance=ExtResource("7_rock_dec")]
+
+[node name="DecorRock2" type="Node3D" parent="."]
+transform = Transform3D(0.65, 0, -0.76, 0, 1, 0, 0.76, 0, 0.65, 208.0, 2.9, 130.0)
+
+[node name="Rock_2_B_Color1" parent="DecorRock2" instance=ExtResource("7_rock_dec")]
+
+[node name="Bush01" type="Node3D" parent="."]
+transform = Transform3D(0.91, 0, 0.42, 0, 1, 0, -0.42, 0, 0.91, 201.5, 2.95, 139.2)
+
+[node name="Bush_1_A_Color1" parent="Bush01" instance=ExtResource("3_bush_a")]
+
+[node name="Bush02" type="Node3D" parent="."]
+transform = Transform3D(0.5, 0, 0.866, 0, 1, 0, -0.866, 0, 0.5, 206.8, 2.96, 140.5)
+
+[node name="Bush_1_B_Color1" parent="Bush02" instance=ExtResource("4_bush_b")]
+
+[node name="Bush03" type="Node3D" parent="."]
+transform = Transform3D(-0.98, 0, 0.17, 0, 1, 0, -0.17, 0, -0.98, 198.2, 2.94, 145.0)
+
+[node name="Bush_1_A_Color1" parent="Bush03" instance=ExtResource("3_bush_a")]
+
+[node name="Bush04" type="Node3D" parent="."]
+transform = Transform3D(0.74, 0, -0.67, 0, 1, 0, 0.67, 0, 0.74, 214.5, 2.97, 134.0)
+
+[node name="Bush_1_B_Color1" parent="Bush04" instance=ExtResource("4_bush_b")]
+
+[node name="Grass01" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200.0, 2.92, 141.0)
+
+[node name="Grass_2_A_Singlesided_Color1" parent="Grass01" instance=ExtResource("5_grass_a")]
+
+[node name="Grass02" type="Node3D" parent="."]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 204.2, 2.91, 138.6)
+
+[node name="Grass_2_A_Singlesided_Color1" parent="Grass02" instance=ExtResource("5_grass_a")]
+
+[node name="Grass03" type="Node3D" parent="."]
+transform = Transform3D(0.5, 0, -0.866, 0, 1, 0, 0.866, 0, 0.5, 197.4, 2.9, 139.8)
+
+[node name="Grass_2_A_Singlesided_Color1" parent="Grass03" instance=ExtResource("5_grass_a")]
+
+[node name="Grass04" type="Node3D" parent="."]
+transform = Transform3D(-0.17, 0, 0.985, 0, 1, 0, -0.985, 0, -0.17, 209.6, 2.93, 141.7)
+
+[node name="Grass_2_A_Singlesided_Color1" parent="Grass04" instance=ExtResource("5_grass_a")]
+
+[node name="Grass05" type="Node3D" parent="."]
+transform = Transform3D(0.98, 0, -0.2, 0, 1, 0, 0.2, 0, 0.98, 202.8, 2.92, 147.3)
+
+[node name="Grass_2_A_Singlesided_Color1" parent="Grass05" instance=ExtResource("5_grass_a")]
+
+[node name="Grass06" type="Node3D" parent="."]
+transform = Transform3D(0.707, 0, 0.707, 0, 1, 0, -0.707, 0, 0.707, 215.1, 2.94, 140.2)
+
+[node name="Grass_2_A_Singlesided_Color1" parent="Grass06" instance=ExtResource("5_grass_a")]

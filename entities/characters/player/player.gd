@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 const _GameState = preload("res://autoload/game_state.gd")
+const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 
 @export var move_speed: float = 5.0
 @export var run_multiplier: float = 1.45
@@ -13,6 +14,10 @@ const _GameState = preload("res://autoload/game_state.gd")
 @onready var base_character: Node3D = $BaseCharacter
 @onready var camera_rig: Node3D = $CameraRig
 @onready var spring_arm: SpringArm3D = $CameraRig/SpringArm3D
+@onready var camera_3d: Camera3D = $CameraRig/SpringArm3D/Camera3D
+@onready var interaction_ray: RayCast3D = $RayCast3D
+
+@export var interaction_range: float = 4.0
 
 var _input_enabled: bool = true
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -27,6 +32,7 @@ func set_input_enabled(enabled: bool) -> void:
 
 
 func _ready() -> void:
+	add_to_group("player")
 	_apply_from_gamestate()
 	if _input_enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -77,6 +83,20 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	interaction_ray.global_transform = camera_3d.global_transform
+	interaction_ray.target_position = Vector3(0.0, 0.0, -interaction_range)
+	interaction_ray.force_raycast_update()
+
+	if Input.is_action_just_pressed("tool_axe"):
+		_set_player_tool(_BaseCharacter.ToolKind.AXE)
+	if Input.is_action_just_pressed("tool_pickaxe"):
+		_set_player_tool(_BaseCharacter.ToolKind.PICKAXE)
+	if Input.is_action_just_pressed("tool_hands"):
+		_set_player_tool(_BaseCharacter.ToolKind.NONE)
+
+	if Input.is_action_just_pressed("attack"):
+		_try_harvest_hit()
+
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var moving := horizontal_speed > 0.15
 	if base_character.has_method("set_locomotion_state"):
@@ -92,3 +112,23 @@ func _apply_from_gamestate() -> void:
 		name = state.player_name
 	if base_character.has_method("apply_customization"):
 		base_character.apply_customization(state.head_index, state.shirt_index, state.pants_index)
+
+
+func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
+	if base_character.has_method("set_active_tool"):
+		base_character.set_active_tool(kind)
+
+
+func _try_harvest_hit() -> void:
+	if not interaction_ray.is_colliding():
+		return
+	var collider: Object = interaction_ray.get_collider()
+	if collider == null:
+		return
+	var action := "chop"
+	if collider.has_method("get_harvest_action"):
+		action = collider.get_harvest_action()
+	if base_character.has_method("try_play_action_for_harvest"):
+		base_character.try_play_action_for_harvest(action)
+	if collider.has_method("harvest_hit"):
+		collider.harvest_hit()
