@@ -227,6 +227,31 @@ func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 		base_character.set_active_tool(kind)
 
 
+func _harvest_skill_met(collider: Object) -> bool:
+	if collider == null:
+		return false
+	var gs := get_node_or_null("/root/GameState")
+	if gs == null or not (gs is _GameState):
+		return true
+	var state := gs as _GameState
+	var action := "chop"
+	if collider.has_method("get_harvest_action"):
+		action = String(collider.get_harvest_action())
+	if action == "mine":
+		var req := 0
+		if collider.has_method("get_required_mining_level"):
+			req = int(collider.get_required_mining_level())
+		if req <= 0:
+			return true
+		return state.mining_level >= req
+	var req_wc := 0
+	if collider.has_method("get_required_woodcutting_level"):
+		req_wc = int(collider.get_required_woodcutting_level())
+	if req_wc <= 0:
+		return true
+	return state.woodcutting_level >= req_wc
+
+
 func _bump_harvest_timer_generation() -> int:
 	_harvest_timer_generation += 1
 	return _harvest_timer_generation
@@ -270,6 +295,8 @@ func _try_harvest_hit_with_cooldown() -> Array:
 	)
 	#endregion
 	if not collider.has_method("harvest_hit"):
+		return [false, harvest_click_cooldown_sec]
+	if not _harvest_skill_met(collider):
 		return [false, harvest_click_cooldown_sec]
 	var action := "chop"
 	if collider.has_method("get_harvest_action"):
@@ -347,6 +374,12 @@ func _update_interaction_prompt() -> void:
 		var act := String(collider.get_harvest_action())
 		if act == "mine":
 			txt = "LMB: Mine"
+	if collider.has_method("get_prompt_detail"):
+		var detail := String(collider.get_prompt_detail())
+		if detail != "":
+			txt += "\n" + detail
+	if not _harvest_skill_met(collider):
+		txt += "\n(Requirements not met)"
 	interaction_prompt.text = txt
 	interaction_prompt.visible = true
 	var collider_path := str((collider as Node).get_path()) if collider is Node else "not-node"

@@ -11,12 +11,14 @@ height = 5.8695855
 [node name="HarvestableTree" type="StaticBody3D" unique_id=106376001]
 collision_layer = 2
 script = ExtResource("1_script")
-max_hits = 6
 drop_count_min = 2
 drop_count_max = 4
 drop_scene = ExtResource("3_drop")
-particle_color = Color(0.52, 0.36, 0.2, 1)
+particle_color = Color(0.2970296, 0.14645082, 0, 1)
 particle_height = 1.85
+respawn_seconds = 30.0
+respawn_scene = null
+respawn_scene_path = "res://world/props/harvestable_tree.tscn"
 
 [node name="Visual" type="Node3D" parent="." unique_id=1881988876]
 

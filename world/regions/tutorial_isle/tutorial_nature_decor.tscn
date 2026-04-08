@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://d4harvesttree01" path="res://world/props/harvestable_tree.tscn" id="1_htree"]
 [ext_resource type="PackedScene" uid="uid://d4harvestrock01" path="res://world/props/harvestable_rock.tscn" id="2_hrock"]
+[ext_resource type="PackedScene" uid="uid://b7oaktreehv1" path="res://world/props/harvestable_tree_oak.tscn" id="8_oak"]
 [ext_resource type="PackedScene" uid="uid://bq662sn0v7yph" path="res://assets/kaykit/Forest & Nature Pack/Color1/Bush_1_A_Color1.gltf" id="3_bush_a"]
 [ext_resource type="PackedScene" uid="uid://lc0ex05x3rxp" path="res://assets/kaykit/Forest & Nature Pack/Color1/Bush_1_B_Color1.gltf" id="4_bush_b"]
 [ext_resource type="PackedScene" uid="uid://dwbwpgynrmmla" path="res://assets/kaykit/Forest & Nature Pack/Color1/Grass_2_A_Singlesided_Color1.gltf" id="5_grass_a"]
@@ -21,6 +22,9 @@ transform = Transform3D(0.995, 0, 0.0998334, 0, 1, 0, -0.0998334, 0, 0.995, 191.
 
 [node name="HarvestableTree4" parent="." instance=ExtResource("1_htree")]
 transform = Transform3D(0.3623578, 0, -0.9320391, 0, 1, 0, 0.9320391, 0, 0.3623578, 217.8, 3.18, 137.9)
+
+[node name="HarvestableTree_Oak" parent="." instance=ExtResource("8_oak")]
+transform = Transform3D(0.96, 0, 0.28, 0, 1, 0, -0.28, 0, 0.96, 203.4, 3.12, 139.8)
 
 [node name="HarvestableRock1" parent="." instance=ExtResource("2_hrock")]
 transform = Transform3D(0.936, 0, 0.352, 0, 1, 0, -0.352, 0, 0.936, 199.1, 3.05, 136.7)

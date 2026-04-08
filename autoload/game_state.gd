@@ -13,6 +13,9 @@ var trait_id_2: int = 1
 var birthsign_id: int = 0
 ## Region id used by main menu routing: "tutorial_isle", "character_creator", etc.
 var region: String = ""
+## Survival skills (harvest gates). Tune when XP/progression exists.
+var woodcutting_level: int = 10
+var mining_level: int = 10
 
 
 func reset() -> void:
@@ -26,6 +29,8 @@ func reset() -> void:
 	trait_id_2 = 1
 	birthsign_id = 0
 	region = ""
+	woodcutting_level = 10
+	mining_level = 10
 
 
 func to_dict() -> Dictionary:
@@ -40,6 +45,8 @@ func to_dict() -> Dictionary:
 		"trait_id_2": trait_id_2,
 		"birthsign_id": birthsign_id,
 		"region": region,
+		"woodcutting_level": woodcutting_level,
+		"mining_level": mining_level,
 	}
 
 
@@ -57,3 +64,5 @@ func from_dict(data: Variant) -> void:
 	trait_id_2 = int(d.get("trait_id_2", 1))
 	birthsign_id = int(d.get("birthsign_id", 0))
 	region = str(d.get("region", ""))
+	woodcutting_level = int(d.get("woodcutting_level", 10))
+	mining_level = int(d.get("mining_level", 10))
