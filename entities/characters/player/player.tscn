@@ -5,15 +5,15 @@
 [ext_resource type="PackedScene" uid="uid://cdeose8pqbboi" path="res://ui/player_inventory_hud.tscn" id="3_invhud"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eoic6"]
-radius = 0.44970703
-height = 2.2957447
+radius = 0.5332031
+height = 2.3033257
 
 [node name="Player" type="CharacterBody3D" unique_id=540399354]
 collision_mask = 3
 script = ExtResource("1_eoic6")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1440589262]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1571342, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1609247, 0)
 shape = SubResource("CapsuleShape3D_eoic6")
 
 [node name="BaseCharacter" parent="." unique_id=903195594 instance=ExtResource("1_jiqs4")]
@@ -31,5 +31,18 @@ current = true
 [node name="RayCast3D" type="RayCast3D" parent="." unique_id=1399969405]
 target_position = Vector3(0, 0, -4)
 collision_mask = 2
+
+[node name="InteractionPrompt" type="Label" parent="." unique_id=84111122]
+visible = false
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 320.0
+offset_bottom = 46.0
+theme_override_colors/font_color = Color(0.95, 0.9, 0.73, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.75)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 20
+text = "LMB: Chop"
 
 [node name="PlayerInventoryHud" parent="." unique_id=903195595 instance=ExtResource("3_invhud")]

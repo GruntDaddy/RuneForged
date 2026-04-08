@@ -54,6 +54,7 @@ const PANTS_TINTS: Array[Color] = [
 
 const _ANIM_LIB := "Base"
 const _ANIM_WALK := "Walking_B"
+const _ANIM_RUN := "Running_A"
 const _ANIM_IDLE := "Idle_A"
 const _ANIM_AIR := "Jump_Idle"
 const _ANIM_CHOP := "Chop"
@@ -65,7 +66,6 @@ const _ANIM_USE_ITEM := "Use_Item"
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–3). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
 var _player_chosen_tool: ToolKind = ToolKind.AXE
-var _last_locomotion_signature: String = ""
 
 
 #region agent log
@@ -82,23 +82,12 @@ func _agent_log(run_id: String, hypothesis_id: String, location: String, message
 	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
 	var f := FileAccess.open(path, FileAccess.READ_WRITE)
 	if f == null:
-		path = ProjectSettings.globalize_path("res://debug-c5ea88.log")
-		f = FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
 		f = FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		return
 	f.seek_end()
 	f.store_line(JSON.stringify(payload))
 	f.close()
-	var req := HTTPRequest.new()
-	add_child(req)
-	req.request(
-		"http://127.0.0.1:7780/ingest/aa3393c7-0b4c-4042-9eeb-84c344b7ef69",
-		["Content-Type: application/json", "X-Debug-Session-Id: c5ea88"],
-		HTTPClient.METHOD_POST,
-		JSON.stringify(payload)
-	)
 #endregion
 
 
@@ -142,29 +131,14 @@ func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
 		_play_if_needed(_ANIM_AIR, 0.12)
 		return
 	if moving:
-		_play_if_needed(_ANIM_WALK, 0.12)
-		anim_player.speed_scale = 1.28 if running else 1.0
+		if running and anim_player.has_animation(_anim_path(_ANIM_RUN)):
+			_play_if_needed(_ANIM_RUN, 0.12)
+		else:
+			_play_if_needed(_ANIM_WALK, 0.12)
+		anim_player.speed_scale = 1.0
 	else:
 		_play_if_needed(_ANIM_IDLE, 0.12)
 		anim_player.speed_scale = 1.0
-	var sig := "%s|%s|%s|%s|%s" % [str(moving), str(running), str(on_floor), String(anim_player.current_animation), str(anim_player.speed_scale)]
-	if sig != _last_locomotion_signature:
-		_last_locomotion_signature = sig
-		#region agent log
-		_agent_log(
-			"initial",
-			"H4",
-			"base_character.gd:set_locomotion_state",
-			"Locomotion animation state",
-			{
-				"moving": moving,
-				"running": running,
-				"onFloor": on_floor,
-				"currentAnimation": String(anim_player.current_animation),
-				"speedScale": anim_player.speed_scale
-			}
-		)
-		#endregion
 
 
 func _play_if_needed(clip: String, blend: float) -> void:
@@ -202,6 +176,20 @@ func set_active_tool(kind: ToolKind) -> void:
 		_apply_tool_kind(kind)
 
 
+func is_tool_action_active() -> bool:
+	return _action_state == ActionState.TOOL_ACTION
+
+
+## Stops the current tool clip (e.g. target destroyed mid-swing) and returns to idle + chosen tool mesh.
+func cancel_tool_action() -> void:
+	_action_state = ActionState.LOCOMOTION
+	if anim_player != null:
+		anim_player.stop()
+		if anim_player.has_animation(_anim_path(_ANIM_IDLE)):
+			anim_player.play(_anim_path(_ANIM_IDLE), 0.12)
+	_apply_tool_kind(_player_chosen_tool)
+
+
 ## Plays a one-shot survival/tool clip. Returns false if a tool action is already playing.
 func try_play_action_for_harvest(harvest_action: String) -> bool:
 	if anim_player == null:
@@ -229,6 +217,15 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 		_:
 			clip = _ANIM_CHOP
 			swing_tool = ToolKind.AXE
+	#region agent log
+	_agent_log(
+		"initial",
+		"H3",
+		"base_character.gd:try_play_action_for_harvest",
+		"Selected harvest animation clip",
+		{"harvestAction": harvest_action, "clip": clip}
+	)
+	#endregion
 	_apply_tool_kind(swing_tool)
 	var path := _anim_path(clip)
 	if not anim_player.has_animation(path):
@@ -237,6 +234,15 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 	_action_state = ActionState.TOOL_ACTION
 	anim_player.speed_scale = 1.0
 	anim_player.play(path, 0.12)
+	#region agent log
+	_agent_log(
+		"initial",
+		"H3",
+		"base_character.gd:try_play_action_for_harvest",
+		"Animation player current clip after play",
+		{"currentAnimation": String(anim_player.current_animation)}
+	)
+	#endregion
 	return true
 
 

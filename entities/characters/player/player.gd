@@ -3,13 +3,21 @@ extends CharacterBody3D
 const _GameState = preload("res://autoload/game_state.gd")
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 
-@export var move_speed: float = 5.0
-@export var run_multiplier: float = 1.45
+@export var move_speed: float = 3.15
+@export var run_multiplier: float = 2.6
 @export var turn_speed: float = 12.0
-@export var jump_velocity: float = 6.0
+@export var jump_velocity: float = 5.5
 @export var mouse_sensitivity: float = 0.003
 @export var min_pitch_rad: float = -1.2
 @export var max_pitch_rad: float = 0.65
+@export var gravity_multiplier: float = 1.35
+@export var interaction_range: float = 3.45
+@export var interaction_height: float = 1.35
+@export var harvest_click_cooldown_sec: float = 1.5
+@export var chop_animation_duration_sec: float = 4.0
+@export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.85, 2.2, 3.5])
+@export var mine_animation_duration_sec: float = 6.033
+@export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([1.0, 2.8, 4.7])
 
 @onready var base_character: Node3D = $BaseCharacter
 @onready var camera_rig: Node3D = $CameraRig
@@ -17,13 +25,16 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 @onready var camera_3d: Camera3D = $CameraRig/SpringArm3D/Camera3D
 @onready var interaction_ray: RayCast3D = $RayCast3D
 @onready var inventory_hud: CanvasLayer = $PlayerInventoryHud
-
-@export var interaction_range: float = 4.0
+@onready var interaction_prompt: Label = $InteractionPrompt
 
 var _input_enabled: bool = true
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
-var _was_on_floor_last_frame: bool = true
-var _air_time: float = 0.0
+var _last_prompt_collider_path: String = ""
+var _next_harvest_allowed_ms: int = 0
+var _pending_chop_hit: bool = false
+var _pending_chop_ref: WeakRef
+var _pending_mine_ref: WeakRef
+var _harvest_timer_generation: int = 0
 
 
 #region agent log
@@ -40,23 +51,12 @@ func _agent_log(run_id: String, hypothesis_id: String, location: String, message
 	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
 	var f := FileAccess.open(path, FileAccess.READ_WRITE)
 	if f == null:
-		path = ProjectSettings.globalize_path("res://debug-c5ea88.log")
-		f = FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
 		f = FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		return
 	f.seek_end()
 	f.store_line(JSON.stringify(payload))
 	f.close()
-	var req := HTTPRequest.new()
-	add_child(req)
-	req.request(
-		"http://127.0.0.1:7780/ingest/aa3393c7-0b4c-4042-9eeb-84c344b7ef69",
-		["Content-Type: application/json", "X-Debug-Session-Id: c5ea88"],
-		HTTPClient.METHOD_POST,
-		JSON.stringify(payload)
-	)
 #endregion
 
 
@@ -73,18 +73,18 @@ func _ready() -> void:
 	_apply_from_gamestate()
 	if _input_enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if interaction_prompt:
+		interaction_prompt.visible = false
 	#region agent log
 	_agent_log(
 		"initial",
 		"H1",
 		"player.gd:_ready",
-		"Player ready; HUD + movement config",
+		"Player ready for interaction tests",
 		{
-			"hasInventoryHud": inventory_hud != null,
-			"gravity": _gravity,
-			"jumpVelocity": jump_velocity,
-			"moveSpeed": move_speed,
-			"runMultiplier": run_multiplier
+			"interactionRange": interaction_range,
+			"interactionHeight": interaction_height,
+			"cameraY": camera_3d.global_position.y
 		}
 	)
 	#endregion
@@ -94,15 +94,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not _input_enabled:
 		return
 	if event.is_action_pressed("inventory") and inventory_hud:
-		#region agent log
-		_agent_log(
-			"initial",
-			"H1",
-			"player.gd:_unhandled_input",
-			"Inventory action received by player",
-			{"mouseMode": Input.mouse_mode}
-		)
-		#endregion
 		inventory_hud.toggle_inventory()
 		get_viewport().set_input_as_handled()
 		return
@@ -119,25 +110,19 @@ func _physics_process(delta: float) -> void:
 	if not _input_enabled:
 		return
 
+	var tool_busy: bool = base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active()
+
 	if is_on_floor():
-		if Input.is_action_just_pressed("jump"):
+		if not tool_busy and Input.is_action_just_pressed("jump"):
 			velocity.y = jump_velocity
-			#region agent log
-			_agent_log(
-				"initial",
-				"H5",
-				"player.gd:_physics_process",
-				"Jump pressed",
-				{"velocityY": velocity.y, "gravity": _gravity}
-			)
-			#endregion
 		else:
 			velocity.y = 0.0
 	else:
-		velocity.y -= _gravity * delta
-		_air_time += delta
+		velocity.y -= (_gravity * gravity_multiplier) * delta
 
 	var input_vec := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if tool_busy:
+		input_vec = Vector2.ZERO
 	var cam_basis := camera_3d.global_transform.basis
 	var forward := -cam_basis.z
 	forward.y = 0.0
@@ -164,47 +149,61 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, speed)
 
 	move_and_slide()
-	if not is_on_floor() and _was_on_floor_last_frame:
-		_air_time = 0.0
-	if is_on_floor() and not _was_on_floor_last_frame:
-		#region agent log
-		_agent_log(
-			"initial",
-			"H5",
-			"player.gd:_physics_process",
-			"Landed after jump/fall",
-			{"airTime": _air_time, "horizontalSpeed": Vector2(velocity.x, velocity.z).length()}
-		)
-		#endregion
-	_air_time = _air_time if not is_on_floor() else 0.0
-	_was_on_floor_last_frame = is_on_floor()
 
-	interaction_ray.global_transform = camera_3d.global_transform
-	interaction_ray.target_position = Vector3(0.0, 0.0, -interaction_range)
+	var interaction_origin := global_position + Vector3(0.0, interaction_height, 0.0)
+	# Full camera forward (keep Y) so looking down can target low rocks; flattening Y broke downward aim.
+	var cast_dir := (-camera_3d.global_transform.basis.z).normalized()
+	if cast_dir.length_squared() < 0.0001:
+		cast_dir = -base_character.global_transform.basis.z
+		cast_dir.y = 0.0
+		if cast_dir.length_squared() > 0.0001:
+			cast_dir = cast_dir.normalized()
+		else:
+			cast_dir = Vector3(0.0, 0.0, -1.0)
+	interaction_ray.global_position = interaction_origin
+	interaction_ray.target_position = cast_dir * interaction_range
 	interaction_ray.force_raycast_update()
+	_update_interaction_prompt()
 
-	if Input.is_action_just_pressed("tool_axe"):
-		_set_player_tool(_BaseCharacter.ToolKind.AXE)
-	if Input.is_action_just_pressed("tool_pickaxe"):
-		_set_player_tool(_BaseCharacter.ToolKind.PICKAXE)
-	if Input.is_action_just_pressed("tool_hands"):
-		_set_player_tool(_BaseCharacter.ToolKind.NONE)
+	if not tool_busy:
+		if Input.is_action_just_pressed("tool_axe"):
+			_set_player_tool(_BaseCharacter.ToolKind.AXE)
+		if Input.is_action_just_pressed("tool_pickaxe"):
+			_set_player_tool(_BaseCharacter.ToolKind.PICKAXE)
+		if Input.is_action_just_pressed("tool_hands"):
+			_set_player_tool(_BaseCharacter.ToolKind.NONE)
 
 	if Input.is_action_just_pressed("attack"):
-		#region agent log
-		_agent_log(
-			"initial",
-			"H3",
-			"player.gd:_physics_process",
-			"Attack input pressed",
-			{
-				"rayColliding": interaction_ray.is_colliding(),
-				"rayOrigin": interaction_ray.global_position,
-				"rayTarget": interaction_ray.to_global(interaction_ray.target_position)
-			}
-		)
-		#endregion
-		_try_harvest_hit()
+		if _pending_chop_hit:
+			#region agent log
+			_agent_log(
+				"initial",
+				"H6",
+				"player.gd:_physics_process",
+				"Attack blocked while chop impact sequence active",
+				{"chopDelays": chop_impact_delays_sec}
+			)
+			#endregion
+			return
+		var now_ms: int = Time.get_ticks_msec()
+		if now_ms < _next_harvest_allowed_ms:
+			#region agent log
+			_agent_log(
+				"initial",
+				"H4",
+				"player.gd:_physics_process",
+				"Attack blocked by cooldown",
+				{
+					"nowMs": now_ms,
+					"nextAllowedMs": _next_harvest_allowed_ms,
+					"cooldownSec": harvest_click_cooldown_sec
+				}
+			)
+			#endregion
+		else:
+			var harvest_res: Array = _try_harvest_hit_with_cooldown()
+			if harvest_res[0]:
+				_next_harvest_allowed_ms = now_ms + int(harvest_res[1] * 1000.0)
 
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var moving := horizontal_speed > 0.15
@@ -228,31 +227,188 @@ func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 		base_character.set_active_tool(kind)
 
 
-func _try_harvest_hit() -> void:
+func _bump_harvest_timer_generation() -> int:
+	_harvest_timer_generation += 1
+	return _harvest_timer_generation
+
+
+func _abort_harvest_tool_animation() -> void:
+	_harvest_timer_generation += 1
+	_pending_chop_hit = false
+	if base_character.has_method("cancel_tool_action"):
+		base_character.cancel_tool_action()
+
+
+func _try_harvest_hit_with_cooldown() -> Array:
 	if not interaction_ray.is_colliding():
 		#region agent log
-		_agent_log("initial", "H3", "player.gd:_try_harvest_hit", "Ray did not hit harvest target")
+		_agent_log("initial", "H1", "player.gd:_try_harvest_hit", "Attack pressed but ray not colliding")
 		#endregion
-		return
+		return [false, harvest_click_cooldown_sec]
 	var collider: Object = interaction_ray.get_collider()
 	if collider == null:
 		#region agent log
-		_agent_log("initial", "H3", "player.gd:_try_harvest_hit", "Ray collider is null")
+		_agent_log("initial", "H1", "player.gd:_try_harvest_hit", "Ray collider null on attack")
 		#endregion
-		return
+		return [false, harvest_click_cooldown_sec]
 	#region agent log
+	var hit_pos := interaction_ray.get_collision_point()
+	var collider_path := str((collider as Node).get_path()) if collider is Node else "not-node"
 	_agent_log(
 		"initial",
-		"H3",
+		"H1",
 		"player.gd:_try_harvest_hit",
-		"Ray hit collider",
-		{"colliderClass": collider.get_class(), "colliderPath": str((collider as Node).get_path()) if collider is Node else "not-node"}
+		"Attack ray collision details",
+		{
+			"colliderPath": collider_path,
+			"hitY": hit_pos.y,
+			"rayOriginY": interaction_ray.global_position.y,
+			"cameraY": camera_3d.global_position.y,
+			"playerY": global_position.y,
+			"distanceToHit": global_position.distance_to(hit_pos)
+		}
 	)
 	#endregion
+	if not collider.has_method("harvest_hit"):
+		return [false, harvest_click_cooldown_sec]
 	var action := "chop"
 	if collider.has_method("get_harvest_action"):
 		action = collider.get_harvest_action()
 	if base_character.has_method("try_play_action_for_harvest"):
-		base_character.try_play_action_for_harvest(action)
-	if collider.has_method("harvest_hit"):
-		collider.harvest_hit()
+		if not base_character.try_play_action_for_harvest(action):
+			return [false, harvest_click_cooldown_sec]
+	if action == "chop":
+		_pending_chop_hit = true
+		_pending_chop_ref = weakref(collider)
+		if chop_impact_delays_sec.is_empty():
+			var c0: Object = _pending_chop_ref.get_ref() if _pending_chop_ref != null else null
+			var applied0 := false
+			if c0 != null and c0.has_method("harvest_hit"):
+				applied0 = c0.harvest_hit()
+			if not applied0:
+				_abort_harvest_tool_animation()
+				return [false, chop_animation_duration_sec]
+			_pending_chop_hit = false
+			return [true, chop_animation_duration_sec]
+		var chop_seq := _bump_harvest_timer_generation()
+		for i in range(chop_impact_delays_sec.size()):
+			var d: float = chop_impact_delays_sec[i]
+			var tw := get_tree().create_timer(d)
+			tw.timeout.connect(_on_chop_impact_timeout.bind(i + 1, chop_seq))
+		#region agent log
+		_agent_log(
+			"initial",
+			"H6",
+			"player.gd:_try_harvest_hit",
+			"Scheduled chop impacts",
+			{"delays": chop_impact_delays_sec, "cooldownSec": chop_animation_duration_sec}
+		)
+		#endregion
+		return [true, chop_animation_duration_sec]
+	if action == "mine":
+		_pending_mine_ref = weakref(collider)
+		var mine_seq := _bump_harvest_timer_generation()
+		for i in range(mine_impact_delays_sec.size()):
+			var d: float = mine_impact_delays_sec[i]
+			var tw := get_tree().create_timer(d)
+			tw.timeout.connect(_on_mine_impact_timeout.bind(i + 1, mine_seq))
+		#region agent log
+		_agent_log(
+			"initial",
+			"H9",
+			"player.gd:_try_harvest_hit",
+			"Scheduled mine impacts",
+			{"delays": mine_impact_delays_sec, "cooldownSec": mine_animation_duration_sec}
+		)
+		#endregion
+		return [true, mine_animation_duration_sec]
+	collider.harvest_hit()
+	return [true, harvest_click_cooldown_sec]
+
+
+func _harvest_hit_applied(c: Object) -> bool:
+	if c == null or not c.has_method("harvest_hit"):
+		return false
+	return c.harvest_hit()
+
+
+func _update_interaction_prompt() -> void:
+	if interaction_prompt == null:
+		return
+	if not interaction_ray.is_colliding():
+		interaction_prompt.visible = false
+		return
+	var collider: Object = interaction_ray.get_collider()
+	if collider == null or not collider.has_method("harvest_hit"):
+		interaction_prompt.visible = false
+		return
+	var txt := "LMB: Chop"
+	if collider.has_method("get_harvest_action"):
+		var act := String(collider.get_harvest_action())
+		if act == "mine":
+			txt = "LMB: Mine"
+	interaction_prompt.text = txt
+	interaction_prompt.visible = true
+	var collider_path := str((collider as Node).get_path()) if collider is Node else "not-node"
+	if collider_path != _last_prompt_collider_path:
+		_last_prompt_collider_path = collider_path
+		#region agent log
+		_agent_log(
+			"initial",
+			"H2",
+			"player.gd:_update_interaction_prompt",
+			"Prompt became visible for collider",
+			{
+				"colliderPath": collider_path,
+				"hitY": interaction_ray.get_collision_point().y,
+				"rayOriginY": interaction_ray.global_position.y,
+				"cameraY": camera_3d.global_position.y
+			}
+		)
+		#endregion
+
+
+func _on_chop_impact_timeout(impact_idx: int, seq: int) -> void:
+	if seq != _harvest_timer_generation:
+		return
+	var c: Object = _pending_chop_ref.get_ref() if _pending_chop_ref != null else null
+	if c == null:
+		_abort_harvest_tool_animation()
+		return
+	var applied := _harvest_hit_applied(c)
+	if not applied:
+		_abort_harvest_tool_animation()
+		return
+	#region agent log
+	_agent_log(
+		"initial",
+		"H6",
+		"player.gd:_on_chop_impact_timeout",
+		"Chop impact applied",
+		{"impactIndex": impact_idx}
+	)
+	#endregion
+	if impact_idx >= chop_impact_delays_sec.size():
+		_pending_chop_hit = false
+
+
+func _on_mine_impact_timeout(impact_idx: int, seq: int) -> void:
+	if seq != _harvest_timer_generation:
+		return
+	var c: Object = _pending_mine_ref.get_ref() if _pending_mine_ref != null else null
+	if c == null:
+		_abort_harvest_tool_animation()
+		return
+	var applied := _harvest_hit_applied(c)
+	if not applied:
+		_abort_harvest_tool_animation()
+		return
+	#region agent log
+	_agent_log(
+		"initial",
+		"H9",
+		"player.gd:_on_mine_impact_timeout",
+		"Mine impact applied",
+		{"impactIndex": impact_idx}
+	)
+	#endregion

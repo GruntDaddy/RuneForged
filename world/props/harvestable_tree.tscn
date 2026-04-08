@@ -5,24 +5,24 @@
 [ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/props/resource_pickup_wood.tscn" id="3_drop"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
-radius = 0.55566406
-height = 3.5168946
+radius = 0.50097656
+height = 5.8695855
 
 [node name="HarvestableTree" type="StaticBody3D" unique_id=106376001]
 collision_layer = 2
 script = ExtResource("1_script")
-max_hits = 4
+max_hits = 6
 drop_count_min = 2
 drop_count_max = 4
 drop_scene = ExtResource("3_drop")
 particle_color = Color(0.52, 0.36, 0.2, 1)
 particle_height = 1.85
-harvest_interaction = 0
 
 [node name="Visual" type="Node3D" parent="." unique_id=1881988876]
 
 [node name="Tree_5_A_Color1" parent="Visual" unique_id=1630537911 instance=ExtResource("2_tree")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=198457328]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6415528, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.662739, 0)
 shape = SubResource("CapsuleShape3D_trunk")

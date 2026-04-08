@@ -1,48 +1,18 @@
 extends CanvasLayer
 
-## Toggle with the `inventory` input action; shows items from InventoryService.
+const _InventoryService = preload("res://autoload/inventory_service.gd")
 
-const _SLOT_COUNT := 16
+const SLOT_COUNT := _InventoryService.SLOT_COUNT
+const SLOT_COLS := 4
+const SLOT_SIZE := Vector2(64, 64)
 
 @onready var _panel: PanelContainer = $Root/Margin/Panel
 @onready var _grid: GridContainer = $Root/Margin/Panel/VBox/Scroll/Grid
+@onready var _drag_preview: Panel = $Root/DragPreview
 
 var _slots: Array[Panel] = []
 var _was_mouse_captured: bool = false
-
-
-#region agent log
-func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
-	var payload := {
-		"sessionId": "c5ea88",
-		"runId": run_id,
-		"hypothesisId": hypothesis_id,
-		"location": location,
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_unix_time_from_system() * 1000
-	}
-	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		path = ProjectSettings.globalize_path("res://debug-c5ea88.log")
-		f = FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify(payload))
-	f.close()
-	var req := HTTPRequest.new()
-	add_child(req)
-	req.request(
-		"http://127.0.0.1:7780/ingest/aa3393c7-0b4c-4042-9eeb-84c344b7ef69",
-		["Content-Type: application/json", "X-Debug-Session-Id: c5ea88"],
-		HTTPClient.METHOD_POST,
-		JSON.stringify(payload)
-	)
-#endregion
+var _drag_from_idx: int = -1
 
 
 func _style_main_panel() -> void:
@@ -76,28 +46,11 @@ func _ready() -> void:
 	_style_main_panel()
 	_build_slots()
 	_refresh_grid()
-	#region agent log
-	_agent_log(
-		"initial",
-		"H1",
-		"player_inventory_hud.gd:_ready",
-		"Inventory HUD ready",
-		{"slotCount": _slots.size(), "panelVisible": visible}
-	)
-	#endregion
+	_drag_preview.visible = false
 
 
 func toggle_inventory() -> void:
 	visible = not visible
-	#region agent log
-	_agent_log(
-		"initial",
-		"H1",
-		"player_inventory_hud.gd:toggle_inventory",
-		"Inventory toggled",
-		{"visible": visible, "mouseModeBefore": Input.mouse_mode}
-	)
-	#endregion
 	if visible:
 		_was_mouse_captured = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -105,66 +58,138 @@ func toggle_inventory() -> void:
 	else:
 		if _was_mouse_captured:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		_cancel_drag()
 
 
 func _build_slots() -> void:
 	for c in _grid.get_children():
 		c.queue_free()
 	_slots.clear()
-	for i in _SLOT_COUNT:
+	_grid.columns = SLOT_COLS
+	for i in SLOT_COUNT:
 		var slot := Panel.new()
-		slot.custom_minimum_size = Vector2(56, 56)
-		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot.custom_minimum_size = SLOT_SIZE
+		slot.name = "Slot_%d" % i
+		slot.mouse_filter = Control.MOUSE_FILTER_PASS
 		var vb := VBoxContainer.new()
 		vb.set_anchors_preset(Control.PRESET_FULL_RECT)
 		vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot.add_child(vb)
+		var icon_l := Label.new()
+		icon_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		icon_l.add_theme_font_size_override("font_size", 24)
+		icon_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_l.name = "IconLabel"
 		var name_l := Label.new()
 		name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		name_l.clip_text = true
-		name_l.add_theme_font_size_override("font_size", 11)
+		name_l.add_theme_font_size_override("font_size", 10)
 		name_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		name_l.name = "NameLabel"
 		var count_l := Label.new()
 		count_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		count_l.add_theme_font_size_override("font_size", 14)
+		count_l.add_theme_font_size_override("font_size", 13)
 		count_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		count_l.name = "CountLabel"
+		vb.add_child(icon_l)
 		vb.add_child(name_l)
 		vb.add_child(count_l)
 		_grid.add_child(slot)
 		_slots.append(slot)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event is InputEventMouseMotion and _drag_from_idx >= 0:
+		_drag_preview.global_position = event.global_position + Vector2(16, 16)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			var idx := _slot_from_mouse(event.global_position)
+			if idx >= 0:
+				_try_begin_drag(idx)
+		else:
+			if _drag_from_idx >= 0:
+				var to_idx := _slot_from_mouse(event.global_position)
+				if to_idx >= 0:
+					InventoryService.move_or_merge(_drag_from_idx, to_idx)
+				else:
+					_drop_dragged_item_to_world(event.global_position)
+				_cancel_drag()
+
+
+func _slot_from_mouse(global_pos: Vector2) -> int:
+	for i in _slots.size():
+		var rect := _slots[i].get_global_rect()
+		if rect.has_point(global_pos):
+			return i
+	return -1
+
+
+func _try_begin_drag(idx: int) -> void:
+	var s: Variant = InventoryService.get_slot_data(idx)
+	if s == null:
+		return
+	_drag_from_idx = idx
+	var item_id: String = s["id"]
+	var count: int = int(s["count"])
+	var icon_l: Label = _drag_preview.find_child("IconLabel", true, false)
+	var name_l: Label = _drag_preview.find_child("NameLabel", true, false)
+	var count_l: Label = _drag_preview.find_child("CountLabel", true, false)
+	icon_l.text = _item_icon(item_id)
+	name_l.text = _pretty_item_name(item_id)
+	count_l.text = str(count)
+	_drag_preview.visible = true
+	var mp := get_viewport().get_mouse_position()
+	_drag_preview.global_position = mp + Vector2(16, 16)
+
+
+func _cancel_drag() -> void:
+	_drag_from_idx = -1
+	_drag_preview.visible = false
+
+
+func _drop_dragged_item_to_world(mouse_pos: Vector2) -> void:
+	var player := get_parent() as Node3D
+	if player == null:
+		return
+	var cam: Camera3D = player.get_node_or_null("CameraRig/SpringArm3D/Camera3D")
+	if cam == null:
+		return
+	var origin := cam.project_ray_origin(mouse_pos)
+	var normal := cam.project_ray_normal(mouse_pos)
+	var target := origin + normal * 6.0
+	var query := PhysicsRayQueryParameters3D.create(origin, target)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	var hit := cam.get_world_3d().direct_space_state.intersect_ray(query)
+	var drop_pos := player.global_position + player.global_basis.z * 0.8 + Vector3.UP * 0.25
+	if hit.size() > 0:
+		drop_pos = (hit["position"] as Vector3) + Vector3.UP * 0.3
+	InventoryService.drop_slot_to_world(_drag_from_idx, drop_pos, player.get_parent())
+
+
 func _refresh_grid() -> void:
-	var items: Dictionary = InventoryService.get_items_copy()
-	#region agent log
-	_agent_log(
-		"initial",
-		"H1",
-		"player_inventory_hud.gd:_refresh_grid",
-		"Refreshing inventory slots",
-		{"itemTypes": items.size(), "items": items}
-	)
-	#endregion
-	var keys: Array = items.keys()
-	keys.sort()
-	var idx := 0
-	for slot in _slots:
+	for i in _slots.size():
+		var slot := _slots[i]
+		var icon_l: Label = slot.find_child("IconLabel", true, false)
 		var name_l: Label = slot.find_child("NameLabel", true, false)
 		var count_l: Label = slot.find_child("CountLabel", true, false)
-		if idx < keys.size():
-			var k: String = keys[idx]
-			name_l.text = _pretty_item_name(k)
-			count_l.text = str(items[k])
+		var s: Variant = InventoryService.get_slot_data(i)
+		if s != null:
+			var item_id: String = s["id"]
+			icon_l.text = _item_icon(item_id)
+			name_l.text = _pretty_item_name(item_id)
+			count_l.text = str(int(s["count"]))
 			_apply_slot_style(slot, true)
 		else:
+			icon_l.text = ""
 			name_l.text = ""
 			count_l.text = ""
 			_apply_slot_style(slot, false)
-		idx += 1
 
 
 func _pretty_item_name(item_id: String) -> String:
@@ -172,6 +197,16 @@ func _pretty_item_name(item_id: String) -> String:
 	if s.is_empty():
 		return ""
 	return s.capitalize()
+
+
+func _item_icon(item_id: String) -> String:
+	match item_id:
+		"wood":
+			return "WD"
+		"stone":
+			return "ST"
+		_:
+			return "IT"
 
 
 func _apply_slot_style(slot: Panel, filled: bool) -> void:

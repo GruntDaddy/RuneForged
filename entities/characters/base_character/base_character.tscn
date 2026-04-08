@@ -13,9 +13,9 @@
 [ext_resource type="Animation" uid="uid://shplmx2jg2pf" path="res://assets/animations/rig_medium/movement/Jump_Idle.res" id="11_ey55c"]
 [ext_resource type="Animation" uid="uid://c1ppoxn7spxqu" path="res://assets/animations/rig_medium/movement/T-Pose.res" id="12_upkct"]
 [ext_resource type="Animation" uid="uid://cflhjeqn0pbxu" path="res://assets/animations/rig_medium/movement/Walking_B.res" id="13_jxcl3"]
+[ext_resource type="Animation" uid="uid://d3o4ksbp01vk4" path="res://assets/animations/rig_medium/movement/Running_A.res" id="13_run_a"]
 [ext_resource type="Animation" uid="uid://cxfyxr5v0c2sk" path="res://assets/animations/rig_medium/general/Idle_A.res" id="14_idle"]
-[ext_resource type="Animation" uid="uid://dygrxw05ywtf4" path="res://assets/animations/rig_medium/tools/Chopping.res" id="14_kypbg"]
-[ext_resource type="Animation" uid="uid://j2v8qt67ebbn" path="res://assets/animations/rig_medium/tools/Chop.res" id="15_chop"]
+[ext_resource type="Animation" uid="uid://j2v8qt67ebbn" path="res://assets/animations/rig_medium/tools/Chop.res" id="14_kypbg"]
 [ext_resource type="Animation" uid="uid://c6envpnfvhq85" path="res://assets/animations/rig_medium/tools/Pickaxe.res" id="16_pickaxe_anim"]
 [ext_resource type="Animation" uid="uid://cv4sp6esrkaa1" path="res://assets/animations/rig_medium/general/Interact.res" id="17_interact"]
 [ext_resource type="Animation" uid="uid://m5s1tiavkv7n" path="res://assets/animations/rig_medium/general/PickUp.res" id="18_pickup"]
@@ -34,13 +34,13 @@ albedo_texture = ExtResource("7_k8f6t")
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_b0b0v"]
 _data = {
-&"Chop": ExtResource("15_chop"),
-&"Chopping": ExtResource("14_kypbg"),
+&"Chop": ExtResource("14_kypbg"),
 &"Idle_A": ExtResource("14_idle"),
 &"Interact": ExtResource("17_interact"),
 &"Jump_Idle": ExtResource("11_ey55c"),
 &"PickUp": ExtResource("18_pickup"),
 &"Pickaxe": ExtResource("16_pickaxe_anim"),
+&"Running_A": ExtResource("13_run_a"),
 &"T-Pose": ExtResource("12_upkct"),
 &"Use_Item": ExtResource("19_useitem"),
 &"Walking_B": ExtResource("13_jxcl3")
