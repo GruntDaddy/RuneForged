@@ -1,0 +1,26 @@
+---
+description: RuneForged architecture boundaries
+alwaysApply: true
+globs:
+---
+
+# RuneForged Architecture Rules
+
+## Separation of concerns
+- Keep gameplay logic separate from UI presentation.
+- Keep data definitions separate from runtime system behavior.
+- Keep reusable formulas and rules in systems or services instead of duplicating them in scene scripts.
+
+## Preferred project boundaries
+- scripts/player: player control, combat hooks, interactions
+- scripts/items: item logic, inventory logic, equipment logic
+- scripts/ui: menus, tooltips, hotbar, HUD behavior
+- scripts/enemies: enemy AI and state control
+- scripts/world: interactables, drops, spawning, world reactions
+- resources or data: item, rune, enemy, loot, and config definitions
+- docs: source-of-truth design notes and technical contracts
+
+## Change discipline
+- Extend existing systems before creating parallel systems.
+- Do not introduce a manager, service, or singleton if an existing system already owns that responsibility.
+- If a design decision affects multiple systems, propose the dependency impact before editing.

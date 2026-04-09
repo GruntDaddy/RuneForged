@@ -1,0 +1,22 @@
+---
+description: RuneForged Git and review workflow
+alwaysApply: true
+globs:
+---
+
+# RuneForged Git Workflow Rules
+
+## Workflow
+- Assume work should happen in a feature branch, not directly on main.
+- Make reviewable diffs.
+- Prefer one coherent change per commit.
+
+## When making changes
+- Summarize which files were touched and why.
+- If a task is risky, suggest a commit checkpoint before the next step.
+- Do not propose broad cleanup commits unless explicitly asked.
+
+## Testing mindset
+- After code changes, suggest concrete manual test steps in Godot.
+- For gameplay changes, include likely edge cases.
+- For save, inventory, and UI changes, include regression checks.

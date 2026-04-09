@@ -1,0 +1,30 @@
+---
+description: Godot 4 GDScript conventions for RuneForged
+alwaysApply: false
+globs:
+  - "**/*.gd"
+---
+
+# RuneForged GDScript Rules
+
+## Language
+- Use Godot 4.x GDScript syntax only.
+- Prefer typed variables, typed arguments, and typed returns where practical.
+- Prefer explicit exported references over brittle deep node-path lookups.
+- Use signals and composition over tight cross-scene coupling.
+
+## Code style
+- Keep functions focused and reasonably small.
+- Prefer guard clauses and early returns for invalid states.
+- Avoid deeply nested conditionals when simpler flow is possible.
+- Avoid unnecessary abstraction; use the simplest structure that fits the current project.
+
+## Modification rules
+- Match the surrounding file's style before introducing new patterns.
+- Do not add comments or docstrings to unchanged code just for style.
+- Do not convert an entire file to a different style unless explicitly asked.
+
+## Godot-specific expectations
+- State any required child nodes, exported Node references, groups, input actions, or signals.
+- If a script depends on scene setup, list that setup after the code change.
+- Prefer data-driven configuration when the codebase already uses Resources or config data.

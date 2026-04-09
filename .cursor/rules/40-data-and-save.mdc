@@ -1,0 +1,22 @@
+---
+description: RuneForged data model and save safety rules
+alwaysApply: true
+globs:
+---
+
+# RuneForged Data and Save Rules
+
+## Data discipline
+- Keep item schema, rune schema, enemy schema, and save schema stable unless explicitly changing the contract.
+- Prefer additive schema changes over destructive ones.
+- Reuse existing field names where possible.
+
+## Save compatibility
+- Before changing persisted structures, check docs/save-format.md if it exists.
+- Preserve backward compatibility whenever practical.
+- If a migration is required, implement the smallest safe migration path.
+- Clearly call out new save keys, changed keys, removed keys, and default fallback behavior.
+
+## Inventory and equipment assumptions
+- Stackable materials and consumables may share logic.
+- Unique gear, relics, and special rolled items should not be silently forced into stack behavior unless explicitly specified.

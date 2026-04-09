@@ -1,0 +1,29 @@
+---
+description: RuneForged UI and UX scripting rules
+alwaysApply: false
+globs:
+  - "**/*ui*.gd"
+  - "**/ui/**/*.gd"
+  - "**/*tooltip*.gd"
+  - "**/*menu*.gd"
+  - "**/*hud*.gd"
+---
+
+# RuneForged UI Rules
+
+## UI boundaries
+- UI scripts should present and coordinate data, not own core gameplay rules.
+- Prefer formatter or helper utilities for tooltip text and display logic.
+- Keep inventory, equipment, tooltip, and hotbar UI logic decoupled from low-level item generation rules.
+
+## UX stability
+- Preserve existing controls, focus flow, and input behavior unless explicitly asked to change them.
+- Handle null or missing data safely in UI code.
+- Avoid crashing UI refresh paths because of missing item or state references.
+
+## Output requirements
+- After UI changes, list:
+  - required node names,
+  - required exported references,
+  - required signals,
+  - any theme or scene assumptions.

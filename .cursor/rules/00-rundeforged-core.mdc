@@ -1,0 +1,40 @@
+---
+description: RuneForged global project context and safety rules
+alwaysApply: true
+globs:
+---
+
+# RuneForged Core Rules
+
+## Project identity
+- This project is RuneForged, a Godot 4 action RPG.
+- Preserve the game's existing tone, structure, and system boundaries.
+- Treat the user as the lead designer and architect.
+- Act as an implementation assistant, not a product decider.
+
+## General behavior
+- Before editing, inspect nearby files and match established naming, patterns, and code style.
+- Prefer small, targeted diffs over broad rewrites.
+- Do not refactor unrelated code unless explicitly asked.
+- Do not rename, move, or delete files unless explicitly asked.
+- Do not create new autoload singletons unless explicitly asked.
+- If requirements are ambiguous, propose a short plan before coding.
+
+## Scope discipline
+- Default to changing 1-3 files maximum unless the task clearly requires more.
+- When a task is large, split it into phases and complete only the current phase.
+- Do not invent extra features beyond the requested task.
+
+## Response discipline
+- After changes, summarize:
+  1. what changed,
+  2. assumptions made,
+  3. required scene nodes/signals/exports,
+  4. save compatibility risks,
+  5. suggested next step.
+
+## Safety
+- Preserve public APIs unless explicitly asked to change them.
+- Preserve save compatibility whenever possible.
+- Call out breaking changes clearly before making them.
+- Prefer reversible changes.
