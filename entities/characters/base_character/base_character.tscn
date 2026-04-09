@@ -222,11 +222,11 @@ bone_idx = 12
 [node name="EquippedToolRight" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_R" unique_id=815459925]
 transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0.02, 0.08, -0.02)
 
-[node name="Caveman_Axe" parent="Rig_Medium/Skeleton3D/HandAttach_R" unique_id=1420997734 instance=ExtResource("20_axe_mesh")]
-transform = Transform3D(0.13398091, -0.95332336, 0.27060065, -0.9902691, -0.13917314, 0, 0.03766034, -0.2679671, -0.96269244, 0, 0.095, 0)
+[node name="Caveman_Axe" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=1420997734 instance=ExtResource("20_axe_mesh")]
+transform = Transform3D(0.3349523, -2.3833086, 0.6765017, -2.4756727, -0.34793285, 5.6621374e-15, 0.09415086, -0.6699179, -2.4067311, -0.049999982, 0.037499905, 0.049999952)
 
-[node name="pickaxe" parent="Rig_Medium/Skeleton3D/HandAttach_R" unique_id=696343192 instance=ExtResource("21_pickaxe_mesh")]
-transform = Transform3D(0.46660024, -0.8414235, 0.2725653, -0.81446266, -0.5289179, -0.23853362, 0.34487247, -0.11069428, -0.93210036, 0, 0.095, 0)
+[node name="pickaxe" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=696343192 instance=ExtResource("21_pickaxe_mesh")]
+transform = Transform3D(1.1665006, -2.103559, 0.6814133, -2.0361567, -1.3222948, -0.5963341, 0.8621812, -0.27673584, -2.3302507, -0.049999982, 0.037499905, 0.049999952)
 visible = false
 
 [node name="HandAttach_L" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" unique_id=1498365635]
