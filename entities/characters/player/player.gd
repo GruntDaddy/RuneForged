@@ -29,35 +29,11 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 
 var _input_enabled: bool = true
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
-var _last_prompt_collider_path: String = ""
 var _next_harvest_allowed_ms: int = 0
 var _pending_chop_hit: bool = false
 var _pending_chop_ref: WeakRef
 var _pending_mine_ref: WeakRef
 var _harvest_timer_generation: int = 0
-
-
-#region agent log
-func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
-	var payload := {
-		"sessionId": "c5ea88",
-		"runId": run_id,
-		"hypothesisId": hypothesis_id,
-		"location": location,
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_unix_time_from_system() * 1000
-	}
-	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify(payload))
-	f.close()
-#endregion
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -75,19 +51,6 @@ func _ready() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if interaction_prompt:
 		interaction_prompt.visible = false
-	#region agent log
-	_agent_log(
-		"initial",
-		"H1",
-		"player.gd:_ready",
-		"Player ready for interaction tests",
-		{
-			"interactionRange": interaction_range,
-			"interactionHeight": interaction_height,
-			"cameraY": camera_3d.global_position.y
-		}
-	)
-	#endregion
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -175,32 +138,9 @@ func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("attack"):
 		if _pending_chop_hit:
-			#region agent log
-			_agent_log(
-				"initial",
-				"H6",
-				"player.gd:_physics_process",
-				"Attack blocked while chop impact sequence active",
-				{"chopDelays": chop_impact_delays_sec}
-			)
-			#endregion
 			return
 		var now_ms: int = Time.get_ticks_msec()
-		if now_ms < _next_harvest_allowed_ms:
-			#region agent log
-			_agent_log(
-				"initial",
-				"H4",
-				"player.gd:_physics_process",
-				"Attack blocked by cooldown",
-				{
-					"nowMs": now_ms,
-					"nextAllowedMs": _next_harvest_allowed_ms,
-					"cooldownSec": harvest_click_cooldown_sec
-				}
-			)
-			#endregion
-		else:
+		if now_ms >= _next_harvest_allowed_ms:
 			var harvest_res: Array = _try_harvest_hit_with_cooldown()
 			if harvest_res[0]:
 				_next_harvest_allowed_ms = now_ms + int(harvest_res[1] * 1000.0)
@@ -266,34 +206,10 @@ func _abort_harvest_tool_animation() -> void:
 
 func _try_harvest_hit_with_cooldown() -> Array:
 	if not interaction_ray.is_colliding():
-		#region agent log
-		_agent_log("initial", "H1", "player.gd:_try_harvest_hit", "Attack pressed but ray not colliding")
-		#endregion
 		return [false, harvest_click_cooldown_sec]
 	var collider: Object = interaction_ray.get_collider()
 	if collider == null:
-		#region agent log
-		_agent_log("initial", "H1", "player.gd:_try_harvest_hit", "Ray collider null on attack")
-		#endregion
 		return [false, harvest_click_cooldown_sec]
-	#region agent log
-	var hit_pos := interaction_ray.get_collision_point()
-	var collider_path := str((collider as Node).get_path()) if collider is Node else "not-node"
-	_agent_log(
-		"initial",
-		"H1",
-		"player.gd:_try_harvest_hit",
-		"Attack ray collision details",
-		{
-			"colliderPath": collider_path,
-			"hitY": hit_pos.y,
-			"rayOriginY": interaction_ray.global_position.y,
-			"cameraY": camera_3d.global_position.y,
-			"playerY": global_position.y,
-			"distanceToHit": global_position.distance_to(hit_pos)
-		}
-	)
-	#endregion
 	if not collider.has_method("harvest_hit"):
 		return [false, harvest_click_cooldown_sec]
 	if not _harvest_skill_met(collider):
@@ -322,15 +238,6 @@ func _try_harvest_hit_with_cooldown() -> Array:
 			var d: float = chop_impact_delays_sec[i]
 			var tw := get_tree().create_timer(d)
 			tw.timeout.connect(_on_chop_impact_timeout.bind(i + 1, chop_seq))
-		#region agent log
-		_agent_log(
-			"initial",
-			"H6",
-			"player.gd:_try_harvest_hit",
-			"Scheduled chop impacts",
-			{"delays": chop_impact_delays_sec, "cooldownSec": chop_animation_duration_sec}
-		)
-		#endregion
 		return [true, chop_animation_duration_sec]
 	if action == "mine":
 		_pending_mine_ref = weakref(collider)
@@ -339,15 +246,6 @@ func _try_harvest_hit_with_cooldown() -> Array:
 			var d: float = mine_impact_delays_sec[i]
 			var tw := get_tree().create_timer(d)
 			tw.timeout.connect(_on_mine_impact_timeout.bind(i + 1, mine_seq))
-		#region agent log
-		_agent_log(
-			"initial",
-			"H9",
-			"player.gd:_try_harvest_hit",
-			"Scheduled mine impacts",
-			{"delays": mine_impact_delays_sec, "cooldownSec": mine_animation_duration_sec}
-		)
-		#endregion
 		return [true, mine_animation_duration_sec]
 	collider.harvest_hit()
 	return [true, harvest_click_cooldown_sec]
@@ -382,23 +280,6 @@ func _update_interaction_prompt() -> void:
 		txt += "\n(Requirements not met)"
 	interaction_prompt.text = txt
 	interaction_prompt.visible = true
-	var collider_path := str((collider as Node).get_path()) if collider is Node else "not-node"
-	if collider_path != _last_prompt_collider_path:
-		_last_prompt_collider_path = collider_path
-		#region agent log
-		_agent_log(
-			"initial",
-			"H2",
-			"player.gd:_update_interaction_prompt",
-			"Prompt became visible for collider",
-			{
-				"colliderPath": collider_path,
-				"hitY": interaction_ray.get_collision_point().y,
-				"rayOriginY": interaction_ray.global_position.y,
-				"cameraY": camera_3d.global_position.y
-			}
-		)
-		#endregion
 
 
 func _on_chop_impact_timeout(impact_idx: int, seq: int) -> void:
@@ -412,20 +293,11 @@ func _on_chop_impact_timeout(impact_idx: int, seq: int) -> void:
 	if not applied:
 		_abort_harvest_tool_animation()
 		return
-	#region agent log
-	_agent_log(
-		"initial",
-		"H6",
-		"player.gd:_on_chop_impact_timeout",
-		"Chop impact applied",
-		{"impactIndex": impact_idx}
-	)
-	#endregion
 	if impact_idx >= chop_impact_delays_sec.size():
 		_pending_chop_hit = false
 
 
-func _on_mine_impact_timeout(impact_idx: int, seq: int) -> void:
+func _on_mine_impact_timeout(_impact_idx: int, seq: int) -> void:
 	if seq != _harvest_timer_generation:
 		return
 	var c: Object = _pending_mine_ref.get_ref() if _pending_mine_ref != null else null
@@ -436,12 +308,3 @@ func _on_mine_impact_timeout(impact_idx: int, seq: int) -> void:
 	if not applied:
 		_abort_harvest_tool_animation()
 		return
-	#region agent log
-	_agent_log(
-		"initial",
-		"H9",
-		"player.gd:_on_mine_impact_timeout",
-		"Mine impact applied",
-		{"impactIndex": impact_idx}
-	)
-	#endregion

@@ -51,29 +51,6 @@ var _hit_particles: GPUParticles3D
 var _is_falling: bool = false
 
 
-#region agent log
-func _agent_log_respawn(message: String, data: Dictionary = {}) -> void:
-	var payload := {
-		"sessionId": "c5ea88",
-		"runId": "respawn",
-		"hypothesisId": "R1",
-		"location": "harvestable_resource.gd:_schedule_respawn",
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_unix_time_from_system() * 1000
-	}
-	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify(payload))
-	f.close()
-#endregion
-
-
 func _ready() -> void:
 	add_to_group("harvestable")
 	collision_layer = 2
@@ -191,18 +168,6 @@ func _schedule_respawn() -> void:
 		return
 	var xf: Transform3D = global_transform
 	var delay: float = respawn_seconds
-	#region agent log
-	_agent_log_respawn(
-		"respawn_timer_scheduled",
-		{
-			"delaySec": delay,
-			"scenePath": scene.resource_path if scene != null else "",
-			"respawnScenePathExport": respawn_scene_path,
-			"nodeSceneFilePath": scene_file_path,
-			"parentPath": str(parent_node.get_path()) if parent_node is Node else ""
-		}
-	)
-	#endregion
 	get_tree().create_timer(delay).timeout.connect(
 		func() -> void:
 			if not is_instance_valid(parent_node):
@@ -211,16 +176,6 @@ func _schedule_respawn() -> void:
 			parent_node.add_child(inst)
 			if inst is Node3D:
 				(inst as Node3D).global_transform = xf
-			#region agent log
-			_agent_log_respawn(
-				"respawn_instance_spawned",
-				{
-					"instClass": inst.get_class(),
-					"parentStillValid": is_instance_valid(parent_node),
-					"scenePath": scene.resource_path if scene != null else ""
-				}
-			)
-			#endregion
 	)
 
 

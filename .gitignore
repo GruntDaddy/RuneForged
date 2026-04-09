@@ -8,6 +8,9 @@
 # Android export
 /android/
 
+# Local debug logs (NDJSON / session logs)
+debug-*.log
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

@@ -18,31 +18,6 @@ var _velocity: Vector3 = Vector3.ZERO
 var _is_airborne: bool = false
 var _exclude_rid: RID
 var _terrain_3d_cache: Node
-var _logged_terrain_fallback: bool = false
-var _logged_physics_ground_hit: bool = false
-
-
-#region agent log
-func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
-	var payload := {
-		"sessionId": "c5ea88",
-		"runId": run_id,
-		"hypothesisId": hypothesis_id,
-		"location": location,
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_unix_time_from_system() * 1000
-	}
-	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify(payload))
-	f.close()
-#endregion
 
 
 func _ready() -> void:
@@ -70,20 +45,8 @@ func launch_from_harvest(source_pos: Vector3, source_exclude_rid: Variant = RID(
 	if source_exclude_rid is RID:
 		xr = source_exclude_rid as RID
 	_exclude_rid = xr if xr.is_valid() else RID()
-	_logged_terrain_fallback = false
-	_logged_physics_ground_hit = false
-	var probe_launch: float = _probe_ground_y()
 	_is_airborne = true
 	set_physics_process(true)
-	#region agent log
-	_agent_log(
-		"initial",
-		"H5",
-		"resource_pickup.gd:launch_from_harvest",
-		"Pickup launched from harvest",
-		{"resourceType": resource_type, "velocity": _velocity, "probeLaunchY": probe_launch}
-	)
-	#endregion
 
 
 func _physics_process(delta: float) -> void:
@@ -98,42 +61,9 @@ func _physics_process(delta: float) -> void:
 		if align_bottom_to_ground_on_settle and lowest_world < INF:
 			var dy: float = ground_target - lowest_world
 			global_position.y += dy
-			#region agent log
-			_agent_log(
-				"initial",
-				"H8",
-				"resource_pickup.gd:_physics_process",
-				"Bottom aligned to ground probe",
-				{
-					"resourceType": resource_type,
-					"groundTargetY": ground_target,
-					"lowestWorldBeforeAlign": lowest_world,
-					"deltaY": dy,
-					"rootYAfter": global_position.y
-				}
-			)
-			#endregion
 		_velocity = Vector3.ZERO
 		_is_airborne = false
 		set_physics_process(false)
-		var visual_y := 0.0
-		var visual := get_node_or_null("Visual") as Node3D
-		if visual != null:
-			visual_y = visual.position.y
-		#region agent log
-		_agent_log(
-			"initial",
-			"H5",
-			"resource_pickup.gd:_physics_process",
-			"Pickup settled on ground",
-			{
-				"resourceType": resource_type,
-				"finalY": global_position.y,
-				"visualOffsetY": visual_y,
-				"groundClearance": ground_clearance
-			}
-		)
-		#endregion
 
 
 func _find_terrain_3d() -> Node:
@@ -173,50 +103,10 @@ func _probe_ground_y() -> float:
 		query.exclude = [_exclude_rid]
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.size() > 0:
-		var collider_name := ""
-		if hit.has("collider") and hit["collider"] is Node:
-			collider_name = str((hit["collider"] as Node).get_path())
-		#region agent log
-		if not _logged_physics_ground_hit:
-			_logged_physics_ground_hit = true
-			_agent_log(
-				"initial",
-				"H5",
-				"resource_pickup.gd:_probe_ground_y",
-				"Ground probe hit for pickup",
-				{
-					"resourceType": resource_type,
-					"hitY": (hit["position"] as Vector3).y,
-					"collider": collider_name
-				}
-			)
-		#endregion
 		return (hit["position"] as Vector3).y + ground_clearance
 	var ty := _terrain_surface_y_at(global_position)
 	if not is_nan(ty):
-		#region agent log
-		if not _logged_terrain_fallback:
-			_logged_terrain_fallback = true
-			_agent_log(
-				"initial",
-				"H11",
-				"resource_pickup.gd:_probe_ground_y",
-				"Using Terrain3D height (physics ray missed)",
-				{"resourceType": resource_type, "terrainY": ty - ground_clearance, "resultY": ty}
-			)
-		#endregion
 		return ty
-	#region agent log
-	if not _logged_terrain_fallback:
-		_logged_terrain_fallback = true
-		_agent_log(
-			"initial",
-			"H11",
-			"resource_pickup.gd:_probe_ground_y",
-			"Ground probe miss; no Terrain3D fallback",
-			{"resourceType": resource_type, "fallbackY": global_position.y}
-		)
-	#endregion
 	return global_position.y
 
 
@@ -259,20 +149,6 @@ func _snap_visual_to_ground() -> void:
 		return
 	var shift := -min_y
 	visual.position.y += shift
-	#region agent log
-	_agent_log(
-		"initial",
-		"H7",
-		"resource_pickup.gd:_snap_visual_to_ground",
-		"Applied visual snap offset",
-		{
-			"resourceType": resource_type,
-			"minY": min_y,
-			"appliedShift": shift,
-			"newVisualY": visual.position.y
-		}
-	)
-	#endregion
 
 
 func _on_body_entered(body: Node3D) -> void:

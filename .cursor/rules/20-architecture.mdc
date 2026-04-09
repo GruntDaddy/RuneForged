@@ -11,14 +11,13 @@ globs:
 - Keep data definitions separate from runtime system behavior.
 - Keep reusable formulas and rules in systems or services instead of duplicating them in scene scripts.
 
-## Preferred project boundaries
-- scripts/player: player control, combat hooks, interactions
-- scripts/items: item logic, inventory logic, equipment logic
-- scripts/ui: menus, tooltips, hotbar, HUD behavior
-- scripts/enemies: enemy AI and state control
-- scripts/world: interactables, drops, spawning, world reactions
-- resources or data: item, rune, enemy, loot, and config definitions
-- docs: source-of-truth design notes and technical contracts
+## Preferred project boundaries (current layout)
+- `entities/characters/`: player, base character rig/tools, presets, equipment scenes.
+- `autoload/`: singletons — `GameState`, `SaveManager`, `SceneManager`, `InventoryService`.
+- `world/`: regions, terrain hooks, props (harvestables, pickups), level content.
+- `ui/`: menus, character creator, HUD (e.g. inventory overlay).
+- `assets/` / `shared/`: imported art, KayKit packs, shared materials and branding.
+- `addons/`: third-party editor/runtime plugins (Terrain3D, Virtual Joystick, etc.).
 
 ## Change discipline
 - Extend existing systems before creating parallel systems.

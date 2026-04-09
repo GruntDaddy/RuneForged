@@ -29,6 +29,7 @@ func _on_animation_finished(anim_name: StringName) -> void:
 
 func _on_new_pressed() -> void:
 	GameState.reset()
+	InventoryService.clear_all_slots()
 	_pending_scene = "res://ui/character_creator/character_creator.tscn"
 	anim_player.play("fade_out")
 
@@ -40,6 +41,7 @@ func _on_load_pressed() -> void:
 	else:
 		# No save yet – fall back to fresh character creation
 		GameState.reset()
+		InventoryService.clear_all_slots()
 		_pending_scene = "res://ui/character_creator/character_creator.tscn"
 
 	anim_player.play("fade_out")

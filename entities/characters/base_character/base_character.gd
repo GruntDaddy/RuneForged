@@ -68,29 +68,6 @@ var _action_state: ActionState = ActionState.LOCOMOTION
 var _player_chosen_tool: ToolKind = ToolKind.AXE
 
 
-#region agent log
-func _agent_log(run_id: String, hypothesis_id: String, location: String, message: String, data: Dictionary = {}) -> void:
-	var payload := {
-		"sessionId": "c5ea88",
-		"runId": run_id,
-		"hypothesisId": hypothesis_id,
-		"location": location,
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_unix_time_from_system() * 1000
-	}
-	var path := "c:/Users/price/Desktop/Game Creation/3D Projects/rune_forged/debug-c5ea88.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify(payload))
-	f.close()
-#endregion
-
-
 func _ready() -> void:
 	if skeleton == null:
 		push_warning("BaseCharacter: Skeleton3D not found at Rig_Medium/Skeleton3D.")
@@ -217,15 +194,6 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 		_:
 			clip = _ANIM_CHOP
 			swing_tool = ToolKind.AXE
-	#region agent log
-	_agent_log(
-		"initial",
-		"H3",
-		"base_character.gd:try_play_action_for_harvest",
-		"Selected harvest animation clip",
-		{"harvestAction": harvest_action, "clip": clip}
-	)
-	#endregion
 	_apply_tool_kind(swing_tool)
 	var path := _anim_path(clip)
 	if not anim_player.has_animation(path):
@@ -234,15 +202,6 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 	_action_state = ActionState.TOOL_ACTION
 	anim_player.speed_scale = 1.0
 	anim_player.play(path, 0.12)
-	#region agent log
-	_agent_log(
-		"initial",
-		"H3",
-		"base_character.gd:try_play_action_for_harvest",
-		"Animation player current clip after play",
-		{"currentAnimation": String(anim_player.current_animation)}
-	)
-	#endregion
 	return true
 
 

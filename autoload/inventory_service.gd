@@ -167,3 +167,44 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 		node.set_quantity(count)
 	elif "quantity" in node:
 		node.quantity = count
+
+
+func get_save_dict() -> Dictionary:
+	var arr: Array = []
+	for i in SLOT_COUNT:
+		var s: Variant = slots[i]
+		if s == null:
+			arr.append(null)
+		else:
+			arr.append({"id": str(s["id"]), "count": int(s["count"])})
+	return {"slots": arr}
+
+
+func apply_save_dict(d: Variant) -> void:
+	if typeof(d) != TYPE_DICTIONARY:
+		return
+	var arr: Variant = d.get("slots", [])
+	if typeof(arr) != TYPE_ARRAY:
+		clear_all_slots()
+		return
+	for i in SLOT_COUNT:
+		if i >= arr.size():
+			slots[i] = null
+			continue
+		var entry: Variant = arr[i]
+		if entry == null or typeof(entry) != TYPE_DICTIONARY:
+			slots[i] = null
+			continue
+		var id := str(entry.get("id", ""))
+		var c := int(entry.get("count", 0))
+		if id.is_empty() or c < 1:
+			slots[i] = null
+		else:
+			slots[i] = {"id": id, "count": mini(c, MAX_STACK)}
+	inventory_changed.emit()
+
+
+func clear_all_slots() -> void:
+	for i in SLOT_COUNT:
+		slots[i] = null
+	inventory_changed.emit()
