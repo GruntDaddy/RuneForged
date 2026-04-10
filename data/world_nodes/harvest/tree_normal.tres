@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/schemas/resource_node_data.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+profile_id = "tree_normal"
+skill_id = "woodcutting"
+required_level = 0
+primary_item_id = "logs"
+respawn_seconds = 30.0
+base_success_chance = 0.5
+interaction = 0
+max_yield = 6
