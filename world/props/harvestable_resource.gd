@@ -35,7 +35,7 @@ const HARVEST_INVENTORY_FULL := 3
 @export var drop_count_min: int = 1
 @export var drop_count_max: int = 2
 @export var drop_scene: PackedScene
-@export var particle_color: Color = Color(0.55, 0.38, 0.22)
+@export var particle_color: Color = Color(0.39, 0.257, 0.133, 1.0)
 @export var particle_height: float = 1.0
 @export var shake_amount: float = 0.18
 @export var tree_scale_multiplier: float = 1.2

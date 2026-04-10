@@ -26,8 +26,8 @@ enum ActionState {
 @onready var back_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Back_Slot
 
 @onready var equipped_tool_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight
-@onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Caveman_Axe
-@onready var pickaxe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/pickaxe
+@onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hatchet_Basic
+@onready var pickaxe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Pickaxe_Basic
 
 ## Order matches cycling in the character creator; one head visible at a time.
 var _head_paths: Array[String] = [

@@ -8,9 +8,8 @@ const SLOT_COUNT := 16
 const MAX_STACK := 99
 
 const PICKUP_SCENES := {
-	"logs": preload("res://world/props/resource_pickup_wood.tscn"),
-	"oak_logs": preload("res://world/props/resource_pickup_wood.tscn"),
-	"wood": preload("res://world/props/resource_pickup_wood.tscn"),
+	"logs": preload("res://world/props/resource_pickup_logs.tscn"),
+	"oak_logs": preload("res://world/props/resource_pickup_logs_oak.tscn"),
 	"stone": preload("res://world/props/resource_pickup_stone.tscn"),
 	"tin_ore": preload("res://world/props/resource_pickup_stone.tscn"),
 }

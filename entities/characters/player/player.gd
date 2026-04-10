@@ -176,10 +176,11 @@ func show_gameplay_message(msg: String) -> void:
 
 
 func _get_harvest_facing_direction() -> Vector3:
-	var fwd := -base_character.global_transform.basis.z
+	# Character mesh (KayKit rig) faces +local Z; -Z is “camera forward” in Godot, so use +basis.z for body aim.
+	var fwd := base_character.global_transform.basis.z
 	fwd.y = 0.0
 	if fwd.length_squared() < 0.0001:
-		fwd = Vector3(0.0, 0.0, -1.0)
+		fwd = Vector3(0.0, 0.0, 1.0)
 	else:
 		fwd = fwd.normalized()
 	var blend: float = clampf(harvest_ray_downward_blend, 0.0, 0.95)
@@ -208,7 +209,7 @@ func _harvest_target_still_valid(c: Object) -> bool:
 		return false
 	var to_t: Vector3 = t.global_position - global_position
 	to_t.y = 0.0
-	var fwd := -base_character.global_transform.basis.z
+	var fwd := base_character.global_transform.basis.z
 	fwd.y = 0.0
 	if fwd.length_squared() < 0.0001 or to_t.length_squared() < 0.0001:
 		return false
@@ -241,12 +242,17 @@ func _schedule_harvest_auto_followup(duration_sec: float, gen: int) -> void:
 
 
 func _on_harvest_auto_timer(gen: int) -> void:
+	# Must be async: next swing waits until BaseCharacter leaves TOOL_ACTION or try_play_action_for_harvest stays false.
+	_harvest_auto_continue_async(gen)
+
+
+func _harvest_auto_continue_async(gen: int) -> void:
 	if gen != _harvest_auto_gen:
 		return
 	if not _harvest_auto_active:
 		return
 	var c: Object = _harvest_auto_target.get_ref() if _harvest_auto_target != null else null
-	if c == null:
+	if c == null or not is_instance_valid(c):
 		_stop_harvest_auto()
 		return
 	if c.has_method("can_harvest") and not c.can_harvest():
@@ -254,6 +260,32 @@ func _on_harvest_auto_timer(gen: int) -> void:
 		return
 	var move_check := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if move_check.length_squared() > 0.0001:
+		_stop_harvest_auto()
+		return
+	if not _harvest_target_still_valid(c):
+		_stop_harvest_auto()
+		return
+	if not _harvest_skill_met(c):
+		_stop_harvest_auto()
+		return
+	# Timer uses exported clip length; animation may end slightly later. try_play_action_for_harvest rejects while TOOL_ACTION.
+	var safety := 0
+	while base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active():
+		if gen != _harvest_auto_gen or not _harvest_auto_active:
+			return
+		await get_tree().process_frame
+		safety += 1
+		if safety > 360:
+			push_warning("player: harvest auto waited too long for tool idle; stopping chain.")
+			_stop_harvest_auto()
+			return
+	if gen != _harvest_auto_gen or not _harvest_auto_active:
+		return
+	c = _harvest_auto_target.get_ref() if _harvest_auto_target != null else null
+	if c == null or not is_instance_valid(c):
+		_stop_harvest_auto()
+		return
+	if c.has_method("can_harvest") and not c.can_harvest():
 		_stop_harvest_auto()
 		return
 	if not _harvest_target_still_valid(c):
