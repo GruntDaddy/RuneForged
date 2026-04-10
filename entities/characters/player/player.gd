@@ -3,6 +3,11 @@ extends CharacterBody3D
 const _GameState = preload("res://autoload/game_state.gd")
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 
+const _H_INVALID := 0
+const _H_WHIFF := 1
+const _H_SUCCESS := 2
+const _H_INV_FULL := 3
+
 @export var move_speed: float = 3.15
 @export var run_multiplier: float = 2.6
 @export var turn_speed: float = 12.0
@@ -26,6 +31,7 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 @onready var interaction_ray: RayCast3D = $RayCast3D
 @onready var inventory_hud: CanvasLayer = $PlayerInventoryHud
 @onready var interaction_prompt: Label = $InteractionPrompt
+@onready var gameplay_toast: CanvasLayer = $GameplayToast
 
 var _input_enabled: bool = true
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -34,6 +40,10 @@ var _pending_chop_hit: bool = false
 var _pending_chop_ref: WeakRef
 var _pending_mine_ref: WeakRef
 var _harvest_timer_generation: int = 0
+
+var _harvest_auto_active: bool = false
+var _harvest_auto_target: WeakRef
+var _harvest_auto_gen: int = 0
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -83,7 +93,10 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= (_gravity * gravity_multiplier) * delta
 
-	var input_vec := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if _harvest_auto_active and raw_move.length_squared() > 0.0001:
+		_stop_harvest_auto()
+	var input_vec := raw_move
 	if tool_busy:
 		input_vec = Vector2.ZERO
 	var cam_basis := camera_3d.global_transform.basis
@@ -167,6 +180,83 @@ func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 		base_character.set_active_tool(kind)
 
 
+func show_gameplay_message(msg: String) -> void:
+	if gameplay_toast != null and gameplay_toast.has_method("show_message"):
+		gameplay_toast.show_message(msg)
+
+
+func _stop_harvest_auto() -> void:
+	if not _harvest_auto_active:
+		return
+	_harvest_auto_active = false
+	_harvest_auto_target = null
+	_harvest_auto_gen += 1
+
+
+func _harvest_schedule_auto_chain(collider: Object, duration_sec: float) -> void:
+	if collider == null or not collider.has_method("can_harvest"):
+		return
+	_harvest_auto_gen += 1
+	var gen: int = _harvest_auto_gen
+	_harvest_auto_active = true
+	_harvest_auto_target = weakref(collider)
+	_schedule_harvest_auto_followup(duration_sec, gen)
+
+
+func _schedule_harvest_auto_followup(duration_sec: float, gen: int) -> void:
+	var tw := get_tree().create_timer(maxf(0.05, duration_sec))
+	tw.timeout.connect(_on_harvest_auto_timer.bind(gen))
+
+
+func _on_harvest_auto_timer(gen: int) -> void:
+	if gen != _harvest_auto_gen:
+		return
+	if not _harvest_auto_active:
+		return
+	var c: Object = _harvest_auto_target.get_ref() if _harvest_auto_target != null else null
+	if c == null:
+		_stop_harvest_auto()
+		return
+	if c.has_method("can_harvest") and not c.can_harvest():
+		_stop_harvest_auto()
+		return
+	var move_check := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if move_check.length_squared() > 0.0001:
+		_stop_harvest_auto()
+		return
+	interaction_ray.force_raycast_update()
+	if not interaction_ray.is_colliding() or interaction_ray.get_collider() != c:
+		_stop_harvest_auto()
+		return
+	if not _harvest_skill_met(c):
+		_stop_harvest_auto()
+		return
+	if c is Node3D:
+		var dist: float = global_position.distance_to((c as Node3D).global_position)
+		if dist > interaction_range + 0.65:
+			_stop_harvest_auto()
+			return
+	var res: Array = _begin_harvest_on_collider(c)
+	if not bool(res[0]):
+		_stop_harvest_auto()
+		return
+	_schedule_harvest_auto_followup(float(res[1]), gen)
+
+
+func _begin_harvest_on_collider(collider: Object) -> Array:
+	if collider == null or not collider.has_method("harvest_hit"):
+		return [false, harvest_click_cooldown_sec]
+	if not _harvest_skill_met(collider):
+		return [false, harvest_click_cooldown_sec]
+	var action := "chop"
+	if collider.has_method("get_harvest_action"):
+		action = collider.get_harvest_action()
+	if base_character.has_method("try_play_action_for_harvest"):
+		if not base_character.try_play_action_for_harvest(action):
+			return [false, harvest_click_cooldown_sec]
+	return _start_harvest_swing_on_collider(collider, action)
+
+
 func _harvest_skill_met(collider: Object) -> bool:
 	if collider == null:
 		return false
@@ -200,6 +290,7 @@ func _bump_harvest_timer_generation() -> int:
 func _abort_harvest_tool_animation() -> void:
 	_harvest_timer_generation += 1
 	_pending_chop_hit = false
+	_stop_harvest_auto()
 	if base_character.has_method("cancel_tool_action"):
 		base_character.cancel_tool_action()
 
@@ -220,17 +311,24 @@ func _try_harvest_hit_with_cooldown() -> Array:
 	if base_character.has_method("try_play_action_for_harvest"):
 		if not base_character.try_play_action_for_harvest(action):
 			return [false, harvest_click_cooldown_sec]
+	var res: Array = _start_harvest_swing_on_collider(collider, action)
+	if bool(res[0]):
+		_harvest_schedule_auto_chain(collider, float(res[1]))
+	return res
+
+
+func _start_harvest_swing_on_collider(collider: Object, action: String) -> Array:
 	if action == "chop":
 		_pending_chop_hit = true
 		_pending_chop_ref = weakref(collider)
 		if chop_impact_delays_sec.is_empty():
 			var c0: Object = _pending_chop_ref.get_ref() if _pending_chop_ref != null else null
-			var applied0 := false
-			if c0 != null and c0.has_method("harvest_hit"):
-				applied0 = c0.harvest_hit()
-			if not applied0:
+			var outcome0 := _harvest_swing_outcome(c0)
+			if outcome0 == _H_INVALID:
 				_abort_harvest_tool_animation()
 				return [false, chop_animation_duration_sec]
+			if outcome0 == _H_INV_FULL:
+				_stop_harvest_auto()
 			_pending_chop_hit = false
 			return [true, chop_animation_duration_sec]
 		var chop_seq := _bump_harvest_timer_generation()
@@ -247,14 +345,17 @@ func _try_harvest_hit_with_cooldown() -> Array:
 			var tw := get_tree().create_timer(d)
 			tw.timeout.connect(_on_mine_impact_timeout.bind(i + 1, mine_seq))
 		return [true, mine_animation_duration_sec]
-	collider.harvest_hit()
-	return [true, harvest_click_cooldown_sec]
+	var outcome: int = _harvest_swing_outcome(collider)
+	return [outcome != _H_INVALID, harvest_click_cooldown_sec]
 
 
-func _harvest_hit_applied(c: Object) -> bool:
+func _harvest_swing_outcome(c: Object) -> int:
 	if c == null or not c.has_method("harvest_hit"):
-		return false
-	return c.harvest_hit()
+		return _H_INVALID
+	var v: Variant = c.harvest_hit()
+	if typeof(v) == TYPE_INT:
+		return int(v)
+	return _H_SUCCESS if v else _H_INVALID
 
 
 func _update_interaction_prompt() -> void:
@@ -289,10 +390,12 @@ func _on_chop_impact_timeout(impact_idx: int, seq: int) -> void:
 	if c == null:
 		_abort_harvest_tool_animation()
 		return
-	var applied := _harvest_hit_applied(c)
-	if not applied:
+	var outcome := _harvest_swing_outcome(c)
+	if outcome == _H_INVALID:
 		_abort_harvest_tool_animation()
 		return
+	if outcome == _H_INV_FULL:
+		_stop_harvest_auto()
 	if impact_idx >= chop_impact_delays_sec.size():
 		_pending_chop_hit = false
 
@@ -304,7 +407,9 @@ func _on_mine_impact_timeout(_impact_idx: int, seq: int) -> void:
 	if c == null:
 		_abort_harvest_tool_animation()
 		return
-	var applied := _harvest_hit_applied(c)
-	if not applied:
+	var outcome := _harvest_swing_outcome(c)
+	if outcome == _H_INVALID:
 		_abort_harvest_tool_animation()
 		return
+	if outcome == _H_INV_FULL:
+		_stop_harvest_auto()

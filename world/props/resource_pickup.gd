@@ -2,7 +2,7 @@ extends Area3D
 
 const _InventoryService = preload("res://autoload/inventory_service.gd")
 
-@export var resource_type: String = "wood"
+@export var resource_type: String = "logs"
 @export var quantity: int = 1
 @export var pop_up_velocity: float = 4.2
 @export var pop_side_velocity: float = 2.2
@@ -31,6 +31,10 @@ func _ready() -> void:
 
 func set_quantity(n: int) -> void:
 	quantity = maxi(1, n)
+
+
+func set_resource_type(id: String) -> void:
+	resource_type = id
 
 
 func launch_from_harvest(source_pos: Vector3, source_exclude_rid: Variant = RID()) -> void:

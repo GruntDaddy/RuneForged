@@ -8,9 +8,28 @@ const SLOT_COUNT := 16
 const MAX_STACK := 99
 
 const PICKUP_SCENES := {
+	"logs": preload("res://world/props/resource_pickup_wood.tscn"),
+	"oak_logs": preload("res://world/props/resource_pickup_wood.tscn"),
 	"wood": preload("res://world/props/resource_pickup_wood.tscn"),
 	"stone": preload("res://world/props/resource_pickup_stone.tscn"),
+	"tin_ore": preload("res://world/props/resource_pickup_stone.tscn"),
 }
+
+
+func get_item_display_name(item_id: String) -> String:
+	match item_id:
+		"logs", "wood":
+			return "Logs"
+		"oak_logs":
+			return "Oak logs"
+		"stone":
+			return "Stone"
+		"tin_ore":
+			return "Tin ore"
+		_:
+			if item_id.is_empty():
+				return ""
+			return item_id.replace("_", " ").capitalize()
 
 ## Each entry: null or { "id": String, "count": int }
 var slots: Array = []
@@ -163,6 +182,10 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 	world_parent.add_child(node)
 	if node is Node3D:
 		(node as Node3D).global_position = drop_global_position
+	if node.has_method("set_resource_type"):
+		node.set_resource_type(id)
+	elif "resource_type" in node:
+		node.resource_type = id
 	if node.has_method("set_quantity"):
 		node.set_quantity(count)
 	elif "quantity" in node:
@@ -196,6 +219,8 @@ func apply_save_dict(d: Variant) -> void:
 			slots[i] = null
 			continue
 		var id := str(entry.get("id", ""))
+		if id == "wood":
+			id = "logs"
 		var c := int(entry.get("count", 0))
 		if id.is_empty() or c < 1:
 			slots[i] = null

@@ -193,6 +193,11 @@ func _refresh_grid() -> void:
 
 
 func _pretty_item_name(item_id: String) -> String:
+	var inv := get_node_or_null("/root/InventoryService")
+	if inv != null and inv.has_method("get_item_display_name"):
+		var n: String = inv.get_item_display_name(item_id)
+		if not n.is_empty():
+			return n
 	var s := item_id.replace("_", " ")
 	if s.is_empty():
 		return ""
@@ -201,10 +206,14 @@ func _pretty_item_name(item_id: String) -> String:
 
 func _item_icon(item_id: String) -> String:
 	match item_id:
-		"wood":
-			return "WD"
+		"logs", "wood":
+			return "LG"
+		"oak_logs":
+			return "OK"
 		"stone":
 			return "ST"
+		"tin_ore":
+			return "TN"
 		_:
 			return "IT"
 

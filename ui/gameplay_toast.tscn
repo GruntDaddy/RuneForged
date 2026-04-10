@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://dgl5tq4lmknbr"]
+
+[ext_resource type="Script" path="res://ui/gameplay_toast.gd" id="1_toast"]
+
+[node name="GameplayToast" type="CanvasLayer"]
+layer = 35
+script = ExtResource("1_toast")
+
+[node name="Margin" type="MarginContainer" parent="."]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = -120.0
+offset_right = 0.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 4
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.95, 0.92, 0.82, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.82)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 18
+text = ""

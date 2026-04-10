@@ -23,6 +23,12 @@ const _InventoryService = preload("res://autoload/inventory_service.gd")
 
 enum HarvestInteraction { CHOP, MINE }
 
+## Return values for [`harvest_hit`].
+const HARVEST_INVALID := 0
+const HARVEST_WHIFF := 1
+const HARVEST_SUCCESS := 2
+const HARVEST_INVENTORY_FULL := 3
+
 @export var harvest_interaction: HarvestInteraction = HarvestInteraction.CHOP
 
 @export var max_hits: int = 6
@@ -48,8 +54,10 @@ enum HarvestInteraction { CHOP, MINE }
 @export var prompt_detail: String = ""
 ## If true: each impact rolls for success; success grants one item and reduces yield; failure has no yield. If false: legacy (every impact reduces yield; burst drops at depletion).
 @export var rs_style_gathering: bool = true
-## Must match InventoryService item ids (e.g. wood, stone).
-@export var resource_item_id: String = "wood"
+## Must match InventoryService item ids (e.g. logs, stone, oak_logs, tin_ore).
+@export var resource_item_id: String = "logs"
+## If set, used for harvest UI messages; otherwise InventoryService.get_item_display_name.
+@export var resource_display_name: String = ""
 @export_range(0.0, 1.0) var base_success_chance: float = 0.5
 @export var bonus_per_skill_level: float = 0.015
 @export_range(0.0, 1.0) var min_success_chance: float = 0.05
@@ -121,6 +129,25 @@ func get_prompt_detail() -> String:
 	return prompt_detail
 
 
+func can_harvest() -> bool:
+	return _hits_left > 0 and not _is_falling
+
+
+func get_resource_display_name() -> String:
+	if not resource_display_name.is_empty():
+		return resource_display_name
+	var inv: Node = get_node_or_null("/root/InventoryService")
+	if inv != null and inv.has_method("get_item_display_name"):
+		return inv.get_item_display_name(resource_item_id)
+	return resource_item_id.replace("_", " ").capitalize()
+
+
+func _notify_player_message(msg: String) -> void:
+	var p: Node = get_tree().get_first_node_in_group("player")
+	if p != null and p.has_method("show_gameplay_message"):
+		p.show_gameplay_message(msg)
+
+
 func _get_respawn_packed_scene() -> PackedScene:
 	if respawn_scene != null:
 		return respawn_scene
@@ -136,27 +163,30 @@ func _get_respawn_packed_scene() -> PackedScene:
 	return null
 
 
-func harvest_hit() -> bool:
+## Swing result: [`HARVEST_INVALID`] depleted/blocked, [`HARVEST_WHIFF`] failed roll, [`HARVEST_SUCCESS`] got resource, [`HARVEST_INVENTORY_FULL`] success roll but no space.
+func harvest_hit() -> int:
 	if _hits_left <= 0 or _is_falling:
-		return false
+		return HARVEST_INVALID
 	if not rs_style_gathering:
 		_hits_left -= 1
 		_play_hit_feedback()
 		if _hits_left <= 0:
 			_finish_harvest()
-		return true
+		return HARVEST_SUCCESS
 	# RS-style: roll once per call; failure = feedback only, no yield.
 	if randf() > _compute_success_chance():
 		_play_hit_feedback()
-		return true
+		return HARVEST_WHIFF
 	if not _grant_one_resource_to_inventory():
 		_play_hit_feedback()
-		return true
+		_notify_player_message("Not enough inventory space.")
+		return HARVEST_INVENTORY_FULL
+	_notify_player_message("You receive %s." % get_resource_display_name())
 	_hits_left -= 1
 	_play_hit_feedback()
 	if _hits_left <= 0:
 		_finish_harvest()
-	return true
+	return HARVEST_SUCCESS
 
 
 func _compute_success_chance() -> float:
@@ -182,9 +212,6 @@ func _grant_one_resource_to_inventory() -> bool:
 		return false
 	var left: int = (inv as _InventoryService).add_item(resource_item_id, 1)
 	if left > 0:
-		push_warning(
-			"harvestable_resource: inventory full, could not add %s (leftover %d)" % [resource_item_id, left]
-		)
 		return false
 	return true
 
