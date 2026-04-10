@@ -14,10 +14,10 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 @export var interaction_range: float = 3.45
 @export var interaction_height: float = 1.35
 @export var harvest_click_cooldown_sec: float = 1.5
-@export var chop_animation_duration_sec: float = 4.0
-@export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.85, 2.2, 3.5])
-@export var mine_animation_duration_sec: float = 6.033
-@export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([1.0, 2.8, 4.7])
+@export var chop_animation_duration_sec: float = 1.3
+@export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.5])
+@export var mine_animation_duration_sec: float = 1.7
+@export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 
 @onready var base_character: Node3D = $BaseCharacter
 @onready var camera_rig: Node3D = $CameraRig

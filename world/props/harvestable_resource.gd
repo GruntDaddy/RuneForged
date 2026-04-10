@@ -1,4 +1,8 @@
 extends StaticBody3D
+
+const _GameState = preload("res://autoload/game_state.gd")
+const _InventoryService = preload("res://autoload/inventory_service.gd")
+
 ## Gameplay harvestable (trees, rocks). **Collision layer 2** is applied in `_ready` so the player ray (mask 2) hits props.
 ##
 ## ## Reusing / placing on a map (editor)
@@ -42,6 +46,14 @@ enum HarvestInteraction { CHOP, MINE }
 @export var required_mining_level: int = 0
 ## Extra line for UI prompts, e.g. "Needs Level 10 Woodcutting".
 @export var prompt_detail: String = ""
+## If true: each impact rolls for success; success grants one item and reduces yield; failure has no yield. If false: legacy (every impact reduces yield; burst drops at depletion).
+@export var rs_style_gathering: bool = true
+## Must match InventoryService item ids (e.g. wood, stone).
+@export var resource_item_id: String = "wood"
+@export_range(0.0, 1.0) var base_success_chance: float = 0.5
+@export var bonus_per_skill_level: float = 0.015
+@export_range(0.0, 1.0) var min_success_chance: float = 0.05
+@export_range(0.0, 1.0) var max_success_chance: float = 0.95
 
 @onready var visual: Node3D = $Visual
 
@@ -127,10 +139,53 @@ func _get_respawn_packed_scene() -> PackedScene:
 func harvest_hit() -> bool:
 	if _hits_left <= 0 or _is_falling:
 		return false
+	if not rs_style_gathering:
+		_hits_left -= 1
+		_play_hit_feedback()
+		if _hits_left <= 0:
+			_finish_harvest()
+		return true
+	# RS-style: roll once per call; failure = feedback only, no yield.
+	if randf() > _compute_success_chance():
+		_play_hit_feedback()
+		return true
+	if not _grant_one_resource_to_inventory():
+		_play_hit_feedback()
+		return true
 	_hits_left -= 1
 	_play_hit_feedback()
 	if _hits_left <= 0:
 		_finish_harvest()
+	return true
+
+
+func _compute_success_chance() -> float:
+	var skill: int = 1
+	var req: int = 0
+	var gs: Node = get_node_or_null("/root/GameState")
+	if harvest_interaction == HarvestInteraction.MINE:
+		req = required_mining_level
+		if gs is _GameState:
+			skill = (gs as _GameState).mining_level
+	else:
+		req = required_woodcutting_level
+		if gs is _GameState:
+			skill = (gs as _GameState).woodcutting_level
+	var bonus: float = bonus_per_skill_level * maxf(0.0, float(skill - maxi(req, 1)))
+	return clampf(base_success_chance + bonus, min_success_chance, max_success_chance)
+
+
+func _grant_one_resource_to_inventory() -> bool:
+	var inv: Node = get_node_or_null("/root/InventoryService")
+	if inv == null or not (inv is _InventoryService):
+		push_warning("harvestable_resource: InventoryService missing; could not add %s" % resource_item_id)
+		return false
+	var left: int = (inv as _InventoryService).add_item(resource_item_id, 1)
+	if left > 0:
+		push_warning(
+			"harvestable_resource: inventory full, could not add %s (leftover %d)" % [resource_item_id, left]
+		)
+		return false
 	return true
 
 
@@ -145,10 +200,14 @@ func _finish_harvest() -> void:
 		tw.set_ease(Tween.EASE_IN)
 		tw.set_trans(Tween.TRANS_CUBIC)
 		tw.tween_property(visual, "basis", target_basis, fall_duration)
-		tw.tween_callback(Callable(self, "_spawn_drops"))
-		tw.tween_callback(Callable(self, "_remove_after_harvest"))
+		tw.tween_callback(Callable(self, "_depletion_drops_and_remove"))
 		return
-	_spawn_drops()
+	_depletion_drops_and_remove()
+
+
+func _depletion_drops_and_remove() -> void:
+	if not rs_style_gathering:
+		_spawn_drops()
 	_remove_after_harvest()
 
 

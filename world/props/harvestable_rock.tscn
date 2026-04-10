@@ -11,6 +11,7 @@ radius = 0.9917891
 collision_layer = 2
 script = ExtResource("1_script")
 harvest_interaction = 1
+resource_item_id = "stone"
 drop_count_max = 3
 drop_scene = ExtResource("3_drop")
 particle_color = Color(0.62, 0.62, 0.64, 1)

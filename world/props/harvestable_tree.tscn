@@ -11,6 +11,7 @@ height = 5.8695855
 [node name="HarvestableTree" type="StaticBody3D" unique_id=106376001]
 collision_layer = 2
 script = ExtResource("1_script")
+resource_item_id = "wood"
 drop_count_min = 2
 drop_count_max = 4
 drop_scene = ExtResource("3_drop")
