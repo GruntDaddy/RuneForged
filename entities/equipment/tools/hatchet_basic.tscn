@@ -41,7 +41,7 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_jb644")
 
-[node name="BasicHatchet" type="Node3D" unique_id=1667268177]
+[node name="Hatchet_Basic" type="Node3D" unique_id=1667268177]
 
-[node name="Axe_Basic" type="MeshInstance3D" parent="." unique_id=1857019873]
+[node name="HatchetBasic" type="MeshInstance3D" parent="." unique_id=1857019873]
 mesh = SubResource("ArrayMesh_1hxic")

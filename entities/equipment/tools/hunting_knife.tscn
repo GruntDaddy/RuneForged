@@ -44,6 +44,6 @@ shadow_mesh = SubResource("ArrayMesh_f4ovk")
 
 [node name="HuntingKnife" type="Node3D" unique_id=294975422]
 
-[node name="knife" type="MeshInstance3D" parent="." unique_id=73656637]
+[node name="HuntingKnife" type="MeshInstance3D" parent="." unique_id=73656637]
 material_override = ExtResource("1_hx7vx")
 mesh = SubResource("ArrayMesh_wk16k")
