@@ -35,12 +35,12 @@ uniform float distance_roughness_add : hint_range(0.0, 0.45, 0.01) = 0.2;
 uniform float distance_roughness_start : hint_range(10.0, 120.0, 1.0) = 55.0;
 uniform float distance_roughness_end : hint_range(50.0, 400.0, 1.0) = 220.0;
 
-uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.58;
-uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.1;
-uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.05;
-uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 3.2;
-uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.035;
-uniform float horizon_sky_mix : hint_range(0.0, 0.6, 0.01) = 0.06;
+uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.92;
+uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.42;
+uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.015;
+uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 2.4;
+uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.008;
+uniform float horizon_sky_mix : hint_range(0.0, 0.6, 0.01) = 0.015;
 
 uniform float wave_speed : hint_range(0.0, 4.0, 0.01) = 0.55;
 uniform float wave_height : hint_range(0.0, 0.5, 0.001) = 0.07;
@@ -194,7 +194,7 @@ void fragment() {
 
 	float ndotv = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
 	float fres = pow(1.0 - ndotv, fresnel_power) * fresnel_intensity;
-	vec3 horizon_tint = vec3(0.42, 0.52, 0.64);
+	vec3 horizon_tint = vec3(0.28, 0.38, 0.48);
 	col = mix(col, horizon_tint, fres * horizon_sky_mix);
 
 	ALBEDO = col;
