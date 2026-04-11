@@ -60,6 +60,7 @@ float fbm(vec2 p) {
 // Voronoi with per-cell scale variation → varied cloud sizes
 float clouds_voronoi(vec2 p, float time_wind) {
 	vec2 ip = floor(p);
+	vec2 fp = fract(p);
 	float md = 8.0;
 	float second = 8.0;
 	for (int y = -1; y <= 1; y++) {

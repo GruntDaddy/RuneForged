@@ -106,7 +106,8 @@ vec3 world_position_from_depth(vec2 screen_uv, float raw_depth) {
 	// Forward+ / Mobile (Vulkan): NDC Z [0, 1] reverse-Z (Godot 4.3+)
 	ndc = vec3(screen_uv * 2.0 - 1.0, raw_depth);
 #endif
-	vec4 world = INV_VIEW_MATRIX * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	// Fragment stage has VIEW_MATRIX but not INV_VIEW_MATRIX in all backends; inverse() is equivalent.
+	vec4 world = inverse(VIEW_MATRIX) * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	return world.xyz / world.w;
 }
 
