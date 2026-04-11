@@ -14,11 +14,24 @@ uniform vec4 deep_color : source_color = vec4(0.03, 0.11, 0.2, 0.62);
 uniform float alpha_depth_boost : hint_range(0.0, 0.35, 0.01) = 0.12;
 
 uniform vec4 foam_color : source_color = vec4(0.92, 0.96, 1.0, 1.0);
-uniform float foam_max_underwater : hint_range(0.05, 32.0, 0.05) = 2.2;
+// Foam mainly within this underwater depth (world units; ~6-7 ft if 1 unit ~ 1 ft).
+uniform float foam_shore_band : hint_range(0.5, 24.0, 0.1) = 7.0;
 uniform float foam_shore_above : hint_range(0.05, 16.0, 0.05) = 1.1;
 uniform float foam_noise_scale : hint_range(0.02, 2.0, 0.01) = 0.38;
 uniform float foam_noise_speed : hint_range(0.0, 3.0, 0.01) = 0.65;
+uniform float foam_inward_speed : hint_range(0.0, 2.0, 0.01) = 0.42;
 uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.85;
+// World XZ: waves / foam drift toward land (set in water_depth_sync).
+uniform vec2 toward_land_xz = vec2(0.65, 0.52);
+// Approximate island center for wave size falloff (smaller swell offshore).
+uniform vec2 shore_reference_xz = vec2(130.0, 115.0);
+uniform float shore_wave_falloff_start : hint_range(5.0, 80.0, 0.5) = 22.0;
+uniform float shore_wave_falloff_end : hint_range(20.0, 300.0, 1.0) = 140.0;
+uniform float wave_far_amplitude : hint_range(0.05, 0.6, 0.01) = 0.2;
+uniform float wave_direction_toward_shore : hint_range(0.0, 1.0, 0.01) = 0.62;
+uniform float distance_roughness_add : hint_range(0.0, 0.45, 0.01) = 0.2;
+uniform float distance_roughness_start : hint_range(10.0, 120.0, 1.0) = 55.0;
+uniform float distance_roughness_end : hint_range(50.0, 400.0, 1.0) = 220.0;
 
 uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.44;
 uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.08;
@@ -85,13 +98,21 @@ void vertex() {
 	vec3 disp = vec3(0.0);
 	vec2 dydxz = vec2(0.0);
 
-	float a1 = wave_height;
-	float a2 = wave_height * 0.55 / wave_scale_2;
-	float a3 = wave_height * 0.35 / wave_scale_3;
+	vec2 tl = normalize(toward_land_xz + vec2(1e-4));
+	float dist_ref = length(xz - shore_reference_xz);
+	float wave_amp_mul = mix(1.0, wave_far_amplitude, smoothstep(shore_wave_falloff_start, shore_wave_falloff_end, dist_ref));
 
-	gerstner_contrib(xz, vec2(0.94, 0.34), a1, 14.0, 1.0, t, disp, dydxz);
-	gerstner_contrib(xz, vec2(-0.71, 0.71), a2, 7.5, 1.15, t * 1.08 + 1.7, disp, dydxz);
-	gerstner_contrib(xz, vec2(0.4, -0.92), a3, 4.2, 1.3, t * 0.92 + 3.1, disp, dydxz);
+	float a1 = wave_height * wave_amp_mul;
+	float a2 = wave_height * 0.55 / wave_scale_2 * wave_amp_mul;
+	float a3 = wave_height * 0.35 / wave_scale_3 * mix(wave_amp_mul, 1.0, 0.4);
+
+	vec2 d1 = normalize(mix(vec2(0.94, 0.34), tl, wave_direction_toward_shore));
+	vec2 d2 = normalize(mix(vec2(-0.71, 0.71), tl, wave_direction_toward_shore * 0.85));
+	vec2 d3 = normalize(mix(vec2(0.4, -0.92), tl, wave_direction_toward_shore * 0.75));
+
+	gerstner_contrib(xz, d1, a1, 14.0, 1.0, t, disp, dydxz);
+	gerstner_contrib(xz, d2, a2, 7.5, 1.15, t * 1.08 + 1.7, disp, dydxz);
+	gerstner_contrib(xz, d3, a3, 4.2, 1.3, t * 0.92 + 3.1, disp, dydxz);
 
 	vec3 wp = world + disp;
 	v_world_pos = wp;
@@ -135,13 +156,15 @@ void fragment() {
 
 	vec3 base_col = mix(shallow_color.rgb, deep_color.rgb, depth_norm);
 
-	// Foam: shallow underwater + beach where terrain rises above water level
-	float shallow_foam = 1.0 - smoothstep(0.0, foam_max_underwater, depth_u);
+	// Foam: band from shore out to foam_shore_band, then falls off (small chop only — see ripples)
+	vec2 tl = normalize(toward_land_xz + vec2(1e-4));
+	float shallow_foam = 1.0 - smoothstep(0.0, foam_shore_band, depth_u);
 	float land_above = max(0.0, terrain_y - water_level);
 	float shore_foam = 1.0 - smoothstep(0.0, foam_shore_above, land_above);
 	float foam_mask = clamp(max(shallow_foam, shore_foam), 0.0, 1.0);
 
 	vec2 fuv = v_world_pos.xz * foam_noise_scale + vec2(TIME * foam_noise_speed * 0.07, TIME * foam_noise_speed * 0.11);
+	fuv += tl * TIME * foam_inward_speed;
 	float fbreak = foam_noise(fuv) * 0.5 + foam_noise(fuv * 2.3 + TIME * 0.2) * 0.35 + 0.15;
 	foam_mask *= fbreak;
 
@@ -152,10 +175,13 @@ void fragment() {
 	// Deeper water reads a bit more opaque; shallow stays see-through
 	alpha = clamp(alpha + depth_norm * alpha_depth_boost, 0.0, 0.92);
 
-	// Small ripple detail on top of wave normals (world space)
+	// Ripples stronger past the foam band (small surface chop offshore)
+	float deep_chop = smoothstep(foam_shore_band - 0.5, foam_shore_band + 6.0, depth_u);
 	vec2 ruv = v_world_pos.xz * (ripple_scale * 0.05) + vec2(TIME * 0.4, TIME * 0.33);
-	float rx = sin(ruv.x * 2.1 + TIME * 1.05) * ripple_strength;
-	float rz = cos(ruv.y * 2.0 - TIME * 0.92) * ripple_strength;
+	ruv += tl * TIME * 0.55;
+	float ripple_mul = mix(ripple_strength * 0.5, ripple_strength * 1.2, deep_chop);
+	float rx = sin(ruv.x * 2.1 + TIME * 1.05 + dot(v_world_pos.xz, tl) * 0.08) * ripple_mul;
+	float rz = cos(ruv.y * 2.0 - TIME * 0.92 + dot(v_world_pos.xz, tl) * 0.06) * ripple_mul;
 	vec3 n_world = normalize(v_world_normal + vec3(rx, 0.0, rz));
 	NORMAL = normalize((view_matrix * vec4(n_world, 0.0)).xyz);
 
@@ -167,6 +193,10 @@ void fragment() {
 	ALBEDO = col;
 	ALPHA = alpha;
 	METALLIC = 0.0;
-	ROUGHNESS = mix(roughness, roughness_foam, foam_mask * 0.85);
+	float dist_cam = distance(v_world_pos, CAMERA_POSITION_WORLD);
+	float far_detail = smoothstep(distance_roughness_start, distance_roughness_end, dist_cam);
+	float rgh = mix(roughness, roughness_foam, foam_mask * 0.85);
+	rgh = min(1.0, rgh + far_detail * distance_roughness_add);
+	ROUGHNESS = rgh;
 	SPECULAR = specular_amount;
 }

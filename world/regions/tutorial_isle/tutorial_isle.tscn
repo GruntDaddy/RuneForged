@@ -742,7 +742,8 @@ shader_parameter/shallow_color = Color(0.28, 0.62, 0.72, 0.52)
 shader_parameter/deep_color = Color(0.03, 0.11, 0.2, 0.62)
 shader_parameter/alpha_depth_boost = 0.12
 shader_parameter/foam_color = Color(0.92, 0.96, 1, 1)
-shader_parameter/foam_max_underwater = 2.2
+shader_parameter/foam_shore_band = 7.0
+shader_parameter/foam_inward_speed = 0.42
 shader_parameter/foam_shore_above = 1.1
 shader_parameter/foam_noise_scale = 0.38
 shader_parameter/foam_noise_speed = 0.65
@@ -800,6 +801,8 @@ material_override = SubResource("ShaderMaterial_water")
 cast_shadow = 0
 mesh = SubResource("PlaneMesh_water")
 script = ExtResource("water_depth_sync")
+toward_land = Vector2(0.65, 0.52)
+shore_reference_xz = Vector2(130, 115)
 metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]

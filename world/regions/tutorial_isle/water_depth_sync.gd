@@ -3,6 +3,9 @@ extends MeshInstance3D
 
 const _LOG_REL := "res://debug-77cfd5.log"
 
+@export var toward_land: Vector2 = Vector2(0.65, 0.52)
+@export var shore_reference_xz: Vector2 = Vector2(130.0, 115.0)
+
 
 func _ready() -> void:
 	# region agent log
@@ -31,6 +34,9 @@ func _sync_camera_matrices() -> void:
 	mat.set_shader_parameter(&"inv_view_matrix", inv_view)
 	mat.set_shader_parameter(&"view_matrix", view)
 	mat.set_shader_parameter(&"inv_projection_matrix", inv_proj)
+	if toward_land.length_squared() > 0.0001:
+		mat.set_shader_parameter(&"toward_land_xz", toward_land.normalized())
+	mat.set_shader_parameter(&"shore_reference_xz", shore_reference_xz)
 	# region agent log
 	if Engine.get_frames_drawn() == 1:
 		_dbg("H5", "all_cam_mats_set_frame1", {

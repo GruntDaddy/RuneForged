@@ -22,8 +22,8 @@ uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
 uniform float star_brightness : hint_range(0.0, 2.0, 0.01) = 0.65;
 uniform vec3 star_tint : source_color = vec3(0.85, 0.9, 1.0);
 
-uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.56;
-uniform float cloud_softness : hint_range(0.01, 0.7, 0.01) = 0.38;
+uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.36;
+uniform float cloud_softness : hint_range(0.01, 0.7, 0.01) = 0.36;
 uniform float cloud_warp : hint_range(0.0, 1.0, 0.01) = 0.42;
 uniform vec3 cloud_color_day : source_color = vec3(0.92, 0.94, 0.98);
 uniform vec3 cloud_color_sunset : source_color = vec3(0.98, 0.72, 0.55);
@@ -129,8 +129,8 @@ void sky() {
 	float dens = puff * smoothstep(0.08, 0.95, n + 0.05 * fbm(cu * 1.3 + wind));
 	vec3 ccol = mix(cloud_color_night, cloud_color_day, day_factor);
 	ccol = mix(ccol, cloud_color_sunset, sunset_factor * 0.85);
-	float cloud_alpha = dens * (0.14 + 0.2 * day_factor + 0.14 * night_amt);
-	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.42));
+	float cloud_alpha = dens * (0.26 + 0.38 * day_factor + 0.26 * night_amt);
+	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.82));
 
 	COLOR = col;
 	}
