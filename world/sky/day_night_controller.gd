@@ -2,21 +2,21 @@ extends Node3D
 ## Drives sun/moon sky shader, DirectionalLight3D, and ambient for a full day-night cycle.
 ## Expects a sibling DirectionalLight3D and WorldEnvironment (paths configurable).
 
-@export var day_length_seconds: float = 900.0
+@export var day_length_seconds: float = 90.0
 @export_range(0.0, 1.0) var start_time_of_day: float = 0.32
 
 @export_group("Light")
 @export var sun_energy_max: float = 0.85
-@export var sun_energy_min: float = 0.03
+@export var moon_light_energy: float = 0.22
 @export var sun_color_day: Color = Color(1.0, 0.97, 0.88)
 @export var sun_color_sunset: Color = Color(1.0, 0.62, 0.38)
-@export var sun_color_night: Color = Color(0.45, 0.55, 0.85)
+@export var moon_light_color: Color = Color(0.52, 0.62, 0.92)
 
 @export_group("Ambient")
 @export var ambient_energy_day: float = 0.5
-@export var ambient_energy_night: float = 0.12
+@export var ambient_energy_night: float = 0.22
 @export var ambient_color_day: Color = Color(0.45, 0.52, 0.58)
-@export var ambient_color_night: Color = Color(0.12, 0.14, 0.22)
+@export var ambient_color_night: Color = Color(0.16, 0.18, 0.28)
 
 @export_group("Nodes")
 @export var directional_light_path: NodePath = ^"../DirectionalLight3D"
@@ -94,14 +94,21 @@ func _apply_time() -> void:
 
 	var dl: DirectionalLight3D = get_node_or_null(directional_light_path) as DirectionalLight3D
 	if dl != null:
-		# Rays travel along -Z; we want ray direction = -sun_dir (from sun toward ground)
+		# Day: light from sun direction. Night: slerp toward moon (-sun_dir) so moonlit side gets cool fill.
 		var anchor: Vector3 = dl.global_position
-		dl.look_at(anchor - sun_dir, Vector3.UP)
+		# Full moon direction when day_f low; fade out by mid-morning so sunlight stays coherent.
+		var moon_influence: float = 1.0 - smoothstep(0.08, 0.42, day_f)
+		var lit_dir: Vector3 = sun_dir.slerp(-sun_dir, moon_influence)
+		if lit_dir.length_squared() < 1e-10:
+			lit_dir = sun_dir
+		else:
+			lit_dir = lit_dir.normalized()
+		dl.look_at(anchor - lit_dir, Vector3.UP)
 
-		var e: float = lerpf(sun_energy_min, sun_energy_max, day_f)
+		var e: float = lerpf(moon_light_energy, sun_energy_max, day_f)
 		dl.light_energy = e
-		var c: Color = sun_color_night.lerp(sun_color_day, day_f)
-		c = c.lerp(sun_color_sunset, sunset_f * (1.0 - day_f * 0.35))
+		var c: Color = moon_light_color.lerp(sun_color_day, day_f)
+		c = c.lerp(sun_color_sunset, sunset_f * (1.0 - day_f * 0.35) * clampf(day_f * 1.5, 0.0, 1.0))
 		dl.light_color = c
 
 	if _sky_material != null:

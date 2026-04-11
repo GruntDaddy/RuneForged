@@ -13,9 +13,9 @@ uniform vec3 horizon_day : source_color = vec3(0.62, 0.72, 0.82);
 uniform vec3 horizon_night : source_color = vec3(0.07, 0.08, 0.12);
 uniform vec3 sunset_color : source_color = vec3(0.95, 0.55, 0.32);
 
-uniform float sun_disk_size : hint_range(0.001, 0.05, 0.0001) = 0.0045;
+uniform float sun_disk_size : hint_range(0.001, 0.05, 0.0001) = 0.00225;
 uniform vec3 sun_disk_color : source_color = vec3(1.0, 0.97, 0.88);
-uniform float moon_disk_size : hint_range(0.001, 0.06, 0.0001) = 0.018;
+uniform float moon_disk_size : hint_range(0.001, 0.06, 0.0001) = 0.009;
 uniform vec3 moon_disk_color : source_color = vec3(0.82, 0.86, 0.95);
 
 uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
@@ -89,7 +89,7 @@ float stars(vec3 eyedir, float night_amt) {
 	vec2 f = fract(uv) - 0.5;
 	float h = hash21(id);
 	float tw = sin(TIME * (1.2 + h * 2.0) + h * 6.28) * 0.5 + 0.5;
-	float m = smoothstep(0.35, 0.0, length(f)) * step(0.965, h) * tw;
+	float m = smoothstep(0.175, 0.0, length(f)) * step(0.965, h) * tw;
 	return m * night_amt * star_brightness;
 }
 
