@@ -33,7 +33,34 @@ func _ready() -> void:
 		var sky: Sky = we.environment.sky
 		if sky != null and sky.sky_material is ShaderMaterial:
 			_sky_material = sky.sky_material
+	# region agent log
+	_dbg_sky("H3", "day_night_ready", { "sky_mat_ok": _sky_material != null })
+	# endregion
 	_apply_time()
+
+
+func _dbg_sky(hypothesis_id: String, message: String, data: Dictionary) -> void:
+	var path := ProjectSettings.globalize_path("res://debug-77cfd5.log")
+	var f: FileAccess
+	if FileAccess.file_exists(path):
+		f = FileAccess.open(path, FileAccess.READ_WRITE)
+		if f != null:
+			f.seek_end()
+	else:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	var payload := {
+		"sessionId": "77cfd5",
+		"hypothesisId": hypothesis_id,
+		"location": "day_night_controller.gd",
+		"message": message,
+		"data": data,
+		"timestamp": Time.get_ticks_msec(),
+		"runId": "pre-fix"
+	}
+	f.store_line(JSON.stringify(payload))
+	f.close()
 
 
 func _process(delta: float) -> void:

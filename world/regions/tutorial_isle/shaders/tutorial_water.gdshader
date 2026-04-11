@@ -33,6 +33,9 @@ uniform float wave_scale_3 : hint_range(0.1, 4.0, 0.01) = 2.35;
 
 uniform float ripple_scale : hint_range(1.0, 64.0, 0.5) = 22.0;
 uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.08;
+// Set every frame from GDScript (D3D12 fragment often has no VIEW_MATRIX built-in).
+uniform mat4 inv_view_matrix;
+uniform mat4 view_matrix;
 
 varying vec3 v_world_pos;
 varying vec3 v_world_normal;
@@ -106,8 +109,7 @@ vec3 world_position_from_depth(vec2 screen_uv, float raw_depth) {
 	// Forward+ / Mobile (Vulkan): NDC Z [0, 1] reverse-Z (Godot 4.3+)
 	ndc = vec3(screen_uv * 2.0 - 1.0, raw_depth);
 #endif
-	// Fragment stage has VIEW_MATRIX but not INV_VIEW_MATRIX in all backends; inverse() is equivalent.
-	vec4 world = inverse(VIEW_MATRIX) * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	vec4 world = inv_view_matrix * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	return world.xyz / world.w;
 }
 
@@ -150,7 +152,7 @@ void fragment() {
 	float rx = sin(ruv.x * 2.1 + TIME * 1.05) * ripple_strength;
 	float rz = cos(ruv.y * 2.0 - TIME * 0.92) * ripple_strength;
 	vec3 n_world = normalize(v_world_normal + vec3(rx, 0.0, rz));
-	NORMAL = normalize((VIEW_MATRIX * vec4(n_world, 0.0)).xyz);
+	NORMAL = normalize((view_matrix * vec4(n_world, 0.0)).xyz);
 
 	float ndotv = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
 	float fres = pow(1.0 - ndotv, fresnel_power) * fresnel_intensity;

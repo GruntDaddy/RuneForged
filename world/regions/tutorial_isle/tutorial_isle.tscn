@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://c5ffx2tu0tceg" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_tavern_red.gltf" id="16_arhr5"]
 [ext_resource type="Shader" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
 [ext_resource type="Script" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
+[ext_resource type="Script" path="res://world/regions/tutorial_isle/water_depth_sync.gd" id="water_depth_sync"]
 
 [sub_resource type="Gradient" id="Gradient_terrain"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -796,6 +797,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 material_override = SubResource("ShaderMaterial_water")
 cast_shadow = 0
 mesh = SubResource("PlaneMesh_water")
+script = ExtResource("water_depth_sync")
 metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]

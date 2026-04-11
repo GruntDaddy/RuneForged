@@ -117,9 +117,7 @@ void sky() {
 	if (AT_CUBEMAP_PASS) {
 		vec3 cheap = mix(zenith_night, zenith_day, day_factor);
 		COLOR = cheap * (0.75 + 0.15 * day_factor);
-		return;
-	}
-
+	} else {
 	vec3 col = sky_gradient(dir, day_factor, sunset_factor);
 
 	// Sun disc
@@ -148,4 +146,5 @@ void sky() {
 	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.92));
 
 	COLOR = col;
+	}
 }
