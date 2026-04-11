@@ -137,3 +137,7 @@ tool_fishing={
 
 textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
+textures/decals/filter=0
+textures/light_projectors/filter=0
+environment/glow/upscale_mode=0
+camera/defaults/default_clear_color=Color(0.3, 0.3, 0.3, 1)
