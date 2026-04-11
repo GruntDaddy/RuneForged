@@ -248,8 +248,8 @@ transform = Transform3D(-0.209024, -1.9842654, -0.005262891, -1.5732232, 0.23935
 visible = false
 
 [node name="Fishing_Pole" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=245412400 instance=ExtResource("6_633uw")]
-transform = Transform3D(0.45563015, -1.5399227, -1.1920733, 0.094936974, -1.2052463, 1.5932258, -1.945093, -0.4195468, -0.20147549, -0.00011610985, 0.17547023, -3.0994415e-05)
-visible = false
+transform = Transform3D(-0.19219363, -1.6951871, -1.0437444, -0.35265294, -1.0030218, 1.693985, -1.9592588, 0.34682634, -0.20251924, -0.000116318464, 0.26010454, -3.0994415e-05)
+visible = true
 
 [node name="Tool_Hammer" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=632950477 instance=ExtResource("7_hcn84")]
 transform = Transform3D(0.537993, -1.6839651, -0.33885837, 1.699169, 0.46967798, 0.36363167, -0.2517715, -0.42856053, 1.7300135, -0.037598073, 0.04066062, -0.010243058)
@@ -305,7 +305,7 @@ transform = Transform3D(0.9962749, -5.122274e-09, 0.08623533, 0.00086724496, 0.9
 bone_name = "chest"
 bone_idx = 3
 
-[node name="Tool_Tacklebox_Back" parent="Rig_Medium/Skeleton3D/Back_Slot" instance=ExtResource("12_2wxdn")]
+[node name="Tool_Tacklebox_Back" parent="Rig_Medium/Skeleton3D/Back_Slot" unique_id=303889414 instance=ExtResource("12_2wxdn")]
 transform = Transform3D(-0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, -0.8660254, 0.05, -0.12, -0.18)
 visible = false
 
