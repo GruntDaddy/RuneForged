@@ -1,21 +1,18 @@
-[gd_resource type="Resource" script_class="ToolData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="ToolData" format=3 uid="uid://b13x01y3s4umr"]
 
-[ext_resource type="Script" path="res://data/schemas/tool_data.gd" id="1_td"]
-[ext_resource type="Script" path="res://data/schemas/tool_stats.gd" id="2_ts"]
+[ext_resource type="Script" uid="uid://u6qkkibfc14v" path="res://data/schemas/tool_data.gd" id="1_td"]
+[ext_resource type="Script" uid="uid://c7utgppqsgong" path="res://data/schemas/tool_stats.gd" id="2_ts"]
 
 [sub_resource type="Resource" id="Resource_ts"]
 script = ExtResource("2_ts")
 tool_kind = 1
-tier = 1
-harvest_power = 1.0
 
 [resource]
 script = ExtResource("1_td")
+tool_stats = SubResource("Resource_ts")
 id = "pickaxe_basic"
 display_name = "Basic pickaxe"
 description = "A simple pickaxe for mining."
 category = 2
 max_stack = 1
 tags = PackedStringArray("tool", "pickaxe")
-rarity = 0
-tool_stats = SubResource("Resource_ts")

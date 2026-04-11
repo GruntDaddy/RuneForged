@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3 uid="uid://cqsqp56mxxrsa"]
+
+[ext_resource type="Script" uid="uid://b6dkr883mvecv" path="res://data/schemas/resource_node_data.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+profile_id = "rock_tin"
+skill_id = "mining"
+primary_item_id = "ore_tin"
+respawn_seconds = 40.0
+base_success_chance = 0.48
+interaction = 1
+max_yield = 3

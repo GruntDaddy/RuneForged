@@ -3,9 +3,11 @@ class_name RecipeData
 
 enum CraftStation {
 	NONE,
+	CAMPFIRE,
+	STOVE,
+	WORKBENCH,
 	ANVIL,
 	FURNACE,
-	CAMPFIRE,
 }
 
 @export var id: String = ""

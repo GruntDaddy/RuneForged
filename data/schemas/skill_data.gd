@@ -5,6 +5,8 @@ enum SkillCategory {
 	GATHERING,
 	COMBAT,
 	CRAFTING,
+	BUILDING,
+	SURVIVAL,
 	MISC,
 }
 

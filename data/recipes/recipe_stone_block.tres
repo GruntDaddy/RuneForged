@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3 uid="uid://chcisuq86c3xu"]
+
+[ext_resource type="Script" uid="uid://dnknxut23xpmj" path="res://data/schemas/recipe_ingredient.gd" id="1_qgx2n"]
+[ext_resource type="Script" uid="uid://bslp8gi7l5541" path="res://data/schemas/recipe_data.gd" id="2_78mm1"]
+
+[sub_resource type="Resource" id="Resource_in1"]
+script = ExtResource("1_qgx2n")
+item_id = "stone"
+count = 2
+
+[resource]
+script = ExtResource("2_78mm1")
+id = "stone_block"
+display_name = "Stone Block"
+inputs = Array[ExtResource("1_qgx2n")]([SubResource("Resource_in1")])
+output_item_id = "stone_block"
+skill_id = "crafting"

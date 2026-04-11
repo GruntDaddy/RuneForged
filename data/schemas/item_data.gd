@@ -9,8 +9,11 @@ enum Category {
 	TOOL,
 	WEAPON,
 	ARMOR,
+	CLOTHING,
+	JEWERLY,
 	RELIC,
 	RUNE,
+	QUEST,
 }
 
 enum Rarity {

@@ -4,6 +4,8 @@ class_name ToolStats
 enum ToolKind {
 	HATCHET,
 	PICKAXE,
+	CHISEL,
+	HAMMER,
 	FISHING_ROD,
 }
 

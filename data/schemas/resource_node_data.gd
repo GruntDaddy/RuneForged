@@ -6,7 +6,11 @@ class_name ResourceNodeData
 enum InteractionKind {
 	CHOP,
 	MINE,
+	SMELT,
+	CREATE,
+	CRAFT,
 	FISH,
+	COOK,
 }
 
 @export var profile_id: String = ""
