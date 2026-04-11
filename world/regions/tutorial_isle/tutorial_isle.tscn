@@ -732,7 +732,7 @@ mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_cnjm5"), SubResource("Terrain3DTextureAsset_q5xbx"), SubResource("Terrain3DTextureAsset_matcp")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
-render_priority = 0
+render_priority = 16
 shader = ExtResource("3_water")
 shader_parameter/water_level = 1.0
 shader_parameter/depth_fade_distance = 18.0
@@ -793,7 +793,7 @@ shader_parameter/horizon_night = Color(0.07, 0.08, 0.12, 1)
 shader_parameter/sunset_color = Color(0.95, 0.55, 0.32, 1)
 shader_parameter/sun_disk_size = 0.00225
 shader_parameter/sun_disk_color = Color(1, 0.97, 0.88, 1)
-shader_parameter/moon_disk_size = 0.009
+shader_parameter/moon_disk_size = 0.006
 shader_parameter/moon_disk_color = Color(0.82, 0.86, 0.95, 1)
 shader_parameter/star_threshold = 0.72
 shader_parameter/star_brightness = 0.65

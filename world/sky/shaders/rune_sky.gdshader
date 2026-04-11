@@ -15,7 +15,7 @@ uniform vec3 sunset_color : source_color = vec3(0.95, 0.55, 0.32);
 
 uniform float sun_disk_size : hint_range(0.001, 0.05, 0.0001) = 0.00225;
 uniform vec3 sun_disk_color : source_color = vec3(1.0, 0.97, 0.88);
-uniform float moon_disk_size : hint_range(0.001, 0.06, 0.0001) = 0.009;
+uniform float moon_disk_size : hint_range(0.001, 0.06, 0.0001) = 0.006;
 uniform vec3 moon_disk_color : source_color = vec3(0.82, 0.86, 0.95);
 
 uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
@@ -110,9 +110,10 @@ void sky() {
 	float sun_disc = smoothstep(1.0 - sun_disk_size * 8.0, 1.0, sun_dot);
 	col = mix(col, sun_disk_color, sun_disc * day_factor);
 
-	// Moon disc (visible when sun is below horizon / night side of sky)
+	// Moon disc — tighter smoothstep band than sun for a cleaner limb (less fuzzy fringe)
 	float moon_dot = max(dot(dir, moon_dir), 0.0);
-	float moon_disc = smoothstep(1.0 - moon_disk_size * 6.0, 1.0, moon_dot);
+	float mw = moon_disk_size * 6.0;
+	float moon_disc = smoothstep(1.0 - mw * 0.52, 1.0 - mw * 0.06, moon_dot);
 	float moon_vis = smoothstep(0.15, 0.85, night_amt + (1.0 - day_factor) * 0.5);
 	col = mix(col, moon_disk_color, moon_disc * moon_vis * 0.95);
 

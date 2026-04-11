@@ -32,8 +32,9 @@ uniform float shore_wave_falloff_end : hint_range(20.0, 300.0, 1.0) = 140.0;
 uniform float wave_far_amplitude : hint_range(0.05, 0.6, 0.01) = 0.2;
 uniform float wave_direction_toward_shore : hint_range(0.0, 1.0, 0.01) = 0.62;
 uniform float distance_roughness_add : hint_range(0.0, 0.45, 0.01) = 0.2;
-uniform float distance_roughness_start : hint_range(10.0, 120.0, 1.0) = 55.0;
-uniform float distance_roughness_end : hint_range(50.0, 400.0, 1.0) = 220.0;
+// Near/far camera distance (world units) for extra roughness; shader uses min/max so start > end never inverts smoothstep.
+uniform float distance_roughness_start : hint_range(10.0, 2000.0, 1.0) = 55.0;
+uniform float distance_roughness_end : hint_range(10.0, 2000.0, 1.0) = 220.0;
 
 uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.92;
 uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.42;
@@ -201,7 +202,9 @@ void fragment() {
 	ALPHA = alpha;
 	METALLIC = 0.0;
 	float dist_cam = distance(v_world_pos, CAMERA_POSITION_WORLD);
-	float far_detail = smoothstep(distance_roughness_start, distance_roughness_end, dist_cam);
+	float d_near = min(distance_roughness_start, distance_roughness_end);
+	float d_far = max(distance_roughness_start, distance_roughness_end);
+	float far_detail = smoothstep(d_near, d_far, dist_cam);
 	float rgh = mix(roughness, roughness_foam, foam_mask * 0.85);
 	rgh = min(1.0, rgh + far_detail * distance_roughness_add);
 	ROUGHNESS = rgh;

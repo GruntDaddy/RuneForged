@@ -8,6 +8,8 @@ const _LOG_REL := "res://debug-77cfd5.log"
 
 
 func _ready() -> void:
+	# Gerstner displacement moves vertices horizontally; expand AABB so the mesh is not frustum-culled in strips.
+	custom_aabb = AABB(Vector3(-400.0, -6.0, -400.0), Vector3(800.0, 12.0, 800.0))
 	# region agent log
 	_dbg("H3", "water_depth_sync_ready", { "has_override": material_override != null })
 	# endregion
@@ -44,6 +46,10 @@ func _sync_camera_matrices() -> void:
 			"inv_proj_ok": true
 		})
 	if Engine.get_frames_drawn() == 2:
+		_dbg("H6", "water_visibility_cull_guard", {
+			"custom_aabb_size": [custom_aabb.size.x, custom_aabb.size.y, custom_aabb.size.z],
+			"cam_far": cam.far
+		})
 		_dbg("H1", "wave_direction_semantics", {
 			"toward_land_export": [toward_land.x, toward_land.y],
 			"toward_land_normalized": [toward_land.normalized().x, toward_land.normalized().y] if toward_land.length_squared() > 0.0001 else [0.0, 0.0],
