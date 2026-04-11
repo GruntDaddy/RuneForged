@@ -16,6 +16,8 @@
 [ext_resource type="PackedScene" uid="uid://c2c0dw30myivy" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_home_B_red.gltf" id="14_f2ojk"]
 [ext_resource type="PackedScene" uid="uid://c8ogr0g76r2up" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_church_red.gltf" id="15_dg225"]
 [ext_resource type="PackedScene" uid="uid://c5ffx2tu0tceg" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_tavern_red.gltf" id="16_arhr5"]
+[ext_resource type="Shader" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
+[ext_resource type="Script" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
 
 [sub_resource type="Gradient" id="Gradient_terrain"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -734,7 +736,7 @@ shader = ExtResource("3_water")
 shader_parameter/water_level = 1.0
 shader_parameter/depth_fade_distance = 18.0
 shader_parameter/depth_deep_boost = 0.35
-shader_parameter/sky_depth_threshold = 0.9992
+shader_parameter/sky_depth_far_max = 0.0015
 shader_parameter/shallow_color = Color(0.28, 0.62, 0.72, 0.78)
 shader_parameter/deep_color = Color(0.03, 0.11, 0.2, 0.9)
 shader_parameter/foam_color = Color(0.92, 0.96, 1, 1)
@@ -743,11 +745,11 @@ shader_parameter/foam_shore_above = 1.1
 shader_parameter/foam_noise_scale = 0.38
 shader_parameter/foam_noise_speed = 0.65
 shader_parameter/foam_intensity = 0.85
-shader_parameter/roughness = 0.07
-shader_parameter/roughness_foam = 0.04
-shader_parameter/specular = 0.6
+shader_parameter/roughness = 0.12
+shader_parameter/roughness_foam = 0.06
+shader_parameter/specular_amount = 0.35
 shader_parameter/fresnel_power = 3.2
-shader_parameter/fresnel_intensity = 0.45
+shader_parameter/fresnel_intensity = 0.22
 shader_parameter/wave_speed = 0.55
 shader_parameter/wave_height = 0.07
 shader_parameter/wave_steepness = 0.42
@@ -761,12 +763,22 @@ size = Vector2(720, 720)
 subdivide_width = 96
 subdivide_depth = 96
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rune_sky"]
+shader = ExtResource("sky_rune_shader")
+
+[sub_resource type="Sky" id="Sky_rune"]
+sky_material = SubResource("ShaderMaterial_rune_sky")
+process_mode = 2
+radiance_size = 3
+
 [sub_resource type="Environment" id="Environment_main"]
-background_mode = 1
-background_color = Color(0.1, 0.12, 0.18, 1)
+background_mode = 2
+sky = SubResource("Sky_rune")
 ambient_light_source = 2
-ambient_light_color = Color(0.45, 0.5, 0.55, 1)
+ambient_light_color = Color(0.45, 0.52, 0.58, 1)
 ambient_light_energy = 0.5
+tonemap_mode = 3
+tonemap_white = 6.0
 
 [node name="TutorialIsle" type="Node3D" unique_id=1741229412]
 
@@ -788,6 +800,11 @@ metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]
 environment = SubResource("Environment_main")
+
+[node name="DayNightCycle" type="Node3D" parent="."]
+script = ExtResource("day_night_script")
+day_length_seconds = 900.0
+start_time_of_day = 0.32
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1762949175]
 transform = Transform3D(1, 0, 0, 0, 0.70710695, 0.70710695, 0, -0.70710695, 0.70710695, 0, 10, 12)

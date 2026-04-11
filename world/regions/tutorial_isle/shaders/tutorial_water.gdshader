@@ -6,7 +6,8 @@ uniform sampler2D depth_texture : hint_depth_texture, filter_linear_mipmap;
 uniform float water_level : hint_range(-256.0, 256.0, 0.01) = 1.0;
 uniform float depth_fade_distance : hint_range(0.1, 128.0, 0.1) = 18.0;
 uniform float depth_deep_boost : hint_range(0.0, 2.0, 0.01) = 0.35;
-uniform float sky_depth_threshold : hint_range(0.9, 1.0, 0.0001) = 0.9992;
+// Reverse-Z (Forward+): far plane / empty sky is near 0.0, not 1.0
+uniform float sky_depth_far_max : hint_range(0.0, 0.05, 0.0001) = 0.0015;
 
 uniform vec4 shallow_color : source_color = vec4(0.28, 0.62, 0.72, 0.78);
 uniform vec4 deep_color : source_color = vec4(0.03, 0.11, 0.2, 0.9);
@@ -18,11 +19,11 @@ uniform float foam_noise_scale : hint_range(0.02, 2.0, 0.01) = 0.38;
 uniform float foam_noise_speed : hint_range(0.0, 3.0, 0.01) = 0.65;
 uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.85;
 
-uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.07;
-uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.04;
-uniform float specular : hint_range(0.0, 1.0, 0.01) = 0.6;
+uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.12;
+uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.06;
+uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.35;
 uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 3.2;
-uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.45;
+uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.22;
 
 uniform float wave_speed : hint_range(0.0, 4.0, 0.01) = 0.55;
 uniform float wave_height : hint_range(0.0, 0.5, 0.001) = 0.07;
@@ -33,8 +34,6 @@ uniform float wave_scale_3 : hint_range(0.1, 4.0, 0.01) = 2.35;
 uniform float ripple_scale : hint_range(1.0, 64.0, 0.5) = 22.0;
 uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.08;
 
-const float TAU = 6.28318530718;
-
 varying vec3 v_world_pos;
 varying vec3 v_world_normal;
 
@@ -42,7 +41,7 @@ varying vec3 v_world_normal;
 void gerstner_contrib(vec2 xz, vec2 dir, float amp, float len, float speed, float t,
 		inout vec3 disp, inout vec2 dydxz) {
 	vec2 d = normalize(dir);
-	float k = TAU / max(len, 0.001);
+	float k = TAU / max(len, 0.001); // built-in global TAU (do not redeclare)
 	float phase = k * dot(d, xz) - speed * t * k;
 	float s = sin(phase);
 	float c = cos(phase);
@@ -99,12 +98,16 @@ void vertex() {
 }
 
 vec3 world_position_from_depth(vec2 screen_uv, float raw_depth) {
-	vec3 ndc = vec3(screen_uv * 2.0 - 1.0, raw_depth * 2.0 - 1.0);
-	vec4 clip = vec4(ndc, 1.0);
-	vec4 view = INV_PROJECTION_MATRIX * clip;
-	view.xyz /= view.w;
-	vec4 w = INV_VIEW_MATRIX * vec4(view.xyz, 1.0);
-	return w.xyz;
+	vec3 ndc;
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	// OpenGL: classic NDC Z [-1, 1]
+	ndc = vec3(screen_uv, raw_depth) * 2.0 - 1.0;
+#else
+	// Forward+ / Mobile (Vulkan): NDC Z [0, 1] reverse-Z (Godot 4.3+)
+	ndc = vec3(screen_uv * 2.0 - 1.0, raw_depth);
+#endif
+	vec4 world = INV_VIEW_MATRIX * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	return world.xyz / world.w;
 }
 
 void fragment() {
@@ -116,7 +119,7 @@ void fragment() {
 	float water_column = water_level - terrain_y;
 	float depth_u = max(0.0, water_column);
 
-	bool is_sky = raw_depth > sky_depth_threshold;
+	bool is_sky = raw_depth <= sky_depth_far_max;
 	float depth_norm = 1.0 - exp(-depth_u / max(depth_fade_distance, 0.01));
 	depth_norm = clamp(depth_norm + depth_deep_boost * depth_norm * depth_norm, 0.0, 1.0);
 	if (is_sky) {
@@ -146,7 +149,7 @@ void fragment() {
 	float rx = sin(ruv.x * 2.1 + TIME * 1.05) * ripple_strength;
 	float rz = cos(ruv.y * 2.0 - TIME * 0.92) * ripple_strength;
 	vec3 n_world = normalize(v_world_normal + vec3(rx, 0.0, rz));
-	NORMAL = normalize(mat3(VIEW_MATRIX) * n_world);
+	NORMAL = normalize((VIEW_MATRIX * vec4(n_world, 0.0)).xyz);
 
 	float ndotv = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
 	float fres = pow(1.0 - ndotv, fresnel_power) * fresnel_intensity;
@@ -157,5 +160,5 @@ void fragment() {
 	ALPHA = alpha;
 	METALLIC = 0.0;
 	ROUGHNESS = mix(roughness, roughness_foam, foam_mask * 0.85);
-	SPECULAR = specular;
+	SPECULAR = specular_amount;
 }
