@@ -18,3 +18,5 @@ enum CraftStation {
 @export var skill_id: String = ""
 @export var required_skill_level: int = 0
 @export var station: CraftStation = CraftStation.NONE
+## Item ids that must be present in inventory but are not consumed (e.g. hammer at anvil, chisel for stone).
+@export var required_tool_ids: PackedStringArray = []

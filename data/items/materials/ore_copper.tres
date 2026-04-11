@@ -7,5 +7,5 @@ script = ExtResource("1_item")
 id = "ore_copper"
 display_name = "Copper ore"
 description = "Unrefined copper ore from mining. Combine with tin ore at a smelter to create a bronze ingot."
-max_stack = 1
+max_stack = 99
 tags = PackedStringArray("resource", "ore", "copper")

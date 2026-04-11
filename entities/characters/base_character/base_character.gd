@@ -8,6 +8,7 @@ enum ToolKind {
 	NONE,
 	AXE,
 	PICKAXE,
+	FISHING_ROD,
 }
 
 enum ActionState {
@@ -28,6 +29,9 @@ enum ActionState {
 @onready var equipped_tool_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight
 @onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hatchet_Basic
 @onready var pickaxe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Pickaxe_Basic
+@onready var fishing_pole_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Fishing_Pole
+@onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Tacklebox
+@onready var tacklebox_back_mesh: Node3D = $Rig_Medium/Skeleton3D/Back_Slot/Tool_Tacklebox_Back
 
 ## Order matches cycling in the character creator; one head visible at a time.
 var _head_paths: Array[String] = [
@@ -64,8 +68,10 @@ const _ANIM_PICKUP := "PickUp"
 const _ANIM_USE_ITEM := "Use_Item"
 
 var _action_state: ActionState = ActionState.LOCOMOTION
-## Player-selected tool (keys 1–3). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
+## Player-selected tool (keys 1–4). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
 var _player_chosen_tool: ToolKind = ToolKind.AXE
+## When using FISHING_ROD, show tacklebox on back only if true (e.g. player owns `tool_tacklebox`).
+var _show_tacklebox_on_back: bool = true
 
 
 func _ready() -> void:
@@ -142,11 +148,24 @@ func _apply_tool_kind(kind: ToolKind) -> void:
 		axe_mesh.visible = kind == ToolKind.AXE
 	if pickaxe_mesh != null:
 		pickaxe_mesh.visible = kind == ToolKind.PICKAXE
+	if fishing_pole_mesh != null:
+		fishing_pole_mesh.visible = kind == ToolKind.FISHING_ROD
 	if equipped_tool_root != null:
 		equipped_tool_root.visible = kind != ToolKind.NONE
+	if tacklebox_hand_mesh != null:
+		tacklebox_hand_mesh.visible = false
+	if tacklebox_back_mesh != null:
+		tacklebox_back_mesh.visible = kind == ToolKind.FISHING_ROD and _show_tacklebox_on_back
 
 
-## Player tool selection (keys 1–3): updates which KayKit mesh is shown when idle.
+## When the active tool is the fishing rod, controls whether the back tacklebox mesh is shown (e.g. inventory has `tool_tacklebox`).
+func set_tacklebox_back_display_enabled(enabled: bool) -> void:
+	_show_tacklebox_on_back = enabled
+	if _action_state == ActionState.LOCOMOTION:
+		_apply_tool_kind(_player_chosen_tool)
+
+
+## Player tool selection (keys 1–4): updates which KayKit mesh is shown when idle.
 func set_active_tool(kind: ToolKind) -> void:
 	_player_chosen_tool = kind
 	if _action_state == ActionState.LOCOMOTION:

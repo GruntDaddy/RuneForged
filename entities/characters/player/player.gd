@@ -63,6 +63,24 @@ func _ready() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if interaction_prompt:
 		interaction_prompt.visible = false
+	var inv: Node = get_node_or_null("/root/InventoryService")
+	if inv != null and inv.has_signal("inventory_changed"):
+		inv.inventory_changed.connect(_on_inventory_changed)
+	_refresh_tacklebox_back_visual()
+
+
+func _on_inventory_changed() -> void:
+	_refresh_tacklebox_back_visual()
+
+
+func _refresh_tacklebox_back_visual() -> void:
+	if base_character == null or not base_character.has_method("set_tacklebox_back_display_enabled"):
+		return
+	var inv: Node = get_node_or_null("/root/InventoryService")
+	var has_tb := false
+	if inv != null and inv.has_method("has_item"):
+		has_tb = inv.has_item("tool_tacklebox")
+	base_character.set_tacklebox_back_display_enabled(has_tb)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -136,6 +154,8 @@ func _physics_process(delta: float) -> void:
 			_set_player_tool(_BaseCharacter.ToolKind.AXE)
 		if Input.is_action_just_pressed("tool_pickaxe"):
 			_set_player_tool(_BaseCharacter.ToolKind.PICKAXE)
+		if Input.is_action_just_pressed("tool_fishing"):
+			_set_player_tool(_BaseCharacter.ToolKind.FISHING_ROD)
 		if Input.is_action_just_pressed("tool_hands"):
 			_set_player_tool(_BaseCharacter.ToolKind.NONE)
 

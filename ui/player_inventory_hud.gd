@@ -14,6 +14,12 @@ var _slots: Array[Panel] = []
 var _was_mouse_captured: bool = false
 var _drag_from_idx: int = -1
 
+var _tackle_window: Window = null
+var _tackle_inventory_slot: int = -1
+var _tackle_hook_labels: Array[Label] = []
+var _tackle_bobber_labels: Array[Label] = []
+var _tackle_bait_labels: Array[Label] = []
+
 
 func _style_main_panel() -> void:
 	var path := "res://assets/ui/UI Borders/PNG/Double/Panel/panel-000.png"
@@ -42,11 +48,16 @@ func _style_main_panel() -> void:
 func _ready() -> void:
 	layer = 20
 	visible = false
-	InventoryService.inventory_changed.connect(_refresh_grid)
+	InventoryService.inventory_changed.connect(_on_inventory_service_changed)
 	_style_main_panel()
 	_build_slots()
 	_refresh_grid()
 	_drag_preview.visible = false
+
+
+func _on_inventory_service_changed() -> void:
+	_refresh_grid()
+	_refresh_tackle_panel()
 
 
 func toggle_inventory() -> void:
@@ -56,6 +67,7 @@ func toggle_inventory() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		_refresh_grid()
 	else:
+		_close_tackle_window()
 		if _was_mouse_captured:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		_cancel_drag()
@@ -104,6 +116,19 @@ func _build_slots() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		var ridx := _slot_from_mouse(event.global_position)
+		if ridx >= 0:
+			var s: Variant = InventoryService.get_slot_data(ridx)
+			if s != null and str(s.get("id", "")) == InventoryService.TACKLEBOX_ID:
+				_open_tackle_window(ridx)
+				get_viewport().set_input_as_handled()
+				return
+			if _tackle_window != null and _tackle_window.visible and _tackle_inventory_slot >= 0:
+				if InventoryService.deposit_to_tackle_first_empty(_tackle_inventory_slot, ridx):
+					_refresh_tackle_panel()
+				get_viewport().set_input_as_handled()
+				return
 	if event is InputEventMouseMotion and _drag_from_idx >= 0:
 		_drag_preview.global_position = event.global_position + Vector2(16, 16)
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -233,3 +258,100 @@ func _apply_slot_style(slot: Panel, filled: bool) -> void:
 	sb.content_margin_right = 4
 	sb.content_margin_bottom = 4
 	slot.add_theme_stylebox_override("panel", sb)
+
+
+func _ensure_tackle_window() -> void:
+	if _tackle_window != null:
+		return
+	_tackle_window = Window.new()
+	_tackle_window.title = "Tackle box"
+	_tackle_window.size = Vector2i(340, 460)
+	_tackle_window.unresizable = true
+	_tackle_window.close_requested.connect(_close_tackle_window)
+	add_child(_tackle_window)
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	_tackle_window.add_child(margin)
+	var vb := VBoxContainer.new()
+	vb.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_child(vb)
+	var help := Label.new()
+	help.text = "Right-click a hook, bobber, or bait in inventory to store it here."
+	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vb.add_child(help)
+	_append_tackle_row(vb, "Hooks", InventoryService.TACKLE_HOOKS, _tackle_hook_labels)
+	_append_tackle_row(vb, "Bobbers", InventoryService.TACKLE_BOBBERS, _tackle_bobber_labels)
+	_append_tackle_row(vb, "Bait", InventoryService.TACKLE_BAIT, _tackle_bait_labels)
+	_tackle_window.hide()
+
+
+func _append_tackle_row(parent: VBoxContainer, title: String, count: int, out_labels: Array[Label]) -> void:
+	var tl := Label.new()
+	tl.text = title
+	parent.add_child(tl)
+	var grid := GridContainer.new()
+	grid.columns = mini(count, 5)
+	parent.add_child(grid)
+	out_labels.clear()
+	for i in count:
+		var cell := Label.new()
+		cell.custom_minimum_size = Vector2(56, 22)
+		cell.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cell.text = "—"
+		grid.add_child(cell)
+		out_labels.append(cell)
+
+
+func _open_tackle_window(inv_slot: int) -> void:
+	var s: Variant = InventoryService.get_slot_data(inv_slot)
+	if s == null or str(s.get("id", "")) != InventoryService.TACKLEBOX_ID:
+		return
+	_ensure_tackle_window()
+	_tackle_inventory_slot = inv_slot
+	_refresh_tackle_panel()
+	_tackle_window.popup_centered()
+
+
+func _close_tackle_window() -> void:
+	if _tackle_window != null:
+		_tackle_window.hide()
+	_tackle_inventory_slot = -1
+
+
+func _refresh_tackle_panel() -> void:
+	if _tackle_window == null or not _tackle_window.visible:
+		return
+	if _tackle_inventory_slot < 0:
+		return
+	var t: Dictionary = InventoryService.get_tackle_for_slot(_tackle_inventory_slot)
+	_fill_tackle_labels(_tackle_hook_labels, t.get("hooks", []))
+	_fill_tackle_labels(_tackle_bobber_labels, t.get("bobbers", []))
+	_fill_tackle_labels(_tackle_bait_labels, t.get("bait", []))
+
+
+func _fill_tackle_labels(labels: Array[Label], arr: Variant) -> void:
+	if typeof(arr) != TYPE_ARRAY:
+		return
+	var a: Array = arr
+	for i in labels.size():
+		var lab: Label = labels[i]
+		if i >= a.size() or a[i] == null:
+			lab.text = "—"
+			continue
+		var c: Variant = a[i]
+		if typeof(c) != TYPE_DICTIONARY:
+			lab.text = "—"
+			continue
+		var id := str(c.get("id", ""))
+		var n := int(c.get("count", 0))
+		if id.is_empty():
+			lab.text = "—"
+		else:
+			var short := id
+			if short.length() > 8:
+				short = short.substr(0, 7) + "…"
+			lab.text = "%s x%d" % [short, n]

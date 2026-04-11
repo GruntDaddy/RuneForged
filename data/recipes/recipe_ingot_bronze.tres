@@ -1,23 +1,23 @@
-[gd_resource type="Resource" script_class="RecipeData" format=3 uid="uid://d113oposltofn"]
+[gd_resource type="Resource" script_class="RecipeData" format=3]
 
-[ext_resource type="Script" uid="uid://dnknxut23xpmj" path="res://data/schemas/recipe_ingredient.gd" id="1_qgx2n"]
-[ext_resource type="Script" uid="uid://bslp8gi7l5541" path="res://data/schemas/recipe_data.gd" id="2_78mm1"]
+[ext_resource type="Script" path="res://data/schemas/recipe_ingredient.gd" id="1_ing"]
+[ext_resource type="Script" path="res://data/schemas/recipe_data.gd" id="2_rec"]
 
-[sub_resource type="Resource" id="Resource_in1"]
-script = ExtResource("1_qgx2n")
+[sub_resource type="Resource" id="Resource_tin"]
+script = ExtResource("1_ing")
 item_id = "ore_tin"
 count = 2
 
-[sub_resource type="Resource" id="Resource_qgx2n"]
-script = ExtResource("1_qgx2n")
+[sub_resource type="Resource" id="Resource_cu"]
+script = ExtResource("1_ing")
 item_id = "ore_copper"
-metadata/_custom_type_script = "uid://dnknxut23xpmj"
+count = 1
 
 [resource]
-script = ExtResource("2_78mm1")
+script = ExtResource("2_rec")
 id = "ingot_bronze"
 display_name = "Bronze ingot"
-inputs = Array[ExtResource("1_qgx2n")]([SubResource("Resource_in1"), SubResource("Resource_qgx2n")])
+inputs = Array[ExtResource("1_ing")]([SubResource("Resource_tin"), SubResource("Resource_cu")])
 output_item_id = "ingot_bronze"
 skill_id = "smithing"
-station = 2
+station = 5

@@ -7,5 +7,5 @@ script = ExtResource("1_gwwla")
 id = "ingot_bronze"
 display_name = "Bronze ingot"
 description = "A bronze ingot; Smelted from tin and copper ores."
-max_stack = 1
+max_stack = 99
 tags = PackedStringArray("resource", "ingot", "bronze")
