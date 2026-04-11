@@ -22,13 +22,14 @@ uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
 uniform float star_brightness : hint_range(0.0, 2.0, 0.01) = 0.65;
 uniform vec3 star_tint : source_color = vec3(0.85, 0.9, 1.0);
 
-uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.52;
-uniform float cloud_softness : hint_range(0.01, 0.5, 0.01) = 0.18;
+uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.56;
+uniform float cloud_softness : hint_range(0.01, 0.7, 0.01) = 0.38;
+uniform float cloud_warp : hint_range(0.0, 1.0, 0.01) = 0.42;
 uniform vec3 cloud_color_day : source_color = vec3(0.92, 0.94, 0.98);
 uniform vec3 cloud_color_sunset : source_color = vec3(0.98, 0.72, 0.55);
 uniform vec3 cloud_color_night : source_color = vec3(0.12, 0.14, 0.2);
 uniform float cloud_wind_speed : hint_range(0.0, 0.05, 0.0001) = 0.008;
-uniform float cloud_domain : hint_range(1.0, 12.0, 0.1) = 4.5;
+uniform float cloud_domain : hint_range(1.0, 12.0, 0.1) = 2.8;
 
 float hash21(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -57,31 +58,15 @@ float fbm(vec2 p) {
 	return v;
 }
 
-// Voronoi with per-cell scale variation → varied cloud sizes
-float clouds_voronoi(vec2 p, float time_wind) {
-	vec2 ip = floor(p);
-	vec2 fp = fract(p);
-	float md = 8.0;
-	float second = 8.0;
-	for (int y = -1; y <= 1; y++) {
-		for (int x = -1; x <= 1; x++) {
-			vec2 g = vec2(float(x), float(y));
-			vec2 cell = ip + g;
-			float h = hash21(cell);
-			float sz = 0.45 + h * 0.95;
-			vec2 o = vec2(hash21(cell + vec2(13.0, 2.0)), hash21(cell + vec2(7.0, 29.0))) * 0.7 + 0.15;
-			o += vec2(time_wind * (0.3 + h), time_wind * (0.2 + h * 0.5)) * sz;
-			vec2 r = g + o * sz - fp;
-			float d = length(r) / sz;
-			if (d < md) {
-				second = md;
-				md = d;
-			} else if (d < second) {
-				second = d;
-			}
-		}
-	}
-	return clamp(second - md, 0.0, 1.0);
+// Multi-scale FBM + domain warp — round, fluffy masses (no square Voronoi grid)
+float cloud_fbm_soft(vec2 p) {
+	vec2 warp = vec2(fbm(p * 0.55 + 3.1), fbm(p * 0.55 + 9.7)) * cloud_warp * 0.6;
+	p += warp;
+	float n = fbm(p * 1.05) * 0.5;
+	n += fbm(p * 2.15 + vec2(13.7, 8.2)) * 0.28;
+	n += fbm(p * 4.2 + vec2(-6.0, 2.5)) * 0.14;
+	n += fbm(p * 8.5 + vec2(1.0, 19.0)) * 0.08;
+	return clamp(n, 0.0, 1.0);
 }
 
 vec3 sky_gradient(vec3 eyedir, float day_f, float sunset_f) {
@@ -135,15 +120,17 @@ void sky() {
 	float st = stars(dir, smoothstep(star_threshold, 1.0, night_amt));
 	col += star_tint * st;
 
-	// Clouds: sample on dome
+	// Clouds: FBM-only puffs, wind drift, smoothstep for round edges — fewer than before
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
-	vec2 cu = dir.xz / max(dir.y + 0.18, 0.08) * cloud_domain + wind;
-	float cv = clouds_voronoi(cu * 3.2 + fbm(cu * 1.7) * 0.4, TIME * cloud_wind_speed * 12.0);
-	float dens = smoothstep(cloud_coverage, cloud_coverage + cloud_softness, cv * fbm(cu * 0.9 + wind));
+	vec2 cu = dir.xz / max(dir.y + 0.22, 0.08) * cloud_domain + wind * 1.2;
+	float n = cloud_fbm_soft(cu + vec2(TIME * cloud_wind_speed * 6.0, 0.0));
+	float edge = smoothstep(cloud_coverage, cloud_coverage + cloud_softness, n);
+	float puff = edge * edge * (3.0 - 2.0 * edge);
+	float dens = puff * smoothstep(0.08, 0.95, n + 0.05 * fbm(cu * 1.3 + wind));
 	vec3 ccol = mix(cloud_color_night, cloud_color_day, day_factor);
 	ccol = mix(ccol, cloud_color_sunset, sunset_factor * 0.85);
-	float cloud_alpha = dens * (0.35 + 0.45 * day_factor + 0.35 * night_amt);
-	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.92));
+	float cloud_alpha = dens * (0.14 + 0.2 * day_factor + 0.14 * night_amt);
+	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.42));
 
 	COLOR = col;
 	}

@@ -9,8 +9,9 @@ uniform float depth_deep_boost : hint_range(0.0, 2.0, 0.01) = 0.35;
 // Reverse-Z (Forward+): far plane / empty sky is near 0.0, not 1.0
 uniform float sky_depth_far_max : hint_range(0.0, 0.05, 0.0001) = 0.0015;
 
-uniform vec4 shallow_color : source_color = vec4(0.28, 0.62, 0.72, 0.78);
-uniform vec4 deep_color : source_color = vec4(0.03, 0.11, 0.2, 0.9);
+uniform vec4 shallow_color : source_color = vec4(0.28, 0.62, 0.72, 0.52);
+uniform vec4 deep_color : source_color = vec4(0.03, 0.11, 0.2, 0.62);
+uniform float alpha_depth_boost : hint_range(0.0, 0.35, 0.01) = 0.12;
 
 uniform vec4 foam_color : source_color = vec4(0.92, 0.96, 1.0, 1.0);
 uniform float foam_max_underwater : hint_range(0.05, 32.0, 0.05) = 2.2;
@@ -19,11 +20,12 @@ uniform float foam_noise_scale : hint_range(0.02, 2.0, 0.01) = 0.38;
 uniform float foam_noise_speed : hint_range(0.0, 3.0, 0.01) = 0.65;
 uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.85;
 
-uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.12;
-uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.06;
-uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.35;
+uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.44;
+uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.08;
+uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.12;
 uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 3.2;
-uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.22;
+uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.08;
+uniform float horizon_sky_mix : hint_range(0.0, 0.6, 0.01) = 0.14;
 
 uniform float wave_speed : hint_range(0.0, 4.0, 0.01) = 0.55;
 uniform float wave_height : hint_range(0.0, 0.5, 0.001) = 0.07;
@@ -33,9 +35,10 @@ uniform float wave_scale_3 : hint_range(0.1, 4.0, 0.01) = 2.35;
 
 uniform float ripple_scale : hint_range(1.0, 64.0, 0.5) = 22.0;
 uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.08;
-// Set every frame from GDScript (D3D12 fragment often has no VIEW_MATRIX built-in).
+// inv_view_matrix, view_matrix, inv_projection_matrix: set each frame from water_depth_sync.gd
 uniform mat4 inv_view_matrix;
 uniform mat4 view_matrix;
+uniform mat4 inv_projection_matrix;
 
 varying vec3 v_world_pos;
 varying vec3 v_world_normal;
@@ -109,7 +112,7 @@ vec3 world_position_from_depth(vec2 screen_uv, float raw_depth) {
 	// Forward+ / Mobile (Vulkan): NDC Z [0, 1] reverse-Z (Godot 4.3+)
 	ndc = vec3(screen_uv * 2.0 - 1.0, raw_depth);
 #endif
-	vec4 world = inv_view_matrix * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	vec4 world = inv_view_matrix * inv_projection_matrix * vec4(ndc, 1.0);
 	return world.xyz / world.w;
 }
 
@@ -146,6 +149,8 @@ void fragment() {
 
 	float alpha = mix(shallow_color.a, deep_color.a, depth_norm);
 	alpha = mix(alpha, min(1.0, alpha + 0.12), foam_mask * foam_intensity);
+	// Deeper water reads a bit more opaque; shallow stays see-through
+	alpha = clamp(alpha + depth_norm * alpha_depth_boost, 0.0, 0.92);
 
 	// Small ripple detail on top of wave normals (world space)
 	vec2 ruv = v_world_pos.xz * (ripple_scale * 0.05) + vec2(TIME * 0.4, TIME * 0.33);
@@ -156,8 +161,8 @@ void fragment() {
 
 	float ndotv = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
 	float fres = pow(1.0 - ndotv, fresnel_power) * fresnel_intensity;
-	vec3 horizon = mix(col, vec3(0.75, 0.88, 1.0), 0.35);
-	col = mix(col, horizon, fres);
+	vec3 horizon_tint = vec3(0.58, 0.68, 0.82);
+	col = mix(col, horizon_tint, fres * horizon_sky_mix);
 
 	ALBEDO = col;
 	ALPHA = alpha;

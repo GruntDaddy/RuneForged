@@ -27,11 +27,16 @@ func _sync_camera_matrices() -> void:
 		return
 	var inv_view: Transform3D = cam.global_transform
 	var view: Transform3D = cam.global_transform.affine_inverse()
+	var inv_proj: Projection = cam.get_camera_projection().inverse()
 	mat.set_shader_parameter(&"inv_view_matrix", inv_view)
 	mat.set_shader_parameter(&"view_matrix", view)
+	mat.set_shader_parameter(&"inv_projection_matrix", inv_proj)
 	# region agent log
 	if Engine.get_frames_drawn() == 1:
-		_dbg("H4", "matrices_set_frame1", { "cam_path": str(cam.get_path()) })
+		_dbg("H5", "all_cam_mats_set_frame1", {
+			"cam_path": str(cam.get_path()),
+			"inv_proj_ok": true
+		})
 	# endregion
 
 
