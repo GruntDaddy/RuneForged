@@ -43,6 +43,19 @@ func _sync_camera_matrices() -> void:
 			"cam_path": str(cam.get_path()),
 			"inv_proj_ok": true
 		})
+	if Engine.get_frames_drawn() == 2:
+		_dbg("H1", "wave_direction_semantics", {
+			"toward_land_export": [toward_land.x, toward_land.y],
+			"toward_land_normalized": [toward_land.normalized().x, toward_land.normalized().y] if toward_land.length_squared() > 0.0001 else [0.0, 0.0],
+			"shader_uses": "negated_normalize_for_gerstner_phase_toward_shore"
+		})
+		_dbg("H2", "reflection_params_runtime", {
+			"roughness": mat.get_shader_parameter(&"roughness"),
+			"specular_amount": mat.get_shader_parameter(&"specular_amount"),
+			"horizon_sky_mix": mat.get_shader_parameter(&"horizon_sky_mix"),
+			"fresnel_intensity": mat.get_shader_parameter(&"fresnel_intensity"),
+			"shallow_color_str": str(mat.get_shader_parameter(&"shallow_color"))
+		})
 	# endregion
 
 
