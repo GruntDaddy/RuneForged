@@ -4,16 +4,24 @@
 [ext_resource type="PackedScene" uid="uid://c7bum8q1w6sal" path="res://entities/characters/base_character/armL_default.tscn" id="1_q1tpy"]
 [ext_resource type="PackedScene" uid="uid://cv1o84ye1kgjc" path="res://entities/characters/base_character/armR_default.tscn" id="2_spp4w"]
 [ext_resource type="PackedScene" uid="uid://bxwqnpy2nj26j" path="res://entities/equipment/tools/hatchet_basic.tscn" id="2_vi1d6"]
+[ext_resource type="PackedScene" uid="uid://dqum5qhqw8lxe" path="res://entities/equipment/tools/hatchet_bronze.tscn" id="3_kj756"]
 [ext_resource type="PackedScene" uid="uid://5vxi2vbd3arf" path="res://entities/characters/base_character/body_default.tscn" id="3_vl2hm"]
-[ext_resource type="PackedScene" uid="uid://bh602nm566cvu" path="res://entities/equipment/weapons/melee/1h_sword_wood.tscn" id="4_0oxa4"]
 [ext_resource type="PackedScene" uid="uid://b8f0fwj213du0" path="res://entities/characters/base_character/head_default.tscn" id="4_k8f6t"]
 [ext_resource type="PackedScene" uid="uid://dl8nv0b72d0dv" path="res://entities/characters/head_library/head_mage.tscn" id="4_swqeb"]
-[ext_resource type="PackedScene" path="res://entities/equipment/tools/pickaxe_basic.tscn" id="4_vi1d6"]
+[ext_resource type="PackedScene" uid="uid://bmv4fcadnp2nq" path="res://entities/equipment/tools/pickaxe_basic.tscn" id="4_vi1d6"]
 [ext_resource type="PackedScene" uid="uid://bf5pwm3v17uv2" path="res://entities/characters/head_library/head_ranger.tscn" id="4_vl2hm"]
+[ext_resource type="PackedScene" uid="uid://2dpxjfyvusnf" path="res://entities/equipment/tools/pickaxe_bronze.tscn" id="5_mhell"]
 [ext_resource type="PackedScene" uid="uid://cptu7k6tthp5l" path="res://entities/characters/base_character/legL_default.tscn" id="5_swqeb"]
+[ext_resource type="PackedScene" uid="uid://lafnf4dbnsv3" path="res://entities/equipment/tools/fishing_pole.tscn" id="6_633uw"]
 [ext_resource type="PackedScene" uid="uid://3qh650bksi38" path="res://entities/characters/base_character/legR_default.tscn" id="6_gq86d"]
+[ext_resource type="PackedScene" uid="uid://hff5eby587u3" path="res://entities/equipment/tools/tool_hammer.tscn" id="7_hcn84"]
 [ext_resource type="Texture2D" uid="uid://n4s811wr2nhy" path="res://assets/kaykit/characters/raw/Engineer_engineer_texture.png" id="7_k8f6t"]
+[ext_resource type="PackedScene" uid="uid://bowouj2mkapt8" path="res://entities/equipment/weapons/melee/dagger_bronze.tscn" id="8_5l5lm"]
+[ext_resource type="PackedScene" uid="uid://didfsnir87k1n" path="res://entities/equipment/weapons/melee/1h_sword_bronze.tscn" id="9_tmpau"]
+[ext_resource type="PackedScene" uid="uid://b7pnqddunrelb" path="res://entities/equipment/off_hand/torch.tscn" id="10_lfxo5"]
 [ext_resource type="Animation" uid="uid://shplmx2jg2pf" path="res://assets/animations/rig_medium/movement/Jump_Idle.res" id="11_ey55c"]
+[ext_resource type="PackedScene" uid="uid://3sstdn37s5ct" path="res://entities/characters/base_character/tool_chisel.tscn" id="11_udusj"]
+[ext_resource type="PackedScene" uid="uid://b01fur407hh45" path="res://entities/characters/base_character/tool_tacklebox.tscn" id="12_2wxdn"]
 [ext_resource type="Animation" uid="uid://c1ppoxn7spxqu" path="res://assets/animations/rig_medium/movement/T-Pose.res" id="12_upkct"]
 [ext_resource type="Animation" uid="uid://cflhjeqn0pbxu" path="res://assets/animations/rig_medium/movement/Walking_B.res" id="13_jxcl3"]
 [ext_resource type="Animation" uid="uid://d3o4ksbp01vk4" path="res://assets/animations/rig_medium/movement/Running_A.res" id="13_run_a"]
@@ -225,22 +233,56 @@ transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0.02, 0.08, -0.02)
 
 [node name="Hatchet_Basic" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=1667268177 instance=ExtResource("2_vi1d6")]
 transform = Transform3D(0.3373217, -2.4001667, 0.61271966, -2.4756756, -0.34793323, -1.4901161e-08, 0.08527414, -0.6067567, -2.4237535, -0.14686882, -0.0038645267, 0.035702467)
+visible = false
+
+[node name="Hatchet_Bronze" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=1225444698 instance=ExtResource("3_kj756")]
+transform = Transform3D(0.0058036745, -0.9998306, 0.017464586, -0.99097526, -0.008089304, -0.13380475, 0.1339233, -0.016530514, -0.99085355, -0.17256379, -0.08761716, -0.14230514)
+visible = false
 
 [node name="Pickaxe_Basic" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=1211719090 instance=ExtResource("4_vi1d6")]
 transform = Transform3D(-0.20902401, -1.9842654, -0.0052628913, -1.5732234, 0.23935395, -0.6268017, 0.5197879, -0.07349513, -1.8992349, -0.049999833, 0.037499785, 0.05000031)
 visible = false
 
+[node name="Pickaxe_Bronze" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=1567564236 instance=ExtResource("5_mhell")]
+transform = Transform3D(-0.209024, -1.9842654, -0.005262891, -1.5732232, 0.23935394, -0.6268018, 0.5197879, -0.073495135, -1.8992348, -0.049999833, 0.037499785, 0.05000031)
+visible = false
+
+[node name="Fishing_Pole" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=245412400 instance=ExtResource("6_633uw")]
+transform = Transform3D(0.45563015, -1.5399227, -1.1920733, 0.094936974, -1.2052463, 1.5932258, -1.945093, -0.4195468, -0.20147549, -0.00011610985, 0.17547023, -3.0994415e-05)
+
+[node name="Tool_Hammer" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight" unique_id=632950477 instance=ExtResource("7_hcn84")]
+transform = Transform3D(0.537993, -1.6839651, -0.33885837, 1.699169, 0.46967798, 0.36363167, -0.2517715, -0.42856053, 1.7300135, -0.037598073, 0.04066062, -0.010243058)
+visible = false
+
 [node name="EquippedWeaponRight" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_R" unique_id=2015968848]
 transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0.02, 0.08, -0.02)
 
-[node name="Sword_1h_Wooden" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight" unique_id=1687718253 instance=ExtResource("4_0oxa4")]
-transform = Transform3D(0.091952965, -2.4732785, -0.11316204, 0.9941071, 0.21163447, 0.067709416, -0.057406016, -0.29680344, 0.991267, -0.050899148, 0.021958709, 0.000983119)
+[node name="Dagger_Bronze" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight" unique_id=776132837 instance=ExtResource("8_5l5lm")]
+transform = Transform3D(0.18716323, -1.2218914, -0.18561013, 0.59846175, -0.074648, 1.0948857, -1.0813476, -0.25280216, 0.5738264, -0.21319687, 0.076958895, 0.011393905)
+visible = false
+
+[node name="Bronze1hSword" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight" unique_id=2036000580 instance=ExtResource("9_tmpau")]
+transform = Transform3D(-0.061425984, -1.9185419, -0.56162536, 1.9185438, -0.21443704, 0.5226936, -0.5616213, -0.52269804, 1.8469889, -0.12925005, 0.02533102, 0.041024923)
 visible = false
 
 [node name="HandAttach_L" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" unique_id=1498365635]
 transform = Transform3D(0.26286316, -2.9802322e-07, 0.9648331, -2.0861626e-07, -0.99999905, 5.066395e-07, 0.9648325, -7.1525574e-07, -0.26286328, 0.48096094, 0.6344771, 0.07156995)
 bone_name = "hand.l"
 bone_idx = 7
+
+[node name="EquippedToolLeft" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" unique_id=623155603]
+
+[node name="Torch" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft" unique_id=1765022816 instance=ExtResource("10_lfxo5")]
+transform = Transform3D(-0.12826097, 0.9429004, 0.30738866, -0.942901, -0.21200708, 0.25688747, 0.30738795, -0.25688833, 0.9162539, 1.1920929e-07, 0.13116366, -1.4901161e-07)
+
+[node name="Tool_Chisel" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft" unique_id=959245639 instance=ExtResource("11_udusj")]
+transform = Transform3D(-0.09468653, 0.38777915, 0.025720416, -0.14776638, -0.011437908, -0.3715298, -0.35944316, -0.097449124, 0.14595965, 0.07199395, 0.12131399, -0.0056768954)
+
+[node name="Tool_Tacklebox" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft" unique_id=855795433 instance=ExtResource("12_2wxdn")]
+transform = Transform3D(-0.7263117, -0.036616087, 0.18338838, 0.05568116, -0.74446815, 0.07188239, 0.17852645, 0.08322702, 0.7236722, 0.03202921, 0.46533555, 0.011936009)
+visible = false
+
+[node name="EquippedWeaponLeft" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" unique_id=1750386448]
 
 [node name="Head_Slot" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" unique_id=2057612448]
 transform = Transform3D(0.9997204, -1.3969839e-09, 0.02364657, 7.039006e-05, 0.99999547, -0.0029758648, -0.023646463, 0.0029766955, 0.99971604, -4.296505e-09, 1.2278123, 0.0027031973)
