@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3 uid="uid://cec7xrbjhwdng"]
+
+[ext_resource type="Script" uid="uid://b6dkr883mvecv" path="res://data/schemas/resource_node_data.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+profile_id = "tree_normal"
+skill_id = "woodcutting"
+primary_item_id = "logs"
+max_yield = 3

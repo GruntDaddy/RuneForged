@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b63046x1nmneq"]
+
+[ext_resource type="Script" uid="uid://bc3743mbucn7f" path="res://data/schemas/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "logs_oak"
+display_name = "Oak logs"
+description = "Sturdy oak timber."
+max_stack = 1
+tags = PackedStringArray("resource", "wood", "oak")

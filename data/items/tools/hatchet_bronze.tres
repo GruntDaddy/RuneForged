@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ToolData" format=3 uid="uid://boy5guhetymfa"]
+
+[ext_resource type="Script" uid="uid://u6qkkibfc14v" path="res://data/schemas/tool_data.gd" id="1_td"]
+[ext_resource type="Script" uid="uid://c7utgppqsgong" path="res://data/schemas/tool_stats.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="Resource_ts"]
+script = ExtResource("2_ts")
+tier = 2
+harvest_power = 1.15
+
+[resource]
+script = ExtResource("1_td")
+tool_stats = SubResource("Resource_ts")
+id = "hatchet_bronze"
+display_name = "Bronze hatchet"
+description = "A bronze hatchet; a bit sharper."
+category = 2
+max_stack = 1
+tags = PackedStringArray("tool", "hatchet", "bronze")

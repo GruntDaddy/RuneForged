@@ -24,6 +24,7 @@ GameState="*res://autoload/game_state.gd"
 SaveManager="*res://autoload/save_manager.gd"
 SceneManager="*res://autoload/scene_manager.gd"
 InventoryService="*res://autoload/inventory_service.gd"
+ItemCatalog="*res://autoload/item_catalog.gd"
 
 [display]
 

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ToolData" format=3 uid="uid://cnv4svplwtice"]
+
+[ext_resource type="Script" uid="uid://u6qkkibfc14v" path="res://data/schemas/tool_data.gd" id="1_td"]
+[ext_resource type="Script" uid="uid://c7utgppqsgong" path="res://data/schemas/tool_stats.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="Resource_ts"]
+script = ExtResource("2_ts")
+
+[resource]
+script = ExtResource("1_td")
+tool_stats = SubResource("Resource_ts")
+id = "hatchet_basic"
+display_name = "Basic hatchet"
+description = "A simple hatchet for woodcutting."
+category = 2
+max_stack = 1
+tags = PackedStringArray("tool", "hatchet")
