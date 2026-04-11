@@ -729,16 +729,37 @@ mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_cnjm5"), SubResource("Terrain3DTextureAsset_q5xbx"), SubResource("Terrain3DTextureAsset_matcp")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
-render_priority = -1
+render_priority = 0
 shader = ExtResource("3_water")
+shader_parameter/water_level = 1.0
+shader_parameter/depth_fade_distance = 18.0
+shader_parameter/depth_deep_boost = 0.35
+shader_parameter/sky_depth_threshold = 0.9992
 shader_parameter/shallow_color = Color(0.28, 0.62, 0.72, 0.78)
 shader_parameter/deep_color = Color(0.03, 0.11, 0.2, 0.9)
+shader_parameter/foam_color = Color(0.92, 0.96, 1, 1)
+shader_parameter/foam_max_underwater = 2.2
+shader_parameter/foam_shore_above = 1.1
+shader_parameter/foam_noise_scale = 0.38
+shader_parameter/foam_noise_speed = 0.65
+shader_parameter/foam_intensity = 0.85
 shader_parameter/roughness = 0.07
+shader_parameter/roughness_foam = 0.04
+shader_parameter/specular = 0.6
+shader_parameter/fresnel_power = 3.2
+shader_parameter/fresnel_intensity = 0.45
 shader_parameter/wave_speed = 0.55
 shader_parameter/wave_height = 0.07
+shader_parameter/wave_steepness = 0.42
+shader_parameter/wave_scale_2 = 1.65
+shader_parameter/wave_scale_3 = 2.35
+shader_parameter/ripple_scale = 22.0
+shader_parameter/ripple_strength = 0.08
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_water"]
 size = Vector2(720, 720)
+subdivide_width = 96
+subdivide_depth = 96
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
