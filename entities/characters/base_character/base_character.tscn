@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://bh602nm566cvu" path="res://entities/equipment/weapons/melee/1h_sword_wood.tscn" id="4_0oxa4"]
 [ext_resource type="PackedScene" uid="uid://b8f0fwj213du0" path="res://entities/characters/base_character/head_default.tscn" id="4_k8f6t"]
 [ext_resource type="PackedScene" uid="uid://dl8nv0b72d0dv" path="res://entities/characters/head_library/head_mage.tscn" id="4_swqeb"]
-[ext_resource type="PackedScene" uid="uid://bmv4fcadnp2nq" path="res://entities/equipment/tools/pickaxe_basic.tscn" id="4_vi1d6"]
+[ext_resource type="PackedScene" path="res://entities/equipment/tools/pickaxe_basic.tscn" id="4_vi1d6"]
 [ext_resource type="PackedScene" uid="uid://bf5pwm3v17uv2" path="res://entities/characters/head_library/head_ranger.tscn" id="4_vl2hm"]
 [ext_resource type="PackedScene" uid="uid://cptu7k6tthp5l" path="res://entities/characters/base_character/legL_default.tscn" id="5_swqeb"]
 [ext_resource type="PackedScene" uid="uid://3qh650bksi38" path="res://entities/characters/base_character/legR_default.tscn" id="6_gq86d"]
