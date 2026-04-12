@@ -52,6 +52,8 @@ uniform float wave_scale_3 : hint_range(0.1, 4.0, 0.01) = 2.35;
 
 uniform float ripple_scale : hint_range(1.0, 64.0, 0.5) = 22.0;
 uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.11;
+// 0 = skip depth texture + unprojection (editor / invalid camera); 1 = full shoreline depth (runtime).
+uniform float depth_reconstruction_enabled : hint_range(0.0, 1.0, 1.0) = 0.0;
 // inv_view_matrix, view_matrix, inv_projection_matrix: set each frame from water_surface.gd
 uniform mat4 inv_view_matrix;
 uniform mat4 view_matrix;
@@ -144,6 +146,19 @@ vec3 world_position_from_depth(vec2 screen_uv, float raw_depth) {
 }
 
 void fragment() {
+	if (depth_reconstruction_enabled < 0.5) {
+		vec3 n_world = normalize(v_world_normal);
+		NORMAL = normalize((view_matrix * vec4(n_world, 0.0)).xyz);
+		vec3 base_col = mix(shallow_color.rgb, deep_color.rgb, 0.42);
+		float alpha = clamp(mix(shallow_color.a, deep_color.a, 0.42) + 0.18, 0.5, 0.82);
+		ALBEDO = base_col;
+		ALPHA = alpha;
+		METALLIC = 0.0;
+		ROUGHNESS = roughness;
+		SPECULAR = specular_amount;
+		return;
+	}
+
 	float raw_depth = textureLod(depth_texture, SCREEN_UV, 0.0).r;
 
 	vec3 seabed_world = world_position_from_depth(SCREEN_UV, raw_depth);
