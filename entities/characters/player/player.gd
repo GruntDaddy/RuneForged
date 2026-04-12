@@ -8,6 +8,8 @@ const _H_WHIFF := 1
 const _H_SUCCESS := 2
 const _H_INV_FULL := 3
 
+const _UNDERWATER_FOG_DEPTH_MAX := 22.0
+
 @export var move_speed: float = 3.15
 @export var run_multiplier: float = 2.6
 @export var turn_speed: float = 12.0
@@ -119,7 +121,11 @@ func _physics_process(delta: float) -> void:
 	var tool_busy: bool = base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active()
 
 	var wl: float = _get_active_water_level()
-	var in_water: bool = wl > -1e6 and global_position.y < wl + 0.45 and global_position.y > wl - water_max_effect_depth
+	var in_water: bool = (
+			wl > -1e6
+			and global_position.y < wl - 0.02
+			and global_position.y > wl - water_max_effect_depth
+	)
 	var depth_below_surface: float = wl - global_position.y
 
 	if is_on_floor():
@@ -575,6 +581,6 @@ func _update_underwater_fog(water_level_y: float) -> void:
 	var cam_submerged: bool = water_level_y > -1e6 and cam_y < water_level_y - 0.02
 	env.fog_enabled = cam_submerged
 	if cam_submerged:
-		var d: float = clampf(water_level_y - cam_y, 0.0, 22.0)
-		var t: float = d / 14.0
+		var d: float = clampf(water_level_y - cam_y, 0.0, _UNDERWATER_FOG_DEPTH_MAX)
+		var t: float = clampf(d / _UNDERWATER_FOG_DEPTH_MAX, 0.0, 1.0)
 		env.fog_density = lerpf(underwater_fog_density_min, underwater_fog_density_max, t)
