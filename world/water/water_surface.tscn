@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://e2p4watersurf_tsc"]
 
 [ext_resource type="Script" uid="uid://d7n3watersurf_gd" path="res://world/water/water_surface.gd" id="1_script"]
-[ext_resource type="ShaderMaterial" uid="uid://b4m1water_mat_xx" path="res://world/water/water_surface_material.tres" id="2_mat"]
+[ext_resource type="ShaderMaterial" uid="uid://cvk5p4at0spqq" path="res://world/water/water_surface_material.tres" id="2_mat"]
 
 [node name="WaterSurface" type="MeshInstance3D"]
 material_override = ExtResource("2_mat")

@@ -157,9 +157,7 @@ void fragment() {
 		METALLIC = 0.0;
 		ROUGHNESS = roughness;
 		SPECULAR = specular_amount;
-		return;
-	}
-
+	} else {
 	float raw_depth = textureLod(depth_texture, SCREEN_UV, 0.0).r;
 
 	vec3 seabed_world = world_position_from_depth(SCREEN_UV, raw_depth);
@@ -228,4 +226,5 @@ void fragment() {
 	rgh = min(1.0, rgh + far_detail * distance_roughness_add);
 	ROUGHNESS = rgh;
 	SPECULAR = specular_amount;
+	}
 }

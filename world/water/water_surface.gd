@@ -1,3 +1,4 @@
+@tool
 extends MeshInstance3D
 ## Supplies view matrices to rune_water.gdshader — D3D12/Forward+ fragment stage lacks VIEW_MATRIX.
 ## Duplicates material_override in _enter_tree (before _ready) so exports cannot mutate the shared .tres.
