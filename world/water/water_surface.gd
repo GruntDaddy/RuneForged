@@ -2,6 +2,10 @@
 extends MeshInstance3D
 ## Supplies view matrices to rune_water.gdshader — D3D12/Forward+ fragment stage lacks VIEW_MATRIX.
 ## Duplicates material_override in _enter_tree (before _ready) so exports cannot mutate the shared .tres.
+##
+## Scene setup: add a ReflectionProbe (or a few) over the playable water so specular picks up sky and
+## nearby terrain. Size the probe to cover the water surface; keep blend and intensity modest for
+## stylized water.
 
 @export var water_level: float = 1.0:
 	set(value):

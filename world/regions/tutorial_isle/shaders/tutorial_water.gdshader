@@ -3,6 +3,7 @@ shader_type spatial;
 render_mode blend_mix, depth_draw_always, cull_disabled, diffuse_burley, specular_schlick_ggx;
 
 uniform sampler2D depth_texture : hint_depth_texture, filter_linear_mipmap;
+uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;
 
 uniform float water_level : hint_range(-256.0, 256.0, 0.01) = 1.0;
 uniform float depth_fade_distance : hint_range(0.1, 128.0, 0.1) = 18.0;
@@ -25,6 +26,13 @@ uniform float foam_sharpness : hint_range(0.5, 4.0, 0.05) = 2.35;
 uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.38;
 uniform float foam_max_blend : hint_range(0.05, 0.85, 0.01) = 0.42;
 uniform float offshore_chop_tint : hint_range(0.0, 0.45, 0.01) = 0.22;
+// Offshore whitecaps from wave steepness (Gerstner normals), not shoreline depth.
+uniform float crest_foam_intensity : hint_range(0.0, 1.5, 0.01) = 0.42;
+uniform float crest_foam_max : hint_range(0.0, 0.55, 0.01) = 0.22;
+uniform float crest_steepness_low : hint_range(0.0, 0.5, 0.01) = 0.08;
+uniform float crest_steepness_high : hint_range(0.0, 1.0, 0.01) = 0.38;
+uniform float crest_depth_near : hint_range(0.0, 24.0, 0.1) = 5.0;
+uniform float crest_depth_far : hint_range(0.5, 48.0, 0.1) = 22.0;
 // World XZ: waves / foam drift toward land (set from water_surface.gd).
 uniform vec2 toward_land_xz = vec2(0.65, 0.52);
 // Approximate island center for wave size falloff (smaller swell offshore).
@@ -44,6 +52,12 @@ uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.14;
 uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 3.0;
 uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.045;
 uniform float horizon_sky_mix : hint_range(0.0, 0.6, 0.01) = 0.07;
+
+// Screen-space refraction (set refraction_enabled 0 on low-end / mobile preset).
+uniform float refraction_enabled : hint_range(0.0, 1.0, 1.0) = 1.0;
+uniform float refraction_uv_scale : hint_range(0.0, 0.12, 0.001) = 0.038;
+uniform float refraction_max_blend : hint_range(0.0, 1.0, 0.01) = 0.58;
+uniform float refraction_shallow_fade : hint_range(0.0, 32.0, 0.1) = 9.0;
 
 uniform float wave_speed : hint_range(0.0, 4.0, 0.01) = 0.55;
 uniform float wave_height : hint_range(0.0, 0.5, 0.001) = 0.07;
@@ -176,6 +190,14 @@ void fragment() {
 
 	vec3 base_col = mix(shallow_color.rgb, deep_color.rgb, depth_norm);
 
+	// Gerstner steepness (before ripple normals): whitecaps offshore
+	vec3 wn = normalize(v_world_normal);
+	float crest_steep = 1.0 - clamp(dot(wn, vec3(0.0, 1.0, 0.0)), 0.0, 1.0);
+	float crest_shape = smoothstep(crest_steepness_low, crest_steepness_high, crest_steep);
+	float crest_offshore = smoothstep(crest_depth_near, crest_depth_far, depth_u);
+	float crest_foam_raw = crest_shape * crest_offshore * crest_foam_intensity;
+	crest_foam_raw = min(crest_foam_raw, crest_foam_max);
+
 	// Foam: tight white band at shore; offshore = separate chop tint (no white foam)
 	vec2 tl = -normalize(toward_land_xz + vec2(1e-4));
 	float shallow_foam = 1.0 - smoothstep(0.0, foam_shore_band, depth_u);
@@ -188,7 +210,8 @@ void fragment() {
 	fuv += tl * TIME * foam_inward_speed;
 	float fbreak = foam_noise(fuv) * 0.5 + foam_noise(fuv * 2.3 + TIME * 0.2) * 0.35 + 0.15;
 	foam_mask *= fbreak;
-	float foam_amt = min(foam_mask * foam_intensity, foam_max_blend);
+	float shore_foam_amt = min(foam_mask * foam_intensity, foam_max_blend);
+	float foam_amt = min(shore_foam_amt + crest_foam_raw * (1.0 - shore_foam_amt * 0.85), foam_max_blend);
 
 	float offshore = smoothstep(foam_shore_band + 0.8, foam_shore_band + 12.0, depth_u);
 	vec3 chop_color = base_col * vec3(0.9, 0.97, 1.06);
@@ -209,6 +232,17 @@ void fragment() {
 	float rz = cos(ruv.y * 2.0 - TIME * 0.92 + dot(v_world_pos.xz, tl) * 0.06) * ripple_mul;
 	vec3 n_world = normalize(v_world_normal + vec3(rx, 0.0, rz));
 	NORMAL = normalize((view_matrix * vec4(n_world, 0.0)).xyz);
+
+	// Refraction: distort background; weaker in very shallow water and at grazing view; off for sky
+	float ndotv_pre = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
+	if (refraction_enabled > 0.5 && !is_sky) {
+		vec2 refr_uv = SCREEN_UV + NORMAL.xy * refraction_uv_scale;
+		refr_uv = clamp(refr_uv, vec2(0.001), vec2(0.999));
+		vec3 refr_bg = textureLod(screen_texture, refr_uv, 0.0).rgb;
+		float shallow_f = smoothstep(0.0, max(refraction_shallow_fade, 0.01), depth_u);
+		float refr_w = refraction_max_blend * ndotv_pre * shallow_f;
+		col = mix(col, refr_bg, refr_w);
+	}
 
 	float ndotv = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
 	float fres = pow(1.0 - ndotv, fresnel_power) * fresnel_intensity;
