@@ -13,15 +13,16 @@ uniform vec4 shallow_color : source_color = vec4(0.1, 0.45, 0.62, 0.58);
 uniform vec4 deep_color : source_color = vec4(0.02, 0.09, 0.16, 0.7);
 uniform float alpha_depth_boost : hint_range(0.0, 0.35, 0.01) = 0.08;
 
-uniform vec4 foam_color : source_color = vec4(0.92, 0.96, 1.0, 1.0);
+uniform vec4 foam_color : source_color = vec4(0.82, 0.9, 0.95, 1.0);
 // Foam mainly within this underwater depth (world units; ~6-7 ft if 1 unit ~ 1 ft).
 uniform float foam_shore_band : hint_range(0.5, 24.0, 0.1) = 7.0;
 uniform float foam_shore_above : hint_range(0.05, 16.0, 0.05) = 1.1;
 uniform float foam_noise_scale : hint_range(0.02, 2.0, 0.01) = 0.38;
 uniform float foam_noise_speed : hint_range(0.0, 3.0, 0.01) = 0.65;
 uniform float foam_inward_speed : hint_range(0.0, 2.0, 0.01) = 0.42;
-uniform float foam_sharpness : hint_range(0.5, 4.0, 0.05) = 1.85;
-uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.92;
+uniform float foam_sharpness : hint_range(0.5, 4.0, 0.05) = 2.35;
+uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.38;
+uniform float foam_max_blend : hint_range(0.05, 0.85, 0.01) = 0.42;
 uniform float offshore_chop_tint : hint_range(0.0, 0.45, 0.01) = 0.22;
 // World XZ: waves / foam drift toward land (set in water_depth_sync).
 uniform vec2 toward_land_xz = vec2(0.65, 0.52);
@@ -36,12 +37,12 @@ uniform float distance_roughness_add : hint_range(0.0, 0.45, 0.01) = 0.2;
 uniform float distance_roughness_start : hint_range(10.0, 2000.0, 1.0) = 55.0;
 uniform float distance_roughness_end : hint_range(10.0, 2000.0, 1.0) = 220.0;
 
-uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.92;
-uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.42;
-uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.015;
-uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 2.4;
-uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.008;
-uniform float horizon_sky_mix : hint_range(0.0, 0.6, 0.01) = 0.015;
+uniform float roughness : hint_range(0.0, 1.0, 0.01) = 0.58;
+uniform float roughness_foam : hint_range(0.0, 1.0, 0.01) = 0.35;
+uniform float specular_amount : hint_range(0.0, 1.0, 0.01) = 0.14;
+uniform float fresnel_power : hint_range(0.5, 8.0, 0.05) = 3.0;
+uniform float fresnel_intensity : hint_range(0.0, 1.0, 0.01) = 0.045;
+uniform float horizon_sky_mix : hint_range(0.0, 0.6, 0.01) = 0.07;
 
 uniform float wave_speed : hint_range(0.0, 4.0, 0.01) = 0.55;
 uniform float wave_height : hint_range(0.0, 0.5, 0.001) = 0.07;
@@ -50,7 +51,7 @@ uniform float wave_scale_2 : hint_range(0.1, 4.0, 0.01) = 1.65;
 uniform float wave_scale_3 : hint_range(0.1, 4.0, 0.01) = 2.35;
 
 uniform float ripple_scale : hint_range(1.0, 64.0, 0.5) = 22.0;
-uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.08;
+uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.11;
 // inv_view_matrix, view_matrix, inv_projection_matrix: set each frame from water_depth_sync.gd
 uniform mat4 inv_view_matrix;
 uniform mat4 view_matrix;
@@ -129,16 +130,17 @@ void vertex() {
 }
 
 vec3 world_position_from_depth(vec2 screen_uv, float raw_depth) {
+	// NDC: Godot Forward+ uses reverse-Z (depth 0 = far/sky). Unproject to view, then to world.
 	vec3 ndc;
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-	// OpenGL: classic NDC Z [-1, 1]
 	ndc = vec3(screen_uv, raw_depth) * 2.0 - 1.0;
 #else
-	// Forward+ / Mobile (Vulkan): NDC Z [0, 1] reverse-Z (Godot 4.3+)
-	ndc = vec3(screen_uv * 2.0 - 1.0, raw_depth);
+	ndc = vec3(screen_uv.x * 2.0 - 1.0, screen_uv.y * 2.0 - 1.0, raw_depth);
 #endif
-	vec4 world = inv_view_matrix * inv_projection_matrix * vec4(ndc, 1.0);
-	return world.xyz / world.w;
+	vec4 view = inv_projection_matrix * vec4(ndc, 1.0);
+	view.xyz /= max(view.w, 1e-7);
+	vec4 world = inv_view_matrix * vec4(view.xyz, 1.0);
+	return world.xyz / max(world.w, 1e-7);
 }
 
 void fragment() {
@@ -172,14 +174,15 @@ void fragment() {
 	fuv += tl * TIME * foam_inward_speed;
 	float fbreak = foam_noise(fuv) * 0.5 + foam_noise(fuv * 2.3 + TIME * 0.2) * 0.35 + 0.15;
 	foam_mask *= fbreak;
+	float foam_amt = min(foam_mask * foam_intensity, foam_max_blend);
 
 	float offshore = smoothstep(foam_shore_band + 0.8, foam_shore_band + 12.0, depth_u);
 	vec3 chop_color = base_col * vec3(0.9, 0.97, 1.06);
-	vec3 col = mix(base_col, chop_color, offshore * offshore_chop_tint * (1.0 - foam_mask));
-	col = mix(col, foam_color.rgb, foam_mask * foam_intensity);
+	vec3 col = mix(base_col, chop_color, offshore * offshore_chop_tint * (1.0 - foam_amt));
+	col = mix(col, foam_color.rgb, foam_amt);
 
 	float alpha = mix(shallow_color.a, deep_color.a, depth_norm);
-	alpha = mix(alpha, min(1.0, alpha + 0.12), foam_mask * foam_intensity);
+	alpha = mix(alpha, min(1.0, alpha + 0.08), foam_amt);
 	// Deeper water reads a bit more opaque; shallow stays see-through
 	alpha = clamp(alpha + depth_norm * alpha_depth_boost, 0.0, 0.88);
 
@@ -195,7 +198,7 @@ void fragment() {
 
 	float ndotv = clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0);
 	float fres = pow(1.0 - ndotv, fresnel_power) * fresnel_intensity;
-	vec3 horizon_tint = vec3(0.28, 0.38, 0.48);
+	vec3 horizon_tint = vec3(0.2, 0.32, 0.44);
 	col = mix(col, horizon_tint, fres * horizon_sky_mix);
 
 	ALBEDO = col;
@@ -205,7 +208,7 @@ void fragment() {
 	float d_near = min(distance_roughness_start, distance_roughness_end);
 	float d_far = max(distance_roughness_start, distance_roughness_end);
 	float far_detail = smoothstep(d_near, d_far, dist_cam);
-	float rgh = mix(roughness, roughness_foam, foam_mask * 0.85);
+	float rgh = mix(roughness, roughness_foam, foam_amt * 0.85);
 	rgh = min(1.0, rgh + far_detail * distance_roughness_add);
 	ROUGHNESS = rgh;
 	SPECULAR = specular_amount;

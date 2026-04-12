@@ -50,6 +50,10 @@ func _sync_camera_matrices() -> void:
 			"custom_aabb_size": [custom_aabb.size.x, custom_aabb.size.y, custom_aabb.size.z],
 			"cam_far": cam.far
 		})
+		_dbg("H7", "depth_matrix_sanity", {
+			"inv_view_origin_len": inv_view.origin.length(),
+			"scene_identity_matrices_removed": true
+		})
 		_dbg("H1", "wave_direction_semantics", {
 			"toward_land_export": [toward_land.x, toward_land.y],
 			"toward_land_normalized": [toward_land.normalized().x, toward_land.normalized().y] if toward_land.length_squared() > 0.0001 else [0.0, 0.0],
