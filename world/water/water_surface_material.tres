@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cvk5p4at0spqq"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cvk5p4at0spqq"]
 
-[ext_resource type="Shader" path="res://world/water/shaders/rune_water.gdshader" id="1_shader"]
+[ext_resource type="Shader" uid="uid://bfbf13wtl7xto" path="res://world/water/shaders/rune_water.gdshader" id="1_shader"]
 
 [resource]
 render_priority = 16
