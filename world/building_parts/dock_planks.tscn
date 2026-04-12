@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dpj3v0i5gpkxi"]
+
+[ext_resource type="PackedScene" uid="uid://d0dw22228qj5t" path="res://assets/kenney/Fantasy Town/GLB format/planks.glb" id="1_eexeo"]
+[ext_resource type="Material" uid="uid://rh60o1ub4jg4" path="res://shared/materials/wood.tres" id="2_hd8ne"]
+
+[node name="DockPlanks" unique_id=1817115390 instance=ExtResource("1_eexeo")]
+
+[node name="planks" parent="." index="0" unique_id=762175061]
+material_override = ExtResource("2_hd8ne")

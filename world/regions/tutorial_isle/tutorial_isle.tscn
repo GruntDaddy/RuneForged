@@ -19,6 +19,10 @@
 [ext_resource type="PackedScene" uid="uid://c5ffx2tu0tceg" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_tavern_red.gltf" id="16_arhr5"]
 [ext_resource type="PackedScene" uid="uid://dek1qj6qwkoxi" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_mine_red.gltf" id="21_742gl"]
 [ext_resource type="PackedScene" uid="uid://bfxewbuomo8fn" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_well_red.gltf" id="22_742gl"]
+[ext_resource type="PackedScene" uid="uid://b0e3qp8vpk1ci" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_tower_B_red.gltf" id="22_x6gk8"]
+[ext_resource type="PackedScene" uid="uid://b8ivrgegxokyt" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_tower_base_red.gltf" id="23_4pcdv"]
+[ext_resource type="PackedScene" uid="uid://cnr50j1iekanv" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_barracks_red.gltf" id="24_hiyny"]
+[ext_resource type="PackedScene" uid="uid://d2dhpb3cykk6e" path="res://world/building_parts/dock.tscn" id="26_k5dhd"]
 [ext_resource type="Script" uid="uid://c14b0stwqm1en" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
 [ext_resource type="Shader" uid="uid://bago5reb8ocjt" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
 [ext_resource type="Script" uid="uid://clolcce1v6m18" path="res://world/regions/tutorial_isle/water_depth_sync.gd" id="water_depth_sync"]
@@ -855,7 +859,7 @@ light_energy = 0.75
 shadow_enabled = true
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 131.39787, 13.99122, 121.28168)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 188.21335, 3.0158768, 158.84198)
 
 [node name="TerrainObjects" type="Node3D" parent="." unique_id=414022775]
 script = ExtResource("5_terrain_objs")
@@ -865,22 +869,43 @@ script = ExtResource("5_terrain_objs")
 [node name="Trees" type="Node3D" parent="TerrainObjects/Harvestable" unique_id=1740836361]
 
 [node name="HarvestableTree" parent="TerrainObjects/Harvestable/Trees" unique_id=106376001 instance=ExtResource("4_qsbes")]
-transform = Transform3D(1.4999924, -0.0014030102, -0.004596615, 0.001382686, 1.4999846, -0.0066390773, 0.00460277, 0.006634812, 1.4999783, 145.60497, 14.012762, 159.19278)
+transform = Transform3D(1.4999924, -0.0014030102, -0.004596615, 0.001382686, 1.4999846, -0.0066390773, 0.00460277, 0.006634812, 1.4999783, 147.33342, 14.012762, 163.64941)
+
+[node name="HarvestableTree12" parent="TerrainObjects/Harvestable/Trees" unique_id=1777458767 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.4999924, -0.0014030102, -0.004596615, 0.001382686, 1.4999846, -0.0066390773, 0.00460277, 0.006634812, 1.4999783, 139.28906, 14.012762, 168.85315)
+
+[node name="HarvestableTree13" parent="TerrainObjects/Harvestable/Trees" unique_id=136097611 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.4999924, -0.0014030102, -0.004596615, 0.001382686, 1.4999846, -0.0066390773, 0.00460277, 0.006634812, 1.4999783, 142.31418, 14.012762, 157.80415)
 
 [node name="HarvestableTree4" parent="TerrainObjects/Harvestable/Trees" unique_id=289981087 instance=ExtResource("4_qsbes")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 117.34493, 14.012762, 163.07384)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 114.76839, 14.012762, 158.08693)
 
 [node name="HarvestableTree5" parent="TerrainObjects/Harvestable/Trees" unique_id=1989631013 instance=ExtResource("4_qsbes")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 77.9216, 14.012762, 177.13753)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 82.766235, 14.012762, 173.58908)
+
+[node name="HarvestableTree14" parent="TerrainObjects/Harvestable/Trees" unique_id=1115531676 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 72.81506, 14.012762, 176.24257)
+
+[node name="HarvestableTree15" parent="TerrainObjects/Harvestable/Trees" unique_id=693430914 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 59.685493, 14.012762, 168.3503)
+
+[node name="HarvestableTree16" parent="TerrainObjects/Harvestable/Trees" unique_id=1747552652 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 62.28659, 14.012762, 158.74574)
 
 [node name="HarvestableTree6" parent="TerrainObjects/Harvestable/Trees" unique_id=2091649126 instance=ExtResource("4_qsbes")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 77.97622, 14.012762, 121.98811)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 73.74705, 14.012762, 133.61292)
 
 [node name="HarvestableTree7" parent="TerrainObjects/Harvestable/Trees" unique_id=852355191 instance=ExtResource("4_qsbes")]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 99.383125, 14.012762, 102.59282)
 
 [node name="HarvestableTree11" parent="TerrainObjects/Harvestable/Trees" unique_id=904051986 instance=ExtResource("4_qsbes")]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 94.001724, 14.012762, 98.18195)
+
+[node name="HarvestableTree17" parent="TerrainObjects/Harvestable/Trees" unique_id=1446060197 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 83.32777, 14.012762, 124.07249)
+
+[node name="HarvestableTree18" parent="TerrainObjects/Harvestable/Trees" unique_id=259294763 instance=ExtResource("4_qsbes")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 78.65148, 14.012762, 120.162056)
 
 [node name="HarvestableTree9" parent="TerrainObjects/Harvestable/Trees" unique_id=1437339199 instance=ExtResource("4_qsbes")]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 147.82663, 14.012762, 90.9146)
@@ -892,19 +917,25 @@ transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 114.65156, 14.012762, 8
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 102.32735, 14.012762, 169.72356)
 
 [node name="HarvestableTree2" parent="TerrainObjects/Harvestable/Trees" unique_id=1627299252 instance=ExtResource("4_qsbes")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 173.48611, 14.012762, 114.541824)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 175.15926, 14.012762, 116.63039)
 
 [node name="HarvestableTree3" parent="TerrainObjects/Harvestable/Trees" unique_id=1868385184 instance=ExtResource("4_qsbes")]
-transform = Transform3D(1.4993265, -0.044944227, 0, 0.044944227, 1.4993265, 0, 0, 0, 1.5, 176.59071, 14.012762, 138.59998)
+transform = Transform3D(1.4993265, -0.044944227, 0, 0.044944227, 1.4993265, 0, 0, 0, 1.5, 180.10495, 14.012762, 138.59998)
 
 [node name="HarvestableTree_Oak" parent="TerrainObjects/Harvestable/Trees" unique_id=966716589 instance=ExtResource("5_n2gx1")]
-transform = Transform3D(-0.23920357, 0, -1.2778034, 0, 1.3, 0, 1.2778034, 0, -0.23920357, 185.45003, 13.93445, 130.72366)
+transform = Transform3D(-0.23506163, -0.0024531656, -1.2785693, -0.0006353415, 1.2999974, -0.0023774728, 1.2785715, 0.00019497314, -0.23506242, 185.45003, 13.93445, 133.43533)
 
 [node name="HarvestableTree_Oak3" parent="TerrainObjects/Harvestable/Trees" unique_id=761654627 instance=ExtResource("5_n2gx1")]
-transform = Transform3D(-0.23920357, 0, -1.2778034, 0, 1.3, 0, 1.2778034, 0, -0.23920357, 160.54309, 13.93445, 133.93289)
+transform = Transform3D(1.173126, 0, 0.56015587, 0, 1.3, 0, -0.56015587, 0, 1.173126, 170.73984, 13.93445, 137.49147)
+
+[node name="HarvestableTree_Oak5" parent="TerrainObjects/Harvestable/Trees" unique_id=657217080 instance=ExtResource("5_n2gx1")]
+transform = Transform3D(-1.1239336, 0, 0.65327847, 0, 1.2999997, 0, -0.65327847, 0, -1.1239336, 163.81248, 13.93445, 116.3657)
 
 [node name="HarvestableTree_Oak2" parent="TerrainObjects/Harvestable/Trees" unique_id=135057073 instance=ExtResource("5_n2gx1")]
-transform = Transform3D(-1.0675455, 0, 0.7418529, 0, 1.2999997, 0, -0.7418529, 0, -1.0675455, 135.92307, 13.93445, 167.09792)
+transform = Transform3D(0.70435387, 0, 1.0926503, 0, 1.2999996, 0, -1.0926503, 0, 0.70435387, 85.03169, 13.93445, 155.07814)
+
+[node name="HarvestableTree_Oak4" parent="TerrainObjects/Harvestable/Trees" unique_id=1246798209 instance=ExtResource("5_n2gx1")]
+transform = Transform3D(1.1234084, 0, 0.6541807, 0, 1.2999995, 0, -0.6541807, 0, 1.1234084, 109.7076, 13.93445, 119.33065)
 
 [node name="Rocks" type="Node3D" parent="TerrainObjects/Harvestable" unique_id=1064556854]
 
@@ -922,6 +953,21 @@ transform = Transform3D(0.22033359, 0.41555768, -0.8824764, -0.972788, 0.1600852
 
 [node name="HarvestableTinRock5" parent="TerrainObjects/Harvestable/Rocks" unique_id=1557242111 instance=ExtResource("6_q5xbx")]
 transform = Transform3D(0.11571372, -0.445143, 0.8879514, 0.99069345, -0.012777456, -0.13550824, 0.071666144, 0.89536846, 0.4395222, 152.56345, 3.4157667, 170.99483)
+
+[node name="HarvestableTinRock6" parent="TerrainObjects/Harvestable/Rocks" unique_id=1329816906 instance=ExtResource("6_q5xbx")]
+transform = Transform3D(-0.5042762, -0.56198543, -0.6556506, 0.7442882, -0.6678585, -1.2344809e-07, -0.4378819, -0.48799303, 0.7550643, 98.566086, 14.843897, 96.02932)
+
+[node name="HarvestableTinRock7" parent="TerrainObjects/Harvestable/Rocks" unique_id=1229656538 instance=ExtResource("6_q5xbx")]
+transform = Transform3D(0.14984599, -0.5572303, -0.81672573, 0.97291124, -0.06397437, 0.2221496, -0.176038, -0.8278902, 0.53254926, 99.483444, 14.439108, 97.28535)
+
+[node name="HarvestableTinRock8" parent="TerrainObjects/Harvestable/Rocks" unique_id=1717005934 instance=ExtResource("6_q5xbx")]
+transform = Transform3D(0.6735686, 0.43074036, -0.60064, -0.23475918, -0.6458809, -0.72644734, -0.7008521, 0.6303177, -0.3339247, 121.32298, 14.733816, 80.85923)
+
+[node name="HarvestableTinRock9" parent="TerrainObjects/Harvestable/Rocks" unique_id=1039982426 instance=ExtResource("6_q5xbx")]
+transform = Transform3D(-0.4964266, -0.8252117, -0.26941776, 0.86021996, -0.5093069, -0.025055682, -0.116540104, -0.24419668, 0.96269727, 121.22775, 14.805025, 80.60051)
+
+[node name="HarvestableTinRock10" parent="TerrainObjects/Harvestable/Rocks" unique_id=1422669458 instance=ExtResource("6_q5xbx")]
+transform = Transform3D(-0.020873629, -0.5535953, 0.83252424, 0.66382957, -0.6303347, -0.40250337, 0.7475923, 0.54425263, 0.38065037, 120.616196, 14.805025, 81.32002)
 
 [node name="HarvestableRock" parent="TerrainObjects/Harvestable/Rocks" unique_id=1112009552 instance=ExtResource("9_is1td")]
 transform = Transform3D(-0.4402453, -0.6802813, -0.5860047, -0.8395345, 0.54330635, -6.1117684e-09, 0.3183801, 0.49197125, -0.81030774, 153.4463, 14.06051, 132.70702)
@@ -942,13 +988,13 @@ transform = Transform3D(0.5381913, 0.1696043, -0.82558125, -0.8091555, 0.3780651
 transform = Transform3D(-0.12370497, 0.08796206, -0.9884127, -0.8142584, -0.57830656, 0.050443266, -0.5671685, 0.81106347, 0.1431633, 154.71368, 14.325, 100.5339)
 
 [node name="HarvestableRock7" parent="TerrainObjects/Harvestable/Rocks" unique_id=273302035 instance=ExtResource("9_is1td")]
-transform = Transform3D(-0.52709204, -0.81447977, 0.2424808, -0.83953446, 0.5433063, 2.0883936e-08, -0.1317413, -0.20357092, -0.9701563, 125.60761, 14.06051, 165.08774)
+transform = Transform3D(-0.44061726, -0.6808561, -0.5850567, -0.83953446, 0.5433063, 4.0530796e-08, 0.31786495, 0.49117538, -0.8109925, 150.73056, 14.06051, 165.51671)
 
 [node name="HarvestableRock8" parent="TerrainObjects/Harvestable/Rocks" unique_id=1691087324 instance=ExtResource("9_is1td")]
 transform = Transform3D(-0.2302314, -0.90830016, -0.3492625, -0.8091557, 0.37806532, -0.4498155, 0.5406114, 0.17904623, -0.82199866, 91.25377, 14.06051, 165.55869)
 
 [node name="HarvestableRock9" parent="TerrainObjects/Harvestable/Rocks" unique_id=626081456 instance=ExtResource("9_is1td")]
-transform = Transform3D(0.5658533, -0.81010634, -0.15341981, -0.81425846, -0.5783067, 0.050443273, -0.12958805, 0.09637982, -0.9868726, 126.96668, 14.325, 164.57877)
+transform = Transform3D(0.26589534, -0.4487993, -0.85315806, -0.8142585, -0.5783067, 0.050443243, -0.5160259, 0.6812786, -0.51920766, 151.21808, 14.325, 164.1498)
 
 [node name="HarvestableRock10" parent="TerrainObjects/Harvestable/Rocks" unique_id=2012190602 instance=ExtResource("9_is1td")]
 transform = Transform3D(0.12728396, 0.1966835, -0.97217, -0.8395344, 0.54330623, 1.681111e-08, 0.528186, 0.81617016, 0.23427665, 97.54362, 14.06051, 169.90317)
@@ -1251,34 +1297,70 @@ transform = Transform3D(0.6778753, 0.17117363, -0.7149717, -0.7047947, 0.4279982
 [node name="ScatteredRocks_SmallPile19" parent="TerrainObjects/Props/Rocks" unique_id=1773973678 instance=ExtResource("7_q5xbx")]
 transform = Transform3D(0.9075495, -0.010578518, -0.4198119, -0.34562203, 0.5490215, -0.76100004, 0.23853603, 0.83574146, 0.49460787, 166.70279, 5.942037, 143.16841)
 
-[node name="building_home_A_red2" parent="TerrainObjects" unique_id=1785428547 instance=ExtResource("15_avtbp")]
-transform = Transform3D(-9.907431, 0, -1.357501, 0, 10, 0, 1.357501, 0, -9.907431, 108.19957, 13.910606, 163.27968)
-
-[node name="building_home_A_red3" parent="TerrainObjects" unique_id=183957933 instance=ExtResource("15_avtbp")]
-transform = Transform3D(7.783635, 0, -6.2781363, 0, 9.999999, 0, 6.2781363, 0, 7.783635, 154.22168, 13.910606, 94.90313)
+[node name="Dock_1" parent="TerrainObjects/Props" unique_id=2134913320 instance=ExtResource("26_k5dhd")]
+transform = Transform3D(3.871241, 0, -1.0067235, 0, 4, 0, 1.0067235, 0, 3.871241, 205.24173, 1.6094711, 158.97993)
 
 [node name="Buildings" type="Node3D" parent="." unique_id=1242001202]
 
 [node name="building_blacksmith_red2" parent="Buildings" unique_id=638740907 instance=ExtResource("12_matcp")]
-transform = Transform3D(1.4960437, 0, 9.88746, 0, 9.999999, 0, -9.88746, 0, 1.4960437, 69.30779, 13.969859, 148.52983)
+transform = Transform3D(9.976676, 0, -0.6825903, 0, 9.999999, 0, 0.6825903, 0, 9.976676, 126.344376, 13.969859, 89.298546)
 
 [node name="building_market_red2" parent="Buildings" unique_id=366079041 instance=ExtResource("13_m3pej")]
-transform = Transform3D(6.155102, 0, 7.88129, 0, 9.999998, 0, -7.88129, 0, 6.155102, 80.299576, 14.007509, 134.0078)
+transform = Transform3D(5.531589, 0, 8.330757, 0, 9.999998, 0, -8.330757, 0, 5.531589, 69.38623, 14.007509, 145.92247)
 
 [node name="building_home_B_red2" parent="Buildings" unique_id=547476507 instance=ExtResource("14_f2ojk")]
 transform = Transform3D(-9.241332, 0, -3.8207068, 0, 10.000001, 0, 3.8207068, 0, -9.241332, 91.25016, 13.43305, 170.22983)
 
+[node name="building_home_B_red4" parent="Buildings" unique_id=405909286 instance=ExtResource("14_f2ojk")]
+transform = Transform3D(5.1346645, 0, 8.581097, 0, 10.000001, 0, -8.581097, 0, 5.1346645, 86.231155, 11.794289, 116.30038)
+
+[node name="building_home_B_red5" parent="Buildings" unique_id=934158908 instance=ExtResource("14_f2ojk")]
+transform = Transform3D(-9.236858, 0, -3.8315103, 0, 10.000001, 0, 3.8315103, 0, -9.236858, 98.93487, 11.794289, 133.69557)
+
 [node name="building_home_B_red3" parent="Buildings" unique_id=625314752 instance=ExtResource("14_f2ojk")]
 transform = Transform3D(6.34002, 0, -7.733315, 0, 10.000001, 0, 7.733315, 0, 6.34002, 159.98488, 13.43305, 106.1725)
 
+[node name="building_home_B_red6" parent="Buildings" unique_id=419505386 instance=ExtResource("14_f2ojk")]
+transform = Transform3D(-9.224776, 0, 3.8605099, 0, 10, 0, -3.8605099, 0, -9.224776, 136.19019, 11.969748, 106.37407)
+
+[node name="building_home_B_red7" parent="Buildings" unique_id=42260268 instance=ExtResource("14_f2ojk")]
+transform = Transform3D(7.7524223, 0, -6.316639, 0, 9.999997, 0, 6.316639, 0, 7.7524223, 134.15254, 11.969748, 121.16271)
+
 [node name="building_church_red2" parent="Buildings" unique_id=41964623 instance=ExtResource("15_dg225")]
-transform = Transform3D(-2.7815292, 0, -9.605368, 0, 9.999999, 0, 9.605368, 0, -2.7815292, 169.63539, 14.815447, 125.32338)
+transform = Transform3D(0.07085991, 0, -9.999748, 0, 9.999999, 0, 9.999748, 0, 0.07085991, 173.29616, 14.815447, 126.104416)
 
 [node name="building_tavern_red2" parent="Buildings" unique_id=468010838 instance=ExtResource("16_arhr5")]
 transform = Transform3D(-4.868996, 0, 8.734581, 0, 9.999999, 0, -8.734581, 0, -4.868996, 68.874725, 13.515566, 167.25465)
 
-[node name="building_mine_red2" parent="." unique_id=2117630202 instance=ExtResource("21_742gl")]
+[node name="building_mine_red2" parent="Buildings" unique_id=2117630202 instance=ExtResource("21_742gl")]
 transform = Transform3D(8.156431, 0, 5.7855535, 0, 10, 0, -5.7855535, 0, 8.156431, 107.72599, 13.833561, 93.55704)
 
-[node name="building_well_red2" parent="." unique_id=1059056750 instance=ExtResource("22_742gl")]
-transform = Transform3D(8.339533, 0, -5.518351, 0, 10, 0, 5.518351, 0, 8.339533, 101.687, 12.868601, 142.85135)
+[node name="building_well_red2" parent="Buildings" unique_id=1059056750 instance=ExtResource("22_742gl")]
+transform = Transform3D(8.339533, 0, -5.518351, 0, 10, 0, 5.518351, 0, 8.339533, 98.39827, 13.850605, 146.46896)
+
+[node name="building_tower_B_red2" parent="Buildings" unique_id=937361730 instance=ExtResource("22_x6gk8")]
+transform = Transform3D(9.96213, 0, 0.8694707, 0, 10, 0, -0.8694707, 0, 9.96213, 139.26883, 13.42819, 87.26244)
+
+[node name="building_tower_base_red2" parent="Buildings" unique_id=294962682 instance=ExtResource("23_4pcdv")]
+transform = Transform3D(-9.998831, 0, -0.15288448, 0, 10, 0, 0.15288448, 0, -9.998831, 135.61237, 13.550835, 161.93509)
+
+[node name="building_barracks_red2" parent="Buildings" unique_id=886463157 instance=ExtResource("24_hiyny")]
+transform = Transform3D(-9.999915, 0, -0.041190587, 0, 10, 0, 0.041190587, 0, -9.999915, 124.664246, 13.7146015, 161.88698)
+
+[node name="building_home_A_red2" parent="Buildings" unique_id=1785428547 instance=ExtResource("15_avtbp")]
+transform = Transform3D(-9.907431, 0, -1.357501, 0, 10, 0, 1.357501, 0, -9.907431, 108.19957, 13.910606, 163.27968)
+
+[node name="building_home_A_red4" parent="Buildings" unique_id=1898625510 instance=ExtResource("15_avtbp")]
+transform = Transform3D(7.9789953, 0, 6.027902, 0, 9.999999, 0, -6.027902, 0, 7.9789953, 93.158424, 13.910606, 106.83548)
+
+[node name="building_home_A_red5" parent="Buildings" unique_id=1417921513 instance=ExtResource("15_avtbp")]
+transform = Transform3D(8.515748, -0.06944939, 5.2418666, 0.051225957, 9.999744, 0.04926666, -5.2420774, -0.015102509, 8.515887, 145.22644, 13.910606, 115.81213)
+
+[node name="building_home_A_red7" parent="Buildings" unique_id=888586926 instance=ExtResource("15_avtbp")]
+transform = Transform3D(9.560539, -0.034531936, -2.9317002, 0.051225945, 9.999742, 0.049266636, 2.9314542, -0.0621196, 9.560472, 124.06433, 13.910607, 114.88234)
+
+[node name="building_home_A_red6" parent="Buildings" unique_id=32147273 instance=ExtResource("15_avtbp")]
+transform = Transform3D(6.8607078, -0.07098795, 7.274997, 0.051225957, 9.999745, 0.04926666, -7.2751646, 0.00346623, 6.8608975, 108.06919, 13.9089155, 141.94746)
+
+[node name="building_home_A_red3" parent="Buildings" unique_id=183957933 instance=ExtResource("15_avtbp")]
+transform = Transform3D(7.783635, 0, -6.2781363, 0, 9.999999, 0, 6.2781363, 0, 7.783635, 154.22168, 13.910606, 94.90313)
