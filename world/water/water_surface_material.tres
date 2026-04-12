@@ -1,0 +1,49 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://b4m1water_mat_xx"]
+
+[ext_resource type="Shader" uid="uid://c8k2runewater01" path="res://world/water/shaders/rune_water.gdshader" id="1_shader"]
+
+[resource]
+render_priority = 16
+shader = ExtResource("1_shader")
+shader_parameter/water_level = 1.0
+shader_parameter/depth_fade_distance = 18.0
+shader_parameter/depth_deep_boost = 0.35
+shader_parameter/sky_depth_far_max = 0.0015
+shader_parameter/shallow_color = Color(0.1, 0.45, 0.62, 0.58)
+shader_parameter/deep_color = Color(0.02, 0.09, 0.16, 0.7)
+shader_parameter/alpha_depth_boost = 0.08
+shader_parameter/foam_color = Color(0.92, 0.96, 1, 1)
+shader_parameter/foam_shore_band = 7.0
+shader_parameter/foam_shore_above = 1.1
+shader_parameter/foam_noise_scale = 0.38
+shader_parameter/foam_noise_speed = 0.65
+shader_parameter/foam_inward_speed = 0.42
+shader_parameter/foam_sharpness = 1.85
+shader_parameter/foam_intensity = 0.92
+shader_parameter/foam_max_blend = 0.42
+shader_parameter/offshore_chop_tint = 0.22
+shader_parameter/toward_land_xz = Vector2(0.65, 0.52)
+shader_parameter/shore_reference_xz = Vector2(130, 115)
+shader_parameter/shore_wave_falloff_start = 22.0
+shader_parameter/shore_wave_falloff_end = 140.0
+shader_parameter/wave_far_amplitude = 0.2
+shader_parameter/wave_direction_toward_shore = 0.62
+shader_parameter/distance_roughness_add = 0.2
+shader_parameter/distance_roughness_start = 55.0
+shader_parameter/distance_roughness_end = 220.0
+shader_parameter/roughness = 0.92
+shader_parameter/roughness_foam = 0.42
+shader_parameter/specular_amount = 0.015
+shader_parameter/fresnel_power = 2.4
+shader_parameter/fresnel_intensity = 0.008
+shader_parameter/horizon_sky_mix = 0.015
+shader_parameter/wave_speed = 0.55
+shader_parameter/wave_height = 0.07
+shader_parameter/wave_steepness = 0.42
+shader_parameter/wave_scale_2 = 1.65
+shader_parameter/wave_scale_3 = 2.35
+shader_parameter/ripple_scale = 22.0
+shader_parameter/ripple_strength = 0.08
+shader_parameter/inv_view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/inv_projection_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)

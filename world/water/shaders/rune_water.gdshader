@@ -24,7 +24,7 @@ uniform float foam_sharpness : hint_range(0.5, 4.0, 0.05) = 2.35;
 uniform float foam_intensity : hint_range(0.0, 2.0, 0.01) = 0.38;
 uniform float foam_max_blend : hint_range(0.05, 0.85, 0.01) = 0.42;
 uniform float offshore_chop_tint : hint_range(0.0, 0.45, 0.01) = 0.22;
-// World XZ: waves / foam drift toward land (set in water_depth_sync).
+// World XZ: waves / foam drift toward land (set from water_surface.gd).
 uniform vec2 toward_land_xz = vec2(0.65, 0.52);
 // Approximate island center for wave size falloff (smaller swell offshore).
 uniform vec2 shore_reference_xz = vec2(130.0, 115.0);
@@ -52,7 +52,7 @@ uniform float wave_scale_3 : hint_range(0.1, 4.0, 0.01) = 2.35;
 
 uniform float ripple_scale : hint_range(1.0, 64.0, 0.5) = 22.0;
 uniform float ripple_strength : hint_range(0.0, 0.35, 0.001) = 0.11;
-// inv_view_matrix, view_matrix, inv_projection_matrix: set each frame from water_depth_sync.gd
+// inv_view_matrix, view_matrix, inv_projection_matrix: set each frame from water_surface.gd
 uniform mat4 inv_view_matrix;
 uniform mat4 view_matrix;
 uniform mat4 inv_projection_matrix;
