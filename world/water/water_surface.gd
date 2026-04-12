@@ -30,6 +30,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	add_to_group(&"water_surface")
 	extra_cull_margin = cull_margin_extra
 	ignore_occlusion_culling = true
 	_rebuild_mesh()

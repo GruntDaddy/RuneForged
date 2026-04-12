@@ -26,6 +26,16 @@ const _H_INV_FULL := 3
 @export var mine_animation_duration_sec: float = 1.7
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 
+@export_group("Water")
+@export var water_buoyancy_strength: float = 16.0
+@export var water_gravity_scale: float = 0.22
+@export var water_vertical_drag: float = 4.5
+@export var water_horizontal_drag: float = 0.88
+@export var water_jump_multiplier: float = 0.55
+@export var water_max_effect_depth: float = 18.0
+@export var underwater_fog_density_max: float = 0.085
+@export var underwater_fog_density_min: float = 0.028
+
 @onready var base_character: Node3D = $BaseCharacter
 @onready var camera_rig: Node3D = $CameraRig
 @onready var spring_arm: SpringArm3D = $CameraRig/SpringArm3D
@@ -47,6 +57,8 @@ var _harvest_auto_active: bool = false
 var _harvest_auto_target: WeakRef
 var _harvest_auto_gen: int = 0
 
+var _world_environment: WorldEnvironment = null
+
 
 func set_input_enabled(enabled: bool) -> void:
 	_input_enabled = enabled
@@ -58,6 +70,7 @@ func set_input_enabled(enabled: bool) -> void:
 
 func _ready() -> void:
 	add_to_group("player")
+	_world_environment = _find_world_environment()
 	_apply_from_gamestate()
 	if _input_enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -105,13 +118,24 @@ func _physics_process(delta: float) -> void:
 
 	var tool_busy: bool = base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active()
 
+	var wl: float = _get_active_water_level()
+	var in_water: bool = wl > -1e6 and global_position.y < wl + 0.45 and global_position.y > wl - water_max_effect_depth
+	var depth_below_surface: float = wl - global_position.y
+
 	if is_on_floor():
 		if not tool_busy and Input.is_action_just_pressed("jump"):
-			velocity.y = jump_velocity
+			velocity.y = jump_velocity if not in_water else jump_velocity * water_jump_multiplier
 		else:
 			velocity.y = 0.0
 	else:
-		velocity.y -= (_gravity * gravity_multiplier) * delta
+		var gmul: float = gravity_multiplier
+		if in_water:
+			gmul *= water_gravity_scale
+		velocity.y -= (_gravity * gmul) * delta
+		if in_water and depth_below_surface > 0.0:
+			var sub: float = clampf(depth_below_surface / 2.8, 0.0, 1.2)
+			velocity.y += water_buoyancy_strength * sub * delta
+			velocity.y -= water_vertical_drag * velocity.y * delta
 
 	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if _harvest_auto_active and raw_move.length_squared() > 0.0001:
@@ -144,7 +168,15 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, speed)
 		velocity.z = move_toward(velocity.z, 0.0, speed)
 
+	if in_water:
+		velocity.x *= water_horizontal_drag
+		velocity.z *= water_horizontal_drag
+		if not tool_busy and Input.is_action_just_pressed("jump"):
+			velocity.y = maxf(velocity.y, jump_velocity * water_jump_multiplier)
+
 	move_and_slide()
+
+	_update_underwater_fog(wl)
 
 	_update_interaction_ray()
 	_update_interaction_prompt()
@@ -492,3 +524,57 @@ func _on_mine_impact_timeout(_impact_idx: int, seq: int) -> void:
 		return
 	if outcome == _H_INV_FULL:
 		_stop_harvest_auto()
+
+
+func _find_world_environment() -> WorldEnvironment:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+	for c in scene.get_children():
+		if c is WorldEnvironment:
+			return c as WorldEnvironment
+	return null
+
+
+func _get_active_water_level() -> float:
+	var best: Node3D = null
+	var best_area: float = INF
+	for node in get_tree().get_nodes_in_group(&"water_surface"):
+		if not node is Node3D:
+			continue
+		var w := node as Node3D
+		var ps: Variant = w.get("plane_size")
+		if typeof(ps) != TYPE_VECTOR2:
+			continue
+		var half: Vector2 = ps * 0.5
+		var dx: float = absf(global_position.x - w.global_position.x)
+		var dz: float = absf(global_position.z - w.global_position.z)
+		if dx > half.x or dz > half.y:
+			continue
+		var area: float = ps.x * ps.y
+		if area < best_area:
+			best_area = area
+			best = w
+	if best == null:
+		return -1e7
+	var wl: Variant = best.get("water_level")
+	if typeof(wl) == TYPE_FLOAT:
+		return wl as float
+	return best.global_position.y
+
+
+func _update_underwater_fog(water_level_y: float) -> void:
+	if _world_environment == null:
+		_world_environment = _find_world_environment()
+	if _world_environment == null:
+		return
+	var env: Environment = _world_environment.environment
+	if env == null:
+		return
+	var cam_y: float = camera_3d.global_position.y
+	var cam_submerged: bool = water_level_y > -1e6 and cam_y < water_level_y - 0.02
+	env.fog_enabled = cam_submerged
+	if cam_submerged:
+		var d: float = clampf(water_level_y - cam_y, 0.0, 22.0)
+		var t: float = d / 14.0
+		env.fog_density = lerpf(underwater_fog_density_min, underwater_fog_density_max, t)

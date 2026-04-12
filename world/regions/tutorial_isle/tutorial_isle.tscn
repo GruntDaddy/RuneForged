@@ -27,6 +27,7 @@
 [ext_resource type="Script" uid="uid://c14b0stwqm1en" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
 [ext_resource type="Shader" uid="uid://bago5reb8ocjt" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
 [ext_resource type="PackedScene" path="res://world/water/water_surface.tscn" id="water_surface"]
+[ext_resource type="Script" uid="uid://bq7tutorialisleterrain" path="res://world/regions/tutorial_isle/tutorial_isle_terrain.gd" id="tutorial_isle_terrain"]
 
 [sub_resource type="Gradient" id="Gradient_terrain"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -829,7 +830,7 @@ metallic_texture_channel = 2
 roughness = 0.78
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_677sf"]
-size = Vector2(1100, 1100)
+size = Vector2(2200, 2200)
 subdivide_width = 96
 subdivide_depth = 96
 
@@ -871,10 +872,15 @@ ambient_light_color = Color(0.45, 0.52, 0.58, 1)
 ambient_light_energy = 0.5
 tonemap_mode = 3
 tonemap_white = 6.0
+fog_enabled = false
+fog_mode = 1
+fog_light_color = Color(0.22, 0.48, 0.58, 1)
+fog_density = 0.045
 
 [node name="TutorialIsle" type="Node3D" unique_id=1741229412]
 
 [node name="Terrain3D" type="Terrain3D" parent="." unique_id=1283422177]
+script = ExtResource("tutorial_isle_terrain")
 data_directory = "res://world/regions/tutorial_isle/data"
 material = SubResource("Terrain3DMaterial_terrain")
 assets = SubResource("Terrain3DAssets_terrain")
@@ -885,14 +891,26 @@ metadata/_edit_lock_ = true
 
 [node name="Water" parent="." unique_id=1261998408 instance=ExtResource("water_surface")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+plane_size = Vector2(2200, 2200)
+toward_land = Vector2(0.65, 0.52)
+shore_reference_xz = Vector2(130, 115)
 material_override = SubResource("ShaderMaterial_gkm8o")
 material_overlay = SubResource("StandardMaterial3D_6ia34")
 cast_shadow = 1
 extra_cull_margin = 640.0
-custom_aabb = AABB(-870, -24, -870, 1740, 48, 1740)
+custom_aabb = AABB(-1200, -28, -1200, 2400, 56, 2400)
 ignore_occlusion_culling = true
 mesh = SubResource("PlaneMesh_677sf")
 metadata/_edit_lock_ = true
+
+[node name="LakeWater" parent="." instance=ExtResource("water_surface")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72, 2.35, 168)
+water_level = 2.35
+plane_size = Vector2(56, 48)
+subdivisions = Vector2i(32, 28)
+toward_land = Vector2(0.2, -0.95)
+shore_reference_xz = Vector2(72, 168)
+cast_shadow = 0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]
 environment = SubResource("Environment_main")
