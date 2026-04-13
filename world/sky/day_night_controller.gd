@@ -2,7 +2,7 @@ extends Node3D
 ## Drives sun/moon sky shader, DirectionalLight3D, and ambient for a full day-night cycle.
 ## Expects a sibling DirectionalLight3D and WorldEnvironment (paths configurable).
 
-@export var day_length_seconds: float = 90.0
+@export var day_length_seconds: float = 900.0
 @export_range(0.0, 1.0) var start_time_of_day: float = 0.32
 
 @export_group("Light")
