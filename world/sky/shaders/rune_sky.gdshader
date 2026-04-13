@@ -8,9 +8,10 @@ uniform float day_factor : hint_range(0.0, 1.0, 0.001) = 0.85;
 uniform float sunset_factor : hint_range(0.0, 1.0, 0.001) = 0.0;
 
 uniform vec3 zenith_day : source_color = vec3(0.35, 0.55, 0.78);
-uniform vec3 zenith_night : source_color = vec3(0.04, 0.06, 0.12);
+/* Deep Norse night: cold blue-black, not flat grey */
+uniform vec3 zenith_night : source_color = vec3(0.015, 0.02, 0.042);
 uniform vec3 horizon_day : source_color = vec3(0.62, 0.72, 0.82);
-uniform vec3 horizon_night : source_color = vec3(0.07, 0.08, 0.12);
+uniform vec3 horizon_night : source_color = vec3(0.028, 0.032, 0.048);
 uniform vec3 sunset_color : source_color = vec3(0.95, 0.55, 0.32);
 
 uniform float sun_disk_size : hint_range(0.001, 0.05, 0.0001) = 0.00225;
@@ -29,23 +30,24 @@ uniform float moon_earthshine : hint_range(0.0, 0.5, 0.005) = 0.08;
 uniform vec3 moon_earthshine_color : source_color = vec3(0.22, 0.28, 0.38);
 
 uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
-uniform float star_brightness : hint_range(0.0, 2.0, 0.01) = 0.65;
-uniform vec3 star_tint : source_color = vec3(0.85, 0.9, 1.0);
-uniform vec2 star_density_uv = vec2(220.0, 110.0);
-uniform float star_point_size : hint_range(0.02, 0.35, 0.001) = 0.055;
-uniform float star_twinkle_amount : hint_range(0.0, 1.0, 0.01) = 0.35;
-uniform float star_bright_boost : hint_range(1.0, 4.0, 0.05) = 2.2;
-uniform float star_bright_threshold : hint_range(0.9, 0.999, 0.001) = 0.992;
-
-uniform float constellation_intensity : hint_range(0.0, 1.0, 0.01) = 0.45;
-uniform float constellation_line_width : hint_range(0.0005, 0.02, 0.0001) = 0.0028;
+uniform float star_brightness : hint_range(0.0, 2.5, 0.01) = 0.88;
+uniform vec3 star_tint : source_color = vec3(0.72, 0.8, 0.95);
+uniform vec2 star_density_uv = vec2(340.0, 175.0);
+uniform float star_point_size : hint_range(0.02, 0.35, 0.001) = 0.042;
+uniform float star_twinkle_amount : hint_range(0.0, 1.0, 0.01) = 0.22;
+uniform float star_bright_boost : hint_range(1.0, 4.0, 0.05) = 2.6;
+uniform float star_bright_threshold : hint_range(0.9, 0.999, 0.001) = 0.988;
+uniform float star_dim_threshold : hint_range(0.5, 0.95, 0.001) = 0.74;
+uniform float star_core_power : hint_range(0.5, 3.0, 0.05) = 1.45;
+uniform float star_halo : hint_range(0.0, 0.6, 0.01) = 0.28;
 
 uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.36;
 uniform float cloud_softness : hint_range(0.01, 0.7, 0.01) = 0.36;
 uniform float cloud_warp : hint_range(0.0, 1.0, 0.01) = 0.42;
 uniform vec3 cloud_color_day : source_color = vec3(0.92, 0.94, 0.98);
 uniform vec3 cloud_color_sunset : source_color = vec3(0.98, 0.72, 0.55);
-uniform vec3 cloud_color_night : source_color = vec3(0.12, 0.14, 0.2);
+uniform vec3 cloud_color_night : source_color = vec3(0.05, 0.06, 0.09);
+uniform float night_cloud_brightness : hint_range(0.0, 1.0, 0.01) = 0.42;
 uniform float cloud_wind_speed : hint_range(0.0, 0.05, 0.0001) = 0.008;
 uniform float cloud_domain : hint_range(1.0, 12.0, 0.1) = 2.8;
 
@@ -89,9 +91,10 @@ float cloud_fbm_soft(vec2 p) {
 
 vec3 sky_gradient(vec3 eyedir, float day_f, float sunset_f) {
 	float v = clamp(eyedir.y * 0.5 + 0.5, 0.0, 1.0);
+	float vp = mix(pow(v, 1.14), pow(v, 0.9), day_f);
 	vec3 zenith = mix(zenith_night, zenith_day, day_f);
 	vec3 horizon = mix(horizon_night, horizon_day, day_f);
-	vec3 grad = mix(horizon, zenith, pow(v, 0.9));
+	vec3 grad = mix(horizon, zenith, vp);
 	grad = mix(grad, grad * sunset_color, sunset_f * (1.0 - abs(eyedir.y) * 0.5));
 	return grad;
 }
@@ -108,48 +111,13 @@ float stars(vec3 eyedir, float night_amt) {
 	float h = hash21(id);
 	float tw = mix(1.0, sin(TIME * (1.2 + h * 2.0) + h * 6.28) * 0.5 + 0.5, star_twinkle_amount);
 	float r = length(f);
-	float kernel = smoothstep(star_point_size, 0.0, r);
-	float dim = step(0.93, h) * (1.0 - step(star_bright_threshold, h));
+	float core = pow(smoothstep(star_point_size, 0.0, r), star_core_power);
+	float halo = smoothstep(star_point_size * 2.35, star_point_size * 0.42, r) * star_halo;
+	float kernel = core + halo;
+	float dim = step(star_dim_threshold, h) * (1.0 - step(star_bright_threshold, h));
 	float bright = step(star_bright_threshold, h);
-	float m = kernel * (dim + bright * star_bright_boost) * tw;
+	float m = kernel * (dim * 0.62 + bright * star_bright_boost) * tw;
 	return m * night_amt * star_brightness;
-}
-
-// Chord-based closest point on segment (a,b), then angular distance from eyedir — good for thin sky lines.
-float angular_dist_point_segment(vec3 p, vec3 a, vec3 b) {
-	vec3 ab = b - a;
-	float denom = dot(ab, ab);
-	float t = denom > 1e-8 ? clamp(dot(p - a, ab) / denom, 0.0, 1.0) : 0.0;
-	vec3 closest = normalize(a + ab * t);
-	return acos(clamp(dot(p, closest), -1.0, 1.0));
-}
-
-float constellation_lines(vec3 eyedir, float night_amt) {
-	if (night_amt < 0.05 || constellation_intensity < 0.001) {
-		return 0.0;
-	}
-	vec3 p = normalize(eyedir);
-	// Fixed world-space asterism (normalized). Small "kite" + short chain (arbitrary fantasy pattern).
-	vec3 v0 = normalize(vec3(0.15, 0.72, 0.68));
-	vec3 v1 = normalize(vec3(0.32, 0.65, 0.69));
-	vec3 v2 = normalize(vec3(0.48, 0.58, 0.66));
-	vec3 v3 = normalize(vec3(0.38, 0.62, 0.70));
-	vec3 v4 = normalize(vec3(0.22, 0.68, 0.70));
-	vec3 w0 = normalize(vec3(-0.55, 0.35, 0.76));
-	vec3 w1 = normalize(vec3(-0.42, 0.42, 0.79));
-	vec3 w2 = normalize(vec3(-0.30, 0.48, 0.82));
-	float w = constellation_line_width;
-	float line = 0.0;
-	float lw = w * 2.5;
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v0, v1));
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v1, v2));
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v2, v3));
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v3, v4));
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v0, v4));
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, w0, w1));
-	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, w1, w2));
-	float fade = night_amt * night_amt * constellation_intensity;
-	return clamp(line * fade, 0.0, 1.0);
 }
 
 void sky() {
@@ -199,8 +167,6 @@ void sky() {
 
 	float st = stars(dir, smoothstep(star_threshold, 1.0, night_amt));
 	col += star_tint * st;
-	float cl = constellation_lines(dir, night_amt);
-	col += star_tint * cl * 0.55;
 
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
 	vec2 cu = dir.xz / max(dir.y + 0.22, 0.08) * cloud_domain + wind * 1.2;
@@ -208,9 +174,9 @@ void sky() {
 	float edge = smoothstep(cloud_coverage, cloud_coverage + cloud_softness, n);
 	float puff = edge * edge * (3.0 - 2.0 * edge);
 	float dens = puff * smoothstep(0.08, 0.95, n + 0.05 * fbm(cu * 1.3 + wind));
-	vec3 ccol = mix(cloud_color_night, cloud_color_day, day_factor);
+	vec3 ccol = mix(cloud_color_night * night_cloud_brightness, cloud_color_day, day_factor);
 	ccol = mix(ccol, cloud_color_sunset, sunset_factor * 0.85);
-	float cloud_alpha = dens * (0.26 + 0.38 * day_factor + 0.26 * night_amt);
+	float cloud_alpha = dens * (0.22 + 0.36 * day_factor + 0.12 * night_amt);
 	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.82));
 
 	COLOR = col;

@@ -30,9 +30,8 @@ extends Node3D
 @export_range(0.0, 1.0, 0.01) var fog_sky_affect_night: float = 0.72
 
 @export_group("Sky shader (optional)")
-## When true, fades constellation lines in/out from night amount and gently boosts moon rim at night.
+## When true, boosts moon rim strength toward night so the moon reads better against the dark sky.
 @export var drive_sky_night_visuals: bool = false
-@export_range(0.0, 1.0, 0.01) var sky_constellation_intensity_max: float = 0.45
 @export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.42
 
 @export_group("Nodes")
@@ -107,8 +106,6 @@ func _apply_time() -> void:
 		_sky_material.set_shader_parameter(&"sunset_factor", sunset_f)
 		if drive_sky_night_visuals:
 			var night_amt: float = 1.0 - day_f
-			var night_gate: float = smoothstep(0.1, 0.72, night_amt)
-			_sky_material.set_shader_parameter(&"constellation_intensity", sky_constellation_intensity_max * night_gate)
 			_sky_material.set_shader_parameter(
 				&"moon_rim_strength",
 				lerpf(0.22, sky_moon_rim_night_max, smoothstep(0.18, 0.85, night_amt))
