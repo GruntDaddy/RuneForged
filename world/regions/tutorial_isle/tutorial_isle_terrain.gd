@@ -183,9 +183,8 @@ func _deferred_terrain_polish() -> void:
 func _ensure_path_and_cobble_texture_assets() -> void:
 	if assets == null or material == null:
 		return
-	if assets.get_texture_count() >= 6:
-		return
-	# Must match mipmap mode of texture slot 0 (scene textures use no mipmaps — see Terrain3D Texture Prep).
+	# Always rebuild slots 4–5 at runtime. The scene may bake ImageTextures whose mipmap flag
+	# does not match slot 0; Terrain3D requires identical mipmap mode across all layers.
 	var flat_n := _make_flat_normal_no_mipmap()
 
 	var dirt_path := Terrain3DTextureAsset.new()
