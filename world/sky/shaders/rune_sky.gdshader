@@ -15,12 +15,30 @@ uniform vec3 sunset_color : source_color = vec3(0.95, 0.55, 0.32);
 
 uniform float sun_disk_size : hint_range(0.001, 0.05, 0.0001) = 0.00225;
 uniform vec3 sun_disk_color : source_color = vec3(1.0, 0.97, 0.88);
+uniform float sun_limb_darken : hint_range(0.0, 1.0, 0.01) = 0.35;
+uniform float sun_corona_size : hint_range(0.0, 0.2, 0.0001) = 0.012;
+uniform float sun_corona_intensity : hint_range(0.0, 2.0, 0.01) = 0.55;
+uniform vec3 sun_corona_color : source_color = vec3(1.0, 0.92, 0.75);
+
 uniform float moon_disk_size : hint_range(0.001, 0.06, 0.0001) = 0.006;
 uniform vec3 moon_disk_color : source_color = vec3(0.82, 0.86, 0.95);
+uniform float moon_detail_strength : hint_range(0.0, 1.0, 0.01) = 0.42;
+uniform float moon_rim_strength : hint_range(0.0, 1.0, 0.01) = 0.38;
+uniform float moon_rim_power : hint_range(0.5, 8.0, 0.1) = 2.4;
+uniform float moon_earthshine : hint_range(0.0, 0.5, 0.005) = 0.08;
+uniform vec3 moon_earthshine_color : source_color = vec3(0.22, 0.28, 0.38);
 
 uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
 uniform float star_brightness : hint_range(0.0, 2.0, 0.01) = 0.65;
 uniform vec3 star_tint : source_color = vec3(0.85, 0.9, 1.0);
+uniform vec2 star_density_uv = vec2(220.0, 110.0);
+uniform float star_point_size : hint_range(0.02, 0.35, 0.001) = 0.055;
+uniform float star_twinkle_amount : hint_range(0.0, 1.0, 0.01) = 0.35;
+uniform float star_bright_boost : hint_range(1.0, 4.0, 0.05) = 2.2;
+uniform float star_bright_threshold : hint_range(0.9, 0.999, 0.001) = 0.992;
+
+uniform float constellation_intensity : hint_range(0.0, 1.0, 0.01) = 0.45;
+uniform float constellation_line_width : hint_range(0.0005, 0.02, 0.0001) = 0.0028;
 
 uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.36;
 uniform float cloud_softness : hint_range(0.01, 0.7, 0.01) = 0.36;
@@ -84,13 +102,54 @@ float stars(vec3 eyedir, float night_amt) {
 	}
 	vec3 p = normalize(eyedir + vec3(0.001, 0.002, 0.001));
 	vec2 uv = vec2(atan(p.z, p.x) / 6.2831853 + 0.5, asin(clamp(p.y, -1.0, 1.0)) * 0.5 + 0.5);
-	uv *= vec2(120.0, 60.0);
+	uv *= star_density_uv;
 	vec2 id = floor(uv);
 	vec2 f = fract(uv) - 0.5;
 	float h = hash21(id);
-	float tw = sin(TIME * (1.2 + h * 2.0) + h * 6.28) * 0.5 + 0.5;
-	float m = smoothstep(0.175, 0.0, length(f)) * step(0.965, h) * tw;
+	float tw = mix(1.0, sin(TIME * (1.2 + h * 2.0) + h * 6.28) * 0.5 + 0.5, star_twinkle_amount);
+	float r = length(f);
+	float kernel = smoothstep(star_point_size, 0.0, r);
+	float dim = step(0.93, h) * (1.0 - step(star_bright_threshold, h));
+	float bright = step(star_bright_threshold, h);
+	float m = kernel * (dim + bright * star_bright_boost) * tw;
 	return m * night_amt * star_brightness;
+}
+
+// Chord-based closest point on segment (a,b), then angular distance from eyedir — good for thin sky lines.
+float angular_dist_point_segment(vec3 p, vec3 a, vec3 b) {
+	vec3 ab = b - a;
+	float denom = dot(ab, ab);
+	float t = denom > 1e-8 ? clamp(dot(p - a, ab) / denom, 0.0, 1.0) : 0.0;
+	vec3 closest = normalize(a + ab * t);
+	return acos(clamp(dot(p, closest), -1.0, 1.0));
+}
+
+float constellation_lines(vec3 eyedir, float night_amt) {
+	if (night_amt < 0.05 || constellation_intensity < 0.001) {
+		return 0.0;
+	}
+	vec3 p = normalize(eyedir);
+	// Fixed world-space asterism (normalized). Small "kite" + short chain (arbitrary fantasy pattern).
+	vec3 v0 = normalize(vec3(0.15, 0.72, 0.68));
+	vec3 v1 = normalize(vec3(0.32, 0.65, 0.69));
+	vec3 v2 = normalize(vec3(0.48, 0.58, 0.66));
+	vec3 v3 = normalize(vec3(0.38, 0.62, 0.70));
+	vec3 v4 = normalize(vec3(0.22, 0.68, 0.70));
+	vec3 w0 = normalize(vec3(-0.55, 0.35, 0.76));
+	vec3 w1 = normalize(vec3(-0.42, 0.42, 0.79));
+	vec3 w2 = normalize(vec3(-0.30, 0.48, 0.82));
+	float w = constellation_line_width;
+	float line = 0.0;
+	float lw = w * 2.5;
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v0, v1));
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v1, v2));
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v2, v3));
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v3, v4));
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, v0, v4));
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, w0, w1));
+	line += 1.0 - smoothstep(0.0, lw, angular_dist_point_segment(p, w1, w2));
+	float fade = night_amt * night_amt * constellation_intensity;
+	return clamp(line * fade, 0.0, 1.0);
 }
 
 void sky() {
@@ -105,23 +164,44 @@ void sky() {
 	} else {
 	vec3 col = sky_gradient(dir, day_factor, sunset_factor);
 
-	// Sun disc
 	float sun_dot = max(dot(dir, sun_dir), 0.0);
-	float sun_disc = smoothstep(1.0 - sun_disk_size * 8.0, 1.0, sun_dot);
-	col = mix(col, sun_disk_color, sun_disc * day_factor);
+	float sun_core = smoothstep(1.0 - sun_disk_size * 8.0, 1.0, sun_dot);
+	vec3 sun_col = sun_disk_color;
+	sun_col = mix(sun_col, sun_col * vec3(0.92, 0.88, 0.75), sun_limb_darken * (1.0 - pow(sun_dot, 0.35)));
+	float sun_disc = sun_core;
+	col = mix(col, sun_col, sun_disc * day_factor);
+	float corona = smoothstep(1.0 - sun_corona_size, 1.0 - sun_disk_size * 3.0, sun_dot) * (1.0 - sun_core * 0.85);
+	col += sun_corona_color * corona * sun_corona_intensity * day_factor;
 
-	// Moon disc — tighter smoothstep band than sun for a cleaner limb (less fuzzy fringe)
 	float moon_dot = max(dot(dir, moon_dir), 0.0);
 	float mw = moon_disk_size * 6.0;
 	float moon_disc = smoothstep(1.0 - mw * 0.52, 1.0 - mw * 0.06, moon_dot);
 	float moon_vis = smoothstep(0.15, 0.85, night_amt + (1.0 - day_factor) * 0.5);
-	col = mix(col, moon_disk_color, moon_disc * moon_vis * 0.95);
 
-	// Stars (upper hemisphere, night)
+	vec3 t1 = normalize(cross(moon_dir, vec3(0.0, 1.0, 0.0)));
+	if (length(t1) < 0.08) {
+		t1 = normalize(cross(moon_dir, vec3(1.0, 0.0, 0.0)));
+	}
+	vec3 t2 = normalize(cross(moon_dir, t1));
+	float sin_theta = length(cross(dir, moon_dir));
+	vec2 moon_uv = vec2(dot(dir, t1), dot(dir, t2)) / max(sin_theta, 0.02);
+	float mare = fbm(moon_uv * 3.8 + vec2(1.7, 0.9)) * moon_detail_strength;
+	float rim = pow(1.0 - moon_dot, moon_rim_power) * moon_rim_strength;
+	// Diffuse on sphere: light toward sun from surface is -sun_dir; outward normal ~ dir from moon center.
+	float lunar_lit = max(dot(dir, -sun_dir), 0.0);
+	vec3 moon_base = moon_disk_color * (0.72 + 0.28 * (1.0 - mare)) * (0.25 + 0.75 * lunar_lit);
+	moon_base += vec3(0.06, 0.07, 0.1) * mare * (0.4 + 0.6 * lunar_lit);
+	moon_base += vec3(0.15, 0.18, 0.22) * rim * (0.35 + 0.65 * lunar_lit);
+	float earth = smoothstep(0.05, 0.55, 1.0 - lunar_lit) * moon_earthshine;
+	moon_base += moon_earthshine_color * earth;
+	vec3 moon_rgb = moon_base;
+	col = mix(col, moon_rgb, moon_disc * moon_vis * 0.95);
+
 	float st = stars(dir, smoothstep(star_threshold, 1.0, night_amt));
 	col += star_tint * st;
+	float cl = constellation_lines(dir, night_amt);
+	col += star_tint * cl * 0.55;
 
-	// Clouds: FBM-only puffs, wind drift, smoothstep for round edges — fewer than before
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
 	vec2 cu = dir.xz / max(dir.y + 0.22, 0.08) * cloud_domain + wind * 1.2;
 	float n = cloud_fbm_soft(cu + vec2(TIME * cloud_wind_speed * 6.0, 0.0));
