@@ -18,6 +18,17 @@ extends Node3D
 @export var ambient_color_day: Color = Color(0.45, 0.52, 0.58)
 @export var ambient_color_night: Color = Color(0.16, 0.18, 0.28)
 
+@export_group("Fog")
+@export var fog_enabled: bool = true
+## Base fog density (exponential mode); night lerps toward higher density for depth.
+@export_range(0.0, 0.2, 0.0001) var fog_density_day: float = 0.038
+@export_range(0.0, 0.2, 0.0001) var fog_density_night: float = 0.062
+@export var fog_light_color_day: Color = Color(0.55, 0.72, 0.82, 1)
+@export var fog_light_color_sunset: Color = Color(0.85, 0.58, 0.42, 1)
+@export var fog_light_color_night: Color = Color(0.12, 0.14, 0.22, 1)
+@export_range(0.0, 1.0, 0.01) var fog_sky_affect_day: float = 0.42
+@export_range(0.0, 1.0, 0.01) var fog_sky_affect_night: float = 0.72
+
 @export_group("Nodes")
 @export var directional_light_path: NodePath = ^"../DirectionalLight3D"
 @export var world_environment_path: NodePath = ^"../WorldEnvironment"
@@ -33,34 +44,7 @@ func _ready() -> void:
 		var sky: Sky = we.environment.sky
 		if sky != null and sky.sky_material is ShaderMaterial:
 			_sky_material = sky.sky_material
-	# region agent log
-	_dbg_sky("H3", "day_night_ready", { "sky_mat_ok": _sky_material != null })
-	# endregion
 	_apply_time()
-
-
-func _dbg_sky(hypothesis_id: String, message: String, data: Dictionary) -> void:
-	var path := ProjectSettings.globalize_path("res://debug-77cfd5.log")
-	var f: FileAccess
-	if FileAccess.file_exists(path):
-		f = FileAccess.open(path, FileAccess.READ_WRITE)
-		if f != null:
-			f.seek_end()
-	else:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	var payload := {
-		"sessionId": "77cfd5",
-		"hypothesisId": hypothesis_id,
-		"location": "day_night_controller.gd",
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_ticks_msec(),
-		"runId": "pre-fix"
-	}
-	f.store_line(JSON.stringify(payload))
-	f.close()
 
 
 func _process(delta: float) -> void:
@@ -121,3 +105,12 @@ func _apply_time() -> void:
 		var env: Environment = we.environment
 		env.ambient_light_energy = lerpf(ambient_energy_night, ambient_energy_day, day_f)
 		env.ambient_light_color = ambient_color_night.lerp(ambient_color_day, day_f)
+		if fog_enabled:
+			env.fog_enabled = true
+			var fog_color: Color = fog_light_color_night.lerp(fog_light_color_day, day_f)
+			fog_color = fog_color.lerp(fog_light_color_sunset, sunset_f * clampf(1.0 - day_f * 0.5, 0.0, 1.0))
+			env.fog_light_color = fog_color
+			env.fog_density = lerpf(fog_density_night, fog_density_day, day_f)
+			env.fog_sky_affect = lerpf(fog_sky_affect_night, fog_sky_affect_day, day_f)
+		else:
+			env.fog_enabled = false

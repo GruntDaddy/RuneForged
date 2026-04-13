@@ -1,6 +1,9 @@
 @tool
 extends Terrain3D
 
+## Terrain3D texture indices (see terrain assets on this node): 0 Grass, 1 Sand, 2 Rock, 3 dirt,
+## 4 DirtPath, 5 CobblePath — paint 4/5 with the texture tool where you want paths (autoshader handles biome blend).
+
 const HEIGHT_MAP := "res://world/regions/tutorial_isle/data/tutorial_isle_height.png"
 const EXPORT_COMBINED := "res://world/regions/tutorial_isle/data/tutorial_isle_height_ocean_ring.png"
 
@@ -29,6 +32,10 @@ const EXPORT_COMBINED := "res://world/regions/tutorial_isle/data/tutorial_isle_h
 	set(value):
 		if value:
 			call_deferred("_rebuild_ocean_ring_heightmap")
+
+
+func _ready() -> void:
+	call_deferred("_deferred_terrain_polish")
 
 
 func _enter_tree() -> void:
@@ -168,6 +175,55 @@ func _finish_texture_setup() -> void:
 		material.show_checkered = false
 
 
+func _deferred_terrain_polish() -> void:
+	_ensure_path_and_cobble_texture_assets()
+	_apply_autoshader_polish()
+
+
+func _ensure_path_and_cobble_texture_assets() -> void:
+	if assets == null or material == null:
+		return
+	if assets.get_texture_count() >= 6:
+		return
+	# Must match mipmap mode of texture slot 0 (scene textures use no mipmaps — see Terrain3D Texture Prep).
+	var flat_n := _make_flat_normal_no_mipmap()
+
+	var dirt_path := Terrain3DTextureAsset.new()
+	dirt_path.name = "DirtPath"
+	dirt_path.id = 4
+	dirt_path.albedo_texture = _make_dirt_path_albedo()
+	dirt_path.normal_texture = flat_n
+	dirt_path.uv_scale = 0.2
+	dirt_path.roughness = 0.14
+
+	var cobble := Terrain3DTextureAsset.new()
+	cobble.name = "CobblePath"
+	cobble.id = 5
+	cobble.albedo_texture = _make_cobble_path_albedo()
+	cobble.normal_texture = flat_n
+	cobble.uv_scale = 0.14
+	cobble.roughness = 0.2
+
+	assets.set_texture(4, dirt_path)
+	assets.set_texture(5, cobble)
+	assets.update_texture_list()
+	material.show_checkered = false
+
+
+func _apply_autoshader_polish() -> void:
+	if material == null:
+		return
+	material.auto_shader = true
+	material.set_shader_param(&"auto_base_texture", 0)
+	material.set_shader_param(&"auto_overlay_texture", 1)
+	material.set_shader_param(&"auto_slope", 2.35)
+	material.set_shader_param(&"auto_height_reduction", 0.34)
+	material.set_shader_param(&"blend_sharpness", 0.58)
+	material.set_shader_param(&"macro_variation_slope", 0.28)
+	material.set_shader_param(&"macro_variation1", Color(0.97, 0.99, 0.95))
+	material.set_shader_param(&"macro_variation2", Color(0.94, 0.96, 1.0))
+
+
 func _save_data_if_possible() -> void:
 	var dir: String = data_directory
 	if dir.is_empty():
@@ -222,6 +278,57 @@ func _setup_default_texture_layers() -> void:
 	material.set_shader_param(&"auto_height_reduction", 0.42)
 
 
+func _make_dirt_path_albedo() -> ImageTexture:
+	var n0 := FastNoiseLite.new()
+	n0.seed = 41
+	n0.noise_type = FastNoiseLite.TYPE_PERLIN
+	n0.frequency = 0.11
+	n0.fractal_octaves = 3
+	var n1 := FastNoiseLite.new()
+	n1.seed = 77
+	n1.noise_type = FastNoiseLite.TYPE_PERLIN
+	n1.frequency = 0.04
+	n1.fractal_octaves = 2
+	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	var c_lo := Color(0.32, 0.22, 0.14)
+	var c_hi := Color(0.5, 0.38, 0.26)
+	for y in 128:
+		for x in 128:
+			var streak: float = n0.get_noise_2d(float(x) * 1.4 + n1.get_noise_2d(float(y), 0.0) * 8.0, float(y) * 0.35)
+			streak = streak * 0.5 + 0.5
+			var wobble: float = n1.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
+			var c: Color = c_lo.lerp(c_hi, lerpf(streak, wobble, 0.45))
+			c.a = 0.5 + n0.get_noise_2d(float(x + 20), float(y + 11)) * 0.08
+			img.set_pixel(x, y, c)
+	return _image_texture_no_mipmaps(img)
+
+
+func _make_cobble_path_albedo() -> ImageTexture:
+	var cell := FastNoiseLite.new()
+	cell.seed = 93
+	cell.noise_type = FastNoiseLite.TYPE_CELLULAR
+	cell.frequency = 0.14
+	cell.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	var fine := FastNoiseLite.new()
+	fine.seed = 101
+	fine.noise_type = FastNoiseLite.TYPE_PERLIN
+	fine.frequency = 0.22
+	fine.fractal_octaves = 2
+	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	var stone_a := Color(0.42, 0.4, 0.38)
+	var stone_b := Color(0.32, 0.3, 0.29)
+	var grout := Color(0.22, 0.2, 0.19)
+	for y in 128:
+		for x in 128:
+			var cx: float = cell.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
+			var f: float = fine.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
+			var edge: float = smoothstep(0.35, 0.62, cx)
+			var c: Color = grout.lerp(stone_a.lerp(stone_b, f), edge)
+			c.a = 0.52 + f * 0.06
+			img.set_pixel(x, y, c)
+	return _image_texture_no_mipmaps(img)
+
+
 func _make_noise_albedo(c0: Color, c1: Color, noise_seed: int) -> ImageTexture:
 	var noise := FastNoiseLite.new()
 	noise.seed = noise_seed
@@ -242,6 +349,18 @@ func _make_flat_normal_roughness(_size: Vector2i) -> ImageTexture:
 	var c := Color(0.5, 0.5, 1.0, 0.55)
 	img.fill(c)
 	return _image_texture_with_mipmaps(img)
+
+
+func _make_flat_normal_no_mipmap() -> ImageTexture:
+	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.5, 0.5, 1.0, 0.55))
+	return _image_texture_no_mipmaps(img)
+
+
+func _image_texture_no_mipmaps(img: Image) -> ImageTexture:
+	var tex := ImageTexture.new()
+	tex.set_image(img)
+	return tex
 
 
 func _image_texture_with_mipmaps(img: Image) -> ImageTexture:
