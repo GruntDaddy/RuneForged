@@ -29,7 +29,7 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 
 @export_group("Water")
-@export var water_buoyancy_strength: float = 16.0
+@export var water_buoyancy_strength: float = 14.0
 @export var water_gravity_scale: float = 0.22
 @export var water_vertical_drag: float = 4.5
 @export var water_horizontal_drag: float = 0.88
@@ -37,6 +37,9 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var water_max_effect_depth: float = 18.0
 @export var underwater_fog_density_max: float = 0.085
 @export var underwater_fog_density_min: float = 0.028
+@export var water_dive_accel: float = 12.0
+@export var water_buoyancy_dive_scale: float = 0.28
+@export var water_dive_max_down_speed: float = 7.5
 
 @onready var base_character: Node3D = $BaseCharacter
 @onready var camera_rig: Node3D = $CameraRig
@@ -128,20 +131,29 @@ func _physics_process(delta: float) -> void:
 	)
 	var depth_below_surface: float = wl - global_position.y
 
-	if is_on_floor():
+	if in_water:
+		# Seabed used to count as floor: velocity.y was zeroed and buoyancy never ran, so the
+		# player sank while walking but floated after jump (briefly not on_floor).
+		var diving: bool = not tool_busy and Input.is_action_pressed("swim_down")
+		var gmul: float = gravity_multiplier * water_gravity_scale
+		velocity.y -= (_gravity * gmul) * delta
+		if depth_below_surface > 0.0:
+			var sub: float = clampf(depth_below_surface / 2.8, 0.0, 1.2)
+			var buoy_mul: float = water_buoyancy_dive_scale if diving else 1.0
+			velocity.y += water_buoyancy_strength * sub * buoy_mul * delta
+			velocity.y -= water_vertical_drag * velocity.y * delta
+		if diving:
+			velocity.y -= water_dive_accel * delta
+			velocity.y = maxf(velocity.y, -water_dive_max_down_speed)
 		if not tool_busy and Input.is_action_just_pressed("jump"):
-			velocity.y = jump_velocity if not in_water else jump_velocity * water_jump_multiplier
+			velocity.y = maxf(velocity.y, jump_velocity * water_jump_multiplier)
+	elif is_on_floor():
+		if not tool_busy and Input.is_action_just_pressed("jump"):
+			velocity.y = jump_velocity
 		else:
 			velocity.y = 0.0
 	else:
-		var gmul: float = gravity_multiplier
-		if in_water:
-			gmul *= water_gravity_scale
-		velocity.y -= (_gravity * gmul) * delta
-		if in_water and depth_below_surface > 0.0:
-			var sub: float = clampf(depth_below_surface / 2.8, 0.0, 1.2)
-			velocity.y += water_buoyancy_strength * sub * delta
-			velocity.y -= water_vertical_drag * velocity.y * delta
+		velocity.y -= (_gravity * gravity_multiplier) * delta
 
 	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if _harvest_auto_active and raw_move.length_squared() > 0.0001:
@@ -177,8 +189,6 @@ func _physics_process(delta: float) -> void:
 	if in_water:
 		velocity.x *= water_horizontal_drag
 		velocity.z *= water_horizontal_drag
-		if not tool_busy and Input.is_action_just_pressed("jump"):
-			velocity.y = maxf(velocity.y, jump_velocity * water_jump_multiplier)
 
 	move_and_slide()
 
