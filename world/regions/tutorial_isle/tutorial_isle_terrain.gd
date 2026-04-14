@@ -1,31 +1,13 @@
 @tool
 extends Terrain3D
 
-## Terrain3D texture indices (see terrain assets on this node): 0 Grass, 1 Sand, 2 Rock, 3 dirt,
-## 4 DirtPath, 5 CobblePath — paint 4/5 with the texture tool where you want paths (autoshader handles biome blend).
+## Heightmap import / ocean ring for tutorial isle. Add Terrain3D texture assets in the editor or via assets on this node.
 
 const HEIGHT_MAP := "res://world/regions/tutorial_isle/data/tutorial_isle_height.png"
 const EXPORT_COMBINED := "res://world/regions/tutorial_isle/data/tutorial_isle_height_ocean_ring.png"
 
-## Shared Terrain3D layers (indices 0–5). Albedo + OpenGL normal (nor_gl); roughness tuned per slot.
-const _TEX_GRASS_ALBEDO := "res://shared/terrain_textures/forrest_ground/forrest_ground_01_diff_1k.jpg"
-const _TEX_GRASS_NORMAL := "res://shared/terrain_textures/forrest_ground/forrest_ground_01_nor_gl_1k.exr"
-const _TEX_SAND_ALBEDO := "res://shared/terrain_textures/beach_sand/aerial_beach_01_diff_1k.jpg"
-const _TEX_SAND_NORMAL := "res://shared/terrain_textures/beach_sand/aerial_beach_01_nor_gl_1k.exr"
-const _TEX_ROCK_ALBEDO := "res://shared/terrain_textures/grey_rocks/gray_rocks_diff_1k.jpg"
-const _TEX_ROCK_NORMAL := "res://shared/terrain_textures/grey_rocks/gray_rocks_nor_gl_1k.exr"
-const _TEX_DIRT_ALBEDO := "res://shared/terrain_textures/dirt_floor/dirt_floor_diff_1k.jpg"
-const _TEX_DIRT_NORMAL := "res://shared/terrain_textures/dirt_floor/dirt_floor_nor_gl_1k.exr"
-const _TEX_PATH_ALBEDO := "res://shared/terrain_textures/grass_path/grass_path_2_diff_1k.jpg"
-const _TEX_PATH_NORMAL := "res://shared/terrain_textures/grass_path/grass_path_2_nor_gl_1k.exr"
-const _TEX_COBBLE_ALBEDO := "res://shared/terrain_textures/river_pebbles/ganges_river_pebbles_diff_1k.jpg"
-const _TEX_COBBLE_NORMAL := "res://shared/terrain_textures/river_pebbles/ganges_river_pebbles_nor_gl_1k.exr"
-
 ## Vertical scale for normalized 0–1 height samples (Terrain3D import_images).
 @export var height_scale: float = 42.0
-
-## When true, assigns Terrain3D texture slots 0–5 from `res://shared/terrain_textures/` at runtime (see constants above).
-@export var setup_default_texture_layers: bool = true
 
 ## Legacy: import only the 512×512 center heightmap at the origin (single-region-sized image).
 @export var import_legacy_center_only_on_enter_tree: bool = false
@@ -46,10 +28,6 @@ const _TEX_COBBLE_NORMAL := "res://shared/terrain_textures/river_pebbles/ganges_
 	set(value):
 		if value:
 			call_deferred("_rebuild_ocean_ring_heightmap")
-
-
-func _ready() -> void:
-	call_deferred("_deferred_terrain_polish")
 
 
 func _enter_tree() -> void:
@@ -79,7 +57,6 @@ func _import_heightmap_legacy() -> void:
 	layers[Terrain3DRegion.TYPE_HEIGHT] = img
 	data.import_images(layers, Vector3.ZERO, 0.0, height_scale)
 	data.calc_height_range(true)
-	_finish_texture_setup()
 	_save_data_if_possible()
 
 
@@ -112,7 +89,6 @@ func _rebuild_ocean_ring_heightmap() -> void:
 	layers[Terrain3DRegion.TYPE_HEIGHT] = combined
 	data.import_images(layers, Vector3.ZERO, 0.0, height_scale)
 	data.calc_height_range(true)
-	_finish_texture_setup()
 	_save_data_if_possible()
 	print("Tutorial isle: ocean ring heightmap import finished (", combined.get_width(), "×", combined.get_height(), ").")
 
@@ -180,89 +156,6 @@ func _sample_nearest_island_edge(island: Image, ox: int, oy: int, tile: int, px:
 	var ix: int = cx - ox
 	var iy: int = cy - oy
 	return island.get_pixel(ix, iy).r
-
-
-func _finish_texture_setup() -> void:
-	if setup_default_texture_layers and assets.get_texture_count() == 0:
-		_apply_shared_terrain_textures()
-	elif assets.get_texture_count() > 0:
-		material.show_checkered = false
-
-
-func _deferred_terrain_polish() -> void:
-	if setup_default_texture_layers:
-		_apply_shared_terrain_textures()
-	_apply_autoshader_polish()
-
-
-func _load_tex2d(path: String) -> Texture2D:
-	if not ResourceLoader.exists(path):
-		push_error("Tutorial isle: missing texture: ", path)
-		return null
-	var res: Resource = load(path)
-	if res is Texture2D:
-		return res as Texture2D
-	push_error("Tutorial isle: not a Texture2D: ", path)
-	return null
-
-
-func _build_texture_asset(
-	p_name: String,
-	p_id: int,
-	albedo_path: String,
-	normal_path: String,
-	uv_scale: float,
-	roughness: float,
-) -> Terrain3DTextureAsset:
-	var alb := _load_tex2d(albedo_path)
-	var nrm := _load_tex2d(normal_path)
-	if alb == null or nrm == null:
-		return null
-	var ta := Terrain3DTextureAsset.new()
-	ta.name = p_name
-	ta.id = p_id
-	ta.albedo_texture = alb
-	ta.normal_texture = nrm
-	ta.uv_scale = uv_scale
-	ta.roughness = roughness
-	return ta
-
-
-func _apply_shared_terrain_textures() -> void:
-	if assets == null or material == null:
-		return
-	var grass := _build_texture_asset("Grass", 0, _TEX_GRASS_ALBEDO, _TEX_GRASS_NORMAL, 0.14, 0.08)
-	var sand := _build_texture_asset("Sand", 1, _TEX_SAND_ALBEDO, _TEX_SAND_NORMAL, 0.18, 0.12)
-	var rock := _build_texture_asset("Rock", 2, _TEX_ROCK_ALBEDO, _TEX_ROCK_NORMAL, 0.12, 0.22)
-	var dirt := _build_texture_asset("dirt", 3, _TEX_DIRT_ALBEDO, _TEX_DIRT_NORMAL, 0.16, 0.85)
-	var dirt_path := _build_texture_asset("DirtPath", 4, _TEX_PATH_ALBEDO, _TEX_PATH_NORMAL, 0.2, 0.14)
-	var cobble := _build_texture_asset("CobblePath", 5, _TEX_COBBLE_ALBEDO, _TEX_COBBLE_NORMAL, 0.14, 0.2)
-	for ta in [grass, sand, rock, dirt, dirt_path, cobble]:
-		if ta == null:
-			push_error("Tutorial isle: failed to build one or more Terrain3D texture assets.")
-			return
-	assets.set_texture(0, grass)
-	assets.set_texture(1, sand)
-	assets.set_texture(2, rock)
-	assets.set_texture(3, dirt)
-	assets.set_texture(4, dirt_path)
-	assets.set_texture(5, cobble)
-	assets.update_texture_list()
-	material.show_checkered = false
-
-
-func _apply_autoshader_polish() -> void:
-	if material == null:
-		return
-	material.auto_shader = true
-	material.set_shader_param(&"auto_base_texture", 0)
-	material.set_shader_param(&"auto_overlay_texture", 1)
-	material.set_shader_param(&"auto_slope", 2.35)
-	material.set_shader_param(&"auto_height_reduction", 0.34)
-	material.set_shader_param(&"blend_sharpness", 0.58)
-	material.set_shader_param(&"macro_variation_slope", 0.28)
-	material.set_shader_param(&"macro_variation1", Color(0.97, 0.99, 0.95))
-	material.set_shader_param(&"macro_variation2", Color(0.94, 0.96, 1.0))
 
 
 func _save_data_if_possible() -> void:
