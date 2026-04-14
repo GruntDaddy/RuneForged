@@ -7,10 +7,24 @@ extends Terrain3D
 const HEIGHT_MAP := "res://world/regions/tutorial_isle/data/tutorial_isle_height.png"
 const EXPORT_COMBINED := "res://world/regions/tutorial_isle/data/tutorial_isle_height_ocean_ring.png"
 
+## Shared Terrain3D layers (indices 0–5). Albedo + OpenGL normal (nor_gl); roughness tuned per slot.
+const _TEX_GRASS_ALBEDO := "res://shared/terrain_textures/forrest_ground/forrest_ground_01_diff_1k.jpg"
+const _TEX_GRASS_NORMAL := "res://shared/terrain_textures/forrest_ground/forrest_ground_01_nor_gl_1k.exr"
+const _TEX_SAND_ALBEDO := "res://shared/terrain_textures/beach_sand/aerial_beach_01_diff_1k.jpg"
+const _TEX_SAND_NORMAL := "res://shared/terrain_textures/beach_sand/aerial_beach_01_nor_gl_1k.exr"
+const _TEX_ROCK_ALBEDO := "res://shared/terrain_textures/grey_rocks/gray_rocks_diff_1k.jpg"
+const _TEX_ROCK_NORMAL := "res://shared/terrain_textures/grey_rocks/gray_rocks_nor_gl_1k.exr"
+const _TEX_DIRT_ALBEDO := "res://shared/terrain_textures/dirt_floor/dirt_floor_diff_1k.jpg"
+const _TEX_DIRT_NORMAL := "res://shared/terrain_textures/dirt_floor/dirt_floor_nor_gl_1k.exr"
+const _TEX_PATH_ALBEDO := "res://shared/terrain_textures/grass_path/grass_path_2_diff_1k.jpg"
+const _TEX_PATH_NORMAL := "res://shared/terrain_textures/grass_path/grass_path_2_nor_gl_1k.exr"
+const _TEX_COBBLE_ALBEDO := "res://shared/terrain_textures/river_pebbles/ganges_river_pebbles_diff_1k.jpg"
+const _TEX_COBBLE_NORMAL := "res://shared/terrain_textures/river_pebbles/ganges_river_pebbles_nor_gl_1k.exr"
+
 ## Vertical scale for normalized 0–1 height samples (Terrain3D import_images).
 @export var height_scale: float = 42.0
 
-## When true, generates simple grass / sand / rock slots and enables Terrain3D autoshader (slope + height blend).
+## When true, assigns Terrain3D texture slots 0–5 from `res://shared/terrain_textures/` at runtime (see constants above).
 @export var setup_default_texture_layers: bool = true
 
 ## Legacy: import only the 512×512 center heightmap at the origin (single-region-sized image).
@@ -170,39 +184,67 @@ func _sample_nearest_island_edge(island: Image, ox: int, oy: int, tile: int, px:
 
 func _finish_texture_setup() -> void:
 	if setup_default_texture_layers and assets.get_texture_count() == 0:
-		_setup_default_texture_layers()
+		_apply_shared_terrain_textures()
 	elif assets.get_texture_count() > 0:
 		material.show_checkered = false
 
 
 func _deferred_terrain_polish() -> void:
-	_ensure_path_and_cobble_texture_assets()
+	if setup_default_texture_layers:
+		_apply_shared_terrain_textures()
 	_apply_autoshader_polish()
 
 
-func _ensure_path_and_cobble_texture_assets() -> void:
+func _load_tex2d(path: String) -> Texture2D:
+	if not ResourceLoader.exists(path):
+		push_error("Tutorial isle: missing texture: ", path)
+		return null
+	var res: Resource = load(path)
+	if res is Texture2D:
+		return res as Texture2D
+	push_error("Tutorial isle: not a Texture2D: ", path)
+	return null
+
+
+func _build_texture_asset(
+	p_name: String,
+	p_id: int,
+	albedo_path: String,
+	normal_path: String,
+	uv_scale: float,
+	roughness: float,
+) -> Terrain3DTextureAsset:
+	var alb := _load_tex2d(albedo_path)
+	var nrm := _load_tex2d(normal_path)
+	if alb == null or nrm == null:
+		return null
+	var ta := Terrain3DTextureAsset.new()
+	ta.name = p_name
+	ta.id = p_id
+	ta.albedo_texture = alb
+	ta.normal_texture = nrm
+	ta.uv_scale = uv_scale
+	ta.roughness = roughness
+	return ta
+
+
+func _apply_shared_terrain_textures() -> void:
 	if assets == null or material == null:
 		return
-	# Always rebuild slots 4–5 at runtime. The scene may bake ImageTextures whose mipmap flag
-	# does not match slot 0; Terrain3D requires identical mipmap mode across all layers.
-	var flat_n := _make_flat_normal_no_mipmap()
-
-	var dirt_path := Terrain3DTextureAsset.new()
-	dirt_path.name = "DirtPath"
-	dirt_path.id = 4
-	dirt_path.albedo_texture = _make_dirt_path_albedo()
-	dirt_path.normal_texture = flat_n
-	dirt_path.uv_scale = 0.2
-	dirt_path.roughness = 0.14
-
-	var cobble := Terrain3DTextureAsset.new()
-	cobble.name = "CobblePath"
-	cobble.id = 5
-	cobble.albedo_texture = _make_cobble_path_albedo()
-	cobble.normal_texture = flat_n
-	cobble.uv_scale = 0.14
-	cobble.roughness = 0.2
-
+	var grass := _build_texture_asset("Grass", 0, _TEX_GRASS_ALBEDO, _TEX_GRASS_NORMAL, 0.14, 0.08)
+	var sand := _build_texture_asset("Sand", 1, _TEX_SAND_ALBEDO, _TEX_SAND_NORMAL, 0.18, 0.12)
+	var rock := _build_texture_asset("Rock", 2, _TEX_ROCK_ALBEDO, _TEX_ROCK_NORMAL, 0.12, 0.22)
+	var dirt := _build_texture_asset("dirt", 3, _TEX_DIRT_ALBEDO, _TEX_DIRT_NORMAL, 0.16, 0.85)
+	var dirt_path := _build_texture_asset("DirtPath", 4, _TEX_PATH_ALBEDO, _TEX_PATH_NORMAL, 0.2, 0.14)
+	var cobble := _build_texture_asset("CobblePath", 5, _TEX_COBBLE_ALBEDO, _TEX_COBBLE_NORMAL, 0.14, 0.2)
+	for ta in [grass, sand, rock, dirt, dirt_path, cobble]:
+		if ta == null:
+			push_error("Tutorial isle: failed to build one or more Terrain3D texture assets.")
+			return
+	assets.set_texture(0, grass)
+	assets.set_texture(1, sand)
+	assets.set_texture(2, rock)
+	assets.set_texture(3, dirt)
 	assets.set_texture(4, dirt_path)
 	assets.set_texture(5, cobble)
 	assets.update_texture_list()
@@ -229,143 +271,3 @@ func _save_data_if_possible() -> void:
 		push_warning("Tutorial isle: Terrain3D data_directory is empty; not saving.")
 		return
 	data.save_directory(dir)
-
-
-func _setup_default_texture_layers() -> void:
-	if assets == null or material == null:
-		return
-	var albedo_size := Vector2i(128, 128)
-	var grass_albedo := _make_noise_albedo(Color(0.22, 0.48, 0.18), Color(0.32, 0.58, 0.22), 1)
-	var sand_albedo := _make_noise_albedo(Color(0.72, 0.62, 0.42), Color(0.82, 0.72, 0.52), 2)
-	var rock_albedo := _make_noise_albedo(Color(0.28, 0.27, 0.26), Color(0.4, 0.38, 0.36), 3)
-	var flat_normal := _make_flat_normal_roughness(albedo_size)
-
-	var grass := Terrain3DTextureAsset.new()
-	grass.name = "Grass"
-	grass.id = 0
-	grass.albedo_texture = grass_albedo
-	grass.normal_texture = flat_normal
-	grass.uv_scale = 0.14
-	grass.roughness = 0.08
-
-	var sand := Terrain3DTextureAsset.new()
-	sand.name = "Sand"
-	sand.id = 1
-	sand.albedo_texture = sand_albedo
-	sand.normal_texture = flat_normal
-	sand.uv_scale = 0.18
-	sand.roughness = 0.12
-
-	var rock := Terrain3DTextureAsset.new()
-	rock.name = "Rock"
-	rock.id = 2
-	rock.albedo_texture = rock_albedo
-	rock.normal_texture = flat_normal
-	rock.uv_scale = 0.12
-	rock.roughness = 0.22
-
-	assets.set_texture(0, grass)
-	assets.set_texture(1, sand)
-	assets.set_texture(2, rock)
-	assets.update_texture_list()
-
-	material.show_checkered = false
-	material.auto_shader = true
-	material.set_shader_param(&"auto_base_texture", 0)
-	material.set_shader_param(&"auto_overlay_texture", 1)
-	material.set_shader_param(&"auto_slope", 2.4)
-	material.set_shader_param(&"auto_height_reduction", 0.42)
-
-
-func _make_dirt_path_albedo() -> ImageTexture:
-	var n0 := FastNoiseLite.new()
-	n0.seed = 41
-	n0.noise_type = FastNoiseLite.TYPE_PERLIN
-	n0.frequency = 0.11
-	n0.fractal_octaves = 3
-	var n1 := FastNoiseLite.new()
-	n1.seed = 77
-	n1.noise_type = FastNoiseLite.TYPE_PERLIN
-	n1.frequency = 0.04
-	n1.fractal_octaves = 2
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	var c_lo := Color(0.32, 0.22, 0.14)
-	var c_hi := Color(0.5, 0.38, 0.26)
-	for y in 128:
-		for x in 128:
-			var streak: float = n0.get_noise_2d(float(x) * 1.4 + n1.get_noise_2d(float(y), 0.0) * 8.0, float(y) * 0.35)
-			streak = streak * 0.5 + 0.5
-			var wobble: float = n1.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
-			var c: Color = c_lo.lerp(c_hi, lerpf(streak, wobble, 0.45))
-			c.a = 0.5 + n0.get_noise_2d(float(x + 20), float(y + 11)) * 0.08
-			img.set_pixel(x, y, c)
-	return _image_texture_no_mipmaps(img)
-
-
-func _make_cobble_path_albedo() -> ImageTexture:
-	var cell := FastNoiseLite.new()
-	cell.seed = 93
-	cell.noise_type = FastNoiseLite.TYPE_CELLULAR
-	cell.frequency = 0.14
-	cell.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var fine := FastNoiseLite.new()
-	fine.seed = 101
-	fine.noise_type = FastNoiseLite.TYPE_PERLIN
-	fine.frequency = 0.22
-	fine.fractal_octaves = 2
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	var stone_a := Color(0.42, 0.4, 0.38)
-	var stone_b := Color(0.32, 0.3, 0.29)
-	var grout := Color(0.22, 0.2, 0.19)
-	for y in 128:
-		for x in 128:
-			var cx: float = cell.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
-			var f: float = fine.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
-			var edge: float = smoothstep(0.35, 0.62, cx)
-			var c: Color = grout.lerp(stone_a.lerp(stone_b, f), edge)
-			c.a = 0.52 + f * 0.06
-			img.set_pixel(x, y, c)
-	return _image_texture_no_mipmaps(img)
-
-
-func _make_noise_albedo(c0: Color, c1: Color, noise_seed: int) -> ImageTexture:
-	var noise := FastNoiseLite.new()
-	noise.seed = noise_seed
-	noise.frequency = 0.09
-	noise.fractal_octaves = 4
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	for y in 128:
-		for x in 128:
-			var n: float = noise.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
-			var c: Color = c0.lerp(c1, n)
-			c.a = 0.48 + noise.get_noise_2d(float(x) + 30.0, float(y) + 40.0) * 0.06
-			img.set_pixel(x, y, c)
-	return _image_texture_with_mipmaps(img)
-
-
-func _make_flat_normal_roughness(_size: Vector2i) -> ImageTexture:
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	var c := Color(0.5, 0.5, 1.0, 0.55)
-	img.fill(c)
-	return _image_texture_with_mipmaps(img)
-
-
-func _make_flat_normal_no_mipmap() -> ImageTexture:
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0.5, 0.5, 1.0, 0.55))
-	return _image_texture_no_mipmaps(img)
-
-
-func _image_texture_no_mipmaps(img: Image) -> ImageTexture:
-	var tex := ImageTexture.new()
-	tex.set_image(img)
-	return tex
-
-
-func _image_texture_with_mipmaps(img: Image) -> ImageTexture:
-	var err := img.generate_mipmaps()
-	if err != OK:
-		push_warning("Tutorial isle: generate_mipmaps failed: ", error_string(err))
-	var tex := ImageTexture.new()
-	tex.set_image(img)
-	return tex
