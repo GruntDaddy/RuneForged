@@ -10,7 +10,7 @@ Use this workflow for the first playable pass on [`world/regions/main_island/mai
 ## 2. Coast silhouette
 
 - Export a **coastal mask** or reference from your concept art (silhouette of the main island).
-- **Automated outline (editor):** attach [`scripts/world/editor/coast_mask_height_tool.gd`](../../scripts/world/editor/coast_mask_height_tool.gd) to your **Terrain3D** node (temporarily). Set `mask_image_path` to a PNG — either a **black & white** land mask (best) or your **full-color** world map (enable `use_blue_water_heuristic` so ocean blue reads as water). Toggle **Run import** once. This writes a **flat** land/sea height pass so the **coastline** matches the image; sculpt hills afterward. Remove or disable the script when finished.
+- **Automated outline (editor):** attach [`scripts/world/editor/coast_mask_height_tool.gd`](../../scripts/world/editor/coast_mask_height_tool.gd) to your **Terrain3D** node (temporarily). Set `mask_image_path` to a PNG — preferably a **black & white** land mask (white = land). For a **full-color** map, enable `use_blue_water_heuristic` only if needed; it often mis-labels forests/deserts as water. Toggle **Run import** once. The tool uses the same **2048×2048 / 1024 m region** convention as the Terrain3D demo, aligns import origin to **(-region, 0, -region)**, lowers default **import_scale** (gentle coast), and sets **world background to NONE** to avoid a huge flat “infinite ground” slab. Check the Godot **Output** panel for land/sea %; if it is ~0% or ~100%, fix the mask or `invert_mask`. Remove the script when finished.
 - Manual path: add a region, use **Sculpt** / **Raise** for land and low areas for sea, using the mask as an overlay on a second monitor.
 
 ## 3. Macro height
