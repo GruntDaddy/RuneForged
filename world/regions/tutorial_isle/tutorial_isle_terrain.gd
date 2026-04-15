@@ -1,13 +1,16 @@
 @tool
 extends Terrain3D
 
-## Heightmap import / ocean ring for tutorial isle. Add Terrain3D texture assets in the editor or via assets on this node.
+## Tutorial isle terrain: procedural low-poly style layers (Grass, Sand, Rock, Dirt) + heightmap import.
 
 const HEIGHT_MAP := "res://world/regions/tutorial_isle/data/tutorial_isle_height.png"
 const EXPORT_COMBINED := "res://world/regions/tutorial_isle/data/tutorial_isle_height_ocean_ring.png"
 
 ## Vertical scale for normalized 0–1 height samples (Terrain3D import_images).
 @export var height_scale: float = 42.0
+
+## When true, assigns four procedural texture slots at runtime (indices 0–3).
+@export var setup_default_texture_layers: bool = true
 
 ## Legacy: import only the 512×512 center heightmap at the origin (single-region-sized image).
 @export var import_legacy_center_only_on_enter_tree: bool = false
@@ -28,6 +31,10 @@ const EXPORT_COMBINED := "res://world/regions/tutorial_isle/data/tutorial_isle_h
 	set(value):
 		if value:
 			call_deferred("_rebuild_ocean_ring_heightmap")
+
+
+func _ready() -> void:
+	call_deferred("_deferred_terrain_polish")
 
 
 func _enter_tree() -> void:
@@ -57,6 +64,7 @@ func _import_heightmap_legacy() -> void:
 	layers[Terrain3DRegion.TYPE_HEIGHT] = img
 	data.import_images(layers, Vector3.ZERO, 0.0, height_scale)
 	data.calc_height_range(true)
+	_finish_texture_setup()
 	_save_data_if_possible()
 
 
@@ -89,6 +97,7 @@ func _rebuild_ocean_ring_heightmap() -> void:
 	layers[Terrain3DRegion.TYPE_HEIGHT] = combined
 	data.import_images(layers, Vector3.ZERO, 0.0, height_scale)
 	data.calc_height_range(true)
+	_finish_texture_setup()
 	_save_data_if_possible()
 	print("Tutorial isle: ocean ring heightmap import finished (", combined.get_width(), "×", combined.get_height(), ").")
 
@@ -156,6 +165,115 @@ func _sample_nearest_island_edge(island: Image, ox: int, oy: int, tile: int, px:
 	var ix: int = cx - ox
 	var iy: int = cy - oy
 	return island.get_pixel(ix, iy).r
+
+
+func _finish_texture_setup() -> void:
+	if setup_default_texture_layers and assets.get_texture_count() == 0:
+		_setup_poly_texture_layers()
+	elif assets.get_texture_count() > 0:
+		material.show_checkered = false
+
+
+func _deferred_terrain_polish() -> void:
+	if setup_default_texture_layers:
+		_setup_poly_texture_layers()
+	_apply_autoshader_polish()
+
+
+func _setup_poly_texture_layers() -> void:
+	if assets == null or material == null:
+		return
+	var albedo_size := Vector2i(128, 128)
+	var grass_albedo := _make_noise_albedo(Color(0.22, 0.48, 0.18), Color(0.32, 0.58, 0.22), 11)
+	var sand_albedo := _make_noise_albedo(Color(0.72, 0.62, 0.42), Color(0.82, 0.72, 0.52), 17)
+	var rock_albedo := _make_noise_albedo(Color(0.28, 0.27, 0.26), Color(0.4, 0.38, 0.36), 23)
+	var dirt_albedo := _make_noise_albedo(Color(0.38, 0.26, 0.16), Color(0.52, 0.38, 0.26), 29)
+	var flat_normal := _make_flat_normal_roughness(albedo_size)
+
+	var grass := Terrain3DTextureAsset.new()
+	grass.name = "Grass"
+	grass.id = 0
+	grass.albedo_texture = grass_albedo
+	grass.normal_texture = flat_normal
+	grass.uv_scale = 0.14
+	grass.roughness = 0.08
+
+	var sand := Terrain3DTextureAsset.new()
+	sand.name = "Sand"
+	sand.id = 1
+	sand.albedo_texture = sand_albedo
+	sand.normal_texture = flat_normal
+	sand.uv_scale = 0.18
+	sand.roughness = 0.12
+
+	var rock := Terrain3DTextureAsset.new()
+	rock.name = "Rock"
+	rock.id = 2
+	rock.albedo_texture = rock_albedo
+	rock.normal_texture = flat_normal
+	rock.uv_scale = 0.12
+	rock.roughness = 0.22
+
+	var dirt := Terrain3DTextureAsset.new()
+	dirt.name = "Dirt"
+	dirt.id = 3
+	dirt.albedo_texture = dirt_albedo
+	dirt.normal_texture = flat_normal
+	dirt.uv_scale = 0.16
+	dirt.roughness = 0.42
+
+	assets.set_texture(0, grass)
+	assets.set_texture(1, sand)
+	assets.set_texture(2, rock)
+	assets.set_texture(3, dirt)
+	assets.update_texture_list()
+
+	material.show_checkered = false
+
+
+func _apply_autoshader_polish() -> void:
+	if material == null:
+		return
+	material.auto_shader = true
+	material.set_shader_param(&"auto_base_texture", 0)
+	material.set_shader_param(&"auto_overlay_texture", 1)
+	material.set_shader_param(&"auto_slope", 2.35)
+	material.set_shader_param(&"auto_height_reduction", 0.34)
+	material.set_shader_param(&"blend_sharpness", 0.58)
+	material.set_shader_param(&"macro_variation_slope", 0.28)
+	material.set_shader_param(&"macro_variation1", Color(0.97, 0.99, 0.95))
+	material.set_shader_param(&"macro_variation2", Color(0.94, 0.96, 1.0))
+
+
+func _make_noise_albedo(c0: Color, c1: Color, noise_seed: int) -> ImageTexture:
+	var noise := FastNoiseLite.new()
+	noise.seed = noise_seed
+	noise.frequency = 0.09
+	noise.fractal_octaves = 4
+	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	for y in 128:
+		for x in 128:
+			var n: float = noise.get_noise_2d(float(x), float(y)) * 0.5 + 0.5
+			var c: Color = c0.lerp(c1, n)
+			c.a = 0.48 + noise.get_noise_2d(float(x) + 30.0, float(y) + 40.0) * 0.06
+			img.set_pixel(x, y, c)
+	return _image_texture_with_mipmaps(img)
+
+
+func _make_flat_normal_roughness(_size: Vector2i) -> ImageTexture:
+	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	var c := Color(0.5, 0.5, 1.0, 0.55)
+	img.fill(c)
+	return _image_texture_with_mipmaps(img)
+
+
+func _image_texture_with_mipmaps(img: Image) -> ImageTexture:
+	var err := img.generate_mipmaps()
+	if err != OK:
+		push_warning("Tutorial isle: generate_mipmaps failed: ", error_string(err))
+	var tex := ImageTexture.new()
+	tex.set_image(img)
+	return tex
 
 
 func _save_data_if_possible() -> void:
