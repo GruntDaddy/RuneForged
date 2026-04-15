@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://cdv06gd4l4jrm"]
+
+[ext_resource type="Script" uid="uid://la6fktgrdvn6" path="res://world/building_parts/props/resource_pickup.gd" id="1_o342l"]
+[ext_resource type="PackedScene" uid="uid://cdg0426wfw3io" path="res://assets/kaykit/resources/Wood_Log_B.gltf" id="2_47u4m"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
+radius = 0.38
+
+[node name="ResourcePickupWood" type="Area3D" unique_id=1596851580]
+script = ExtResource("1_o342l")
+ground_clearance = 0.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1135003560]
+shape = SubResource("SphereShape3D_pickup")
+
+[node name="Visual" type="Node3D" parent="." unique_id=1716205232]
+
+[node name="Wood_Log_B2" parent="Visual" unique_id=648823989 instance=ExtResource("2_47u4m")]
