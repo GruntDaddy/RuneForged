@@ -10,7 +10,8 @@ Use this workflow for the first playable pass on [`world/regions/main_island/mai
 ## 2. Coast silhouette
 
 - Export a **coastal mask** or reference from your concept art (silhouette of the main island).
-- In the editor: add a region, use **Sculpt** / **Raise** to pull land above water and **Subtract** / low areas for sea. Use the mask as an overlay in an image editor or second monitor for alignment.
+- **Automated outline (editor):** attach [`scripts/world/editor/coast_mask_height_tool.gd`](../../scripts/world/editor/coast_mask_height_tool.gd) to your **Terrain3D** node (temporarily). Set `mask_image_path` to a PNG — either a **black & white** land mask (best) or your **full-color** world map (enable `use_blue_water_heuristic` so ocean blue reads as water). Toggle **Run import** once. This writes a **flat** land/sea height pass so the **coastline** matches the image; sculpt hills afterward. Remove or disable the script when finished.
+- Manual path: add a region, use **Sculpt** / **Raise** for land and low areas for sea, using the mask as an overlay on a second monitor.
 
 ## 3. Macro height
 

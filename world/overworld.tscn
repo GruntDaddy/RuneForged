@@ -1,15 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://bg2kyyphultoh"]
+[gd_scene format=3 uid="uid://bg2kyyphultoh"]
 
-[ext_resource type="PackedScene" uid="uid://c58mainislnd001" path="res://world/regions/main_island/main_island.tscn" id="1_main_island"]
-[ext_resource type="Script" path="res://world/overworld.gd" id="2_overworld"]
-[ext_resource type="PackedScene" uid="uid://bworldmapovrl1" path="res://ui/world_map/world_map_overlay.tscn" id="3_world_map"]
+[ext_resource type="PackedScene" uid="uid://c4ddge4gbgkqq" path="res://world/regions/main_island/main_island.tscn" id="1_main_island"]
+[ext_resource type="Script" uid="uid://dl8dp532f6481" path="res://world/overworld.gd" id="2_overworld"]
+[ext_resource type="PackedScene" uid="uid://ck2e3te6r2i0c" path="res://ui/world_map/world_map_overlay.tscn" id="3_world_map"]
+[ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="4_c1idk"]
 
-[node name="Overworld" type="Node3D"]
+[node name="Overworld" type="Node3D" unique_id=1493628807]
 script = ExtResource("2_overworld")
 
-[node name="MainIsland" parent="." instance=ExtResource("1_main_island")]
+[node name="MainIsland" parent="." unique_id=2067622215 instance=ExtResource("1_main_island")]
 
-[node name="WorldMapLayer" type="CanvasLayer" parent="."]
+[node name="WorldMapLayer" type="CanvasLayer" parent="." unique_id=502178665]
 layer = 100
 
-[node name="WorldMapOverlay" parent="WorldMapLayer" instance=ExtResource("3_world_map")]
+[node name="WorldMapOverlay" parent="WorldMapLayer" unique_id=1515067413 instance=ExtResource("3_world_map")]
+
+[node name="Player" parent="." unique_id=540399354 instance=ExtResource("4_c1idk")]
