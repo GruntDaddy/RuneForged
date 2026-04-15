@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://40knn3401ejk"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/building_parts/props/harvestable_resource.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://cx6xnlepnswwe" path="res://assets/kaykit/Forest & Nature Pack/Color1/Tree_5_A_Color1.gltf" id="2_tree"]
-[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/building_parts/props/resource_pickup_logs.tscn" id="3_drop"]
+[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="3_drop"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
 radius = 0.38183594

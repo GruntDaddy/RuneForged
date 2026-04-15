@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dxkwvjuipeig5"]
 
-[ext_resource type="Script" uid="uid://la6fktgrdvn6" path="res://world/props/resource_pickup.gd" id="1_mrgpk"]
-[ext_resource type="PackedScene" uid="uid://cwji5mpuqayuc" path="res://world/props/static/ore_chunks_tin.tscn" id="2_mrgpk"]
+[ext_resource type="Script" uid="uid://la6fktgrdvn6" path="res://world/world_building_parts/props/resource_pickup.gd" id="1_mrgpk"]
+[ext_resource type="PackedScene" uid="uid://cwji5mpuqayuc" path="res://world/world_building_parts/props/static/ore_chunks_tin.tscn" id="2_mrgpk"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
 radius = 0.42

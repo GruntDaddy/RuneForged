@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cxxtur5k87o3a"]
 
-[ext_resource type="Script" uid="uid://la6fktgrdvn6" path="res://world/building_parts/props/resource_pickup.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://la6fktgrdvn6" path="res://world/world_building_parts/props/resource_pickup.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://cd7oy6gnofvub" path="res://assets/kaykit/resources/Stone_Chunks_Small.gltf" id="2_stone"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://brgpis0krox5q"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/props/harvestable_resource.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/props/resource_pickup_stone.tscn" id="3_drop"]
-[ext_resource type="PackedScene" uid="uid://nfjaqdtu23si" path="res://world/props/static/tin_rock_1.tscn" id="3_i7vts"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/world_building_parts/props/resource_pickup_stone.tscn" id="3_drop"]
+[ext_resource type="PackedScene" uid="uid://nfjaqdtu23si" path="res://world/world_building_parts/props/static/tin_rock_1.tscn" id="3_i7vts"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
 radius = 0.9917891

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://40knn32wykjk"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/building_parts/props/harvestable_resource.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://d1vry0q64qmpk" path="res://assets/kaykit/Forest & Nature Pack/Color1/Rock_3_C_Color1.gltf" id="2_rock"]
-[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/building_parts/props/resource_pickup_stone.tscn" id="3_drop"]
+[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/world_building_parts/props/resource_pickup_stone.tscn" id="3_drop"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
 radius = 0.91244715

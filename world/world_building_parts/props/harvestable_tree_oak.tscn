@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b7oaktreehv1"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/building_parts/props/harvestable_resource.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cdv06gd4l4jrm" path="res://world/building_parts/props/resource_pickup_logs_oak.tscn" id="2_colvp"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cdv06gd4l4jrm" path="res://world/world_building_parts/props/resource_pickup_logs_oak.tscn" id="2_colvp"]
 [ext_resource type="PackedScene" uid="uid://df4ykm0g57co7" path="res://assets/kaykit/Forest & Nature Pack/Color1/Tree_1_A_Color1.gltf" id="2_tree"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
