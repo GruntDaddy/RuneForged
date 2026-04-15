@@ -61,8 +61,8 @@ func _on_quit_pressed() -> void:
 
 func _scene_for_region(region: String) -> String:
 	match region:
-		"tutorial_isle":
-			return "res://world/regions/tutorial_isle/tutorial_isle.tscn"
+		GameState.REGION_OVERWORLD, "tutorial_isle":
+			return GameState.OVERWORLD_SCENE_PATH
 		"character_creator":
 			return "res://ui/character_creator/character_creator.tscn"
 		_:

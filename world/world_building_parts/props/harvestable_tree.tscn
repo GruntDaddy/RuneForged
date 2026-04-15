@@ -20,7 +20,7 @@ particle_height = 1.85
 shake_amount = 0.08
 tree_scale_multiplier = 1.5
 respawn_seconds = 30.0
-respawn_scene_path = "res://world/props/harvestable_tree.tscn"
+respawn_scene_path = "res://world/world_building_parts/props/harvestable_tree.tscn"
 prompt_detail = "Tree"
 resource_display_name = "Regular Logs"
 

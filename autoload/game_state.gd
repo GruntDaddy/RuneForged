@@ -11,7 +11,9 @@ var origin_id: int = 0
 var trait_id_1: int = 0
 var trait_id_2: int = 1
 var birthsign_id: int = 0
-## Region id used by main menu routing: "tutorial_isle", "character_creator", etc.
+## Region id persisted in saves; routed in `main_menu.gd` `_scene_for_region`.
+const REGION_OVERWORLD := "overworld"
+const OVERWORLD_SCENE_PATH := "res://world/overworld.tscn"
 var region: String = ""
 ## Survival skills (harvest gates). Tune when XP/progression exists.
 var woodcutting_level: int = 10
@@ -64,5 +66,7 @@ func from_dict(data: Variant) -> void:
 	trait_id_2 = int(d.get("trait_id_2", 1))
 	birthsign_id = int(d.get("birthsign_id", 0))
 	region = str(d.get("region", ""))
+	if region == "tutorial_isle":
+		region = REGION_OVERWORLD
 	woodcutting_level = int(d.get("woodcutting_level", 10))
 	mining_level = int(d.get("mining_level", 10))

@@ -18,10 +18,10 @@ const TAG_FISHING_BOBBER := "fishing_bobber"
 const TAG_FISHING_BAIT := "fishing_bait"
 
 const PICKUP_SCENES := {
-	"logs": preload("res://world/props/resource_pickup_logs.tscn"),
-	"oak_logs": preload("res://world/props/resource_pickup_logs_oak.tscn"),
-	"stone": preload("res://world/props/resource_pickup_stone.tscn"),
-	"tin_ore": preload("res://world/props/resource_pickup_stone.tscn"),
+	"logs": preload("res://world/world_building_parts/props/resource_pickup_logs.tscn"),
+	"oak_logs": preload("res://world/world_building_parts/props/resource_pickup_logs_oak.tscn"),
+	"stone": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
+	"tin_ore": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
 }
 
 ## Each entry: null or Dictionary with "id", "count", optional "tackle"
