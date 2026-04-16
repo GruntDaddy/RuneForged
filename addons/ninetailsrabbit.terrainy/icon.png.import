@@ -2,26 +2,27 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k17waxlllkqo"
-path="res://.godot/imported/coast_mask.png-c3d7bb0959f3b02d882ab061600f2e5a.ctex"
+uid="uid://h68cek51vakm"
+path.bptc="res://.godot/imported/icon.png-64d3e626d57c63b8509770d624256af8.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
-source_file="res://assets/world/coast_mask.png"
-dest_files=["res://.godot/imported/coast_mask.png-c3d7bb0959f3b02d882ab061600f2e5a.ctex"]
+source_file="res://addons/ninetailsrabbit.terrainy/icon.png"
+dest_files=["res://.godot/imported/icon.png-64d3e626d57c63b8509770d624256af8.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=2
 compress/channel_pack=0
 mipmaps/generate=false
 mipmaps/limit=-1
