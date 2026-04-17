@@ -655,6 +655,8 @@ lod0_range = 128.0
 name = "Grass"
 albedo_texture = ExtResource("1_matcp")
 normal_texture = ExtResource("2_m3pej")
+normal_depth = 0.65
+roughness = -0.18
 uv_scale = 0.001
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_742gl"]
@@ -663,6 +665,7 @@ id = 1
 albedo_texture = ExtResource("3_4tfyc")
 normal_texture = ExtResource("4_f2ojk")
 normal_depth = 0.0
+roughness = -0.04
 uv_scale = 0.001
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_w2v6r"]
@@ -670,6 +673,7 @@ name = "Rock"
 id = 2
 albedo_texture = ExtResource("5_dg225")
 normal_texture = ExtResource("6_arhr5")
+normal_depth = 1.15
 roughness = 1.0
 uv_scale = 0.001
 
@@ -678,6 +682,9 @@ name = "Dirt"
 id = 3
 albedo_texture = ExtResource("7_ywla4")
 normal_texture = ExtResource("8_mfwor")
+normal_depth = 0.72
+roughness = -0.12
+uv_scale = 0.074
 
 [sub_resource type="Terrain3DAssets" id="Terrain3DAssets_terrain"]
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
@@ -960,7 +967,6 @@ transform = Transform3D(1, 0, 0, 0, 0.3166757, 0.9485339, 0, -0.9485339, 0.31667
 light_color = Color(1, 0.99231774, 0.8650724, 1)
 light_energy = 0.75
 shadow_enabled = true
-sky_mode = 1
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.328645, 401.0047)
