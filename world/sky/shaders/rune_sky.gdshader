@@ -107,16 +107,21 @@ float stars(vec3 eyedir, float night_amt) {
 	vec2 uv = vec2(atan(p.z, p.x) / 6.2831853 + 0.5, asin(clamp(p.y, -1.0, 1.0)) * 0.5 + 0.5);
 	uv *= star_density_uv;
 	vec2 id = floor(uv);
-	vec2 f = fract(uv) - 0.5;
 	float h = hash21(id);
-	float tw = mix(1.0, sin(TIME * (1.2 + h * 2.0) + h * 6.28) * 0.5 + 0.5, star_twinkle_amount);
+	vec2 center_jitter = vec2(hash21(id + vec2(13.7, 2.9)), hash21(id + vec2(4.1, 19.3))) - 0.5;
+	vec2 f = fract(uv) - (0.5 + center_jitter * 0.6);
+	float tw = mix(
+		1.0,
+		0.86 + 0.14 * (sin(TIME * (0.8 + h * 1.8) + h * 6.28) * 0.5 + 0.5),
+		star_twinkle_amount
+	);
 	float r = length(f);
 	float core = pow(smoothstep(star_point_size, 0.0, r), star_core_power);
-	float halo = smoothstep(star_point_size * 2.35, star_point_size * 0.42, r) * star_halo;
+	float halo = smoothstep(star_point_size * 1.65, star_point_size * 0.55, r) * star_halo;
 	float kernel = core + halo;
-	float dim = step(star_dim_threshold, h) * (1.0 - step(star_bright_threshold, h));
-	float bright = step(star_bright_threshold, h);
-	float m = kernel * (dim * 0.62 + bright * star_bright_boost) * tw;
+	float dim = smoothstep(star_dim_threshold, star_bright_threshold, h);
+	float bright = smoothstep(star_bright_threshold, 1.0, h);
+	float m = kernel * (dim * 0.48 + bright * star_bright_boost) * tw;
 	return m * night_amt * star_brightness;
 }
 
