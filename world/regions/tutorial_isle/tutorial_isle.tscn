@@ -1,7 +1,15 @@
 [gd_scene format=3 uid="uid://cj88e5jeos7lm"]
 
+[ext_resource type="Texture2D" uid="uid://svdcupqa8tlr" path="res://assets/terrain3d/textures/terrain_grass_tile.png" id="1_matcp"]
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://dpjjbt244thpb" path="res://assets/terrain3d/textures/terrain_grass_tile_normal.png" id="2_m3pej"]
+[ext_resource type="Texture2D" uid="uid://dt5ug3cj3qgnj" path="res://assets/terrain3d/textures/terrain_sand_tile.png" id="3_4tfyc"]
 [ext_resource type="Shader" uid="uid://bfbf13wtl7xto" path="res://world/water/shaders/rune_water.gdshader" id="3_x6gk8"]
+[ext_resource type="Texture2D" uid="uid://dsyjsx520eq05" path="res://assets/terrain3d/textures/terrain_sand_tile_normal.png" id="4_f2ojk"]
+[ext_resource type="Texture2D" uid="uid://0i88u1dnv8k1" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile.png" id="5_dg225"]
+[ext_resource type="Texture2D" uid="uid://ctfd8oxwnubg6" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_normal.png" id="6_arhr5"]
+[ext_resource type="Texture2D" uid="uid://4n2uu08g6wwo" path="res://assets/terrain3d/textures/terrain_dirt_tile.png" id="7_ywla4"]
+[ext_resource type="Texture2D" uid="uid://d25dutsmfugrw" path="res://assets/terrain3d/textures/terrain_dirt_tile_normal.png" id="8_mfwor"]
 [ext_resource type="Script" uid="uid://c14b0stwqm1en" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
 [ext_resource type="Shader" uid="uid://bago5reb8ocjt" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
 [ext_resource type="PackedScene" path="res://world/water/water_surface.tscn" id="water_surface"]
@@ -598,8 +606,8 @@ void fragment() {
 
 [sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_terrain"]
 _shader_parameters = {
-&"auto_base_texture": 0,
-&"auto_height_reduction": 0.1,
+&"auto_base_texture": 2,
+&"auto_height_reduction": 0.0,
 &"auto_overlay_texture": 1,
 &"auto_slope": 1.0,
 &"bias_distance": 1024.0000152588289,
@@ -617,14 +625,13 @@ _shader_parameters = {
 "noise1_scale": 0.04,
 "noise2_scale": 0.076,
 "noise_texture": SubResource("NoiseTexture2D_terrain"),
-&"projection_threshold": 0.9900000095367401
+&"projection_threshold": 0.98999997787152
 }
 world_background = 0
 texture_filtering = 1
 auto_shader = true
 shader_override_enabled = true
 shader_override = SubResource("Shader_tfelk")
-show_checkered = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_is1td"]
 transparency = 4
@@ -644,10 +651,39 @@ last_lod = 0
 last_shadow_lod = 0
 lod0_range = 128.0
 
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_avtbp"]
+name = "Grass"
+albedo_texture = ExtResource("1_matcp")
+normal_texture = ExtResource("2_m3pej")
+uv_scale = 0.001
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_742gl"]
+name = "Sand"
+id = 1
+albedo_texture = ExtResource("3_4tfyc")
+normal_texture = ExtResource("4_f2ojk")
+normal_depth = 0.0
+uv_scale = 0.001
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_w2v6r"]
+name = "Rock"
+id = 2
+albedo_texture = ExtResource("5_dg225")
+normal_texture = ExtResource("6_arhr5")
+roughness = 1.0
+uv_scale = 0.001
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_vlrk0"]
+name = "Dirt"
+id = 3
+albedo_texture = ExtResource("7_ywla4")
+normal_texture = ExtResource("8_mfwor")
+
 [sub_resource type="Terrain3DAssets" id="Terrain3DAssets_terrain"]
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_avtbp"), SubResource("Terrain3DTextureAsset_742gl"), SubResource("Terrain3DTextureAsset_w2v6r"), SubResource("Terrain3DTextureAsset_vlrk0")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_q5xbx"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_matcp"]
 render_priority = 16
 shader = ExtResource("3_x6gk8")
 shader_parameter/water_level = 1.0
@@ -702,7 +738,7 @@ shader_parameter/ripple_strength = 0.134000006365
 shader_parameter/depth_reconstruction_enabled = 1.0
 shader_parameter/inv_view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 shader_parameter/view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-shader_parameter/inv_projection_matrix = Projection(1.2902564, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
+shader_parameter/inv_projection_matrix = Projection(0.7673271, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6ia34"]
 transparency = 1
@@ -717,12 +753,12 @@ metallic_specular = 0.8
 metallic_texture_channel = 2
 roughness = 0.78
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_n2gx1"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_m3pej"]
 size = Vector2(2200, 2200)
 subdivide_width = 96
 subdivide_depth = 96
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_gypqo"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4tfyc"]
 render_priority = 16
 shader = ExtResource("3_x6gk8")
 shader_parameter/water_level = 2.35
@@ -777,9 +813,9 @@ shader_parameter/ripple_strength = 0.08
 shader_parameter/depth_reconstruction_enabled = 1.0
 shader_parameter/inv_view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 shader_parameter/view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-shader_parameter/inv_projection_matrix = Projection(1.2902564, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
+shader_parameter/inv_projection_matrix = Projection(0.7673271, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_matcp"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_f2ojk"]
 size = Vector2(56, 48)
 subdivide_width = 32
 subdivide_depth = 28
@@ -857,31 +893,29 @@ material = SubResource("Terrain3DMaterial_terrain")
 assets = SubResource("Terrain3DAssets_terrain")
 mesh_lods = 8
 vertex_spacing = 0.5
-show_checkered = true
 top_level = true
 metadata/_edit_lock_ = true
 
 [node name="Water" parent="." unique_id=1261998408 instance=ExtResource("water_surface")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-visible = false
-material_override = SubResource("ShaderMaterial_q5xbx")
+material_override = SubResource("ShaderMaterial_matcp")
 material_overlay = SubResource("StandardMaterial3D_6ia34")
 cast_shadow = 1
 extra_cull_margin = 640.0
 custom_aabb = AABB(-1420, -24, -1420, 2840, 48, 2840)
 ignore_occlusion_culling = true
-mesh = SubResource("PlaneMesh_n2gx1")
+mesh = SubResource("PlaneMesh_m3pej")
 plane_size = Vector2(2200, 2200)
 metadata/_edit_lock_ = true
 
 [node name="LakeWater" parent="." unique_id=1224277216 instance=ExtResource("water_surface")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72, 2.35, 168)
 visible = false
-material_override = SubResource("ShaderMaterial_gypqo")
+material_override = SubResource("ShaderMaterial_4tfyc")
 extra_cull_margin = 640.0
 custom_aabb = AABB(-348, -24, -344, 696, 48, 688)
 ignore_occlusion_culling = true
-mesh = SubResource("PlaneMesh_matcp")
+mesh = SubResource("PlaneMesh_f2ojk")
 water_level = 2.35
 plane_size = Vector2(56, 48)
 subdivisions = Vector2i(32, 28)
@@ -929,4 +963,4 @@ shadow_enabled = true
 sky_mode = 1
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.427948, 11.977498, 13.395859)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.328645, 401.0047)
