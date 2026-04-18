@@ -685,14 +685,14 @@ id = 3
 albedo_texture = ExtResource("7_ywla4")
 normal_texture = ExtResource("8_mfwor")
 normal_depth = 0.72
-roughness = -0.12
-uv_scale = 0.074
+roughness = -0.22
+uv_scale = 2.0
 
 [sub_resource type="Terrain3DAssets" id="Terrain3DAssets_terrain"]
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_avtbp"), SubResource("Terrain3DTextureAsset_742gl"), SubResource("Terrain3DTextureAsset_w2v6r"), SubResource("Terrain3DTextureAsset_vlrk0")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_m3pej"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_matcp"]
 render_priority = 16
 shader = ExtResource("3_x6gk8")
 shader_parameter/water_level = 1.0
@@ -747,7 +747,7 @@ shader_parameter/ripple_strength = 0.134000006365
 shader_parameter/depth_reconstruction_enabled = 1.0
 shader_parameter/inv_view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 shader_parameter/view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-shader_parameter/inv_projection_matrix = Projection(0.7673271, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
+shader_parameter/inv_projection_matrix = Projection(1.1117873, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6ia34"]
 transparency = 1
@@ -762,7 +762,7 @@ metallic_specular = 0.8
 metallic_texture_channel = 2
 roughness = 0.78
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_4tfyc"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_m3pej"]
 size = Vector2(2200, 2200)
 subdivide_width = 96
 subdivide_depth = 96
@@ -845,13 +845,13 @@ metadata/_edit_lock_ = true
 
 [node name="Water" parent="." unique_id=1261998408 instance=ExtResource("water_surface")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-material_override = SubResource("ShaderMaterial_m3pej")
+material_override = SubResource("ShaderMaterial_matcp")
 material_overlay = SubResource("StandardMaterial3D_6ia34")
 cast_shadow = 1
 extra_cull_margin = 640.0
 custom_aabb = AABB(-1420, -24, -1420, 2840, 48, 2840)
 ignore_occlusion_culling = true
-mesh = SubResource("PlaneMesh_4tfyc")
+mesh = SubResource("PlaneMesh_m3pej")
 plane_size = Vector2(2200, 2200)
 metadata/_edit_lock_ = true
 
@@ -881,4 +881,4 @@ light_energy = 0.75
 shadow_enabled = true
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.996481, 386.97916)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.896926, 386.97916)
