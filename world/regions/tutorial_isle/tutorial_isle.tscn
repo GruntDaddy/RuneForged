@@ -9,9 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://ctfd8oxwnubg6" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_normal.png" id="6_arhr5"]
 [ext_resource type="Texture2D" uid="uid://4n2uu08g6wwo" path="res://assets/terrain3d/textures/terrain_dirt_tile.png" id="7_ywla4"]
 [ext_resource type="Texture2D" uid="uid://d25dutsmfugrw" path="res://assets/terrain3d/textures/terrain_dirt_tile_normal.png" id="8_mfwor"]
+[ext_resource type="PackedScene" path="res://world/water/boujie_ocean.tscn" id="boujie_ocean"]
 [ext_resource type="Script" uid="uid://c14b0stwqm1en" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
 [ext_resource type="Shader" uid="uid://bago5reb8ocjt" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
-[ext_resource type="PackedScene" uid="uid://b7boujie_ocean01" path="res://world/water/boujie_ocean.tscn" id="boujie_ocean"]
 
 [sub_resource type="Gradient" id="Gradient_terrain"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -768,8 +768,7 @@ top_level = true
 metadata/_edit_lock_ = true
 
 [node name="Water" parent="." unique_id=1261998408 instance=ExtResource("boujie_ocean")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-water_level = 1.0
+water_level = 4.2
 metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]
@@ -798,4 +797,4 @@ light_energy = 0.75
 shadow_enabled = true
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.896926, 386.97916)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.845969, 386.97916)
