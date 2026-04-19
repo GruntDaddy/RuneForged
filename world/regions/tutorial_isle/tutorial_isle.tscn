@@ -771,6 +771,12 @@ metadata/_edit_lock_ = true
 water_level = 4.2
 metadata/_edit_lock_ = true
 
+[node name="WaterReflectionProbe" type="ReflectionProbe3D" parent="." unique_id=1212405265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14, 200)
+size = Vector3(1100, 180, 1100)
+cull_mask = 1048575
+update_mode = 1
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]
 environment = SubResource("Environment_main")
 

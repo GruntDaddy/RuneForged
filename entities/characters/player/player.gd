@@ -2,6 +2,7 @@ extends CharacterBody3D
 
 const _GameState = preload("res://autoload/game_state.gd")
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
+const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd")
 
 const _H_INVALID := 0
 const _H_WHIFF := 1
@@ -123,7 +124,7 @@ func _physics_process(delta: float) -> void:
 
 	var tool_busy: bool = base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active()
 
-	var wl: float = _get_active_water_level()
+	var wl: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), global_position)
 	var in_water: bool = (
 			wl > -1e6
 			and global_position.y < wl - 0.02
@@ -192,7 +193,8 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	_update_underwater_fog(wl)
+	var wl_cam: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), camera_3d.global_position)
+	_update_underwater_fog(wl_cam)
 
 	_update_interaction_ray()
 	_update_interaction_prompt()
@@ -550,33 +552,6 @@ func _find_world_environment() -> WorldEnvironment:
 		if c is WorldEnvironment:
 			return c as WorldEnvironment
 	return null
-
-
-func _get_active_water_level() -> float:
-	var best: Node3D = null
-	var best_area: float = INF
-	for node in get_tree().get_nodes_in_group(&"water_surface"):
-		if not node is Node3D:
-			continue
-		var w := node as Node3D
-		var ps: Variant = w.get("plane_size")
-		if typeof(ps) != TYPE_VECTOR2:
-			continue
-		var half: Vector2 = ps * 0.5
-		var dx: float = absf(global_position.x - w.global_position.x)
-		var dz: float = absf(global_position.z - w.global_position.z)
-		if dx > half.x or dz > half.y:
-			continue
-		var area: float = ps.x * ps.y
-		if area < best_area:
-			best_area = area
-			best = w
-	if best == null:
-		return -1e7
-	var wl: Variant = best.get("water_level")
-	if typeof(wl) == TYPE_FLOAT:
-		return wl as float
-	return best.global_position.y
 
 
 func _update_underwater_fog(water_level_y: float) -> void:

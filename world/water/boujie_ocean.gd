@@ -4,6 +4,8 @@ extends Node3D
 ## keeps sea level at fixed Y (CameraFollower uses X+Z only), and configures Boujie waves
 ## for less tiling (phases, extra layers) and softer shore reads.
 
+const _BoujieWaveHeight = preload("res://world/water/boujie_wave_height.gd")
+
 const _HEIGHT4 := "res://addons/boujie_water_shader/example/boujie_water_shader/height_waves/height4.tres"
 const _HEIGHT2 := "res://addons/boujie_water_shader/example/boujie_water_shader/height_waves/height2.tres"
 const _FOAM1 := "res://addons/boujie_water_shader/example/boujie_water_shader/foam_waves/foam1.tres"
@@ -22,6 +24,25 @@ const _UVW2 := "res://addons/boujie_water_shader/example/boujie_water_shader/uv_
 @export var plane_size: Vector2 = Vector2(50000, 50000)
 
 var _material_instance: ShaderMaterial
+
+
+func get_water_surface_height_at(world_position: Vector3) -> float:
+	if _material_instance == null:
+		_ensure_unique_material()
+	if _material_instance == null:
+		return water_level
+	var cam := get_viewport().get_camera_3d()
+	var cam_pos: Vector3 = cam.global_position if cam else world_position
+	var t: float = Time.get_ticks_msec() * 0.001
+	var dy: float = _BoujieWaveHeight.sample_vertex_wave_average_y(
+		_material_instance,
+		world_position.x,
+		world_position.z,
+		t,
+		cam_pos,
+		water_level
+	)
+	return water_level + dy
 
 
 func _enter_tree() -> void:
