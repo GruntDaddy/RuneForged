@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://d0xxwhogmjfsm"]
+
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_5c58a"]
+[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="2_et1gi"]
+[ext_resource type="PackedScene" uid="uid://cas0x7etioocv" path="res://assets/Ultimate Nature Pack/CommonTree_2.fbx" id="4_4xcpj"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
+radius = 0.4345703
+height = 3.9919217
+
+[node name="HarvestableTree" type="StaticBody3D" unique_id=106376001]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
+collision_layer = 2
+script = ExtResource("1_5c58a")
+max_hits = 4
+drop_count_max = 1
+drop_scene = ExtResource("2_et1gi")
+particle_color = Color(0.55314887, 0.2896908, 1.92523e-07, 1)
+particle_height = 1.85
+shake_amount = 0.08
+tree_scale_multiplier = 1.5
+respawn_seconds = 30.0
+respawn_scene_path = "res://world/world_building_parts/props/harvestable_tree.tscn"
+prompt_detail = "Tree"
+resource_display_name = "Regular Logs"
+
+[node name="Visual" type="Node3D" parent="." unique_id=1881988876]
+
+[node name="CommonTree_2" parent="." unique_id=1311036473 instance=ExtResource("4_4xcpj")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=198457328]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.007387082, 1.5519179, 0.0016715527)
+shape = SubResource("CapsuleShape3D_trunk")
