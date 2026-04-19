@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7boujie_ocean01"]
+
+[ext_resource type="Script" path="res://world/water/boujie_ocean.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://ignpdv10rx52" path="res://addons/boujie_water_shader/prefabs/deep_ocean.tscn" id="2_deep_ocean"]
+
+[node name="BoujieOcean" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="DeepOcean" parent="." instance=ExtResource("2_deep_ocean")]

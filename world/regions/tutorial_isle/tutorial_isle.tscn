@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://dpjjbt244thpb" path="res://assets/terrain3d/textures/terrain_grass_tile_normal.png" id="2_m3pej"]
 [ext_resource type="Texture2D" uid="uid://dsrsagq00oan3" path="res://assets/terrain3d/textures/terrain_sand_tile_roughness.png" id="3_matcp"]
-[ext_resource type="Shader" uid="uid://bfbf13wtl7xto" path="res://world/water/shaders/rune_water.gdshader" id="3_x6gk8"]
 [ext_resource type="Texture2D" uid="uid://dsyjsx520eq05" path="res://assets/terrain3d/textures/terrain_sand_tile_normal.png" id="4_f2ojk"]
 [ext_resource type="Texture2D" uid="uid://bhy6a8h6yescs" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_roughness.png" id="5_m3pej"]
 [ext_resource type="Texture2D" uid="uid://ctfd8oxwnubg6" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_normal.png" id="6_arhr5"]
@@ -12,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://d25dutsmfugrw" path="res://assets/terrain3d/textures/terrain_dirt_tile_normal.png" id="8_mfwor"]
 [ext_resource type="Script" uid="uid://c14b0stwqm1en" path="res://world/sky/day_night_controller.gd" id="day_night_script"]
 [ext_resource type="Shader" uid="uid://bago5reb8ocjt" path="res://world/sky/shaders/rune_sky.gdshader" id="sky_rune_shader"]
-[ext_resource type="PackedScene" path="res://world/water/water_surface.tscn" id="water_surface"]
+[ext_resource type="PackedScene" uid="uid://b7boujie_ocean01" path="res://world/water/boujie_ocean.tscn" id="boujie_ocean"]
 
 [sub_resource type="Gradient" id="Gradient_terrain"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -692,81 +691,6 @@ uv_scale = 2.0
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_avtbp"), SubResource("Terrain3DTextureAsset_742gl"), SubResource("Terrain3DTextureAsset_w2v6r"), SubResource("Terrain3DTextureAsset_vlrk0")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_matcp"]
-render_priority = 16
-shader = ExtResource("3_x6gk8")
-shader_parameter/water_level = 1.0
-shader_parameter/depth_fade_distance = 2.0000000298024
-shader_parameter/depth_deep_boost = 0.35
-shader_parameter/sky_depth_far_max = 0.0015
-shader_parameter/shallow_color = Color(0.1, 0.45, 0.62, 0.58)
-shader_parameter/deep_color = Color(0.06299999, 0.18545002, 0.3, 0.6784314)
-shader_parameter/alpha_depth_boost = 0.08
-shader_parameter/foam_color = Color(0.94, 0.9071, 0.8836, 0.91764706)
-shader_parameter/foam_shore_band = 7.0
-shader_parameter/foam_shore_above = 1.1
-shader_parameter/foam_noise_scale = 0.38
-shader_parameter/foam_noise_speed = 0.65
-shader_parameter/foam_inward_speed = 0.42
-shader_parameter/foam_sharpness = 1.85
-shader_parameter/foam_intensity = 0.92
-shader_parameter/foam_max_blend = 0.42
-shader_parameter/offshore_chop_tint = 0.22
-shader_parameter/crest_foam_intensity = 0.42
-shader_parameter/crest_foam_max = 0.22
-shader_parameter/crest_steepness_low = 0.08
-shader_parameter/crest_steepness_high = 0.38
-shader_parameter/crest_depth_near = 5.0
-shader_parameter/crest_depth_far = 22.0
-shader_parameter/toward_land_xz = Vector2(0.7808688, 0.62469506)
-shader_parameter/shore_reference_xz = Vector2(130, 115)
-shader_parameter/shore_wave_falloff_start = 22.0
-shader_parameter/shore_wave_falloff_end = 140.0
-shader_parameter/wave_far_amplitude = 0.18999999761578
-shader_parameter/wave_direction_toward_shore = 0.62
-shader_parameter/distance_roughness_add = 0.2
-shader_parameter/distance_roughness_start = 55.0
-shader_parameter/distance_roughness_end = 220.0
-shader_parameter/roughness = 0.92
-shader_parameter/roughness_foam = 0.42
-shader_parameter/specular_amount = 0.015
-shader_parameter/fresnel_power = 2.4
-shader_parameter/fresnel_intensity = 0.008
-shader_parameter/horizon_sky_mix = 0.0999999977648
-shader_parameter/refraction_enabled = 1.0
-shader_parameter/refraction_uv_scale = 0.038
-shader_parameter/refraction_max_blend = 0.58
-shader_parameter/refraction_shallow_fade = 9.0
-shader_parameter/wave_speed = 0.4499999899416
-shader_parameter/wave_height = 0.14000000665
-shader_parameter/wave_steepness = 0.42
-shader_parameter/wave_scale_2 = 1.65
-shader_parameter/wave_scale_3 = 2.35
-shader_parameter/ripple_scale = 31.5
-shader_parameter/ripple_strength = 0.134000006365
-shader_parameter/depth_reconstruction_enabled = 1.0
-shader_parameter/inv_view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-shader_parameter/view_matrix = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-shader_parameter/inv_projection_matrix = Projection(1.1117873, 0, 0, 0, 0, 0.7673271, 0, 0, 0, 0, -5.9603153e-08, -9.999874, 0, 0, -1, 10.000125)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6ia34"]
-transparency = 1
-blend_mode = 4
-cull_mode = 2
-depth_draw_mode = 2
-shading_mode = 2
-diffuse_mode = 3
-albedo_color = Color(0.10935026, 0.7496279, 1, 0.61960787)
-metallic = 0.46
-metallic_specular = 0.8
-metallic_texture_channel = 2
-roughness = 0.78
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_m3pej"]
-size = Vector2(2200, 2200)
-subdivide_width = 96
-subdivide_depth = 96
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rune_sky"]
 shader = ExtResource("sky_rune_shader")
 shader_parameter/sun_direction = Vector3(0.2, 0.97, 0.12)
@@ -843,16 +767,9 @@ vertex_spacing = 0.5
 top_level = true
 metadata/_edit_lock_ = true
 
-[node name="Water" parent="." unique_id=1261998408 instance=ExtResource("water_surface")]
+[node name="Water" parent="." unique_id=1261998408 instance=ExtResource("boujie_ocean")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-material_override = SubResource("ShaderMaterial_matcp")
-material_overlay = SubResource("StandardMaterial3D_6ia34")
-cast_shadow = 1
-extra_cull_margin = 640.0
-custom_aabb = AABB(-1420, -24, -1420, 2840, 48, 2840)
-ignore_occlusion_culling = true
-mesh = SubResource("PlaneMesh_m3pej")
-plane_size = Vector2(2200, 2200)
+water_level = 1.0
 metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]
