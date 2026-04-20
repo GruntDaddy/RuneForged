@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/recipe_ingredient.gd" id="1_ing"]
+[ext_resource type="Script" path="res://data/schemas/recipe_data.gd" id="2_rec"]
+
+[sub_resource type="Resource" id="Resource_ing_logs"]
+script = ExtResource("1_ing")
+item_id = "logs"
+count = 1
+
+[sub_resource type="Resource" id="Resource_ing_stone"]
+script = ExtResource("1_ing")
+item_id = "stone"
+count = 1
+
+[resource]
+script = ExtResource("2_rec")
+id = "craft_torch_basic"
+display_name = "Basic torch"
+inputs = Array[ExtResource("1_ing")]([SubResource("Resource_ing_logs"), SubResource("Resource_ing_stone")])
+output_item_id = "tool_torch"
+skill_id = "survival"
+station = 1

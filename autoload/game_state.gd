@@ -18,6 +18,18 @@ var region: String = ""
 ## Survival skills (harvest gates). Tune when XP/progression exists.
 var woodcutting_level: int = 10
 var mining_level: int = 10
+## Day/night persistence used by world sky controller.
+var time_of_day: float = 0.32
+var moon_phase: float = 0.18
+## Campfire/torch runtime persistence keyed by scene path.
+var world_fire_states: Dictionary = {}
+## Runtime placed fire props persisted per region.
+var placed_fire_nodes: Array = []
+## Temporary campfire warmth effect expiry in UTC milliseconds.
+var warmth_until_unix_ms: int = 0
+## Run-speed tuning while in nighttime conditions.
+var campfire_night_run_bonus: float = 0.2
+var campfire_night_penalty: float = 0.15
 
 
 func reset() -> void:
@@ -33,6 +45,13 @@ func reset() -> void:
 	region = ""
 	woodcutting_level = 10
 	mining_level = 10
+	time_of_day = 0.32
+	moon_phase = 0.18
+	world_fire_states = {}
+	placed_fire_nodes = []
+	warmth_until_unix_ms = 0
+	campfire_night_run_bonus = 0.2
+	campfire_night_penalty = 0.15
 
 
 func to_dict() -> Dictionary:
@@ -49,6 +68,13 @@ func to_dict() -> Dictionary:
 		"region": region,
 		"woodcutting_level": woodcutting_level,
 		"mining_level": mining_level,
+		"time_of_day": time_of_day,
+		"moon_phase": moon_phase,
+		"world_fire_states": world_fire_states.duplicate(true),
+		"placed_fire_nodes": placed_fire_nodes.duplicate(true),
+		"warmth_until_unix_ms": warmth_until_unix_ms,
+		"campfire_night_run_bonus": campfire_night_run_bonus,
+		"campfire_night_penalty": campfire_night_penalty,
 	}
 
 
@@ -70,3 +96,16 @@ func from_dict(data: Variant) -> void:
 		region = "tutorial_isle"
 	woodcutting_level = int(d.get("woodcutting_level", 10))
 	mining_level = int(d.get("mining_level", 10))
+	time_of_day = clampf(float(d.get("time_of_day", 0.32)), 0.0, 0.999999)
+	moon_phase = clampf(float(d.get("moon_phase", 0.18)), 0.0, 0.999999)
+	if typeof(d.get("world_fire_states", null)) == TYPE_DICTIONARY:
+		world_fire_states = (d.get("world_fire_states", {}) as Dictionary).duplicate(true)
+	else:
+		world_fire_states = {}
+	if typeof(d.get("placed_fire_nodes", null)) == TYPE_ARRAY:
+		placed_fire_nodes = (d.get("placed_fire_nodes", []) as Array).duplicate(true)
+	else:
+		placed_fire_nodes = []
+	warmth_until_unix_ms = int(d.get("warmth_until_unix_ms", 0))
+	campfire_night_run_bonus = float(d.get("campfire_night_run_bonus", 0.2))
+	campfire_night_penalty = float(d.get("campfire_night_penalty", 0.15))

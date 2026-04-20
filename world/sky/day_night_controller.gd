@@ -33,6 +33,25 @@ extends Node3D
 ## When true, boosts moon rim strength toward night so the moon reads better against the dark sky.
 @export var drive_sky_night_visuals: bool = false
 @export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.42
+@export var drive_sky_aurora: bool = true
+@export_range(0.0, 1.0, 0.01) var aurora_intensity_day: float = 0.0
+@export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 0.24
+@export_group("Moon phase")
+@export_range(0.0, 60.0, 0.1) var moon_orbit_offset_deg: float = 22.0
+@export_range(1.0, 60.0, 0.1) var moon_phase_days: float = 12.0
+@export_range(0.0, 1.0, 0.001) var start_moon_phase: float = 0.18
+@export_group("Sky tuning")
+@export var apply_stylized_sky_preset: bool = true
+@export_range(0.001, 0.06, 0.0001) var moon_disk_size_target: float = 0.0048
+@export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 1.08
+@export var star_density_uv_target: Vector2 = Vector2(365.0, 192.0)
+@export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.018
+@export var milky_way_enabled_target: bool = true
+@export_range(0.0, 2.0, 0.01) var milky_way_intensity_target: float = 0.44
+@export var aurora_enabled_target: bool = true
+@export_group("Persistence")
+@export var persist_time_to_game_state: bool = true
+@export var persist_moon_phase_to_game_state: bool = true
 
 @export_group("Nodes")
 @export var directional_light_path: NodePath = ^"../DirectionalLight3D"
@@ -40,15 +59,21 @@ extends Node3D
 
 var _time_of_day: float = 0.32
 var _sky_material: ShaderMaterial
+var _moon_phase: float = 0.18
 
 
 func _ready() -> void:
 	_time_of_day = start_time_of_day
+	_moon_phase = start_moon_phase
+	if day_length_seconds < 180.0:
+		day_length_seconds = 900.0
 	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment
 	if we != null and we.environment != null:
 		var sky: Sky = we.environment.sky
 		if sky != null and sky.sky_material is ShaderMaterial:
 			_sky_material = sky.sky_material
+	_spawn_saved_fire_props()
+	_load_persisted_cycle_state()
 	_apply_time()
 
 
@@ -56,7 +81,10 @@ func _process(delta: float) -> void:
 	if day_length_seconds <= 0.001:
 		return
 	_time_of_day = fmod(_time_of_day + delta / day_length_seconds, 1.0)
+	var phase_len: float = maxf(1.0, moon_phase_days) * day_length_seconds
+	_moon_phase = fmod(_moon_phase + delta / phase_len, 1.0)
 	_apply_time()
+	_store_cycle_state()
 
 
 func set_time_of_day(t: float) -> void:
@@ -74,8 +102,89 @@ func _sun_direction() -> Vector3:
 	return Vector3(-cos(angle), sin(angle), -sin(angle) * 0.28).normalized()
 
 
+func _moon_direction(sun_dir: Vector3) -> Vector3:
+	var axis := Vector3(0.0, 1.0, 0.0)
+	var orbit_dir: Vector3 = sun_dir.rotated(axis, deg_to_rad(moon_orbit_offset_deg)).normalized()
+	return orbit_dir
+
+
+func _load_persisted_cycle_state() -> void:
+	if not persist_time_to_game_state and not persist_moon_phase_to_game_state:
+		return
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null:
+		return
+	if persist_time_to_game_state and "time_of_day" in gs:
+		_time_of_day = clampf(float(gs.time_of_day), 0.0, 0.999999)
+	if persist_moon_phase_to_game_state and "moon_phase" in gs:
+		_moon_phase = clampf(float(gs.moon_phase), 0.0, 0.999999)
+
+
+func _store_cycle_state() -> void:
+	if not persist_time_to_game_state and not persist_moon_phase_to_game_state:
+		return
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null:
+		return
+	if persist_time_to_game_state and "time_of_day" in gs:
+		gs.time_of_day = _time_of_day
+	if persist_moon_phase_to_game_state and "moon_phase" in gs:
+		gs.moon_phase = _moon_phase
+
+
+func _spawn_saved_fire_props() -> void:
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null or not ("placed_fire_nodes" in gs):
+		return
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var region: String = String(gs.region) if "region" in gs else ""
+	if region.is_empty():
+		return
+	var entries: Array = gs.placed_fire_nodes
+	for e in entries:
+		if typeof(e) != TYPE_DICTIONARY:
+			continue
+		var d: Dictionary = e
+		if String(d.get("region", "")) != region:
+			continue
+		var state_id: String = String(d.get("state_id", ""))
+		if state_id.is_empty():
+			continue
+		if _scene_has_fire_id(scene, state_id):
+			continue
+		var path: String = String(d.get("scene_path", ""))
+		if path.is_empty():
+			continue
+		var packed: Resource = load(path)
+		if not (packed is PackedScene):
+			continue
+		var node: Node = (packed as PackedScene).instantiate()
+		if not (node is Node3D):
+			continue
+		scene.add_child(node)
+		var node3d := node as Node3D
+		var pos_v: Variant = d.get("position", [])
+		if typeof(pos_v) == TYPE_ARRAY:
+			var pa: Array = pos_v
+			if pa.size() >= 3:
+				node3d.global_position = Vector3(float(pa[0]), float(pa[1]), float(pa[2]))
+		node3d.rotation.y = float(d.get("rotation_y", 0.0))
+		if "fire_state_id" in node3d:
+			node3d.fire_state_id = state_id
+
+
+func _scene_has_fire_id(scene: Node, fire_id: String) -> bool:
+	for c in scene.get_children():
+		if c is Node3D and "fire_state_id" in c and String(c.fire_state_id) == fire_id:
+			return true
+	return false
+
+
 func _apply_time() -> void:
 	var sun_dir: Vector3 = _sun_direction()
+	var moon_dir: Vector3 = _moon_direction(sun_dir)
 	var height: float = sun_dir.y
 	var day_f: float = smoothstep(-0.12, 0.22, height)
 	var sunset_f: float = smoothstep(0.02, 0.22, height) * (1.0 - smoothstep(0.12, 0.42, height))
@@ -83,11 +192,10 @@ func _apply_time() -> void:
 
 	var dl: DirectionalLight3D = get_node_or_null(directional_light_path) as DirectionalLight3D
 	if dl != null:
-		# Day: light from sun direction. Night: slerp toward moon (-sun_dir) so moonlit side gets cool fill.
+		# Day: light from sun direction. Night: slerp toward moon direction so moonlit side gets cool fill.
 		var anchor: Vector3 = dl.global_position
-		# Full moon direction when day_f low; fade out by mid-morning so sunlight stays coherent.
 		var moon_influence: float = 1.0 - smoothstep(0.08, 0.42, day_f)
-		var lit_dir: Vector3 = sun_dir.slerp(-sun_dir, moon_influence)
+		var lit_dir: Vector3 = sun_dir.slerp(moon_dir, moon_influence)
 		if lit_dir.length_squared() < 1e-10:
 			lit_dir = sun_dir
 		else:
@@ -101,14 +209,29 @@ func _apply_time() -> void:
 		dl.light_color = c
 
 	if _sky_material != null:
+		if apply_stylized_sky_preset:
+			_sky_material.set_shader_parameter(&"moon_disk_size", moon_disk_size_target)
+			_sky_material.set_shader_parameter(&"star_brightness", star_brightness_target)
+			_sky_material.set_shader_parameter(&"star_density_uv", star_density_uv_target)
+			_sky_material.set_shader_parameter(&"star_point_size", star_point_size_target)
+			_sky_material.set_shader_parameter(&"milky_way_enabled", milky_way_enabled_target)
+			_sky_material.set_shader_parameter(&"milky_way_intensity", milky_way_intensity_target)
+			_sky_material.set_shader_parameter(&"aurora_enabled", aurora_enabled_target)
 		_sky_material.set_shader_parameter(&"sun_direction", sun_dir)
+		_sky_material.set_shader_parameter(&"moon_direction", moon_dir)
 		_sky_material.set_shader_parameter(&"day_factor", day_f)
 		_sky_material.set_shader_parameter(&"sunset_factor", sunset_f)
+		_sky_material.set_shader_parameter(&"moon_phase", _moon_phase)
 		if drive_sky_night_visuals:
 			var night_amt: float = 1.0 - day_f
 			_sky_material.set_shader_parameter(
 				&"moon_rim_strength",
 				lerpf(0.22, sky_moon_rim_night_max, smoothstep(0.18, 0.85, night_amt))
+			)
+		if drive_sky_aurora:
+			_sky_material.set_shader_parameter(
+				&"aurora_intensity",
+				lerpf(aurora_intensity_day, aurora_intensity_night, 1.0 - day_f)
 			)
 
 	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment

@@ -22,6 +22,8 @@ const PICKUP_SCENES := {
 	"oak_logs": preload("res://world/world_building_parts/props/resource_pickup_logs_oak.tscn"),
 	"stone": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
 	"tin_ore": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
+	"tool_torch": preload("res://world/world_building_parts/props/torch_light.tscn"),
+	"campfire_kit": preload("res://world/world_building_parts/props/campfire.tscn"),
 }
 
 ## Each entry: null or Dictionary with "id", "count", optional "tackle"
@@ -396,6 +398,7 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 	world_parent.add_child(node)
 	if node is Node3D:
 		(node as Node3D).global_position = drop_global_position
+		_persist_placeable_fire_if_needed(id, node as Node3D)
 	if node.has_method("set_resource_type"):
 		node.set_resource_type(id)
 	elif "resource_type" in node:
@@ -404,6 +407,31 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 		node.set_quantity(count)
 	elif "quantity" in node:
 		node.quantity = count
+
+
+func _persist_placeable_fire_if_needed(item_id: String, node: Node3D) -> void:
+	if item_id != "tool_torch" and item_id != "campfire_kit":
+		return
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null or not ("placed_fire_nodes" in gs):
+		return
+	var fire_scene_path := ""
+	match item_id:
+		"tool_torch":
+			fire_scene_path = "res://world/world_building_parts/props/torch_light.tscn"
+		"campfire_kit":
+			fire_scene_path = "res://world/world_building_parts/props/campfire.tscn"
+	var state_id := "placed_fire_%s" % str(int(Time.get_unix_time_from_system() * 1000.0))
+	if "fire_state_id" in node:
+		node.fire_state_id = state_id
+	var entry := {
+		"region": String(gs.region),
+		"scene_path": fire_scene_path,
+		"state_id": state_id,
+		"position": [node.global_position.x, node.global_position.y, node.global_position.z],
+		"rotation_y": node.rotation.y,
+	}
+	gs.placed_fire_nodes.append(entry)
 
 
 func get_save_dict() -> Dictionary:

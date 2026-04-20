@@ -4,6 +4,7 @@ shader_type sky;
  * sun_direction: world-space unit vector *toward* the sun (set by DayNightController). */
 
 uniform vec3 sun_direction = vec3(0.2, 0.97, 0.12);
+uniform vec3 moon_direction = vec3(-0.2, -0.97, -0.12);
 uniform float day_factor : hint_range(0.0, 1.0, 0.001) = 0.85;
 uniform float sunset_factor : hint_range(0.0, 1.0, 0.001) = 0.0;
 
@@ -23,6 +24,8 @@ uniform vec3 sun_corona_color : source_color = vec3(1.0, 0.92, 0.75);
 
 uniform float moon_disk_size : hint_range(0.001, 0.06, 0.0001) = 0.006;
 uniform vec3 moon_disk_color : source_color = vec3(0.82, 0.86, 0.95);
+uniform float moon_phase : hint_range(0.0, 1.0, 0.001) = 0.0;
+uniform float moon_phase_strength : hint_range(0.0, 1.0, 0.01) = 1.0;
 uniform float moon_detail_strength : hint_range(0.0, 1.0, 0.01) = 0.42;
 uniform float moon_rim_strength : hint_range(0.0, 1.0, 0.01) = 0.38;
 uniform float moon_rim_power : hint_range(0.5, 8.0, 0.1) = 2.4;
@@ -50,6 +53,22 @@ uniform vec3 cloud_color_night : source_color = vec3(0.05, 0.06, 0.09);
 uniform float night_cloud_brightness : hint_range(0.0, 1.0, 0.01) = 0.42;
 uniform float cloud_wind_speed : hint_range(0.0, 0.05, 0.0001) = 0.008;
 uniform float cloud_domain : hint_range(1.0, 12.0, 0.1) = 2.8;
+
+uniform bool milky_way_enabled = true;
+uniform float milky_way_intensity : hint_range(0.0, 2.0, 0.01) = 0.42;
+uniform float milky_way_width : hint_range(0.02, 1.0, 0.01) = 0.24;
+uniform float milky_way_rotation : hint_range(0.0, 6.28318, 0.001) = 0.55;
+uniform vec3 milky_way_tint : source_color = vec3(0.42, 0.56, 0.92);
+
+uniform bool aurora_enabled = true;
+uniform float aurora_intensity : hint_range(0.0, 2.0, 0.01) = 0.33;
+uniform float aurora_speed : hint_range(0.0, 3.0, 0.01) = 0.45;
+uniform float aurora_band_height : hint_range(0.0, 1.0, 0.01) = 0.42;
+uniform float aurora_band_softness : hint_range(0.01, 0.5, 0.01) = 0.12;
+uniform vec3 aurora_color_a : source_color = vec3(0.08, 0.88, 0.62);
+uniform vec3 aurora_color_b : source_color = vec3(0.24, 0.66, 1.0);
+uniform vec3 aurora_color_c : source_color = vec3(0.66, 0.34, 0.95);
+uniform float aurora_moon_exclusion : hint_range(0.0, 1.0, 0.01) = 0.72;
 
 float hash21(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -125,10 +144,45 @@ float stars(vec3 eyedir, float night_amt) {
 	return m * night_amt * star_brightness;
 }
 
+float milky_way(vec3 eyedir, float night_amt) {
+	if (!milky_way_enabled || night_amt < 0.02) {
+		return 0.0;
+	}
+	vec2 rot = vec2(cos(milky_way_rotation), sin(milky_way_rotation));
+	vec3 axis = normalize(vec3(rot.x, 0.36, rot.y));
+	float band = 1.0 - abs(dot(eyedir, axis));
+	float lane = smoothstep(1.0 - milky_way_width, 1.0, band);
+	float detail = fbm(eyedir.xz * 6.5 + vec2(TIME * 0.01, -TIME * 0.006));
+	detail += fbm(eyedir.zy * 11.0 + vec2(14.0, 7.0)) * 0.45;
+	float horizon_fade = smoothstep(-0.05, 0.32, eyedir.y);
+	return lane * detail * horizon_fade * night_amt * milky_way_intensity;
+}
+
+vec3 aurora(vec3 eyedir, vec3 moon_dir, float night_amt) {
+	if (!aurora_enabled || night_amt < 0.06) {
+		return vec3(0.0);
+	}
+	float height_mask = smoothstep(aurora_band_height - aurora_band_softness, aurora_band_height + aurora_band_softness, eyedir.y);
+	float sweep = fbm(vec2(eyedir.x * 8.0 + TIME * aurora_speed, eyedir.z * 2.7 - TIME * aurora_speed * 0.35));
+	float curtain = fbm(vec2(eyedir.x * 15.0 - TIME * aurora_speed * 0.6, eyedir.z * 4.2 + TIME * aurora_speed * 0.2));
+	float stripes = smoothstep(0.48, 0.86, sweep * 0.65 + curtain * 0.65);
+	float flicker = 0.82 + 0.18 * (sin(TIME * 2.1 + eyedir.x * 18.0) * 0.5 + 0.5);
+	float hue_shift = sin(TIME * (aurora_speed * 0.72) + eyedir.x * 6.2 + eyedir.z * 3.4) * 0.5 + 0.5;
+	vec3 col_ab = mix(aurora_color_a, aurora_color_b, curtain);
+	vec3 col = mix(col_ab, aurora_color_c, hue_shift * 0.7);
+	float moon_near = smoothstep(1.0 - aurora_moon_exclusion, 1.0, max(dot(eyedir, moon_dir), 0.0));
+	float moon_mask = 1.0 - moon_near;
+	/* Keep aurora colorful without washing out stars/moon. */
+	return col * stripes * height_mask * flicker * moon_mask * night_amt * aurora_intensity * 0.72;
+}
+
 void sky() {
 	vec3 dir = normalize(EYEDIR);
 	vec3 sun_dir = normalize(sun_direction);
-	vec3 moon_dir = -sun_dir;
+	vec3 moon_dir = normalize(moon_direction);
+	if (length(moon_dir) < 0.001) {
+		moon_dir = -sun_dir;
+	}
 	float night_amt = 1.0 - day_factor;
 
 	if (AT_CUBEMAP_PASS) {
@@ -162,6 +216,13 @@ void sky() {
 	float rim = pow(1.0 - moon_dot, moon_rim_power) * moon_rim_strength;
 	// Diffuse on sphere: light toward sun from surface is -sun_dir; outward normal ~ dir from moon center.
 	float lunar_lit = max(dot(dir, -sun_dir), 0.0);
+	float moon_xy2 = dot(moon_uv, moon_uv);
+	float moon_z = sqrt(max(0.0, 1.0 - moon_xy2));
+	vec3 moon_normal = normalize(vec3(moon_uv, moon_z));
+	float phase_angle = moon_phase * 6.2831853;
+	vec3 phase_light_local = normalize(vec3(cos(phase_angle), 0.0, sin(phase_angle)));
+	float phase_lit = max(dot(moon_normal, phase_light_local), 0.0);
+	lunar_lit = mix(lunar_lit, phase_lit, moon_phase_strength);
 	vec3 moon_base = moon_disk_color * (0.72 + 0.28 * (1.0 - mare)) * (0.25 + 0.75 * lunar_lit);
 	moon_base += vec3(0.06, 0.07, 0.1) * mare * (0.4 + 0.6 * lunar_lit);
 	moon_base += vec3(0.15, 0.18, 0.22) * rim * (0.35 + 0.65 * lunar_lit);
@@ -172,6 +233,9 @@ void sky() {
 
 	float st = stars(dir, smoothstep(star_threshold, 1.0, night_amt));
 	col += star_tint * st;
+	float mw_band = milky_way(dir, smoothstep(star_threshold, 1.0, night_amt));
+	col += milky_way_tint * mw_band;
+	col += aurora(dir, moon_dir, smoothstep(0.45, 1.0, night_amt));
 
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
 	vec2 cu = dir.xz / max(dir.y + 0.22, 0.08) * cloud_domain + wind * 1.2;

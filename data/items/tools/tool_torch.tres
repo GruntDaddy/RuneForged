@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ToolData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/tool_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://data/schemas/tool_stats.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="Resource_ts"]
+script = ExtResource("2_ts")
+tool_kind = 0
+tier = 1
+
+[resource]
+script = ExtResource("1_td")
+tool_stats = SubResource("Resource_ts")
+id = "tool_torch"
+display_name = "Torch"
+description = "A handheld light source. Useful for exploring nights and caves."
+category = 2
+max_stack = 1
+tags = PackedStringArray("tool", "torch", "light")

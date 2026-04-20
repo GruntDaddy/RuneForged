@@ -1,0 +1,51 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://world/world_building_parts/props/torch_light.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://entities/equipment/off_hand/torch.tscn" id="2_torch"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_flame"]
+direction = Vector3(0, 1, 0)
+spread = 18.0
+initial_velocity_min = 0.2
+initial_velocity_max = 0.55
+gravity = Vector3(0, 0.45, 0)
+scale_min = 0.08
+scale_max = 0.2
+color = Color(1, 0.538, 0.161, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_flame"]
+size = Vector2(0.14, 0.24)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_torch"]
+radius = 0.16
+height = 0.8
+
+[node name="TorchLight" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="TorchVisual" parent="." instance=ExtResource("2_torch")]
+visible = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 2
+collision_mask = 1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+position = Vector3(0, 0.45, 0)
+shape = SubResource("CapsuleShape3D_torch")
+
+[node name="FlameParticles" type="GPUParticles3D" parent="."]
+position = Vector3(0, 0.98, 0)
+amount = 20
+lifetime = 0.6
+process_material = SubResource("ParticleProcessMaterial_flame")
+draw_pass_1 = SubResource("QuadMesh_flame")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+position = Vector3(0, 0.95, 0)
+light_color = Color(1, 0.666, 0.38, 1)
+light_energy = 1.35
+omni_range = 7.0
+shadow_enabled = true
+shadow_bias = 0.08

@@ -105,6 +105,10 @@ func _refresh_tacklebox_back_visual() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _input_enabled:
 		return
+	if event.is_action_pressed("interact"):
+		_try_interact()
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("inventory") and inventory_hud:
 		inventory_hud.toggle_inventory()
 		get_viewport().set_input_as_handled()
@@ -174,7 +178,8 @@ func _physics_process(delta: float) -> void:
 	var dir := right * input_vec.x + forward * (-input_vec.y)
 
 	var running := Input.is_action_pressed("run")
-	var speed := move_speed * (run_multiplier if running else 1.0)
+	var speed_factor: float = _night_speed_factor()
+	var speed := move_speed * speed_factor * (run_multiplier if running else 1.0)
 
 	if dir.length_squared() > 0.0001:
 		dir = dir.normalized()
@@ -494,7 +499,15 @@ func _update_interaction_prompt() -> void:
 		interaction_prompt.visible = false
 		return
 	var collider: Object = interaction_ray.get_collider()
-	if collider == null or not collider.has_method("harvest_hit"):
+	if collider == null:
+		interaction_prompt.visible = false
+		return
+	var interactable: Object = _resolve_interactable_target(collider)
+	if interactable != null and interactable.has_method("get_interaction_prompt"):
+		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
+		interaction_prompt.visible = not interaction_prompt.text.is_empty()
+		return
+	if not collider.has_method("harvest_hit"):
 		interaction_prompt.visible = false
 		return
 	var txt := "LMB: Chop"
@@ -510,6 +523,47 @@ func _update_interaction_prompt() -> void:
 		txt += "\n(Requirements not met)"
 	interaction_prompt.text = txt
 	interaction_prompt.visible = true
+
+
+func _resolve_interactable_target(collider: Object) -> Object:
+	if collider == null:
+		return null
+	var cur: Node = collider as Node
+	var hops: int = 0
+	while cur != null and hops < 6:
+		if cur.has_method("interact") or cur.has_method("get_interaction_prompt"):
+			return cur
+		cur = cur.get_parent()
+		hops += 1
+	return null
+
+
+func _try_interact() -> void:
+	_update_interaction_ray()
+	if not interaction_ray.is_colliding():
+		return
+	var collider: Object = interaction_ray.get_collider()
+	var interactable: Object = _resolve_interactable_target(collider)
+	if interactable == null or not interactable.has_method("interact"):
+		return
+	interactable.interact(self)
+
+
+func _night_speed_factor() -> float:
+	var gs := get_node_or_null("/root/GameState")
+	if gs == null:
+		return 1.0
+	var tod: float = float(gs.time_of_day) if "time_of_day" in gs else 0.5
+	var is_night: bool = tod < 0.23 or tod > 0.78
+	if not is_night:
+		return 1.0
+	var now_ms: int = int(Time.get_unix_time_from_system() * 1000.0)
+	var warm_until: int = int(gs.warmth_until_unix_ms) if "warmth_until_unix_ms" in gs else 0
+	if now_ms < warm_until:
+		var warm_bonus: float = float(gs.campfire_night_run_bonus) if "campfire_night_run_bonus" in gs else 0.2
+		return clampf(1.0 + warm_bonus, 1.0, 1.6)
+	var night_penalty: float = float(gs.campfire_night_penalty) if "campfire_night_penalty" in gs else 0.15
+	return clampf(1.0 - night_penalty, 0.55, 1.0)
 
 
 func _on_chop_impact_timeout(impact_idx: int, seq: int) -> void:
