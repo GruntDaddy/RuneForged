@@ -7,7 +7,7 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
 radius = 1.9143695
 
-[node name="HarvestableRock" type="StaticBody3D" unique_id=1112009552]
+[node name="HarvestableRock" type="StaticBody3D" unique_id=2847392101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.099831104)
 collision_layer = 2
 script = ExtResource("1_vtio0")
@@ -19,16 +19,16 @@ particle_color = Color(0.62, 0.62, 0.64, 1)
 particle_height = 0.675
 shake_amount = 0.225
 respawn_seconds = 30.0
-respawn_scene_path = "res://world/world_building_parts/props/harvestable_rock.tscn"
+respawn_scene_path = "res://world/world_building_parts/props/harvestable_rock_1.tscn"
 prompt_detail = "Small Rock"
 resource_item_id = "stone"
 resource_display_name = "Stone"
 
-[node name="Visual" type="Node3D" parent="." unique_id=546309898]
+[node name="Visual" type="Node3D" parent="." unique_id=2847392102]
 
 [node name="Rock_3_Q_Color1" parent="Visual" unique_id=835419260 instance=ExtResource("3_3sx74")]
 transform = Transform3D(0.798, 0, 0, 0, 0.837, 0, 0, 0, 0.837, 0, -0.091144085, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=704513005]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2847392103]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11081612, -0.12828851, -0.11441946)
 shape = SubResource("SphereShape3D_rock")
