@@ -669,7 +669,7 @@ lod0_range = 128.0
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_avtbp"]
 name = "Grass"
-albedo_color = Color(0.29391742, 0.6295041, 0, 1)
+albedo_color = Color(0.33826667, 0.43, 0.25800002, 1)
 albedo_texture = ExtResource("1_matcp")
 normal_texture = ExtResource("2_m3pej")
 normal_depth = 0.0
@@ -682,7 +682,7 @@ detiling_shift = 0.835
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_742gl"]
 name = "Sand"
 id = 1
-albedo_color = Color(0.8011471, 0.86267745, 0.6922684, 1)
+albedo_color = Color(0.82100445, 0.8287025, 0.59776163, 1)
 albedo_texture = ExtResource("3_matcp")
 normal_texture = ExtResource("4_f2ojk")
 normal_depth = 0.0
@@ -692,11 +692,10 @@ uv_scale = 2.0
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_w2v6r"]
 name = "Rock"
 id = 2
-albedo_color = Color(0.8560673, 0.8560673, 0.85606724, 1)
+albedo_color = Color(0.6706898, 0.6706894, 0.6706895, 1)
 albedo_texture = ExtResource("5_m3pej")
 normal_texture = ExtResource("6_arhr5")
-normal_depth = 1.15
-roughness = -0.32
+roughness = -0.269
 uv_scale = 2.0
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_vlrk0"]
@@ -832,6 +831,7 @@ shader_parameter/milky_way_enabled = true
 shader_parameter/milky_way_intensity = 0.42
 shader_parameter/milky_way_width = 0.24
 shader_parameter/milky_way_rotation = 0.55
+shader_parameter/milky_way_elevation = 0.28
 shader_parameter/milky_way_tint = Color(0.42, 0.56, 0.92, 1)
 shader_parameter/aurora_enabled = true
 shader_parameter/aurora_intensity = 0.33

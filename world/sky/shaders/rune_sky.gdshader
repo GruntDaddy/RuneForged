@@ -58,6 +58,7 @@ uniform bool milky_way_enabled = true;
 uniform float milky_way_intensity : hint_range(0.0, 2.0, 0.01) = 0.12;
 uniform float milky_way_width : hint_range(0.02, 1.0, 0.01) = 0.075;
 uniform float milky_way_rotation : hint_range(0.0, 6.28318, 0.001) = 0.55;
+uniform float milky_way_elevation : hint_range(-0.3, 0.8, 0.01) = 0.28;
 uniform vec3 milky_way_tint : source_color = vec3(0.42, 0.56, 0.92);
 
 uniform bool aurora_enabled = true;
@@ -149,14 +150,23 @@ float milky_way(vec3 eyedir, float night_amt) {
 		return 0.0;
 	}
 	vec2 rot = vec2(cos(milky_way_rotation), sin(milky_way_rotation));
-	vec3 axis = normalize(vec3(rot.x, 0.36, rot.y));
-	float band = 1.0 - abs(dot(eyedir, axis));
-	float lane = smoothstep(1.0 - milky_way_width, 1.0, band);
-	float detail = fbm(eyedir.xz * 8.0 + vec2(TIME * 0.003, -TIME * 0.002));
-	detail += fbm(eyedir.zy * 11.0 + vec2(14.0, 7.0)) * 0.45;
-	float horizon_fade = smoothstep(-0.05, 0.32, eyedir.y);
+	vec3 center = normalize(vec3(rot.x, milky_way_elevation, rot.y));
+	vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), center));
+	if (length(right) < 0.01) {
+		right = normalize(cross(vec3(1.0, 0.0, 0.0), center));
+	}
+	vec3 up = normalize(cross(center, right));
+	float u = dot(eyedir, right);
+	float v = dot(eyedir, up);
+	float wu = max(milky_way_width * 2.6, 0.01);
+	float wv = max(milky_way_width * 0.75, 0.01);
+	float ellipse = exp(-(u * u) / (wu * wu) - (v * v) / (wv * wv));
+	float detail = fbm(vec2(u * 26.0, v * 38.0) + vec2(TIME * 0.002, -TIME * 0.0015));
+	detail += fbm(vec2(u * 52.0 + 14.0, v * 28.0 + 7.0)) * 0.4;
+	detail = smoothstep(0.33, 0.9, detail);
+	float horizon_fade = smoothstep(0.02, 0.42, eyedir.y);
 	float night_gate = smoothstep(0.68, 1.0, night_amt);
-	return lane * detail * horizon_fade * night_gate * milky_way_intensity;
+	return ellipse * detail * horizon_fade * night_gate * milky_way_intensity;
 }
 
 vec3 aurora(vec3 eyedir, vec3 moon_dir, float night_amt) {
@@ -208,13 +218,12 @@ void sky() {
 	/* Fade moon in as the sun gets low; opposite-sun placement keeps it above horizon at dusk. */
 	float moon_vis = smoothstep(0.08, 0.92, night_amt * 0.85 + (1.0 - day_factor) * 0.55);
 
-	vec3 t1 = normalize(cross(moon_dir, vec3(0.0, 1.0, 0.0)));
-	if (length(t1) < 0.08) {
-		t1 = normalize(cross(moon_dir, vec3(1.0, 0.0, 0.0)));
-	}
+	/* Stable moon tangent frame + UV scale tied to disk size to avoid shimmer/flicker while moving. */
+	vec3 ref_axis = (abs(moon_dir.y) < 0.94) ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+	vec3 t1 = normalize(cross(ref_axis, moon_dir));
 	vec3 t2 = normalize(cross(moon_dir, t1));
-	float sin_theta = length(cross(dir, moon_dir));
-	vec2 moon_uv = vec2(dot(dir, t1), dot(dir, t2)) / max(sin_theta, 0.02);
+	vec2 moon_uv = vec2(dot(dir, t1), dot(dir, t2)) / max(mw, 0.0001);
+	moon_uv = clamp(moon_uv, vec2(-1.0), vec2(1.0));
 	float mare = fbm(moon_uv * 3.8 + vec2(1.7, 0.9)) * moon_detail_strength;
 	float rim = pow(1.0 - moon_dot, moon_rim_power) * moon_rim_strength;
 	// Diffuse on sphere: light toward sun from surface is -sun_dir; outward normal ~ dir from moon center.

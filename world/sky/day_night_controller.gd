@@ -2,8 +2,8 @@ extends Node3D
 ## Drives sun/moon sky shader, DirectionalLight3D, and ambient for a full day-night cycle.
 ## Expects a sibling DirectionalLight3D and WorldEnvironment (paths configurable).
 
-## Full cycle duration in seconds (e.g. 90 for fast testing, 900 for fifteen minutes).
-@export var day_length_seconds: float = 900.0
+## Full cycle duration in seconds (default 90 for fast iteration).
+@export var day_length_seconds: float = 90.0
 @export_range(0.0, 1.0) var start_time_of_day: float = 0.32
 
 @export_group("Light")
@@ -214,14 +214,16 @@ func _apply_time() -> void:
 	var dl: DirectionalLight3D = get_node_or_null(directional_light_path) as DirectionalLight3D
 	if dl != null:
 		# Day: light from sun direction. Night: slerp toward moon direction so moonlit side gets cool fill.
-		var anchor: Vector3 = dl.global_position
 		var moon_influence: float = 1.0 - smoothstep(0.08, 0.42, day_f)
 		var lit_dir: Vector3 = sun_dir.slerp(moon_dir, moon_influence)
 		if lit_dir.length_squared() < 1e-10:
 			lit_dir = sun_dir
 		else:
 			lit_dir = lit_dir.normalized()
-		dl.look_at(anchor - lit_dir, Vector3.UP)
+		var up_axis: Vector3 = Vector3.UP
+		if absf(lit_dir.dot(up_axis)) > 0.985:
+			up_axis = Vector3.FORWARD
+		dl.global_basis = Basis.looking_at(-lit_dir, up_axis)
 
 		var e: float = lerpf(moon_light_energy, sun_energy_max, day_f)
 		dl.light_energy = e
