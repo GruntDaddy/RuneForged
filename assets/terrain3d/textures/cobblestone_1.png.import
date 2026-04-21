@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dt5ug3cj3qgnj"
-path="res://.godot/imported/terrain_sand_tile.png-a73f756e689a18b4d0421f7918ad8ac0.ctex"
+uid="uid://l3rxndu75h0a"
+path="res://.godot/imported/cobblestone_1.png-77fce8a9c6d02837a2d25a55d58c9d5e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/terrain3d/textures/terrain_sand_tile.png"
-dest_files=["res://.godot/imported/terrain_sand_tile.png-a73f756e689a18b4d0421f7918ad8ac0.ctex"]
+source_file="res://assets/terrain3d/textures/cobblestone_1.png"
+dest_files=["res://.godot/imported/cobblestone_1.png-77fce8a9c6d02837a2d25a55d58c9d5e.ctex"]
 
 [params]
 

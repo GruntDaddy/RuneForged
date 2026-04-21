@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsrsagq00oan3"
-path="res://.godot/imported/terrain_sand_tile_roughness.png-1497596b01c32199d8481035efd6822b.ctex"
+uid="uid://btbrfjq2kfamq"
+path="res://.godot/imported/grass_1.png-c1871766f6500c1a61e6ebac63f714cf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/terrain3d/textures/terrain_sand_tile_roughness.png"
-dest_files=["res://.godot/imported/terrain_sand_tile_roughness.png-1497596b01c32199d8481035efd6822b.ctex"]
+source_file="res://assets/terrain3d/textures/grass_1.png"
+dest_files=["res://.godot/imported/grass_1.png-c1871766f6500c1a61e6ebac63f714cf.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctfd8oxwnubg6"
-path="res://.godot/imported/terrain_rock_cliff_tile_normal.png-febf1bd41f1a9a146937eb8a3dd69199.ctex"
+uid="uid://cnv8pg8276nq"
+path="res://.godot/imported/dirty_2.png-24332ecaf9e48193585094e8676442f1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/terrain3d/textures/terrain_rock_cliff_tile_normal.png"
-dest_files=["res://.godot/imported/terrain_rock_cliff_tile_normal.png-febf1bd41f1a9a146937eb8a3dd69199.ctex"]
+source_file="res://assets/terrain3d/textures/dirty_2.png"
+dest_files=["res://.godot/imported/dirty_2.png-24332ecaf9e48193585094e8676442f1.ctex"]
 
 [params]
 

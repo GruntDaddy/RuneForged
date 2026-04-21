@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l3rxndu75h0a"
-path="res://.godot/imported/cobblestone_1.png-86af2bd968360314b953f1f3e21c0b8e.ctex"
+uid="uid://dfos05w12agy3"
+path="res://.godot/imported/dirty_3.png-602c5423b5485f0eba3fb54f7fbc25fe.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/terrain3d/cobblestone_1.png"
-dest_files=["res://.godot/imported/cobblestone_1.png-86af2bd968360314b953f1f3e21c0b8e.ctex"]
+source_file="res://assets/terrain3d/textures/dirty_3.png"
+dest_files=["res://.godot/imported/dirty_3.png-602c5423b5485f0eba3fb54f7fbc25fe.ctex"]
 
 [params]
 

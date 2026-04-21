@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://40knn32wykjk"]
 
 [ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://p2njwficpoqg" path="res://assets/kaykit/Forest & Nature Pack/Color1/Rock_3_O_Color1.gltf" id="3_430bt"]
+[ext_resource type="PackedScene" uid="uid://cai6plwofvost" path="res://world/world_building_parts/props/static/rock_3_q_color_1.tscn" id="3_430bt"]
 [ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/world_building_parts/props/resource_pickup_stone.tscn" id="3_drop"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
@@ -26,9 +26,9 @@ resource_display_name = "Stone"
 
 [node name="Visual" type="Node3D" parent="." unique_id=546309898]
 
-[node name="Rock_3_O_Color12" parent="Visual" unique_id=1505845648 instance=ExtResource("3_430bt")]
-transform = Transform3D(1, 0, 0, 0, -0.09798235, -0.9951882, 0, 0.9951882, -0.09798235, -0.057691097, 0.24228728, -0.21485877)
+[node name="Rock_3_Q_Color12" parent="Visual" unique_id=835419260 instance=ExtResource("3_430bt")]
+transform = Transform3D(0.66, 0, 0, 0, 0.66, 0, 0, 0, 0.66, 0.046919465, 0.25601268, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=704513005]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11081612, 0.13403821, -0.11441946)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11081612, -0.07010281, -0.11441946)
 shape = SubResource("SphereShape3D_rock")

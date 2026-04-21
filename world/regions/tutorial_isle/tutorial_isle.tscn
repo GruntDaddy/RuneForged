@@ -1,14 +1,10 @@
 [gd_scene format=4 uid="uid://cj88e5jeos7lm"]
 
-[ext_resource type="Texture2D" uid="uid://svdcupqa8tlr" path="res://assets/terrain3d/textures/terrain_grass_tile.png" id="1_matcp"]
+[ext_resource type="Texture2D" uid="uid://cia47qdwk3u7p" path="res://assets/terrain3d/textures/grass_3.png" id="1_0c8xa"]
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
-[ext_resource type="Texture2D" uid="uid://dpjjbt244thpb" path="res://assets/terrain3d/textures/terrain_grass_tile_normal.png" id="2_m3pej"]
-[ext_resource type="Texture2D" uid="uid://dt5ug3cj3qgnj" path="res://assets/terrain3d/textures/terrain_sand_tile.png" id="3_matcp"]
-[ext_resource type="Texture2D" uid="uid://dsyjsx520eq05" path="res://assets/terrain3d/textures/terrain_sand_tile_normal.png" id="4_f2ojk"]
-[ext_resource type="Texture2D" uid="uid://0i88u1dnv8k1" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile.png" id="5_m3pej"]
-[ext_resource type="Texture2D" uid="uid://ctfd8oxwnubg6" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_normal.png" id="6_arhr5"]
-[ext_resource type="Texture2D" uid="uid://4n2uu08g6wwo" path="res://assets/terrain3d/textures/terrain_dirt_tile.png" id="7_ywla4"]
-[ext_resource type="Texture2D" uid="uid://d25dutsmfugrw" path="res://assets/terrain3d/textures/terrain_dirt_tile_normal.png" id="8_mfwor"]
+[ext_resource type="Texture2D" uid="uid://bqs5gw1blw7f8" path="res://assets/terrain3d/textures/sand_1.png" id="2_k5dhd"]
+[ext_resource type="Texture2D" uid="uid://6tiwemm5ui2v" path="res://assets/terrain3d/textures/cobblestone_2.png" id="5_gkm8o"]
+[ext_resource type="Texture2D" uid="uid://dfos05w12agy3" path="res://assets/terrain3d/textures/dirty_3.png" id="7_677sf"]
 [ext_resource type="Shader" uid="uid://bi3o8elbtqoni" path="res://addons/simplegrasstextured/shaders/grass.gdshader" id="9_ywla4"]
 [ext_resource type="PackedScene" uid="uid://40knn3401ejk" path="res://world/world_building_parts/props/harvestable_tree_palm_3.tscn" id="13_4tfyc"]
 [ext_resource type="PackedScene" uid="uid://8njhgpnus8dj" path="res://world/world_building_parts/props/harvestable_tree_palm_2.tscn" id="14_f2ojk"]
@@ -644,7 +640,6 @@ _shader_parameters = {
 &"projection_threshold": 0.8
 }
 world_background = 0
-texture_filtering = 0
 auto_shader = true
 shader_override_enabled = true
 shader_override = SubResource("Shader_tfelk")
@@ -667,50 +662,44 @@ last_lod = 0
 last_shadow_lod = 0
 lod0_range = 128.0
 
-[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_avtbp"]
-name = "Grass"
-albedo_color = Color(0.9, 0.95, 0.86, 1)
-albedo_texture = ExtResource("1_matcp")
-normal_texture = ExtResource("2_m3pej")
-normal_depth = 0.0
-ao_strength = 2.0
-roughness = -0.101
-uv_scale = 1.469
-detiling_rotation = 0.308
-detiling_shift = 0.835
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_x6gk8"]
+name = "grass_3"
+albedo_texture = ExtResource("1_0c8xa")
+normal_texture = ExtResource("1_0c8xa")
 
-[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_742gl"]
-name = "Sand"
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_4pcdv"]
+name = "sand_1"
 id = 1
-albedo_color = Color(0.97, 0.95, 0.88, 1)
-albedo_texture = ExtResource("3_matcp")
-normal_texture = ExtResource("4_f2ojk")
-normal_depth = 0.0
-roughness = -0.04
-uv_scale = 2.0
+albedo_texture = ExtResource("2_k5dhd")
+normal_texture = ExtResource("2_k5dhd")
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_w2v6r"]
 name = "Rock"
 id = 2
 albedo_color = Color(0.93, 0.93, 0.91, 1)
-albedo_texture = ExtResource("5_m3pej")
-normal_texture = ExtResource("6_arhr5")
+albedo_texture = ExtResource("5_gkm8o")
+normal_texture = ExtResource("5_gkm8o")
 roughness = -0.269
-uv_scale = 2.0
+uv_scale = 0.046
+detiling_rotation = 0.527
+detiling_shift = 0.295
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_vlrk0"]
 name = "Dirt"
 id = 3
-albedo_texture = ExtResource("7_ywla4")
-normal_texture = ExtResource("8_mfwor")
+albedo_texture = ExtResource("7_677sf")
+normal_texture = ExtResource("7_677sf")
 normal_depth = 0.72
 roughness = -0.22
+uv_scale = 2.0
+detiling_rotation = 0.551
+detiling_shift = 0.327
 
 [sub_resource type="Terrain3DAssets" id="Terrain3DAssets_terrain"]
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
-texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_avtbp"), SubResource("Terrain3DTextureAsset_742gl"), SubResource("Terrain3DTextureAsset_w2v6r"), SubResource("Terrain3DTextureAsset_vlrk0")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_x6gk8"), SubResource("Terrain3DTextureAsset_4pcdv"), SubResource("Terrain3DTextureAsset_w2v6r"), SubResource("Terrain3DTextureAsset_vlrk0")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_hiyny"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0c8xa"]
 render_priority = 0
 shader = ExtResource("9_ywla4")
 shader_parameter/albedo = Color(0.51171064, 0.7072013, 0.33188984, 1)
@@ -728,12 +717,12 @@ shader_parameter/scale_h = 0.25
 shader_parameter/scale_w = 0.25
 shader_parameter/scale_var = 0.5
 shader_parameter/grass_strength = 0.3
-shader_parameter/optimization_by_distance = true
-shader_parameter/optimization_level = 8.0
-shader_parameter/optimization_dist_min = 22.0
-shader_parameter/optimization_dist_max = 95.0
+shader_parameter/optimization_by_distance = false
+shader_parameter/optimization_level = 7.0
+shader_parameter/optimization_dist_min = 10.0
+shader_parameter/optimization_dist_max = 50.0
 shader_parameter/grass_size_y = 0.58370256
-shader_parameter/interactive_mode = false
+shader_parameter/interactive_mode = true
 shader_parameter/interactive_level_xz = 3.0
 shader_parameter/interactive_level_y = 0.3
 metadata/SimpleGrassTexturedMaterial = "2.1.0"
@@ -878,7 +867,7 @@ top_level = true
 metadata/_edit_lock_ = true
 
 [node name="TutorialIsleGrass" type="MultiMeshInstance3D" parent="." unique_id=1430165663]
-material_override = SubResource("ShaderMaterial_hiyny")
+material_override = SubResource("ShaderMaterial_0c8xa")
 multimesh = SubResource("MultiMesh_4pcdv")
 script = ExtResource("tutorial_isle_grass")
 mesh = SubResource("ArrayMesh_rhsi7")
