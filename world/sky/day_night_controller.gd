@@ -43,7 +43,7 @@ extends Node3D
 @export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.25
 @export var drive_sky_aurora: bool = true
 @export_range(0.0, 1.0, 0.01) var aurora_intensity_day: float = 0.0
-@export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 1.420
+@export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 0.95
 @export_group("Moon phase")
 ## Extra yaw (degrees) around world up, applied after placing the moon opposite the sun.
 ## Keep near 0 so the moon rises ~when the sun sets; large values break that pairing.
@@ -52,13 +52,15 @@ extends Node3D
 @export_range(0.0, 1.0, 0.001) var start_moon_phase: float = 0.18
 @export_group("Sky tuning")
 @export var apply_stylized_sky_preset: bool = true
-@export_range(0.001, 0.06, 0.0001) var moon_disk_size_target: float = 0.0420
-@export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 4.20
-@export var star_density_uv_target: Vector2 = Vector2(365.0, 192.0)
-@export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.018
+## ~60% of sun angular width when sun_disk_size ≈ 0.00225 (see `rune_sky.gdshader`).
+@export_range(0.0005, 0.06, 0.0001) var moon_disk_size_target: float = 0.00395
+@export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 5.15
+@export var star_density_uv_target: Vector2 = Vector2(480.0, 265.0)
+@export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.0115
+@export_range(0.0, 1.0, 0.01) var star_threshold_target: float = 0.44
 @export var milky_way_enabled_target: bool = true
-@export_range(0.0, 2.0, 0.01) var milky_way_intensity_target: float = 0.12
-@export_range(0.02, 1.0, 0.01) var milky_way_width_target: float = 0.075
+@export_range(0.0, 2.0, 0.01) var milky_way_intensity_target: float = 0.52
+@export_range(0.02, 1.0, 0.01) var milky_way_width_target: float = 0.11
 @export var aurora_enabled_target: bool = true
 @export_range(0.0, 1.0, 0.01) var aurora_band_height_target: float = 0.23
 @export_range(0.01, 0.5, 0.01) var aurora_band_softness_target: float = 0.06
@@ -242,6 +244,7 @@ func _apply_time() -> void:
 			_sky_material.set_shader_parameter(&"star_brightness", star_brightness_target)
 			_sky_material.set_shader_parameter(&"star_density_uv", star_density_uv_target)
 			_sky_material.set_shader_parameter(&"star_point_size", star_point_size_target)
+			_sky_material.set_shader_parameter(&"star_threshold", star_threshold_target)
 			_sky_material.set_shader_parameter(&"milky_way_enabled", milky_way_enabled_target)
 			_sky_material.set_shader_parameter(&"milky_way_intensity", milky_way_intensity_target)
 			_sky_material.set_shader_parameter(&"milky_way_width", milky_way_width_target)

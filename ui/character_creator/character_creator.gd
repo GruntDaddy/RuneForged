@@ -207,7 +207,7 @@ func _on_rotate_right() -> void:
 
 
 func _on_back_pressed() -> void:
-	SceneManager.fade_to_scene("res://ui/menus/main_menu.tscn")
+	SceneManager.fade_to_scene(GameState.SCENE_MAIN_MENU)
 
 
 func _on_confirm_pressed() -> void:
@@ -222,7 +222,7 @@ func _on_confirm_pressed() -> void:
 	GameState.trait_id_2 = trait_id_2
 	GameState.birthsign_id = birthsign_id
 
-	GameState.region = "tutorial_isle"
+	GameState.region = GameState.REGION_TUTORIAL_ISLE
 
 	SaveManager.save_game()
 	SceneManager.fade_to_scene(GameState.OVERWORLD_SCENE_PATH)

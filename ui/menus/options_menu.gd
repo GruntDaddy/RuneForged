@@ -8,4 +8,4 @@ func _ready() -> void:
 
 
 func _on_back_pressed() -> void:
-	SceneManager.fade_to_scene("res://ui/menus/main_menu.tscn")
+	SceneManager.fade_to_scene(GameState.SCENE_MAIN_MENU)

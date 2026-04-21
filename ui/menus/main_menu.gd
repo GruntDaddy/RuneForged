@@ -30,25 +30,25 @@ func _on_animation_finished(anim_name: StringName) -> void:
 func _on_new_pressed() -> void:
 	GameState.reset()
 	InventoryService.clear_all_slots()
-	_pending_scene = "res://ui/character_creator/character_creator.tscn"
+	_pending_scene = GameState.SCENE_CHARACTER_CREATOR
 	anim_player.play("fade_out")
 
 
 func _on_load_pressed() -> void:
 	var ok := SaveManager.load_game()
 	if ok:
-		_pending_scene = _scene_for_region(GameState.region)
+		_pending_scene = GameState.scene_path_for_saved_region(GameState.region)
 	else:
 		# No save yet – fall back to fresh character creation
 		GameState.reset()
 		InventoryService.clear_all_slots()
-		_pending_scene = "res://ui/character_creator/character_creator.tscn"
+		_pending_scene = GameState.SCENE_CHARACTER_CREATOR
 
 	anim_player.play("fade_out")
 
 
 func _on_options_pressed() -> void:
-	_pending_scene = "res://ui/menus/options_menu.tscn"  # stub scene
+	_pending_scene = GameState.SCENE_OPTIONS_MENU
 	anim_player.play("fade_out")
 
 
@@ -57,13 +57,3 @@ func _on_quit_pressed() -> void:
 	anim_player.play("fade_out")
 	await anim_player.animation_finished
 	get_tree().quit()
-
-
-func _scene_for_region(region: String) -> String:
-	match region:
-		GameState.REGION_OVERWORLD, "tutorial_isle":
-			return GameState.OVERWORLD_SCENE_PATH
-		"character_creator":
-			return "res://ui/character_creator/character_creator.tscn"
-		_:
-			return "res://ui/menus/main_menu.tscn"

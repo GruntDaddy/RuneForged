@@ -1,8 +1,5 @@
 extends CanvasLayer
 
-const _InventoryService = preload("res://autoload/inventory_service.gd")
-
-const SLOT_COUNT := _InventoryService.SLOT_COUNT
 const SLOT_COLS := 4
 const SLOT_SIZE := Vector2(64, 64)
 
@@ -78,7 +75,7 @@ func _build_slots() -> void:
 		c.queue_free()
 	_slots.clear()
 	_grid.columns = SLOT_COLS
-	for i in SLOT_COUNT:
+	for i in InventoryService.SLOT_COUNT:
 		var slot := Panel.new()
 		slot.custom_minimum_size = SLOT_SIZE
 		slot.name = "Slot_%d" % i

@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://ktrhpytq2lyu" path="res://shared/art/CharacterCreation_BG.png" id="1_g4q2a"]
 [ext_resource type="Script" uid="uid://d1rpween8g41y" path="res://ui/character_creator/character_creator.gd" id="1_u41e2"]
-[ext_resource type="Script" uid="uid://dcwv3nbsp6jnt" path="res://ui/menus/preview_root.gd" id="2_whc7a"]
+[ext_resource type="Script" uid="uid://dcwv3nbsp6jnt" path="res://ui/character_creator/preview_root.gd" id="2_whc7a"]
 [ext_resource type="FontFile" uid="uid://1giv01mhq8fs" path="res://assets/ui/fonts/MedievalSharp-Regular.ttf" id="3_prxgm"]
 [ext_resource type="Texture2D" uid="uid://dpvit83cb87xa" path="res://assets/ui/UI Borders/PNG/Double/Divider Fade/divider-fade-003.png" id="4_77cbi"]
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="4_iviis"]

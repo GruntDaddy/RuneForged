@@ -1,4 +1,4 @@
-extends Control  # Or Node2D, match your actual root type
+extends Control
 
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var start_button: Button = $StartScreen_Bg/ButtonPanel/StartButton
@@ -25,7 +25,7 @@ func _on_animation_finished(anim_name: StringName) -> void:
 			pass
 		"fade_out":
 			# After the fade_out completes, transition to the main menu.
-			SceneManager.fade_to_scene("res://ui/menus/main_menu.tscn")
+			SceneManager.fade_to_scene(GameState.SCENE_MAIN_MENU)
 
 
 func _on_start_button_pressed() -> void:

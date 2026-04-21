@@ -1,11 +1,11 @@
 [gd_scene format=4 uid="uid://cj88e5jeos7lm"]
 
-[ext_resource type="Texture2D" uid="uid://ueah2xpxu54k" path="res://assets/terrain3d/textures/terrain_grass_tile_roughness.png" id="1_matcp"]
+[ext_resource type="Texture2D" uid="uid://svdcupqa8tlr" path="res://assets/terrain3d/textures/terrain_grass_tile.png" id="1_matcp"]
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://dpjjbt244thpb" path="res://assets/terrain3d/textures/terrain_grass_tile_normal.png" id="2_m3pej"]
-[ext_resource type="Texture2D" uid="uid://dsrsagq00oan3" path="res://assets/terrain3d/textures/terrain_sand_tile_roughness.png" id="3_matcp"]
+[ext_resource type="Texture2D" uid="uid://dt5ug3cj3qgnj" path="res://assets/terrain3d/textures/terrain_sand_tile.png" id="3_matcp"]
 [ext_resource type="Texture2D" uid="uid://dsyjsx520eq05" path="res://assets/terrain3d/textures/terrain_sand_tile_normal.png" id="4_f2ojk"]
-[ext_resource type="Texture2D" uid="uid://bhy6a8h6yescs" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_roughness.png" id="5_m3pej"]
+[ext_resource type="Texture2D" uid="uid://0i88u1dnv8k1" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile.png" id="5_m3pej"]
 [ext_resource type="Texture2D" uid="uid://ctfd8oxwnubg6" path="res://assets/terrain3d/textures/terrain_rock_cliff_tile_normal.png" id="6_arhr5"]
 [ext_resource type="Texture2D" uid="uid://4n2uu08g6wwo" path="res://assets/terrain3d/textures/terrain_dirt_tile.png" id="7_ywla4"]
 [ext_resource type="Texture2D" uid="uid://d25dutsmfugrw" path="res://assets/terrain3d/textures/terrain_dirt_tile_normal.png" id="8_mfwor"]
@@ -628,23 +628,23 @@ _shader_parameters = {
 &"auto_slope": 1.0,
 &"bias_distance": 1024.0000152588289,
 "blend_sharpness": 0.0,
-&"depth_blur": 0.0,
+&"depth_blur": 0.14,
 &"enable_macro_variation": true,
 &"enable_projection": true,
 &"flat_terrain_normals": false,
 "macro_variation1": Color(0.97, 0.99, 0.95, 1),
 "macro_variation2": Color(0.94, 0.96, 1, 1),
 &"macro_variation_slope": 0.28,
-&"mipmap_bias": 1.0,
+&"mipmap_bias": -0.35,
 "noise1_angle": 0.0,
 "noise1_offset": Vector2(0.5, 0.5),
-"noise1_scale": 0.04,
-"noise2_scale": 0.076,
+"noise1_scale": 0.055,
+"noise2_scale": 0.098,
 "noise_texture": SubResource("NoiseTexture2D_terrain"),
 &"projection_threshold": 0.8
 }
 world_background = 0
-texture_filtering = 1
+texture_filtering = 0
 auto_shader = true
 shader_override_enabled = true
 shader_override = SubResource("Shader_tfelk")
@@ -669,7 +669,7 @@ lod0_range = 128.0
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_avtbp"]
 name = "Grass"
-albedo_color = Color(0.33826667, 0.43, 0.25800002, 1)
+albedo_color = Color(0.9, 0.95, 0.86, 1)
 albedo_texture = ExtResource("1_matcp")
 normal_texture = ExtResource("2_m3pej")
 normal_depth = 0.0
@@ -682,7 +682,7 @@ detiling_shift = 0.835
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_742gl"]
 name = "Sand"
 id = 1
-albedo_color = Color(0.82100445, 0.8287025, 0.59776163, 1)
+albedo_color = Color(0.97, 0.95, 0.88, 1)
 albedo_texture = ExtResource("3_matcp")
 normal_texture = ExtResource("4_f2ojk")
 normal_depth = 0.0
@@ -692,7 +692,7 @@ uv_scale = 2.0
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_w2v6r"]
 name = "Rock"
 id = 2
-albedo_color = Color(0.6706898, 0.6706894, 0.6706895, 1)
+albedo_color = Color(0.93, 0.93, 0.91, 1)
 albedo_texture = ExtResource("5_m3pej")
 normal_texture = ExtResource("6_arhr5")
 roughness = -0.269
@@ -728,12 +728,12 @@ shader_parameter/scale_h = 0.25
 shader_parameter/scale_w = 0.25
 shader_parameter/scale_var = 0.5
 shader_parameter/grass_strength = 0.3
-shader_parameter/optimization_by_distance = false
-shader_parameter/optimization_level = 7.0
-shader_parameter/optimization_dist_min = 10.0
-shader_parameter/optimization_dist_max = 50.0
+shader_parameter/optimization_by_distance = true
+shader_parameter/optimization_level = 8.0
+shader_parameter/optimization_dist_min = 22.0
+shader_parameter/optimization_dist_max = 95.0
 shader_parameter/grass_size_y = 0.58370256
-shader_parameter/interactive_mode = true
+shader_parameter/interactive_mode = false
 shader_parameter/interactive_level_xz = 3.0
 shader_parameter/interactive_level_y = 0.3
 metadata/SimpleGrassTexturedMaterial = "2.1.0"
@@ -798,7 +798,7 @@ shader_parameter/sun_limb_darken = 0.35
 shader_parameter/sun_corona_size = 0.012
 shader_parameter/sun_corona_intensity = 0.55
 shader_parameter/sun_corona_color = Color(1, 0.92, 0.75, 1)
-shader_parameter/moon_disk_size = 0.006
+shader_parameter/moon_disk_size = 0.00395
 shader_parameter/moon_disk_color = Color(0.82, 0.86, 0.95, 1)
 shader_parameter/moon_phase = 0.0
 shader_parameter/moon_phase_strength = 1.0
@@ -807,17 +807,17 @@ shader_parameter/moon_rim_strength = 0.38
 shader_parameter/moon_rim_power = 2.4
 shader_parameter/moon_earthshine = 0.08
 shader_parameter/moon_earthshine_color = Color(0.22, 0.28, 0.38, 1)
-shader_parameter/star_threshold = 0.63
-shader_parameter/star_brightness = 0.66
+shader_parameter/star_threshold = 0.44
+shader_parameter/star_brightness = 5.15
 shader_parameter/star_tint = Color(0.84, 0.89, 1, 1)
-shader_parameter/star_density_uv = Vector2(420, 230)
-shader_parameter/star_point_size = 0.011
+shader_parameter/star_density_uv = Vector2(480, 265)
+shader_parameter/star_point_size = 0.0115
 shader_parameter/star_twinkle_amount = 0.09
-shader_parameter/star_bright_boost = 1.85
+shader_parameter/star_bright_boost = 2.35
 shader_parameter/star_bright_threshold = 0.996
-shader_parameter/star_dim_threshold = 0.86
+shader_parameter/star_dim_threshold = 0.72
 shader_parameter/star_core_power = 2.25
-shader_parameter/star_halo = 0.06
+shader_parameter/star_halo = 0.34
 shader_parameter/cloud_coverage = 0.36
 shader_parameter/cloud_softness = 0.36
 shader_parameter/cloud_warp = 0.42
@@ -828,11 +828,12 @@ shader_parameter/night_cloud_brightness = 0.42
 shader_parameter/cloud_wind_speed = 0.008
 shader_parameter/cloud_domain = 2.8
 shader_parameter/milky_way_enabled = true
-shader_parameter/milky_way_intensity = 0.42
-shader_parameter/milky_way_width = 0.24
+shader_parameter/milky_way_intensity = 0.52
+shader_parameter/milky_way_width = 0.11
 shader_parameter/milky_way_rotation = 0.55
 shader_parameter/milky_way_elevation = 0.28
 shader_parameter/milky_way_tint = Color(0.42, 0.56, 0.92, 1)
+shader_parameter/milky_way_dust_tint = Color(0.95, 0.72, 0.52, 1)
 shader_parameter/aurora_enabled = true
 shader_parameter/aurora_intensity = 0.33
 shader_parameter/aurora_speed = 0.45
@@ -889,8 +890,8 @@ scale_var = 0.5
 grass_strength = 0.3
 interactive = false
 collision_mask = 3
-sgt_radius = 6.699999999999999
-sgt_density = 23
+sgt_radius = 8.5
+sgt_density = 32
 sgt_scale = 1.0
 sgt_rotation = 0.0
 sgt_rotation_rand = 1.0

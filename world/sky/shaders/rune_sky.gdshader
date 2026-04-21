@@ -32,8 +32,8 @@ uniform float moon_rim_power : hint_range(0.5, 8.0, 0.1) = 2.4;
 uniform float moon_earthshine : hint_range(0.0, 0.5, 0.005) = 0.08;
 uniform vec3 moon_earthshine_color : source_color = vec3(0.22, 0.28, 0.38);
 
-uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.72;
-uniform float star_brightness : hint_range(0.0, 2.5, 0.01) = 0.88;
+uniform float star_threshold : hint_range(0.0, 1.0, 0.01) = 0.48;
+uniform float star_brightness : hint_range(0.0, 2.5, 0.01) = 1.15;
 uniform vec3 star_tint : source_color = vec3(0.72, 0.8, 0.95);
 uniform vec2 star_density_uv = vec2(340.0, 175.0);
 uniform float star_point_size : hint_range(0.02, 0.35, 0.001) = 0.042;
@@ -42,7 +42,7 @@ uniform float star_bright_boost : hint_range(1.0, 4.0, 0.05) = 2.6;
 uniform float star_bright_threshold : hint_range(0.9, 0.999, 0.001) = 0.988;
 uniform float star_dim_threshold : hint_range(0.5, 0.95, 0.001) = 0.74;
 uniform float star_core_power : hint_range(0.5, 3.0, 0.05) = 1.45;
-uniform float star_halo : hint_range(0.0, 0.6, 0.01) = 0.28;
+uniform float star_halo : hint_range(0.0, 0.6, 0.01) = 0.38;
 
 uniform float cloud_coverage : hint_range(0.0, 1.0, 0.01) = 0.36;
 uniform float cloud_softness : hint_range(0.01, 0.7, 0.01) = 0.36;
@@ -60,6 +60,7 @@ uniform float milky_way_width : hint_range(0.02, 1.0, 0.01) = 0.075;
 uniform float milky_way_rotation : hint_range(0.0, 6.28318, 0.001) = 0.55;
 uniform float milky_way_elevation : hint_range(-0.3, 0.8, 0.01) = 0.28;
 uniform vec3 milky_way_tint : source_color = vec3(0.42, 0.56, 0.92);
+uniform vec3 milky_way_dust_tint : source_color = vec3(0.95, 0.72, 0.52);
 
 uniform bool aurora_enabled = true;
 uniform float aurora_intensity : hint_range(0.0, 2.0, 0.01) = 0.05;
@@ -146,26 +147,55 @@ float stars(vec3 eyedir, float night_amt) {
 	return m * night_gate * star_brightness;
 }
 
-float milky_way(vec3 eyedir, float night_amt) {
+vec3 milky_way(vec3 eyedir, float night_amt) {
 	if (!milky_way_enabled || night_amt < 0.005) {
-		return 0.0;
+		return vec3(0.0);
 	}
 	vec2 rot = vec2(cos(milky_way_rotation), sin(milky_way_rotation));
-	vec3 center = normalize(vec3(rot.x, milky_way_elevation, rot.y));
-	float ang = max(dot(eyedir, center), 0.0);
-	float core = smoothstep(1.0 - milky_way_width, 1.0, ang);
-	float halo = smoothstep(1.0 - milky_way_width * 2.4, 1.0 - milky_way_width * 0.7, ang);
-	float shape = clamp(core + halo * 0.45, 0.0, 1.0);
-	vec2 uv = vec2(
-		atan(eyedir.z, eyedir.x) / 6.2831853 + 0.5,
-		asin(clamp(eyedir.y, -1.0, 1.0)) * 0.5 + 0.5
-	);
-	float detail = fbm(uv * 24.0 + vec2(TIME * 0.002, -TIME * 0.0015));
-	detail += fbm(uv * 44.0 + vec2(14.0, 7.0)) * 0.4;
-	detail = smoothstep(0.33, 0.9, detail);
-	float horizon_fade = smoothstep(0.0, 0.35, eyedir.y);
-	float night_gate = smoothstep(0.50, 0.95, night_amt);
-	return shape * detail * horizon_fade * night_gate * milky_way_intensity;
+	vec3 core_dir = normalize(vec3(rot.x, milky_way_elevation, rot.y));
+	vec3 world_up = vec3(0.0, 1.0, 0.0);
+	vec3 plane_n = cross(world_up, core_dir);
+	float pn2 = dot(plane_n, plane_n);
+	if (pn2 < 1e-8) {
+		plane_n = vec3(1.0, 0.0, 0.0);
+	} else {
+		plane_n = normalize(plane_n);
+	}
+	float plane_d = abs(dot(eyedir, plane_n));
+	float w = max(milky_way_width, 0.02);
+	float band_core = exp(-plane_d * plane_d / (w * w * 0.055));
+	float band_halo = exp(-plane_d * plane_d / (w * w * 0.42));
+	float band = band_core + band_halo * 0.48;
+
+	vec3 in_plane = eyedir - plane_n * dot(eyedir, plane_n);
+	float ip2 = dot(in_plane, in_plane);
+	vec3 along_dir = ip2 > 1e-8 ? normalize(in_plane) : core_dir;
+	vec3 core_flat = core_dir - plane_n * dot(core_dir, plane_n);
+	float cf2 = dot(core_flat, core_flat);
+	vec3 core_u = cf2 > 1e-8 ? normalize(core_flat) : along_dir;
+	vec3 plane_v = normalize(cross(plane_n, core_u));
+	float along = atan(dot(along_dir, plane_v), dot(along_dir, core_u)) / 6.2831853 + 0.5;
+	float across = dot(along_dir, core_u);
+	vec2 uv = vec2(along * 6.2, across * 3.4);
+
+	float dust = fbm(uv * 1.75 + vec2(0.6, 1.3));
+	float dust2 = fbm(uv * 4.9 + vec2(11.0, 2.5));
+	float dust3 = fbm(uv * 10.5 + vec2(-3.0, 7.5));
+	float lanes = smoothstep(0.22, 0.58, dust2);
+	float bright_clouds = smoothstep(0.38, 0.9, dust);
+	float filaments = pow(max(0.0, dust3 - 0.38), 2.0) * 2.1;
+	float structure = mix(0.32, 1.0, bright_clouds) * mix(1.0, 0.5, lanes * 0.88) + filaments * 0.62;
+
+	float bulge = pow(max(0.0, dot(eyedir, core_dir)), 10.0) * 2.6;
+	float shape = band * structure + bulge * band * (0.28 + 0.72 * bright_clouds);
+
+	float dust_mix = clamp(lanes * 0.65 + (1.0 - bright_clouds) * 0.25, 0.0, 1.0);
+	vec3 mw_color = mix(milky_way_tint, milky_way_dust_tint, dust_mix);
+
+	float horizon_fade = smoothstep(0.03, 0.36, eyedir.y);
+	float night_gate = smoothstep(0.38, 0.9, night_amt);
+	float intensity = max(0.0, shape) * horizon_fade * night_gate * milky_way_intensity;
+	return mw_color * intensity;
 }
 
 vec3 aurora(vec3 eyedir, vec3 moon_dir, float night_amt) {
@@ -249,8 +279,7 @@ void sky() {
 
 	float st = stars(dir, night_amt);
 	col += star_tint * st;
-	float mw_band = milky_way(dir, night_amt);
-	col += milky_way_tint * mw_band;
+	col += milky_way(dir, night_amt);
 	col += aurora(dir, moon_dir, night_amt);
 
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
@@ -261,8 +290,8 @@ void sky() {
 	float dens = puff * smoothstep(0.08, 0.95, n + 0.05 * fbm(cu * 1.3 + wind));
 	vec3 ccol = mix(cloud_color_night * night_cloud_brightness, cloud_color_day, day_factor);
 	ccol = mix(ccol, cloud_color_sunset, sunset_factor * 0.85);
-	float cloud_alpha = dens * (0.22 + 0.36 * day_factor + 0.12 * night_amt);
-	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.82));
+	float cloud_alpha = dens * (0.1 + 0.38 * day_factor + 0.07 * night_amt);
+	col = mix(col, ccol, clamp(cloud_alpha, 0.0, 0.78));
 
 	COLOR = col;
 	}
