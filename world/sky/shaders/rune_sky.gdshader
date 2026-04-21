@@ -120,7 +120,7 @@ vec3 sky_gradient(vec3 eyedir, float day_f, float sunset_f) {
 }
 
 float stars(vec3 eyedir, float night_amt) {
-	if (night_amt < 0.02) {
+	if (night_amt < 0.005) {
 		return 0.0;
 	}
 	vec3 p = normalize(eyedir + vec3(0.001, 0.002, 0.001));
@@ -142,7 +142,8 @@ float stars(vec3 eyedir, float night_amt) {
 	float dim = smoothstep(star_dim_threshold, star_bright_threshold, h);
 	float bright = smoothstep(star_bright_threshold, 1.0, h);
 	float m = kernel * (dim * 0.48 + bright * star_bright_boost) * tw;
-	return m * night_amt * star_brightness;
+	float night_gate = smoothstep(star_threshold, 1.0, night_amt);
+	return m * night_gate * star_brightness;
 }
 
 float milky_way(vec3 eyedir, float night_amt) {
@@ -246,7 +247,7 @@ void sky() {
 	vec3 moon_rgb = moon_base;
 	col = mix(col, moon_rgb, moon_disc * moon_vis * 0.95);
 
-	float st = stars(dir, smoothstep(star_threshold, 1.0, night_amt));
+	float st = stars(dir, night_amt);
 	col += star_tint * st;
 	float mw_band = milky_way(dir, night_amt);
 	col += milky_way_tint * mw_band;
