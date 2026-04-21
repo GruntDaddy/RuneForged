@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://csqhlvtww8ty7" path="res://entities/characters/player/player.gd" id="1_eoic6"]
 [ext_resource type="PackedScene" uid="uid://c4e26ayvivfoj" path="res://entities/characters/base_character/base_character.tscn" id="1_jiqs4"]
-[ext_resource type="PackedScene" uid="uid://cdeose8pqbboi" path="res://ui/hud/player_inventory_hud.tscn" id="3_invhud"]
 [ext_resource type="PackedScene" path="res://ui/hud/gameplay_toast.tscn" id="4_toast"]
+[ext_resource type="PackedScene" path="res://ui/hud/player_hud.tscn" id="5_phud"]
+[ext_resource type="PackedScene" path="res://ui/menus/game_menu.tscn" id="7_gmenu"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eoic6"]
 radius = 0.5332031
@@ -48,6 +49,8 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 20
 text = "LMB: Chop"
 
-[node name="PlayerInventoryHud" parent="." unique_id=903195595 instance=ExtResource("3_invhud")]
+[node name="PlayerHud" parent="." instance=ExtResource("5_phud")]
+
+[node name="GameMenu" parent="." instance=ExtResource("7_gmenu")]
 
 [node name="GameplayToast" parent="." instance=ExtResource("4_toast")]

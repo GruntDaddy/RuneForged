@@ -39,6 +39,13 @@ func get_item(id: String) -> ItemData:
 	return v as ItemData
 
 
+func get_item_icon(id: String) -> Texture2D:
+	var it: ItemData = get_item(id)
+	if it != null and it.icon != null:
+		return it.icon
+	return null
+
+
 func has_id(id: String) -> bool:
 	return _items.has(id)
 

@@ -1,11 +1,15 @@
 extends CanvasLayer
 
 const SLOT_COLS := 4
-const SLOT_SIZE := Vector2(64, 64)
+const SLOT_SIZE := Vector2(80, 96)
 
 @onready var _panel: PanelContainer = $Root/Margin/Panel
 @onready var _grid: GridContainer = $Root/Margin/Panel/VBox/Scroll/Grid
 @onready var _drag_preview: Panel = $Root/DragPreview
+@onready var _drag_icon: TextureRect = $Root/DragPreview/Margin/VBox/IconTexture
+@onready var _drag_fallback: Label = $Root/DragPreview/Margin/VBox/IconFallback
+@onready var _drag_name: Label = $Root/DragPreview/Margin/VBox/NameLabel
+@onready var _drag_count: Label = $Root/DragPreview/Margin/VBox/CountLabel
 
 var _slots: Array[Panel] = []
 var _was_mouse_captured: bool = false
@@ -50,6 +54,8 @@ func _ready() -> void:
 	_build_slots()
 	_refresh_grid()
 	_drag_preview.visible = false
+	_drag_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_drag_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 
 
 func _on_inventory_service_changed() -> void:
@@ -83,19 +89,37 @@ func _build_slots() -> void:
 		var vb := VBoxContainer.new()
 		vb.set_anchors_preset(Control.PRESET_FULL_RECT)
 		vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vb.add_theme_constant_override("separation", 4)
 		slot.add_child(vb)
-		var icon_l := Label.new()
-		icon_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		icon_l.add_theme_font_size_override("font_size", 24)
-		icon_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_l.name = "IconLabel"
+		var icon_area := Control.new()
+		icon_area.custom_minimum_size = Vector2(72, 56)
+		icon_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vb.add_child(icon_area)
+		var icon_tex := TextureRect.new()
+		icon_tex.name = "IconTexture"
+		icon_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_tex.offset_left = 2.0
+		icon_tex.offset_top = 2.0
+		icon_tex.offset_right = -2.0
+		icon_tex.offset_bottom = -2.0
+		icon_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		icon_tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_area.add_child(icon_tex)
+		var icon_fb := Label.new()
+		icon_fb.name = "IconFallback"
+		icon_fb.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_fb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_fb.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		icon_fb.add_theme_font_size_override("font_size", 20)
+		icon_fb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_fb.visible = false
+		icon_area.add_child(icon_fb)
 		var name_l := Label.new()
 		name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		name_l.clip_text = true
-		name_l.add_theme_font_size_override("font_size", 10)
+		name_l.add_theme_font_size_override("font_size", 11)
 		name_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		name_l.name = "NameLabel"
 		var count_l := Label.new()
@@ -103,7 +127,6 @@ func _build_slots() -> void:
 		count_l.add_theme_font_size_override("font_size", 13)
 		count_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		count_l.name = "CountLabel"
-		vb.add_child(icon_l)
 		vb.add_child(name_l)
 		vb.add_child(count_l)
 		_grid.add_child(slot)
@@ -158,12 +181,9 @@ func _try_begin_drag(idx: int) -> void:
 	_drag_from_idx = idx
 	var item_id: String = s["id"]
 	var count: int = int(s["count"])
-	var icon_l: Label = _drag_preview.find_child("IconLabel", true, false)
-	var name_l: Label = _drag_preview.find_child("NameLabel", true, false)
-	var count_l: Label = _drag_preview.find_child("CountLabel", true, false)
-	icon_l.text = _item_icon(item_id)
-	name_l.text = _pretty_item_name(item_id)
-	count_l.text = str(count)
+	_apply_icon_to_texture_rect(_drag_icon, _drag_fallback, item_id)
+	_drag_name.text = _pretty_item_name(item_id)
+	_drag_count.text = str(count)
 	_drag_preview.visible = true
 	var mp := get_viewport().get_mouse_position()
 	_drag_preview.global_position = mp + Vector2(16, 16)
@@ -197,21 +217,36 @@ func _drop_dragged_item_to_world(mouse_pos: Vector2) -> void:
 func _refresh_grid() -> void:
 	for i in _slots.size():
 		var slot := _slots[i]
-		var icon_l: Label = slot.find_child("IconLabel", true, false)
+		var icon_tex: TextureRect = slot.find_child("IconTexture", true, false)
+		var icon_fb: Label = slot.find_child("IconFallback", true, false)
 		var name_l: Label = slot.find_child("NameLabel", true, false)
 		var count_l: Label = slot.find_child("CountLabel", true, false)
 		var s: Variant = InventoryService.get_slot_data(i)
 		if s != null:
 			var item_id: String = s["id"]
-			icon_l.text = _item_icon(item_id)
+			_apply_icon_to_texture_rect(icon_tex, icon_fb, item_id)
 			name_l.text = _pretty_item_name(item_id)
 			count_l.text = str(int(s["count"]))
 			_apply_slot_style(slot, true)
 		else:
-			icon_l.text = ""
+			icon_tex.texture = null
+			icon_fb.visible = false
 			name_l.text = ""
 			count_l.text = ""
 			_apply_slot_style(slot, false)
+
+
+func _apply_icon_to_texture_rect(tex_rect: TextureRect, fallback: Label, item_id: String) -> void:
+	var tex: Texture2D = ItemCatalog.get_item_icon(item_id)
+	if tex != null:
+		tex_rect.texture = tex
+		tex_rect.visible = true
+		fallback.visible = false
+	else:
+		tex_rect.texture = null
+		tex_rect.visible = false
+		fallback.visible = true
+		fallback.text = _item_icon(item_id)
 
 
 func _pretty_item_name(item_id: String) -> String:
@@ -234,10 +269,12 @@ func _item_icon(item_id: String) -> String:
 			return "OK"
 		"stone":
 			return "ST"
-		"tin_ore":
-			return "TN"
+		"tin_ore", "ore_tin":
+			return "Sn"
+		"ore_copper":
+			return "Cu"
 		_:
-			return "IT"
+			return "•"
 
 
 func _apply_slot_style(slot: Panel, filled: bool) -> void:

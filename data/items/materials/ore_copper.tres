@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bcei0nharyaa"]
 
 [ext_resource type="Script" uid="uid://bc3743mbucn7f" path="res://data/schemas/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/icon_ore_copper.svg" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -9,3 +10,4 @@ display_name = "Copper ore"
 description = "Unrefined copper ore from mining. Combine with tin ore at a smelter to create a bronze ingot."
 max_stack = 99
 tags = PackedStringArray("resource", "ore", "copper")
+icon = ExtResource("2_icon")

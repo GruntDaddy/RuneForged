@@ -210,8 +210,10 @@ func get_item_display_name(item_id: String) -> String:
 			return "Oak logs"
 		"stone":
 			return "Stone"
-		"tin_ore":
+		"tin_ore", "ore_tin":
 			return "Tin ore"
+		"ore_copper":
+			return "Copper ore"
 		_:
 			if item_id.is_empty():
 				return ""
@@ -321,6 +323,34 @@ func get_slot_data(index: int) -> Variant:
 	if index < 0 or index >= SLOT_COUNT:
 		return null
 	return slots[index]
+
+
+func remove_amount_from_slot(slot_idx: int, amount: int) -> bool:
+	if amount < 1 or slot_idx < 0 or slot_idx >= SLOT_COUNT:
+		return false
+	var s: Variant = slots[slot_idx]
+	if s == null:
+		return false
+	var c: int = int(s.get("count", 0))
+	if c < amount:
+		return false
+	if c == amount:
+		slots[slot_idx] = null
+	else:
+		s["count"] = c - amount
+		slots[slot_idx] = s
+	inventory_changed.emit()
+	return true
+
+
+func set_slot_data(slot_idx: int, data: Variant) -> void:
+	if slot_idx < 0 or slot_idx >= SLOT_COUNT:
+		return
+	if data == null:
+		slots[slot_idx] = null
+	else:
+		slots[slot_idx] = _duplicate_slot(data)
+	inventory_changed.emit()
 
 
 func move_or_merge(from_idx: int, to_idx: int) -> void:

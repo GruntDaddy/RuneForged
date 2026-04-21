@@ -42,12 +42,23 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var water_buoyancy_dive_scale: float = 0.28
 @export var water_dive_max_down_speed: float = 7.5
 
+@export_group("Vitality")
+@export var max_health: float = 100.0
+@export var max_stamina: float = 100.0
+@export var stamina_drain_run: float = 22.0
+@export var stamina_regen: float = 16.0
+@export var stamina_regen_air: float = 8.0
+
+var health: float = 100.0
+var stamina: float = 100.0
+
 @onready var base_character: Node3D = $BaseCharacter
 @onready var camera_rig: Node3D = $CameraRig
 @onready var spring_arm: SpringArm3D = $CameraRig/SpringArm3D
 @onready var camera_3d: Camera3D = $CameraRig/SpringArm3D/Camera3D
 @onready var interaction_ray: RayCast3D = $RayCast3D
-@onready var inventory_hud: CanvasLayer = $PlayerInventoryHud
+@onready var game_menu: GameMenu = $GameMenu
+@onready var player_hud: CanvasLayer = $PlayerHud
 @onready var interaction_prompt: Label = $InteractionPrompt
 @onready var gameplay_toast: CanvasLayer = $GameplayToast
 
@@ -76,6 +87,8 @@ func set_input_enabled(enabled: bool) -> void:
 
 func _ready() -> void:
 	add_to_group("player")
+	health = max_health
+	stamina = max_stamina
 	_resolve_day_night_controller()
 	_apply_from_gamestate()
 	if _input_enabled:
@@ -109,8 +122,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_interact()
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed("inventory") and inventory_hud:
-		inventory_hud.toggle_inventory()
+	if event.is_action_pressed("character_menu") and game_menu:
+		game_menu.toggle(0)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("inventory") and game_menu:
+		game_menu.toggle(0)
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -177,7 +194,8 @@ func _physics_process(delta: float) -> void:
 		right = right.normalized()
 	var dir := right * input_vec.x + forward * (-input_vec.y)
 
-	var running := Input.is_action_pressed("run")
+	var want_run := Input.is_action_pressed("run")
+	var running := want_run and stamina > 0.05
 	var speed_factor: float = _night_speed_factor()
 	var speed := move_speed * speed_factor * (run_multiplier if running else 1.0)
 
@@ -197,6 +215,14 @@ func _physics_process(delta: float) -> void:
 		velocity.z *= water_horizontal_drag
 
 	move_and_slide()
+
+	if not in_water and is_on_floor():
+		if running and dir.length_squared() > 0.0001:
+			stamina = maxf(stamina - stamina_drain_run * delta, 0.0)
+		else:
+			stamina = minf(stamina + stamina_regen * delta, max_stamina)
+	elif not in_water:
+		stamina = minf(stamina + stamina_regen_air * delta, max_stamina)
 
 	var wl_cam: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), camera_3d.global_position)
 	_update_underwater_fog(wl_cam)
@@ -243,6 +269,51 @@ func _apply_from_gamestate() -> void:
 func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 	if base_character.has_method("set_active_tool"):
 		base_character.set_active_tool(kind)
+
+
+func get_hud_snapshot() -> Dictionary:
+	var tk: int = int(_BaseCharacter.ToolKind.NONE)
+	if base_character != null and base_character.has_method("get_active_tool_kind"):
+		tk = int(base_character.get_active_tool_kind())
+	return {
+		"health": health,
+		"max_health": max_health,
+		"stamina": stamina,
+		"max_stamina": max_stamina,
+		"tool_kind": tk,
+	}
+
+
+func get_equipment_sheet_snapshot() -> Dictionary:
+	var tool_str := "—"
+	if base_character != null and base_character.has_method("get_active_tool_kind"):
+		tool_str = _tool_display_name(base_character.get_active_tool_kind())
+	var gs: Node = get_node_or_null("/root/GameState")
+	var head_s := "—"
+	var chest_s := "—"
+	var legs_s := "—"
+	if gs != null:
+		head_s = "Look %d" % (int(gs.head_index) + 1)
+		chest_s = "Shirt %d" % (int(gs.shirt_index) + 1)
+		legs_s = "Pants %d" % (int(gs.pants_index) + 1)
+	return {
+		"active_tool": tool_str,
+		"head": head_s,
+		"chest": chest_s,
+		"legs": legs_s,
+	}
+
+
+func _tool_display_name(kind: _BaseCharacter.ToolKind) -> String:
+	match kind:
+		_BaseCharacter.ToolKind.AXE:
+			return "Hatchet"
+		_BaseCharacter.ToolKind.PICKAXE:
+			return "Pickaxe"
+		_BaseCharacter.ToolKind.FISHING_ROD:
+			return "Fishing rod"
+		_:
+			return "Unarmed"
 
 
 func show_gameplay_message(msg: String) -> void:

@@ -172,6 +172,10 @@ func set_active_tool(kind: ToolKind) -> void:
 		_apply_tool_kind(kind)
 
 
+func get_active_tool_kind() -> ToolKind:
+	return _player_chosen_tool
+
+
 func is_tool_action_active() -> bool:
 	return _action_state == ActionState.TOOL_ACTION
 

@@ -48,3 +48,13 @@ func get_all_ids() -> PackedStringArray:
 	for k in _recipes.keys():
 		out.append(str(k))
 	return out
+
+
+func get_all_recipes() -> Array[RecipeData]:
+	var out: Array[RecipeData] = []
+	for k in _recipes.keys():
+		var r: RecipeData = _recipes[k] as RecipeData
+		if r != null:
+			out.append(r)
+	out.sort_custom(func(a: RecipeData, b: RecipeData) -> bool: return a.display_name < b.display_name)
+	return out

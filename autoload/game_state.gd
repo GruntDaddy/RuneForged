@@ -38,6 +38,8 @@ var warmth_until_unix_ms: int = 0
 ## Run-speed tuning while in nighttime conditions.
 var campfire_night_run_bonus: float = 0.2
 var campfire_night_penalty: float = 0.15
+## Equipped items: slot id -> { "id": String, "count": int }. Slots: head, chest, legs, feet, hands, main_hand, off_hand, back, neck, ring_1, ring_2
+var equipment: Dictionary = {}
 
 
 func reset() -> void:
@@ -60,6 +62,7 @@ func reset() -> void:
 	warmth_until_unix_ms = 0
 	campfire_night_run_bonus = 0.2
 	campfire_night_penalty = 0.15
+	equipment = {}
 
 
 func to_dict() -> Dictionary:
@@ -83,6 +86,7 @@ func to_dict() -> Dictionary:
 		"warmth_until_unix_ms": warmth_until_unix_ms,
 		"campfire_night_run_bonus": campfire_night_run_bonus,
 		"campfire_night_penalty": campfire_night_penalty,
+		"equipment": equipment.duplicate(true),
 	}
 
 
@@ -117,6 +121,10 @@ func from_dict(data: Variant) -> void:
 	warmth_until_unix_ms = int(d.get("warmth_until_unix_ms", 0))
 	campfire_night_run_bonus = float(d.get("campfire_night_run_bonus", 0.2))
 	campfire_night_penalty = float(d.get("campfire_night_penalty", 0.15))
+	if typeof(d.get("equipment", null)) == TYPE_DICTIONARY:
+		equipment = (d.get("equipment", {}) as Dictionary).duplicate(true)
+	else:
+		equipment = {}
 
 
 func scene_path_for_saved_region(saved_region: String) -> String:

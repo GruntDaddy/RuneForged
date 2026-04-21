@@ -31,6 +31,7 @@ enum Rarity {
 @export_range(1, 999, 1) var max_stack: int = 99
 @export var tags: PackedStringArray = PackedStringArray()
 @export var rarity: Rarity = Rarity.COMMON
+@export var icon: Texture2D = null
 
 
 func create_runtime_copy() -> ItemData:

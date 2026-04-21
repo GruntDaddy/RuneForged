@@ -1,0 +1,165 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcharsheet001"]
+
+[ext_resource type="Script" path="res://ui/hud/character_sheet.gd" id="1_script"]
+
+[node name="CharacterSheet" type="CanvasLayer"]
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Root/Center"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Panel" type="PanelContainer" parent="Root/Center/Margin"]
+custom_minimum_size = Vector2(380, 420)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Margin/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.88, 0.72, 1)
+theme_override_font_sizes/font_size = 22
+text = "Character"
+horizontal_alignment = 1
+
+[node name="NameRow" type="HBoxContainer" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Root/Center/Margin/Panel/VBox/NameRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.78, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "Name"
+
+[node name="Value" type="Label" parent="Root/Center/Margin/Panel/VBox/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.93, 0.86, 1)
+theme_override_font_sizes/font_size = 16
+text = "—"
+
+[node name="SkillsTitle" type="Label" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_font_sizes/font_size = 17
+text = "Skills"
+
+[node name="SkillsGrid" type="GridContainer" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="WoodLbl" type="Label" parent="Root/Center/Margin/Panel/VBox/SkillsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "Woodcutting"
+
+[node name="WoodVal" type="Label" parent="Root/Center/Margin/Panel/VBox/SkillsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "10"
+
+[node name="MineLbl" type="Label" parent="Root/Center/Margin/Panel/VBox/SkillsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "Mining"
+
+[node name="MineVal" type="Label" parent="Root/Center/Margin/Panel/VBox/SkillsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "10"
+
+[node name="EquipTitle" type="Label" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
+theme_override_font_sizes/font_size = 17
+text = "Equipment"
+
+[node name="EquipGrid" type="GridContainer" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="ToolLbl" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "Active tool"
+
+[node name="ToolVal" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+
+[node name="HeadLbl" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "Head"
+
+[node name="HeadVal" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+
+[node name="ChestLbl" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "Shirt"
+
+[node name="ChestVal" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+
+[node name="LegsLbl" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "Pants"
+
+[node name="LegsVal" type="Label" parent="Root/Center/Margin/Panel/VBox/EquipGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+
+[node name="Help" type="Label" parent="Root/Center/Margin/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.62, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "Help"
+autowrap_mode = 3

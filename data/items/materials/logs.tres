@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ebuk4rv8wacy"]
 
 [ext_resource type="Script" uid="uid://bc3743mbucn7f" path="res://data/schemas/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/items/icon_logs.svg" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -9,3 +10,4 @@ display_name = "Logs"
 description = "Wood cut from a tree."
 max_stack = 99
 tags = PackedStringArray("resource", "wood")
+icon = ExtResource("2_icon")

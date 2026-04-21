@@ -1,0 +1,122 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8k3game_menu01"]
+
+[ext_resource type="Script" path="res://ui/menus/game_menu.gd" id="1_script"]
+
+[node name="GameMenu" type="CanvasLayer"]
+layer = 25
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.02, 0.035, 0.55)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BookPanel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(920, 580)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="MainVBox" type="VBoxContainer" parent="Center/BookPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="Center/BookPanel/MainVBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Center/BookPanel/MainVBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.86, 0.72, 1)
+theme_override_font_sizes/font_size = 24
+text = "Journal"
+
+[node name="Spacer" type="Control" parent="Center/BookPanel/MainVBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Hint" type="Label" parent="Center/BookPanel/MainVBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 0.95)
+theme_override_font_sizes/font_size = 13
+text = "[Esc] Close · [Tab] / [I] Toggle"
+
+[node name="Body" type="HBoxContainer" parent="Center/BookPanel/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="TabColumn" type="VBoxContainer" parent="Center/BookPanel/MainVBox/Body"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PageHost" type="Control" parent="Center/BookPanel/MainVBox/Body"]
+custom_minimum_size = Vector2(740, 500)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="DragPreview" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(96, 108)
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 120.0
+offset_bottom = 132.0
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="DragPreview"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="VBox" type="VBoxContainer" parent="DragPreview/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="IconTexture" type="TextureRect" parent="DragPreview/Margin/VBox"]
+custom_minimum_size = Vector2(72, 48)
+layout_mode = 2
+mouse_filter = 2
+stretch_mode = 4
+expand_mode = 1
+
+[node name="IconFallback" type="Label" parent="DragPreview/Margin/VBox"]
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+mouse_filter = 2
+
+[node name="NameLabel" type="Label" parent="DragPreview/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 11
+mouse_filter = 2
+
+[node name="CountLabel" type="Label" parent="DragPreview/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13
+mouse_filter = 2
