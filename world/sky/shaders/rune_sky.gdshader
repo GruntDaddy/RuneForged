@@ -146,45 +146,48 @@ float stars(vec3 eyedir, float night_amt) {
 }
 
 float milky_way(vec3 eyedir, float night_amt) {
-	if (!milky_way_enabled || night_amt < 0.02) {
+	if (!milky_way_enabled || night_amt < 0.005) {
 		return 0.0;
 	}
 	vec2 rot = vec2(cos(milky_way_rotation), sin(milky_way_rotation));
 	vec3 center = normalize(vec3(rot.x, milky_way_elevation, rot.y));
-	vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), center));
-	if (length(right) < 0.01) {
-		right = normalize(cross(vec3(1.0, 0.0, 0.0), center));
-	}
-	vec3 up = normalize(cross(center, right));
-	float u = dot(eyedir, right);
-	float v = dot(eyedir, up);
-	float wu = max(milky_way_width * 2.6, 0.01);
-	float wv = max(milky_way_width * 0.75, 0.01);
-	float ellipse = exp(-(u * u) / (wu * wu) - (v * v) / (wv * wv));
-	float detail = fbm(vec2(u * 26.0, v * 38.0) + vec2(TIME * 0.002, -TIME * 0.0015));
-	detail += fbm(vec2(u * 52.0 + 14.0, v * 28.0 + 7.0)) * 0.4;
+	float ang = max(dot(eyedir, center), 0.0);
+	float core = smoothstep(1.0 - milky_way_width, 1.0, ang);
+	float halo = smoothstep(1.0 - milky_way_width * 2.4, 1.0 - milky_way_width * 0.7, ang);
+	float shape = clamp(core + halo * 0.45, 0.0, 1.0);
+	vec2 uv = vec2(
+		atan(eyedir.z, eyedir.x) / 6.2831853 + 0.5,
+		asin(clamp(eyedir.y, -1.0, 1.0)) * 0.5 + 0.5
+	);
+	float detail = fbm(uv * 24.0 + vec2(TIME * 0.002, -TIME * 0.0015));
+	detail += fbm(uv * 44.0 + vec2(14.0, 7.0)) * 0.4;
 	detail = smoothstep(0.33, 0.9, detail);
-	float horizon_fade = smoothstep(0.02, 0.42, eyedir.y);
-	float night_gate = smoothstep(0.68, 1.0, night_amt);
-	return ellipse * detail * horizon_fade * night_gate * milky_way_intensity;
+	float horizon_fade = smoothstep(0.0, 0.35, eyedir.y);
+	float night_gate = smoothstep(0.50, 0.95, night_amt);
+	return shape * detail * horizon_fade * night_gate * milky_way_intensity;
 }
 
 vec3 aurora(vec3 eyedir, vec3 moon_dir, float night_amt) {
-	if (!aurora_enabled || night_amt < 0.06) {
+	if (!aurora_enabled || night_amt < 0.01) {
 		return vec3(0.0);
 	}
-	float height_mask = smoothstep(aurora_band_height - aurora_band_softness, aurora_band_height + aurora_band_softness, eyedir.y);
-	float sweep = fbm(vec2(eyedir.x * 6.0 + TIME * aurora_speed, eyedir.z * 1.8 - TIME * aurora_speed * 0.18));
-	float curtain = fbm(vec2(eyedir.x * 9.0 - TIME * aurora_speed * 0.28, eyedir.z * 2.4 + TIME * aurora_speed * 0.11));
-	float stripes = smoothstep(0.48, 0.86, sweep * 0.65 + curtain * 0.65);
-	float flicker = 0.94 + 0.06 * (sin(TIME * 0.55 + eyedir.x * 7.0) * 0.5 + 0.5);
+	float base_h = max(aurora_band_height, 0.08);
+	float spread = max(aurora_band_softness * 2.8 + 0.18, 0.22);
+	float lower = clamp(base_h - spread, -0.25, 0.8);
+	float upper = clamp(base_h + spread * 1.45, -0.2, 1.0);
+	float height_mask = smoothstep(lower, upper, eyedir.y);
+	float sweep = fbm(vec2(eyedir.x * 4.6 + TIME * aurora_speed, eyedir.z * 1.6 - TIME * aurora_speed * 0.14));
+	float curtain = fbm(vec2(eyedir.x * 6.2 - TIME * aurora_speed * 0.22, eyedir.z * 2.0 + TIME * aurora_speed * 0.09));
+	float broad = fbm(vec2(eyedir.x * 2.6 + TIME * aurora_speed * 0.08, eyedir.z * 1.2 - TIME * aurora_speed * 0.04));
+	float stripes = smoothstep(0.36, 0.88, sweep * 0.4 + curtain * 0.35 + broad * 0.5);
+	float flicker = 0.95 + 0.05 * (sin(TIME * 0.4 + eyedir.x * 4.0) * 0.5 + 0.5);
 	float hue_shift = sin(TIME * (aurora_speed * 0.72) + eyedir.x * 6.2 + eyedir.z * 3.4) * 0.5 + 0.5;
 	vec3 col_ab = mix(aurora_color_a, aurora_color_b, curtain);
 	vec3 col = mix(col_ab, aurora_color_c, hue_shift * 0.7);
 	float moon_near = smoothstep(1.0 - aurora_moon_exclusion, 1.0, max(dot(eyedir, moon_dir), 0.0));
 	float moon_mask = 1.0 - moon_near;
 	/* Keep aurora colorful without washing out stars/moon. */
-	float night_gate = smoothstep(0.72, 1.0, night_amt);
+	float night_gate = smoothstep(0.55, 0.97, night_amt);
 	return col * stripes * height_mask * flicker * moon_mask * night_gate * aurora_intensity * 0.56;
 }
 
@@ -245,9 +248,9 @@ void sky() {
 
 	float st = stars(dir, smoothstep(star_threshold, 1.0, night_amt));
 	col += star_tint * st;
-	float mw_band = milky_way(dir, smoothstep(star_threshold, 1.0, night_amt));
+	float mw_band = milky_way(dir, night_amt);
 	col += milky_way_tint * mw_band;
-	col += aurora(dir, moon_dir, smoothstep(0.45, 1.0, night_amt));
+	col += aurora(dir, moon_dir, night_amt);
 
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
 	vec2 cu = dir.xz / max(dir.y + 0.22, 0.08) * cloud_domain + wind * 1.2;

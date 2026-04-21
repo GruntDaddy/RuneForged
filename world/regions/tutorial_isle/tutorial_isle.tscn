@@ -913,7 +913,6 @@ environment = SubResource("Environment_main")
 
 [node name="DayNightCycle" type="Node3D" parent="." unique_id=439430621 groups=["day_night_cycle"]]
 script = ExtResource("day_night_script")
-day_length_seconds = 90.0
 moon_light_energy = 0.35
 sun_color_day = Color(0.9999998, 0.96629196, 0.86455643, 1)
 sun_color_sunset = Color(0.96886665, 0.47319543, 5.583167e-06, 1)
@@ -954,6 +953,18 @@ transform = Transform3D(-0.63342893, 0, 1.359694, 0, 1.5, 0, -1.359694, 0, -0.63
 
 [node name="HarvestableTree4" parent="Harvestables/Trees/PalmTrees" unique_id=106376001 instance=ExtResource("13_4tfyc")]
 transform = Transform3D(1.294948, 0, 0.7570401, 0, 1.5, 0, -0.7570401, 0, 1.294948, 186.1304, 10.105624, 334.3087)
+
+[node name="HarvestableTree71" parent="Harvestables/Trees/PalmTrees" unique_id=1207014941 instance=ExtResource("13_4tfyc")]
+transform = Transform3D(1.3127663, 0, 0.72570276, 0, 1.5, 0, -0.72570276, 0, 1.3127663, 147.95184, 9.2371645, 375.2006)
+
+[node name="HarvestableTree72" parent="Harvestables/Trees/PalmTrees" unique_id=592254785 instance=ExtResource("13_4tfyc")]
+transform = Transform3D(1.4794933, 0, -0.24718407, 0, 1.5, 0, 0.24718407, 0, 1.4794933, 138.3634, 9.2371645, 373.748)
+
+[node name="HarvestableTree73" parent="Harvestables/Trees/PalmTrees" unique_id=933274344 instance=ExtResource("13_4tfyc")]
+transform = Transform3D(-1.4995667, 0, -0.036046565, 0, 1.5, 0, 0.036046565, 0, -1.4995667, 101.02732, 9.237165, 371.86725)
+
+[node name="HarvestableTree74" parent="Harvestables/Trees/PalmTrees" unique_id=473606782 instance=ExtResource("13_4tfyc")]
+transform = Transform3D(1.4794933, 0, -0.24718407, 0, 1.5, 0, 0.24718407, 0, 1.4794933, 68.09294, 9.2371645, 380.6888)
 
 [node name="HarvestableTree8" parent="Harvestables/Trees/PalmTrees" unique_id=81530083 instance=ExtResource("13_4tfyc")]
 transform = Transform3D(0.84786093, 0, -1.2373891, -0.25124398, 1.4687545, -0.17215277, 1.2116139, 0.30456546, 0.8301997, 189.7891, 10.186328, 379.2281)

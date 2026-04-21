@@ -75,6 +75,7 @@ var _sky_material: ShaderMaterial
 var _moon_phase: float = 0.18
 var _underwater_fog_active: bool = false
 var _underwater_fog_depth_t: float = 0.0
+var _last_lit_dir: Vector3 = Vector3(0.0, -1.0, 0.0)
 
 
 func set_underwater_fog_override(active: bool, depth_t: float) -> void:
@@ -215,11 +216,15 @@ func _apply_time() -> void:
 	if dl != null:
 		# Day: light from sun direction. Night: slerp toward moon direction so moonlit side gets cool fill.
 		var moon_influence: float = 1.0 - smoothstep(0.08, 0.42, day_f)
-		var lit_dir: Vector3 = sun_dir.slerp(moon_dir, moon_influence)
-		if lit_dir.length_squared() < 1e-10:
-			lit_dir = sun_dir
+		# Stable blend avoids slerp ambiguity when sun/moon are near-opposite at dusk.
+		var lit_raw: Vector3 = sun_dir * (1.0 - moon_influence) + moon_dir * moon_influence
+		var lit_len2: float = lit_raw.length_squared()
+		var lit_dir: Vector3
+		if lit_len2 < 1e-8:
+			lit_dir = _last_lit_dir
 		else:
-			lit_dir = lit_dir.normalized()
+			lit_dir = lit_raw / sqrt(lit_len2)
+			_last_lit_dir = lit_dir
 		var up_axis: Vector3 = Vector3.UP
 		if absf(lit_dir.dot(up_axis)) > 0.985:
 			up_axis = Vector3.FORWARD
