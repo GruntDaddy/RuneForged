@@ -20,7 +20,6 @@ const _HOT_TOOLS: Array[int] = [
 
 func _ready() -> void:
 	layer = 5
-	mouse_filter = MOUSE_FILTER_IGNORE
 	$Root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for path in ["Slot0", "Slot1", "Slot2", "Slot3"]:
 		var p: Panel = $Root/Hotbar/Margin/HBox.get_node(path) as Panel
