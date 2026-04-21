@@ -711,7 +711,7 @@ roughness = -0.22
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_q5xbx")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_avtbp"), SubResource("Terrain3DTextureAsset_742gl"), SubResource("Terrain3DTextureAsset_w2v6r"), SubResource("Terrain3DTextureAsset_vlrk0")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_asm5e"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hiyny"]
 render_priority = 0
 shader = ExtResource("9_ywla4")
 shader_parameter/albedo = Color(0.51171064, 0.7072013, 0.33188984, 1)
@@ -877,7 +877,7 @@ top_level = true
 metadata/_edit_lock_ = true
 
 [node name="TutorialIsleGrass" type="MultiMeshInstance3D" parent="." unique_id=1430165663]
-material_override = SubResource("ShaderMaterial_asm5e")
+material_override = SubResource("ShaderMaterial_hiyny")
 multimesh = SubResource("MultiMesh_4pcdv")
 script = ExtResource("tutorial_isle_grass")
 mesh = SubResource("ArrayMesh_rhsi7")
@@ -913,19 +913,23 @@ environment = SubResource("Environment_main")
 
 [node name="DayNightCycle" type="Node3D" parent="." unique_id=439430621]
 script = ExtResource("day_night_script")
-day_length_seconds = 120.0
-start_time_of_day = 0.3
 moon_light_energy = 0.35
-sun_color_day = Color(1, 0.9474018, 0.7971209, 1)
-moon_light_color = Color(0.6579909, 0.7279478, 0.91448504, 1)
+sun_color_day = Color(0.9999998, 0.96629196, 0.86455643, 1)
+sun_color_sunset = Color(0.96886665, 0.47319543, 5.583167e-06, 1)
+moon_light_color = Color(0.5504, 0.5698133, 0.64, 0.9490196)
 ambient_color_day = Color(0.4666658, 0.59262204, 0.7227814, 1)
 ambient_color_night = Color(0.11985638, 0.13582546, 0.21585712, 1)
 fog_density_day = 0.0472
 fog_density_night = 0.0878
-fog_light_color_day = Color(0.6384, 0.7073067, 0.76, 0.972549)
-fog_light_color_sunset = Color(0.77, 0.49934497, 0.3311, 0.93333334)
+fog_light_color_day = Color(0.6493139, 0.7073591, 0.7282426, 0.972549)
+fog_light_color_sunset = Color(0.78595084, 0.49576896, 0.18296188, 0.93333334)
+fog_light_color_night = Color(0.1167971, 0.13218221, 0.16545644, 1)
 fog_sky_affect_day = 0.5
 drive_sky_night_visuals = true
+aurora_intensity_night = 1.5
+moon_disk_size_target = 0.0085
+star_point_size_target = 0.032
+milky_way_intensity_target = 1.58
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1762949175]
 transform = Transform3D(1, 0, 0, 0, 0.3166757, 0.9485339, 0, -0.9485339, 0.3166757, 0, 10, 12)
@@ -1152,10 +1156,217 @@ transform = Transform3D(-1.2617424, 0, 0.81117547, 0.24880816, 1.4276971, 0.3870
 [node name="HarvestableTree15" parent="Harvestables/Trees/PalmTrees" unique_id=1544272359 instance=ExtResource("15_dg225")]
 transform = Transform3D(0.97235763, 0.5091413, 1.0223973, -0.3508756, 1.4109483, -0.36893243, -1.0869256, 0, 1.0337276, 211.70656, 18.74237, 149.5274)
 
-[node name="RegularTrees" type="Node3D" parent="Harvestables/Trees" unique_id=1210370042]
+[node name="CommonTrees" type="Node3D" parent="Harvestables/Trees" unique_id=1210370042]
 
-[node name="HarvestableTree" parent="Harvestables/Trees/RegularTrees" unique_id=586097446 instance=ExtResource("20_hiyny")]
+[node name="HarvestableTree" parent="Harvestables/Trees/CommonTrees" unique_id=586097446 instance=ExtResource("20_hiyny")]
 transform = Transform3D(1.2304225, 0, -0.8579397, 0, 1.5, 0, 0.8579397, 0, 1.2304225, 169.61697, 20.12739, 256.8164)
+
+[node name="HarvestableTree2" parent="Harvestables/Trees/CommonTrees" unique_id=430357478 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 142.5079, 20.216091, 291.0622)
+
+[node name="HarvestableTree3" parent="Harvestables/Trees/CommonTrees" unique_id=1875557974 instance=ExtResource("27_gkm8o")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 177.18382, 20.243101, 205.88908)
+
+[node name="HarvestableTree4" parent="Harvestables/Trees/CommonTrees" unique_id=6151944 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 210.6189, 20.370775, 237.2779)
+
+[node name="HarvestableTree5" parent="Harvestables/Trees/CommonTrees" unique_id=2084984346 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 202.17206, 20.135359, 235.70561)
+
+[node name="HarvestableTree6" parent="Harvestables/Trees/CommonTrees" unique_id=855485422 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 209.16234, 20.270111, 240.524)
+
+[node name="HarvestableTree7" parent="Harvestables/Trees/CommonTrees" unique_id=1768361882 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 206.39789, 20.159235, 236.35359)
+
+[node name="HarvestableTree66" parent="Harvestables/Trees/CommonTrees" unique_id=2098720977 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 178.73074, 20.370775, 222.95523)
+
+[node name="HarvestableTree67" parent="Harvestables/Trees/CommonTrees" unique_id=518130044 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 153.93906, 20.135359, 269.7272)
+
+[node name="HarvestableTree68" parent="Harvestables/Trees/CommonTrees" unique_id=225721232 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 173.125, 20.270111, 234.91063)
+
+[node name="HarvestableTree69" parent="Harvestables/Trees/CommonTrees" unique_id=1646061487 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.0777177, 0, -1.0433239, 0, 1.5, 0, 1.0433239, 0, 1.0777177, 182.27014, 20.159235, 235.98192)
+
+[node name="HarvestableTree8" parent="Harvestables/Trees/CommonTrees" unique_id=957789740 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 140.50066, 20.370775, 317.52396)
+
+[node name="HarvestableTree9" parent="Harvestables/Trees/CommonTrees" unique_id=511715907 instance=ExtResource("29_6ia34")]
+transform = Transform3D(0.59932375, 0, -1.3750676, 0, 1.5, 0, 1.3750676, 0, 0.59932375, 132.86205, 20.135359, 329.16724)
+
+[node name="HarvestableTree57" parent="Harvestables/Trees/CommonTrees" unique_id=1739067816 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 115.178894, 20.135357, 337.26825)
+
+[node name="HarvestableTree10" parent="Harvestables/Trees/CommonTrees" unique_id=1395598488 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 109.20165, 20.270111, 344.965)
+
+[node name="HarvestableTree56" parent="Harvestables/Trees/CommonTrees" unique_id=313146530 instance=ExtResource("26_flpd0")]
+transform = Transform3D(0.98058665, 0, -1.135099, 0, 1.5, 0, 1.135099, 0, 0.98058665, 111.65174, 20.270111, 328.37296)
+
+[node name="HarvestableTree11" parent="Harvestables/Trees/CommonTrees" unique_id=1508230563 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.2637209, 0, -0.80809003, 0, 1.5, 0, 0.80809003, 0, 1.2637209, 123.716545, 20.159237, 347.88995)
+
+[node name="HarvestableTree59" parent="Harvestables/Trees/CommonTrees" unique_id=2078862545 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 179.8871, 20.135359, 294.9896)
+
+[node name="HarvestableTree60" parent="Harvestables/Trees/CommonTrees" unique_id=1161613376 instance=ExtResource("20_hiyny")]
+transform = Transform3D(0.40005016, 0, -1.4456694, 0, 1.5, 0, 1.4456694, 0, 0.40005016, 160.43968, 20.159237, 314.01016)
+
+[node name="HarvestableTree61" parent="Harvestables/Trees/CommonTrees" unique_id=1599047649 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 160.6306, 20.216091, 286.0657)
+
+[node name="HarvestableTree62" parent="Harvestables/Trees/CommonTrees" unique_id=1999631755 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 130.56657, 20.370775, 294.5115)
+
+[node name="HarvestableTree63" parent="Harvestables/Trees/CommonTrees" unique_id=1405542095 instance=ExtResource("29_6ia34")]
+transform = Transform3D(-0.7574017, 0, 1.2947364, 0, 1.5, 0, -1.2947364, 0, -0.7574017, 135.1814, 20.135359, 346.32886)
+
+[node name="HarvestableTree64" parent="Harvestables/Trees/CommonTrees" unique_id=1058674804 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 171.69849, 20.135359, 335.59366)
+
+[node name="HarvestableTree65" parent="Harvestables/Trees/CommonTrees" unique_id=1617957662 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.2637209, 0, -0.80809003, 0, 1.5, 0, 0.80809003, 0, 1.2637209, 155.10188, 20.159237, 339.96674)
+
+[node name="HarvestableTree58" parent="Harvestables/Trees/CommonTrees" unique_id=2060436123 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.2637209, 0, -0.80809003, 0, 1.5, 0, 0.80809003, 0, 1.2637209, 116.57074, 20.159235, 316.72998)
+
+[node name="HarvestableTree12" parent="Harvestables/Trees/CommonTrees" unique_id=1276051875 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 189.56871, 20.370775, 155.82542)
+
+[node name="HarvestableTree13" parent="Harvestables/Trees/CommonTrees" unique_id=53042801 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 181.12187, 20.135359, 154.25316)
+
+[node name="HarvestableTree14" parent="Harvestables/Trees/CommonTrees" unique_id=797059228 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 188.11215, 20.270111, 159.07155)
+
+[node name="HarvestableTree15" parent="Harvestables/Trees/CommonTrees" unique_id=1931745792 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 185.3477, 20.159235, 154.90114)
+
+[node name="HarvestableTree16" parent="Harvestables/Trees/CommonTrees" unique_id=731407532 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 100.69661, 34.488094, 231.85585)
+
+[node name="HarvestableTree17" parent="Harvestables/Trees/CommonTrees" unique_id=373187970 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 92.24977, 34.252674, 230.28358)
+
+[node name="HarvestableTree18" parent="Harvestables/Trees/CommonTrees" unique_id=2123018460 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 99.24005, 34.38743, 235.10197)
+
+[node name="HarvestableTree19" parent="Harvestables/Trees/CommonTrees" unique_id=630204064 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 96.4756, 34.276554, 230.93156)
+
+[node name="HarvestableTree20" parent="Harvestables/Trees/CommonTrees" unique_id=166843769 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 78.52541, 34.488094, 286.9596)
+
+[node name="HarvestableTree21" parent="Harvestables/Trees/CommonTrees" unique_id=2069943897 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 70.078575, 34.252674, 285.38733)
+
+[node name="HarvestableTree22" parent="Harvestables/Trees/CommonTrees" unique_id=829414701 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 77.068855, 34.38743, 290.2057)
+
+[node name="HarvestableTree23" parent="Harvestables/Trees/CommonTrees" unique_id=2038874478 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 74.304405, 34.276554, 286.03528)
+
+[node name="HarvestableTree24" parent="Harvestables/Trees/CommonTrees" unique_id=671360753 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 78.2418, 34.488094, 174.26071)
+
+[node name="HarvestableTree25" parent="Harvestables/Trees/CommonTrees" unique_id=1660136501 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 69.79496, 34.252674, 172.68845)
+
+[node name="HarvestableTree26" parent="Harvestables/Trees/CommonTrees" unique_id=1159648004 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 76.78524, 34.38743, 177.5068)
+
+[node name="HarvestableTree27" parent="Harvestables/Trees/CommonTrees" unique_id=1300285727 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 74.02079, 34.276554, 173.3364)
+
+[node name="HarvestableTree28" parent="Harvestables/Trees/CommonTrees" unique_id=1982039828 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 123.627174, 34.488094, 187.35747)
+
+[node name="HarvestableTree29" parent="Harvestables/Trees/CommonTrees" unique_id=739775333 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 115.180336, 34.252674, 185.7852)
+
+[node name="HarvestableTree30" parent="Harvestables/Trees/CommonTrees" unique_id=1995957195 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 122.170616, 34.38743, 190.60356)
+
+[node name="HarvestableTree31" parent="Harvestables/Trees/CommonTrees" unique_id=224049288 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 119.406166, 34.276554, 186.43315)
+
+[node name="HarvestableTree32" parent="Harvestables/Trees/CommonTrees" unique_id=1768082362 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 122.52884, 34.488094, 262.5696)
+
+[node name="HarvestableTree33" parent="Harvestables/Trees/CommonTrees" unique_id=1753285060 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 114.082, 34.252674, 260.99734)
+
+[node name="HarvestableTree34" parent="Harvestables/Trees/CommonTrees" unique_id=1100669546 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 121.07228, 34.38743, 265.8157)
+
+[node name="HarvestableTree35" parent="Harvestables/Trees/CommonTrees" unique_id=344508818 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 118.30783, 34.276554, 261.6453)
+
+[node name="HarvestableTree36" parent="Harvestables/Trees/CommonTrees" unique_id=290443011 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -44.022217, 19.186157, 270.543)
+
+[node name="HarvestableTree37" parent="Harvestables/Trees/CommonTrees" unique_id=1451482561 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -52.469055, 18.950737, 268.97073)
+
+[node name="HarvestableTree38" parent="Harvestables/Trees/CommonTrees" unique_id=676825658 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -45.478775, 19.085491, 273.7891)
+
+[node name="HarvestableTree39" parent="Harvestables/Trees/CommonTrees" unique_id=111940351 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -48.243225, 18.974617, 269.61868)
+
+[node name="HarvestableTree40" parent="Harvestables/Trees/CommonTrees" unique_id=452054314 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -135.41682, 19.932892, 283.78452)
+
+[node name="HarvestableTree41" parent="Harvestables/Trees/CommonTrees" unique_id=2117408690 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -143.86366, 19.697472, 282.21225)
+
+[node name="HarvestableTree42" parent="Harvestables/Trees/CommonTrees" unique_id=1370786047 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -136.87338, 19.832226, 287.0306)
+
+[node name="HarvestableTree43" parent="Harvestables/Trees/CommonTrees" unique_id=666148811 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -139.63783, 19.721352, 282.8602)
+
+[node name="HarvestableTree44" parent="Harvestables/Trees/CommonTrees" unique_id=1778438396 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -225.99802, 20.156013, 336.1778)
+
+[node name="HarvestableTree45" parent="Harvestables/Trees/CommonTrees" unique_id=714509919 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -234.44485, 19.920593, 334.60553)
+
+[node name="HarvestableTree46" parent="Harvestables/Trees/CommonTrees" unique_id=466886404 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -227.45457, 20.055347, 339.4239)
+
+[node name="HarvestableTree47" parent="Harvestables/Trees/CommonTrees" unique_id=1594127304 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -230.21902, 19.944473, 335.25348)
+
+[node name="HarvestableTree48" parent="Harvestables/Trees/CommonTrees" unique_id=1812746537 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -152.61398, 19.404594, 328.2386)
+
+[node name="HarvestableTree49" parent="Harvestables/Trees/CommonTrees" unique_id=8025688 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -161.06082, 19.169174, 326.66632)
+
+[node name="HarvestableTree50" parent="Harvestables/Trees/CommonTrees" unique_id=214549799 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -154.07054, 19.303928, 331.48468)
+
+[node name="HarvestableTree51" parent="Harvestables/Trees/CommonTrees" unique_id=1253266157 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -156.83499, 19.193054, 327.31427)
+
+[node name="HarvestableTree52" parent="Harvestables/Trees/CommonTrees" unique_id=373581652 instance=ExtResource("28_677sf")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -190.07234, 34.981148, 260.96838)
+
+[node name="HarvestableTree53" parent="Harvestables/Trees/CommonTrees" unique_id=710265879 instance=ExtResource("29_6ia34")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -198.51918, 34.745728, 259.39612)
+
+[node name="HarvestableTree54" parent="Harvestables/Trees/CommonTrees" unique_id=1366814705 instance=ExtResource("26_flpd0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -191.5289, 34.88048, 264.21448)
+
+[node name="HarvestableTree55" parent="Harvestables/Trees/CommonTrees" unique_id=1290143727 instance=ExtResource("20_hiyny")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -194.29335, 34.769608, 260.04407)
+
+[node name="HarvestableTree70" parent="Harvestables/Trees/CommonTrees" unique_id=888236880 instance=ExtResource("27_gkm8o")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 156.28734, 20.243101, 142.52)
 
 [node name="Rocks" type="Node3D" parent="Harvestables" unique_id=66691314]
 
@@ -1398,210 +1609,3 @@ transform = Transform3D(-0.87247044, 0, 0.48866683, 0, 1, 0, -0.48866683, 0, -0.
 
 [node name="HarvestableCopperRock12" parent="Harvestables/Rocks/Copper" unique_id=1151199103 instance=ExtResource("25_a4736")]
 transform = Transform3D(-0.73891413, 0, 0.6737995, 0, 1, 0, -0.6737995, 0, -0.73891413, 144.88116, 20.154778, 157.98358)
-
-[node name="HarvestableTree" parent="." unique_id=430357478 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 142.5079, 20.216091, 291.0622)
-
-[node name="HarvestableTree2" parent="." unique_id=1875557974 instance=ExtResource("27_gkm8o")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 177.18382, 20.243101, 205.88908)
-
-[node name="HarvestableTree3" parent="." unique_id=6151944 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 210.6189, 20.370775, 237.2779)
-
-[node name="HarvestableTree4" parent="." unique_id=2084984346 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 202.17206, 20.135359, 235.70561)
-
-[node name="HarvestableTree5" parent="." unique_id=855485422 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 209.16234, 20.270111, 240.524)
-
-[node name="HarvestableTree6" parent="." unique_id=1768361882 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 206.39789, 20.159235, 236.35359)
-
-[node name="HarvestableTree66" parent="." unique_id=2098720977 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 178.73074, 20.370775, 222.95523)
-
-[node name="HarvestableTree67" parent="." unique_id=518130044 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 153.93906, 20.135359, 269.7272)
-
-[node name="HarvestableTree68" parent="." unique_id=225721232 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 173.125, 20.270111, 234.91063)
-
-[node name="HarvestableTree69" parent="." unique_id=1646061487 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.0777177, 0, -1.0433239, 0, 1.5, 0, 1.0433239, 0, 1.0777177, 182.27014, 20.159235, 235.98192)
-
-[node name="HarvestableTree8" parent="." unique_id=957789740 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 140.50066, 20.370775, 317.52396)
-
-[node name="HarvestableTree9" parent="." unique_id=511715907 instance=ExtResource("29_6ia34")]
-transform = Transform3D(0.59932375, 0, -1.3750676, 0, 1.5, 0, 1.3750676, 0, 0.59932375, 132.86205, 20.135359, 329.16724)
-
-[node name="HarvestableTree57" parent="." unique_id=1739067816 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 115.178894, 20.135357, 337.26825)
-
-[node name="HarvestableTree10" parent="." unique_id=1395598488 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 109.20165, 20.270111, 344.965)
-
-[node name="HarvestableTree56" parent="." unique_id=313146530 instance=ExtResource("26_flpd0")]
-transform = Transform3D(0.98058665, 0, -1.135099, 0, 1.5, 0, 1.135099, 0, 0.98058665, 111.65174, 20.270111, 328.37296)
-
-[node name="HarvestableTree11" parent="." unique_id=1508230563 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.2637209, 0, -0.80809003, 0, 1.5, 0, 0.80809003, 0, 1.2637209, 123.716545, 20.159237, 347.88995)
-
-[node name="HarvestableTree59" parent="." unique_id=2078862545 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 179.8871, 20.135359, 294.9896)
-
-[node name="HarvestableTree60" parent="." unique_id=1161613376 instance=ExtResource("20_hiyny")]
-transform = Transform3D(0.40005016, 0, -1.4456694, 0, 1.5, 0, 1.4456694, 0, 0.40005016, 160.43968, 20.159237, 314.01016)
-
-[node name="HarvestableTree61" parent="." unique_id=1599047649 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 160.6306, 20.216091, 286.0657)
-
-[node name="HarvestableTree62" parent="." unique_id=1999631755 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 130.56657, 20.370775, 294.5115)
-
-[node name="HarvestableTree63" parent="." unique_id=1405542095 instance=ExtResource("29_6ia34")]
-transform = Transform3D(-0.7574017, 0, 1.2947364, 0, 1.5, 0, -1.2947364, 0, -0.7574017, 135.1814, 20.135359, 346.32886)
-
-[node name="HarvestableTree64" parent="." unique_id=1058674804 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 171.69849, 20.135359, 335.59366)
-
-[node name="HarvestableTree65" parent="." unique_id=1617957662 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.2637209, 0, -0.80809003, 0, 1.5, 0, 0.80809003, 0, 1.2637209, 155.10188, 20.159237, 339.96674)
-
-[node name="HarvestableTree58" parent="." unique_id=2060436123 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.2637209, 0, -0.80809003, 0, 1.5, 0, 0.80809003, 0, 1.2637209, 116.57074, 20.159235, 316.72998)
-
-[node name="HarvestableTree12" parent="." unique_id=1276051875 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 189.56871, 20.370775, 155.82542)
-
-[node name="HarvestableTree13" parent="." unique_id=53042801 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 181.12187, 20.135359, 154.25316)
-
-[node name="HarvestableTree14" parent="." unique_id=797059228 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 188.11215, 20.270111, 159.07155)
-
-[node name="HarvestableTree15" parent="." unique_id=1931745792 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 185.3477, 20.159235, 154.90114)
-
-[node name="HarvestableTree16" parent="." unique_id=731407532 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 100.69661, 34.488094, 231.85585)
-
-[node name="HarvestableTree17" parent="." unique_id=373187970 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 92.24977, 34.252674, 230.28358)
-
-[node name="HarvestableTree18" parent="." unique_id=2123018460 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 99.24005, 34.38743, 235.10197)
-
-[node name="HarvestableTree19" parent="." unique_id=630204064 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 96.4756, 34.276554, 230.93156)
-
-[node name="HarvestableTree20" parent="." unique_id=166843769 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 78.52541, 34.488094, 286.9596)
-
-[node name="HarvestableTree21" parent="." unique_id=2069943897 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 70.078575, 34.252674, 285.38733)
-
-[node name="HarvestableTree22" parent="." unique_id=829414701 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 77.068855, 34.38743, 290.2057)
-
-[node name="HarvestableTree23" parent="." unique_id=2038874478 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 74.304405, 34.276554, 286.03528)
-
-[node name="HarvestableTree24" parent="." unique_id=671360753 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 78.2418, 34.488094, 174.26071)
-
-[node name="HarvestableTree25" parent="." unique_id=1660136501 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 69.79496, 34.252674, 172.68845)
-
-[node name="HarvestableTree26" parent="." unique_id=1159648004 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 76.78524, 34.38743, 177.5068)
-
-[node name="HarvestableTree27" parent="." unique_id=1300285727 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 74.02079, 34.276554, 173.3364)
-
-[node name="HarvestableTree28" parent="." unique_id=1982039828 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 123.627174, 34.488094, 187.35747)
-
-[node name="HarvestableTree29" parent="." unique_id=739775333 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 115.180336, 34.252674, 185.7852)
-
-[node name="HarvestableTree30" parent="." unique_id=1995957195 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 122.170616, 34.38743, 190.60356)
-
-[node name="HarvestableTree31" parent="." unique_id=224049288 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 119.406166, 34.276554, 186.43315)
-
-[node name="HarvestableTree32" parent="." unique_id=1768082362 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 122.52884, 34.488094, 262.5696)
-
-[node name="HarvestableTree33" parent="." unique_id=1753285060 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 114.082, 34.252674, 260.99734)
-
-[node name="HarvestableTree34" parent="." unique_id=1100669546 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 121.07228, 34.38743, 265.8157)
-
-[node name="HarvestableTree35" parent="." unique_id=344508818 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 118.30783, 34.276554, 261.6453)
-
-[node name="HarvestableTree36" parent="." unique_id=290443011 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -44.022217, 19.186157, 270.543)
-
-[node name="HarvestableTree37" parent="." unique_id=1451482561 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -52.469055, 18.950737, 268.97073)
-
-[node name="HarvestableTree38" parent="." unique_id=676825658 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -45.478775, 19.085491, 273.7891)
-
-[node name="HarvestableTree39" parent="." unique_id=111940351 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -48.243225, 18.974617, 269.61868)
-
-[node name="HarvestableTree40" parent="." unique_id=452054314 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -135.41682, 19.932892, 283.78452)
-
-[node name="HarvestableTree41" parent="." unique_id=2117408690 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -143.86366, 19.697472, 282.21225)
-
-[node name="HarvestableTree42" parent="." unique_id=1370786047 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -136.87338, 19.832226, 287.0306)
-
-[node name="HarvestableTree43" parent="." unique_id=666148811 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -139.63783, 19.721352, 282.8602)
-
-[node name="HarvestableTree44" parent="." unique_id=1778438396 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -225.99802, 20.156013, 336.1778)
-
-[node name="HarvestableTree45" parent="." unique_id=714509919 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -234.44485, 19.920593, 334.60553)
-
-[node name="HarvestableTree46" parent="." unique_id=466886404 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -227.45457, 20.055347, 339.4239)
-
-[node name="HarvestableTree47" parent="." unique_id=1594127304 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -230.21902, 19.944473, 335.25348)
-
-[node name="HarvestableTree48" parent="." unique_id=1812746537 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -152.61398, 19.404594, 328.2386)
-
-[node name="HarvestableTree49" parent="." unique_id=8025688 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -161.06082, 19.169174, 326.66632)
-
-[node name="HarvestableTree50" parent="." unique_id=214549799 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -154.07054, 19.303928, 331.48468)
-
-[node name="HarvestableTree51" parent="." unique_id=1253266157 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -156.83499, 19.193054, 327.31427)
-
-[node name="HarvestableTree52" parent="." unique_id=373581652 instance=ExtResource("28_677sf")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -190.07234, 34.981148, 260.96838)
-
-[node name="HarvestableTree53" parent="." unique_id=710265879 instance=ExtResource("29_6ia34")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -198.51918, 34.745728, 259.39612)
-
-[node name="HarvestableTree54" parent="." unique_id=1366814705 instance=ExtResource("26_flpd0")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -191.5289, 34.88048, 264.21448)
-
-[node name="HarvestableTree55" parent="." unique_id=1290143727 instance=ExtResource("20_hiyny")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -194.29335, 34.769608, 260.04407)
-
-[node name="HarvestableTree7" parent="." unique_id=888236880 instance=ExtResource("27_gkm8o")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 156.28734, 20.243101, 142.52)
