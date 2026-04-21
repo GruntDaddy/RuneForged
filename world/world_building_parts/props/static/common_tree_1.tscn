@@ -3,10 +3,11 @@
 [ext_resource type="PackedScene" uid="uid://bfva10bln3cs2" path="res://assets/Ultimate Nature Pack/CommonTree_1.fbx" id="1_bvsa5"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tsh4m"]
-albedo_color = Color(0.35, 0.22049999, 0.091, 1)
+albedo_color = Color(0.5029413, 0.32549632, 0.14874572, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vf21j"]
-albedo_color = Color(0.24731481, 0.60569036, 0.21749341, 1)
+albedo_color = Color(0.12187497, 0.39, 0.0975, 1)
+roughness = 0.82
 
 [node name="CommonTree_1" unique_id=1867653661 instance=ExtResource("1_bvsa5")]
 

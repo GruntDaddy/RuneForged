@@ -2,7 +2,8 @@ extends Node3D
 ## Drives sun/moon sky shader, DirectionalLight3D, and ambient for a full day-night cycle.
 ## Expects a sibling DirectionalLight3D and WorldEnvironment (paths configurable).
 
-@export var day_length_seconds: float = 90.0
+## Full cycle duration in seconds (e.g. 90 for fast testing, 900 for fifteen minutes).
+@export var day_length_seconds: float = 900.0
 @export_range(0.0, 1.0) var start_time_of_day: float = 0.32
 
 @export_group("Light")
@@ -28,6 +29,13 @@ extends Node3D
 @export var fog_light_color_night: Color = Color(0.12, 0.14, 0.22, 1)
 @export_range(0.0, 1.0, 0.01) var fog_sky_affect_day: float = 0.42
 @export_range(0.0, 1.0, 0.01) var fog_sky_affect_night: float = 0.72
+
+@export_group("Underwater fog")
+## Applied when the player reports submerged camera; wins over surface day/night fog for that frame.
+@export_range(0.0, 0.2, 0.0001) var underwater_fog_density_min: float = 0.028
+@export_range(0.0, 0.2, 0.0001) var underwater_fog_density_max: float = 0.085
+@export var underwater_fog_light_color: Color = Color(0.12, 0.38, 0.42, 1)
+@export_range(0.0, 1.0, 0.01) var underwater_fog_sky_affect: float = 0.55
 
 @export_group("Sky shader (optional)")
 ## When true, boosts moon rim strength toward night so the moon reads better against the dark sky.
@@ -62,13 +70,18 @@ extends Node3D
 var _time_of_day: float = 0.32
 var _sky_material: ShaderMaterial
 var _moon_phase: float = 0.18
+var _underwater_fog_active: bool = false
+var _underwater_fog_depth_t: float = 0.0
+
+
+func set_underwater_fog_override(active: bool, depth_t: float) -> void:
+	_underwater_fog_active = active
+	_underwater_fog_depth_t = clampf(depth_t, 0.0, 1.0)
 
 
 func _ready() -> void:
 	_time_of_day = start_time_of_day
 	_moon_phase = start_moon_phase
-	if day_length_seconds < 180.0:
-		day_length_seconds = 900.0
 	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment
 	if we != null and we.environment != null:
 		var sky: Sky = we.environment.sky
@@ -244,7 +257,14 @@ func _apply_time() -> void:
 		var env: Environment = we.environment
 		env.ambient_light_energy = lerpf(ambient_energy_night, ambient_energy_day, day_f)
 		env.ambient_light_color = ambient_color_night.lerp(ambient_color_day, day_f)
-		if fog_enabled:
+		if _underwater_fog_active:
+			env.fog_enabled = true
+			env.fog_light_color = underwater_fog_light_color
+			env.fog_density = lerpf(
+				underwater_fog_density_min, underwater_fog_density_max, _underwater_fog_depth_t
+			)
+			env.fog_sky_affect = underwater_fog_sky_affect
+		elif fog_enabled:
 			env.fog_enabled = true
 			var fog_color: Color = fog_light_color_night.lerp(fog_light_color_day, day_f)
 			fog_color = fog_color.lerp(fog_light_color_sunset, sunset_f * clampf(1.0 - day_f * 0.5, 0.0, 1.0))

@@ -36,8 +36,8 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var water_horizontal_drag: float = 0.88
 @export var water_jump_multiplier: float = 0.55
 @export var water_max_effect_depth: float = 18.0
-@export var underwater_fog_density_max: float = 0.085
-@export var underwater_fog_density_min: float = 0.028
+## If set, receives underwater fog via `set_underwater_fog_override`. Otherwise uses group `day_night_cycle`.
+@export var day_night_controller_path: NodePath = NodePath("")
 @export var water_dive_accel: float = 12.0
 @export var water_buoyancy_dive_scale: float = 0.28
 @export var water_dive_max_down_speed: float = 7.5
@@ -63,7 +63,7 @@ var _harvest_auto_active: bool = false
 var _harvest_auto_target: WeakRef
 var _harvest_auto_gen: int = 0
 
-var _world_environment: WorldEnvironment = null
+var _day_night: Node = null
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -76,7 +76,7 @@ func set_input_enabled(enabled: bool) -> void:
 
 func _ready() -> void:
 	add_to_group("player")
-	_world_environment = _find_world_environment()
+	_resolve_day_night_controller()
 	_apply_from_gamestate()
 	if _input_enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -598,28 +598,33 @@ func _on_mine_impact_timeout(_impact_idx: int, seq: int) -> void:
 		_stop_harvest_auto()
 
 
-func _find_world_environment() -> WorldEnvironment:
+func _resolve_day_night_controller() -> void:
+	if day_night_controller_path != NodePath(""):
+		var n: Node = get_node_or_null(day_night_controller_path)
+		if n != null and n.has_method(&"set_underwater_fog_override"):
+			_day_night = n
+			return
 	var scene := get_tree().current_scene
-	if scene == null:
-		return null
-	for c in scene.get_children():
-		if c is WorldEnvironment:
-			return c as WorldEnvironment
-	return null
+	if scene != null:
+		var by_path: Node = scene.get_node_or_null(NodePath("DayNightCycle"))
+		if by_path != null and by_path.has_method(&"set_underwater_fog_override"):
+			_day_night = by_path
+			return
+	var g: Node = get_tree().get_first_node_in_group(&"day_night_cycle")
+	if g != null and g.has_method(&"set_underwater_fog_override"):
+		_day_night = g
 
 
 func _update_underwater_fog(water_level_y: float) -> void:
-	if _world_environment == null:
-		_world_environment = _find_world_environment()
-	if _world_environment == null:
-		return
-	var env: Environment = _world_environment.environment
-	if env == null:
+	if _day_night == null:
+		_resolve_day_night_controller()
+	if _day_night == null:
 		return
 	var cam_y: float = camera_3d.global_position.y
 	var cam_submerged: bool = water_level_y > -1e6 and cam_y < water_level_y - 0.02
-	env.fog_enabled = cam_submerged
 	if cam_submerged:
 		var d: float = clampf(water_level_y - cam_y, 0.0, _UNDERWATER_FOG_DEPTH_MAX)
 		var t: float = clampf(d / _UNDERWATER_FOG_DEPTH_MAX, 0.0, 1.0)
-		env.fog_density = lerpf(underwater_fog_density_min, underwater_fog_density_max, t)
+		_day_night.call(&"set_underwater_fog_override", true, t)
+	else:
+		_day_night.call(&"set_underwater_fog_override", false, 0.0)
