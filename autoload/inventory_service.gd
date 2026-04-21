@@ -22,6 +22,8 @@ const PICKUP_SCENES := {
 	"oak_logs": preload("res://world/world_building_parts/props/resource_pickup_logs_oak.tscn"),
 	"stone": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
 	"tin_ore": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
+	"ore_tin": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
+	"ore_copper": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
 	"tool_torch": preload("res://world/world_building_parts/props/torch_light.tscn"),
 	"campfire_kit": preload("res://world/world_building_parts/props/campfire.tscn"),
 }
