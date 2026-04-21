@@ -27,7 +27,7 @@ uniform vec3 moon_disk_color : source_color = vec3(0.82, 0.86, 0.95);
 uniform float moon_phase : hint_range(0.0, 1.0, 0.001) = 0.0;
 uniform float moon_phase_strength : hint_range(0.0, 1.0, 0.01) = 1.0;
 uniform float moon_detail_strength : hint_range(0.0, 1.0, 0.01) = 0.42;
-uniform float moon_rim_strength : hint_range(0.0, 1.0, 0.01) = 0.38;
+uniform float moon_rim_strength : hint_range(0.0, 1.0, 0.01) = 0.0;
 uniform float moon_rim_power : hint_range(0.5, 8.0, 0.1) = 2.4;
 uniform float moon_earthshine : hint_range(0.0, 0.5, 0.005) = 0.08;
 uniform vec3 moon_earthshine_color : source_color = vec3(0.22, 0.28, 0.38);
@@ -37,7 +37,7 @@ uniform float star_brightness : hint_range(0.0, 2.5, 0.01) = 0.88;
 uniform vec3 star_tint : source_color = vec3(0.72, 0.8, 0.95);
 uniform vec2 star_density_uv = vec2(340.0, 175.0);
 uniform float star_point_size : hint_range(0.02, 0.35, 0.001) = 0.042;
-uniform float star_twinkle_amount : hint_range(0.0, 1.0, 0.01) = 0.22;
+uniform float star_twinkle_amount : hint_range(0.0, 1.0, 0.01) = 0.08;
 uniform float star_bright_boost : hint_range(1.0, 4.0, 0.05) = 2.6;
 uniform float star_bright_threshold : hint_range(0.9, 0.999, 0.001) = 0.988;
 uniform float star_dim_threshold : hint_range(0.5, 0.95, 0.001) = 0.74;
@@ -55,16 +55,16 @@ uniform float cloud_wind_speed : hint_range(0.0, 0.05, 0.0001) = 0.008;
 uniform float cloud_domain : hint_range(1.0, 12.0, 0.1) = 2.8;
 
 uniform bool milky_way_enabled = true;
-uniform float milky_way_intensity : hint_range(0.0, 2.0, 0.01) = 0.42;
-uniform float milky_way_width : hint_range(0.02, 1.0, 0.01) = 0.24;
+uniform float milky_way_intensity : hint_range(0.0, 2.0, 0.01) = 0.12;
+uniform float milky_way_width : hint_range(0.02, 1.0, 0.01) = 0.075;
 uniform float milky_way_rotation : hint_range(0.0, 6.28318, 0.001) = 0.55;
 uniform vec3 milky_way_tint : source_color = vec3(0.42, 0.56, 0.92);
 
 uniform bool aurora_enabled = true;
-uniform float aurora_intensity : hint_range(0.0, 2.0, 0.01) = 0.33;
-uniform float aurora_speed : hint_range(0.0, 3.0, 0.01) = 0.45;
-uniform float aurora_band_height : hint_range(0.0, 1.0, 0.01) = 0.42;
-uniform float aurora_band_softness : hint_range(0.01, 0.5, 0.01) = 0.12;
+uniform float aurora_intensity : hint_range(0.0, 2.0, 0.01) = 0.05;
+uniform float aurora_speed : hint_range(0.0, 3.0, 0.01) = 0.16;
+uniform float aurora_band_height : hint_range(0.0, 1.0, 0.01) = 0.23;
+uniform float aurora_band_softness : hint_range(0.01, 0.5, 0.01) = 0.06;
 uniform vec3 aurora_color_a : source_color = vec3(0.08, 0.88, 0.62);
 uniform vec3 aurora_color_b : source_color = vec3(0.24, 0.66, 1.0);
 uniform vec3 aurora_color_c : source_color = vec3(0.66, 0.34, 0.95);
@@ -152,10 +152,11 @@ float milky_way(vec3 eyedir, float night_amt) {
 	vec3 axis = normalize(vec3(rot.x, 0.36, rot.y));
 	float band = 1.0 - abs(dot(eyedir, axis));
 	float lane = smoothstep(1.0 - milky_way_width, 1.0, band);
-	float detail = fbm(eyedir.xz * 6.5 + vec2(TIME * 0.01, -TIME * 0.006));
+	float detail = fbm(eyedir.xz * 8.0 + vec2(TIME * 0.003, -TIME * 0.002));
 	detail += fbm(eyedir.zy * 11.0 + vec2(14.0, 7.0)) * 0.45;
 	float horizon_fade = smoothstep(-0.05, 0.32, eyedir.y);
-	return lane * detail * horizon_fade * night_amt * milky_way_intensity;
+	float night_gate = smoothstep(0.68, 1.0, night_amt);
+	return lane * detail * horizon_fade * night_gate * milky_way_intensity;
 }
 
 vec3 aurora(vec3 eyedir, vec3 moon_dir, float night_amt) {
@@ -163,17 +164,18 @@ vec3 aurora(vec3 eyedir, vec3 moon_dir, float night_amt) {
 		return vec3(0.0);
 	}
 	float height_mask = smoothstep(aurora_band_height - aurora_band_softness, aurora_band_height + aurora_band_softness, eyedir.y);
-	float sweep = fbm(vec2(eyedir.x * 8.0 + TIME * aurora_speed, eyedir.z * 2.7 - TIME * aurora_speed * 0.35));
-	float curtain = fbm(vec2(eyedir.x * 15.0 - TIME * aurora_speed * 0.6, eyedir.z * 4.2 + TIME * aurora_speed * 0.2));
+	float sweep = fbm(vec2(eyedir.x * 6.0 + TIME * aurora_speed, eyedir.z * 1.8 - TIME * aurora_speed * 0.18));
+	float curtain = fbm(vec2(eyedir.x * 9.0 - TIME * aurora_speed * 0.28, eyedir.z * 2.4 + TIME * aurora_speed * 0.11));
 	float stripes = smoothstep(0.48, 0.86, sweep * 0.65 + curtain * 0.65);
-	float flicker = 0.82 + 0.18 * (sin(TIME * 2.1 + eyedir.x * 18.0) * 0.5 + 0.5);
+	float flicker = 0.94 + 0.06 * (sin(TIME * 0.55 + eyedir.x * 7.0) * 0.5 + 0.5);
 	float hue_shift = sin(TIME * (aurora_speed * 0.72) + eyedir.x * 6.2 + eyedir.z * 3.4) * 0.5 + 0.5;
 	vec3 col_ab = mix(aurora_color_a, aurora_color_b, curtain);
 	vec3 col = mix(col_ab, aurora_color_c, hue_shift * 0.7);
 	float moon_near = smoothstep(1.0 - aurora_moon_exclusion, 1.0, max(dot(eyedir, moon_dir), 0.0));
 	float moon_mask = 1.0 - moon_near;
 	/* Keep aurora colorful without washing out stars/moon. */
-	return col * stripes * height_mask * flicker * moon_mask * night_amt * aurora_intensity * 0.72;
+	float night_gate = smoothstep(0.72, 1.0, night_amt);
+	return col * stripes * height_mask * flicker * moon_mask * night_gate * aurora_intensity * 0.56;
 }
 
 void sky() {

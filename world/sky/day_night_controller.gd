@@ -56,9 +56,12 @@ extends Node3D
 @export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 1.08
 @export var star_density_uv_target: Vector2 = Vector2(365.0, 192.0)
 @export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.018
-@export var milky_way_enabled_target: bool = false
-@export_range(0.0, 2.0, 0.01) var milky_way_intensity_target: float = 0.44
+@export var milky_way_enabled_target: bool = true
+@export_range(0.0, 2.0, 0.01) var milky_way_intensity_target: float = 0.12
+@export_range(0.02, 1.0, 0.01) var milky_way_width_target: float = 0.075
 @export var aurora_enabled_target: bool = true
+@export_range(0.0, 1.0, 0.01) var aurora_band_height_target: float = 0.23
+@export_range(0.01, 0.5, 0.01) var aurora_band_softness_target: float = 0.06
 @export_group("Persistence")
 @export var persist_time_to_game_state: bool = true
 @export var persist_moon_phase_to_game_state: bool = true
@@ -234,22 +237,27 @@ func _apply_time() -> void:
 			_sky_material.set_shader_parameter(&"star_point_size", star_point_size_target)
 			_sky_material.set_shader_parameter(&"milky_way_enabled", milky_way_enabled_target)
 			_sky_material.set_shader_parameter(&"milky_way_intensity", milky_way_intensity_target)
+			_sky_material.set_shader_parameter(&"milky_way_width", milky_way_width_target)
 			_sky_material.set_shader_parameter(&"aurora_enabled", aurora_enabled_target)
+			_sky_material.set_shader_parameter(&"aurora_band_height", aurora_band_height_target)
+			_sky_material.set_shader_parameter(&"aurora_band_softness", aurora_band_softness_target)
 		_sky_material.set_shader_parameter(&"sun_direction", sun_dir)
 		_sky_material.set_shader_parameter(&"moon_direction", moon_dir)
 		_sky_material.set_shader_parameter(&"day_factor", day_f)
 		_sky_material.set_shader_parameter(&"sunset_factor", sunset_f)
 		_sky_material.set_shader_parameter(&"moon_phase", _moon_phase)
+		var night_amt: float = 1.0 - day_f
+		var rim_target: float = 0.0
 		if drive_sky_night_visuals:
-			var night_amt: float = 1.0 - day_f
-			_sky_material.set_shader_parameter(
-				&"moon_rim_strength",
-				lerpf(0.22, sky_moon_rim_night_max, smoothstep(0.18, 0.85, night_amt))
-			)
+			rim_target = sky_moon_rim_night_max
+		_sky_material.set_shader_parameter(
+			&"moon_rim_strength",
+			lerpf(0.0, rim_target, smoothstep(0.12, 0.9, night_amt))
+		)
 		if drive_sky_aurora:
 			_sky_material.set_shader_parameter(
 				&"aurora_intensity",
-				lerpf(aurora_intensity_day, aurora_intensity_night, 1.0 - day_f)
+				lerpf(aurora_intensity_day, aurora_intensity_night, smoothstep(0.52, 1.0, night_amt))
 			)
 
 	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment
