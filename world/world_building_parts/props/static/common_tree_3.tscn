@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://b5plne31xj7wx"]
+
+[ext_resource type="PackedScene" uid="uid://db0gtnge7i8wx" path="res://assets/Ultimate Nature Pack/CommonTree_3.fbx" id="1_f2lh2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tsh4m"]
+albedo_color = Color(0.35, 0.22049999, 0.091, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vf21j"]
+albedo_color = Color(0.24731481, 0.60569036, 0.21749341, 1)
+
+[node name="CommonTree_3" unique_id=316119721 instance=ExtResource("1_f2lh2")]
+
+[node name="CommonTree_3" parent="." index="0" unique_id=1323622432]
+surface_material_override/0 = SubResource("StandardMaterial3D_tsh4m")
+surface_material_override/1 = SubResource("StandardMaterial3D_vf21j")
+surface_material_override/2 = SubResource("StandardMaterial3D_vf21j")

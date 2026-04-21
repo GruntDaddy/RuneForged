@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_p7alv"]
 [ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="2_8o7y3"]
-[ext_resource type="PackedScene" uid="uid://bfva10bln3cs2" path="res://assets/Ultimate Nature Pack/CommonTree_1.fbx" id="3_tw56q"]
+[ext_resource type="PackedScene" uid="uid://bvpa76x046nld" path="res://world/world_building_parts/props/static/common_tree_1.tscn" id="3_atofy"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
 radius = 0.39501953
@@ -26,8 +26,8 @@ resource_display_name = "Regular Logs"
 
 [node name="Visual" type="Node3D" parent="." unique_id=1881988876]
 
-[node name="CommonTree_1" parent="." unique_id=1867653661 instance=ExtResource("3_tw56q")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+[node name="CommonTree_1" parent="." unique_id=1867653661 instance=ExtResource("3_atofy")]
+transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=198457328]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.007387082, 1.5982919, 0.056827944)

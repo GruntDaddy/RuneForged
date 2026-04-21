@@ -203,7 +203,8 @@ void sky() {
 	float moon_dot = max(dot(dir, moon_dir), 0.0);
 	float mw = moon_disk_size * 6.0;
 	float moon_disc = smoothstep(1.0 - mw * 0.52, 1.0 - mw * 0.06, moon_dot);
-	float moon_vis = smoothstep(0.15, 0.85, night_amt + (1.0 - day_factor) * 0.5);
+	/* Fade moon in as the sun gets low; opposite-sun placement keeps it above horizon at dusk. */
+	float moon_vis = smoothstep(0.08, 0.92, night_amt * 0.85 + (1.0 - day_factor) * 0.55);
 
 	vec3 t1 = normalize(cross(moon_dir, vec3(0.0, 1.0, 0.0)));
 	if (length(t1) < 0.08) {

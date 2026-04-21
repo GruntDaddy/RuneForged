@@ -37,7 +37,9 @@ extends Node3D
 @export_range(0.0, 1.0, 0.01) var aurora_intensity_day: float = 0.0
 @export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 0.24
 @export_group("Moon phase")
-@export_range(0.0, 60.0, 0.1) var moon_orbit_offset_deg: float = 22.0
+## Extra yaw (degrees) around world up, applied after placing the moon opposite the sun.
+## Keep near 0 so the moon rises ~when the sun sets; large values break that pairing.
+@export_range(-45.0, 45.0, 0.1) var moon_orbit_offset_deg: float = 0.0
 @export_range(1.0, 60.0, 0.1) var moon_phase_days: float = 12.0
 @export_range(0.0, 1.0, 0.001) var start_moon_phase: float = 0.18
 @export_group("Sky tuning")
@@ -103,9 +105,12 @@ func _sun_direction() -> Vector3:
 
 
 func _moon_direction(sun_dir: Vector3) -> Vector3:
+	# Sky position: opposite the sun so at sunset the moon is on the opposite horizon (full-moon style).
+	var opposite: Vector3 = -sun_dir
+	if absf(moon_orbit_offset_deg) < 0.001:
+		return opposite.normalized()
 	var axis := Vector3(0.0, 1.0, 0.0)
-	var orbit_dir: Vector3 = sun_dir.rotated(axis, deg_to_rad(moon_orbit_offset_deg)).normalized()
-	return orbit_dir
+	return opposite.rotated(axis, deg_to_rad(moon_orbit_offset_deg)).normalized()
 
 
 func _load_persisted_cycle_state() -> void:

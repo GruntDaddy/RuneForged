@@ -1,16 +1,16 @@
-[gd_scene format=4 uid="uid://brgpis0krox5q"]
+[gd_scene format=4 uid="uid://bhw6wtfrxidtu"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/world_building_parts/props/resource_pickup_stone.tscn" id="3_drop"]
-[ext_resource type="Material" uid="uid://c4y6bafohjd1k" path="res://shared/materials/Tin.tres" id="3_tgc43"]
-[ext_resource type="Texture2D" uid="uid://brcfquahc8iug" path="res://assets/kaykit/Forest & Nature Pack/Color1/forest_texture.png" id="4_5b8wt"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_0x4na"]
+[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/world_building_parts/props/resource_pickup_stone.tscn" id="2_0p0pf"]
+[ext_resource type="Material" uid="uid://ca32d1pa2xnx1" path="res://shared/materials/Copper.tres" id="3_qlypa"]
+[ext_resource type="Texture2D" uid="uid://brcfquahc8iug" path="res://assets/kaykit/Forest & Nature Pack/Color1/forest_texture.png" id="4_jtnxb"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
 radius = 0.9917891
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_554h8"]
 resource_name = "forest"
-albedo_texture = ExtResource("4_5b8wt")
+albedo_texture = ExtResource("4_jtnxb")
 roughness = 0.6
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_df34e"]
@@ -49,7 +49,7 @@ shadow_mesh = SubResource("ArrayMesh_df34e")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5d6d7"]
 resource_name = "forest"
-albedo_texture = ExtResource("4_5b8wt")
+albedo_texture = ExtResource("4_jtnxb")
 roughness = 0.6
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_gp8pi"]
@@ -88,7 +88,7 @@ shadow_mesh = SubResource("ArrayMesh_gp8pi")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n1amn"]
 resource_name = "forest"
-albedo_texture = ExtResource("4_5b8wt")
+albedo_texture = ExtResource("4_jtnxb")
 roughness = 0.6
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_xftnp"]
@@ -125,13 +125,13 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_xftnp")
 
-[node name="HarvestableTinRock" type="StaticBody3D" unique_id=1452313793]
+[node name="HarvestableCopperRock" type="StaticBody3D" unique_id=1452313793]
 collision_layer = 2
-script = ExtResource("1_script")
+script = ExtResource("1_0x4na")
 harvest_interaction = 1
 max_hits = 4
 drop_count_max = 1
-drop_scene = ExtResource("3_drop")
+drop_scene = ExtResource("2_0p0pf")
 particle_color = Color(0.71362776, 0.6027814, 0.44419235, 1)
 particle_height = 0.5
 shake_amount = 0.225
@@ -153,25 +153,26 @@ transform = Transform3D(0.9704307, -0.24137995, 0, 0.24137995, 0.9704307, 0, 0, 
 
 [node name="Rock_4_C_Color1" type="MeshInstance3D" parent="Rock_4_C_Color12" unique_id=1649810059]
 transform = Transform3D(0.8945559, -0.10060497, -0.4354875, 0.14548355, 0.9868193, 0.07087313, 0.42261693, -0.12675619, 0.8974006, 0.08596808, -0.021383166, 0)
-material_override = ExtResource("3_tgc43")
+material_override = ExtResource("3_qlypa")
 mesh = SubResource("ArrayMesh_2w5xm")
 
 [node name="Rock_4_C_Color2" type="MeshInstance3D" parent="Rock_4_C_Color12" unique_id=1120627272]
-transform = Transform3D(0.46559465, 0.48742446, 0.73867476, -0.27615285, 0.873004, -0.40200114, -0.8408103, -0.016817536, 0.5410688, 0.54433215, -0.13539433, 0)
-material_override = ExtResource("3_tgc43")
+transform = Transform3D(0.531966, 0.5994741, 0.59803426, -0.3785814, 0.80011714, -0.46528578, -0.7574226, 0.021111453, 0.6525836, 0.19147882, -0.23631924, -0.098855734)
+material_override = ExtResource("3_qlypa")
 mesh = SubResource("ArrayMesh_2w5xm")
 
 [node name="Rock_4_D_Color12" type="Node3D" parent="." unique_id=1988014662]
 transform = Transform3D(0.99999845, 0.0017453133, 0, -0.0017338305, 0.9934193, 0.11452103, 0.0001998751, -0.11452086, 0.99342084, 0.032101154, 0, -0.12092996)
 
 [node name="Rock_4_D_Color1" type="MeshInstance3D" parent="Rock_4_D_Color12" unique_id=1058809181]
-material_override = ExtResource("3_tgc43")
+transform = Transform3D(1, 2.5701604e-05, -0.0002984196, 2.5701724e-05, 0.985274, 0.17098314, 0.00029841956, -0.17098312, 0.98527396, 0, 0, 0)
+material_override = ExtResource("3_qlypa")
 mesh = SubResource("ArrayMesh_nlwq6")
 
 [node name="Rock_4_B_Color12" type="Node3D" parent="." unique_id=1938258677]
 transform = Transform3D(0.9645748, 0.26305443, -0.01994397, -0.26045668, 0.9375763, -0.23046206, -0.04192508, 0.22749244, 0.97287685, 0.16675782, 0, 0.35197604)
 
 [node name="Rock_4_B_Color1" type="MeshInstance3D" parent="Rock_4_B_Color12" unique_id=1863061017]
-transform = Transform3D(0.96225244, -0.25196245, 0.10289381, 0.24796498, 0.9674698, 0.050161913, -0.11218551, -0.02275376, 0.9934275, -0.1816494, 0.11360702, -0.1297893)
-material_override = ExtResource("3_tgc43")
+transform = Transform3D(1.4516335, -0.37222704, 0.0648643, 0.34230316, 1.4046152, 0.39985874, -0.15996498, -0.37216324, 1.4442669, 0.026967987, -0.50745463, 0.024426699)
+material_override = ExtResource("3_qlypa")
 mesh = SubResource("ArrayMesh_qrl1g")

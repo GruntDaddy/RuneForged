@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://d0xxwhogmjfsm"]
+[gd_scene format=3 uid="uid://id52snjl08id"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_5c58a"]
-[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="2_et1gi"]
-[ext_resource type="PackedScene" uid="uid://b5plne31xj7wx" path="res://world/world_building_parts/props/static/common_tree_3.tscn" id="3_3myoa"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_w7n6x"]
+[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="2_mrrks"]
+[ext_resource type="PackedScene" uid="uid://bxeo8svqrs8mi" path="res://world/world_building_parts/props/static/common_tree_5.tscn" id="3_p7alv"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
 radius = 0.4345703
@@ -11,10 +11,10 @@ height = 3.9919217
 [node name="HarvestableTree" type="StaticBody3D" unique_id=106376001]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
 collision_layer = 2
-script = ExtResource("1_5c58a")
+script = ExtResource("1_w7n6x")
 max_hits = 4
 drop_count_max = 1
-drop_scene = ExtResource("2_et1gi")
+drop_scene = ExtResource("2_mrrks")
 particle_color = Color(0.55314887, 0.2896908, 1.92523e-07, 1)
 particle_height = 1.85
 shake_amount = 0.08
@@ -26,8 +26,8 @@ resource_display_name = "Regular Logs"
 
 [node name="Visual" type="Node3D" parent="." unique_id=1881988876]
 
-[node name="CommonTree_3" parent="." unique_id=316119721 instance=ExtResource("3_3myoa")]
-transform = Transform3D(2.25, 0, 0, 0, 2.25, 0, 0, 0, 2.25, 0, 0, 0)
+[node name="CommonTree_5" parent="." unique_id=13243238 instance=ExtResource("3_p7alv")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=198457328]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.007387082, 1.5519179, 0.0016715527)
