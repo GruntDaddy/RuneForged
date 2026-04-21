@@ -40,10 +40,10 @@ extends Node3D
 @export_group("Sky shader (optional)")
 ## When true, boosts moon rim strength toward night so the moon reads better against the dark sky.
 @export var drive_sky_night_visuals: bool = false
-@export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.15
+@export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.25
 @export var drive_sky_aurora: bool = true
 @export_range(0.0, 1.0, 0.01) var aurora_intensity_day: float = 0.0
-@export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 0.05
+@export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 1.420
 @export_group("Moon phase")
 ## Extra yaw (degrees) around world up, applied after placing the moon opposite the sun.
 ## Keep near 0 so the moon rises ~when the sun sets; large values break that pairing.
@@ -52,8 +52,8 @@ extends Node3D
 @export_range(0.0, 1.0, 0.001) var start_moon_phase: float = 0.18
 @export_group("Sky tuning")
 @export var apply_stylized_sky_preset: bool = true
-@export_range(0.001, 0.06, 0.0001) var moon_disk_size_target: float = 0.0005
-@export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 1.08
+@export_range(0.001, 0.06, 0.0001) var moon_disk_size_target: float = 0.0420
+@export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 4.20
 @export var star_density_uv_target: Vector2 = Vector2(365.0, 192.0)
 @export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.018
 @export var milky_way_enabled_target: bool = true
