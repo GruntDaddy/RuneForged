@@ -911,8 +911,9 @@ metadata/_edit_lock_ = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=56234076]
 environment = SubResource("Environment_main")
 
-[node name="DayNightCycle" type="Node3D" parent="." unique_id=439430621]
+[node name="DayNightCycle" type="Node3D" parent="." unique_id=439430621 groups=["day_night_cycle"]]
 script = ExtResource("day_night_script")
+day_length_seconds = 90.0
 moon_light_energy = 0.35
 sun_color_day = Color(0.9999998, 0.96629196, 0.86455643, 1)
 sun_color_sunset = Color(0.96886665, 0.47319543, 5.583167e-06, 1)
@@ -925,11 +926,6 @@ fog_light_color_day = Color(0.6493139, 0.7073591, 0.7282426, 0.972549)
 fog_light_color_sunset = Color(0.78595084, 0.49576896, 0.18296188, 0.93333334)
 fog_light_color_night = Color(0.1167971, 0.13218221, 0.16545644, 1)
 fog_sky_affect_day = 0.5
-drive_sky_night_visuals = true
-aurora_intensity_night = 1.5
-moon_disk_size_target = 0.0085
-star_point_size_target = 0.032
-milky_way_intensity_target = 1.58
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1762949175]
 transform = Transform3D(1, 0, 0, 0, 0.3166757, 0.9485339, 0, -0.9485339, 0.3166757, 0, 10, 12)
@@ -939,6 +935,7 @@ shadow_enabled = true
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 227.04477, 9.845969, 386.97916)
+day_night_controller_path = NodePath("../DayNightCycle")
 
 [node name="Harvestables" type="Node3D" parent="." unique_id=2143866182]
 

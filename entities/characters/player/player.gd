@@ -610,7 +610,7 @@ func _resolve_day_night_controller() -> void:
 		if by_path != null and by_path.has_method(&"set_underwater_fog_override"):
 			_day_night = by_path
 			return
-	var g: Node = get_tree().get_first_node_in_group(&"day_night_cycle")
+	var g: Node = get_tree().get_first_node_in_group("day_night_cycle")
 	if g != null and g.has_method(&"set_underwater_fog_override"):
 		_day_night = g
 
@@ -625,6 +625,6 @@ func _update_underwater_fog(water_level_y: float) -> void:
 	if cam_submerged:
 		var d: float = clampf(water_level_y - cam_y, 0.0, _UNDERWATER_FOG_DEPTH_MAX)
 		var t: float = clampf(d / _UNDERWATER_FOG_DEPTH_MAX, 0.0, 1.0)
-		_day_night.call(&"set_underwater_fog_override", true, t)
+		_day_night.call("set_underwater_fog_override", true, t)
 	else:
-		_day_night.call(&"set_underwater_fog_override", false, 0.0)
+		_day_night.call("set_underwater_fog_override", false, 0.0)

@@ -6,14 +6,14 @@ extends Node3D
 
 const _BoujieWaveHeight = preload("res://world/water/boujie_wave_height.gd")
 
-const _HEIGHT4 := "res://addons/boujie_water_shader/example/boujie_water_shader/height_waves/height4.tres"
-const _HEIGHT2 := "res://addons/boujie_water_shader/example/boujie_water_shader/height_waves/height2.tres"
-const _FOAM1 := "res://addons/boujie_water_shader/example/boujie_water_shader/foam_waves/foam1.tres"
-const _FOAM2 := "res://addons/boujie_water_shader/example/boujie_water_shader/foam_waves/foam2.tres"
-const _FOAM3 := "res://addons/boujie_water_shader/example/boujie_water_shader/foam_waves/foam3.tres"
-const _FOAM4 := "res://addons/boujie_water_shader/example/boujie_water_shader/foam_waves/foam4.tres"
-const _UVW1 := "res://addons/boujie_water_shader/example/boujie_water_shader/uv_waves/uvwave1.tres"
-const _UVW2 := "res://addons/boujie_water_shader/example/boujie_water_shader/uv_waves/uvwave2.tres"
+const _HEIGHT4 := "res://assets/water/boujie/height_waves/height4.tres"
+const _HEIGHT2 := "res://assets/water/boujie/height_waves/height2.tres"
+const _FOAM1 := "res://assets/water/boujie/foam_waves/foam1.tres"
+const _FOAM2 := "res://assets/water/boujie/foam_waves/foam2.tres"
+const _FOAM3 := "res://assets/water/boujie/foam_waves/foam3.tres"
+const _FOAM4 := "res://assets/water/boujie/foam_waves/foam4.tres"
+const _UVW1 := "res://assets/water/boujie/uv_waves/uvwave1.tres"
+const _UVW2 := "res://assets/water/boujie/uv_waves/uvwave2.tres"
 
 @export var water_level: float = 1.0:
 	set(value):

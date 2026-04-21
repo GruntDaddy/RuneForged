@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dgl5tq4lmknbr"]
 
-[ext_resource type="Script" path="res://ui/gameplay_toast.gd" id="1_toast"]
+[ext_resource type="Script" path="res://ui/hud/gameplay_toast.gd" id="1_toast"]
 
 [node name="GameplayToast" type="CanvasLayer"]
 layer = 35
