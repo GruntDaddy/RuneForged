@@ -17,6 +17,11 @@ const _MAX_TREE_PATCHES := 48
 func _ready() -> void:
 	_apply_sea_level()
 	_push_tree_dirt_patches()
+	if Engine.is_editor_hint() and _terrain != null and _terrain.vertex_spacing > 1.0:
+		push_warning(
+			"Terrain3D paint samples on a grid stepped by vertex_spacing (%.1f m here) — large spacing looks blocky. " % _terrain.vertex_spacing
+			+ "Use ≤0.5 for detail. Paint Texture (B) REPLACE ignores strength (full swap per vertex when brush hits); use Spray (V) for gradual blends."
+		)
 
 
 func _apply_sea_level() -> void:
