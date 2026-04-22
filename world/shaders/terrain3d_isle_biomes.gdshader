@@ -72,6 +72,15 @@ uniform float rock_steep_end = 0.36;
 uniform float snow_height_start_m = 18.0;
 uniform float snow_height_full_m = 28.0;
 uniform float snow_rock_suppression : hint_range(0.0, 1.0) = 0.85;
+// Noise steals weight from grass → dirt (inland); avoids relying on spray paint for variation.
+uniform float grass_dirt_variation : hint_range(0.0, 1.0) = 0.4;
+uniform float grass_dirt_noise_scale = 0.052;
+// World XZ patches (xy), radius z (m), strength w — filled by script (e.g. tree trunks).
+uniform int tree_dirt_patch_count : hint_range(0, 48) = 0;
+uniform vec4 tree_dirt_patches[48];
+uniform float tree_dirt_grass_mul : hint_range(0.0, 1.5) = 0.9;
+// Island path if at least this many of the 4 bilinear corners are still “auto” (helps soft brushes).
+uniform int island_path_min_auto_corners : hint_range(1, 4) = 3;
 
 uniform bool enable_macro_variation = true;
 uniform vec3 macro_variation1 : source_color = vec3(1.);
@@ -277,9 +286,10 @@ void fragment() {
 		);
 
 		uvec4 is_auto = (control & uvec4(0x1u)) | uvec4(uint(region_uv.z < 0.0));
-		bool all_corners_auto = (is_auto.x > 0u && is_auto.y > 0u && is_auto.z > 0u && is_auto.w > 0u);
+		uint auto_n = uint(is_auto.x > 0u) + uint(is_auto.y > 0u) + uint(is_auto.z > 0u) + uint(is_auto.w > 0u);
+		bool island_path = use_island_autoshader && int(auto_n) >= island_path_min_auto_corners;
 
-		if (use_island_autoshader && all_corners_auto) {
+		if (island_path) {
 			float h_agl = v_vertex.y - sea_level_y;
 			float steep = max(0.0, 1.0 - v_normal.y);
 			float rock_w = smoothstep(rock_steep_start, rock_steep_end, steep);
@@ -298,6 +308,26 @@ void fragment() {
 			float grass_f = open_w * lowland_grass;
 
 			vec2 uv_s = uv * _vertex_spacing;
+			// Break up uniform grass: steal weight to dirt using macro noise (smooth, not paint-sized blocks).
+			float n_coarse = texture(noise_texture, uv_s * grass_dirt_noise_scale + noise1_offset).r;
+			float n_fine = texture(noise_texture, uv_s * grass_dirt_noise_scale * 2.65 + noise1_offset + vec2(0.41, 0.17)).r;
+			float patch = smoothstep(0.38, 0.9, sqrt(max(0.0, n_coarse * n_fine)));
+			float steal_noise = patch * grass_dirt_variation * grass_f;
+			dirt_f += steal_noise;
+			grass_f = max(grass_f - steal_noise, 0.0);
+			// Extra dirt at tree bases (positions pushed from GDScript).
+			float tree_mask = 0.0;
+			for (int ti = 0; ti < 48; ti++) {
+				if (ti < tree_dirt_patch_count) {
+					vec4 tp = tree_dirt_patches[ti];
+					float d = distance(v_vertex.xz, tp.xy);
+					tree_mask = max(tree_mask, (1.0 - smoothstep(tp.z * 0.22, tp.z, d)) * tp.w);
+				}
+			}
+			float steal_tree = tree_mask * tree_dirt_grass_mul * grass_f;
+			dirt_f += steal_tree;
+			grass_f = max(grass_f - steal_tree, 0.0);
+
 			vec4 nrm_acc = vec4(0.0, 1.0, 0.0, 1.0);
 
 			for (int k = 0; k < 5; k++) {
