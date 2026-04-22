@@ -79,8 +79,6 @@ uniform float grass_dirt_noise_scale = 0.052;
 uniform int tree_dirt_patch_count : hint_range(0, 48) = 0;
 uniform vec4 tree_dirt_patches[48];
 uniform float tree_dirt_grass_mul : hint_range(0.0, 1.5) = 0.9;
-// Island path if at least this many of the 4 bilinear corners are still “auto” (helps soft brushes).
-uniform int island_path_min_auto_corners : hint_range(1, 4) = 3;
 
 uniform bool enable_macro_variation = true;
 uniform vec3 macro_variation1 : source_color = vec3(1.);
@@ -287,7 +285,10 @@ void fragment() {
 
 		uvec4 is_auto = (control & uvec4(0x1u)) | uvec4(uint(region_uv.z < 0.0));
 		uint auto_n = uint(is_auto.x > 0u) + uint(is_auto.y > 0u) + uint(is_auto.z > 0u) + uint(is_auto.w > 0u);
-		bool island_path = use_island_autoshader && int(auto_n) >= island_path_min_auto_corners;
+		// Procedural island only when all four bilinear corners are still “auto”. If any corner was
+		// texture-painted, use the control-map path only — otherwise painted dirt gets overridden by
+		// height rules (e.g. sand) and looks like random “plops”.
+		bool island_path = use_island_autoshader && auto_n == 4u;
 
 		if (island_path) {
 			float h_agl = v_vertex.y - sea_level_y;
