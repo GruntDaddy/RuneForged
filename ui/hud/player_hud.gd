@@ -6,6 +6,7 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 @onready var _stamina_bar: ProgressBar = $Root/TopLeft/Margin/VBox/StaminaRow/ProgressBar
 @onready var _health_val: Label = $Root/TopLeft/Margin/VBox/HealthRow/ValueLabel
 @onready var _stamina_val: Label = $Root/TopLeft/Margin/VBox/StaminaRow/ValueLabel
+@onready var _hud_root: Control = $Root
 
 var _hotbar_panels: Array[Panel] = []
 var _hotbar_labels: Array[Label] = []
@@ -20,7 +21,7 @@ const _HOT_TOOLS: Array[int] = [
 
 func _ready() -> void:
 	layer = 5
-	$Root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for path in ["Slot0", "Slot1", "Slot2", "Slot3"]:
 		var p: Panel = $Root/Hotbar/Margin/HBox.get_node(path) as Panel
 		_hotbar_panels.append(p)
