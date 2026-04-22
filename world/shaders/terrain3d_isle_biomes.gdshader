@@ -35,6 +35,7 @@ uniform float _texture_normal_depth_array[32];
 uniform float _texture_ao_strength_array[32];
 uniform float _texture_roughness_mod_array[32];
 uniform float _texture_uv_scale_array[32];
+uniform vec2 _texture_detile_array[32];
 uniform vec4 _texture_color_array[32];
 uniform highp sampler2DArray _height_maps : repeat_disable;
 uniform highp sampler2DArray _control_maps : repeat_disable;
@@ -156,6 +157,76 @@ mat2 rotate_plane(float angle) {
 	return mat2(vec2(c, s), vec2(-s, c));
 }
 
+float t3d_hash(vec2 xy) {
+	return fract(sin(dot(xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec2 t3d_rot_vec2(vec2 v, vec2 cs) {
+	return vec2(fma(cs.x, v.x, cs.y * v.y), fma(cs.x, v.y, -cs.y * v.x));
+}
+
+void t3d_sample_detiled(
+		int id,
+		vec2 uv_s,
+		vec4 base_dd,
+		float kw,
+		float sharpness,
+		mat3 p_tbn,
+		vec3 p_vn,
+		inout vec4 io_albedo_height,
+		inout vec4 io_normal_rough,
+		inout float io_normal_map_depth,
+		inout float io_ao_strength,
+		inout float io_total_weight,
+		inout vec4 io_nrm_acc) {
+	float s = _texture_uv_scale_array[id];
+	float sh = s * 0.5;
+	vec2 cs_coord = fma(uv_s, vec2(s), vec2(0.5));
+	vec2 cell = floor(cs_coord);
+	vec2 f = fract(cs_coord);
+	vec2 u0 = fma(uv_s, vec2(sh), vec2(0.5));
+	vec2 det = _texture_detile_array[id];
+	// Bilinear blend of corner hashes so rotation/shift don't jump at tile edges (avoids square grid).
+	float r00 = t3d_hash(cell);
+	float r10 = t3d_hash(cell + vec2(1.0, 0.0));
+	float r01 = t3d_hash(cell + vec2(0.0, 1.0));
+	float r11 = t3d_hash(cell + vec2(1.0, 1.0));
+	float rb = mix(mix(r00, r10, f.x), mix(r01, r11, f.x), f.y);
+	vec2 hoff = vec2(17.19, 23.71);
+	float s00 = t3d_hash(cell + hoff);
+	float s10 = t3d_hash(cell + vec2(1.0, 0.0) + hoff);
+	float s01 = t3d_hash(cell + vec2(0.0, 1.0) + hoff);
+	float s11 = t3d_hash(cell + vec2(1.0, 1.0) + hoff);
+	float sb = mix(mix(s00, s10, f.x), mix(s01, s11, f.x), f.y);
+	float ang_full = fma(rb, 2.0, -1.0) * det.x * 6.28318530718;
+	float shf_full = fma(sb, 2.0, -1.0) * det.y * 6.28318530718;
+	// Fade detiling near cell borders → UV matches undetiled u0 on seams (removes visible squares).
+	float edge = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
+	float detile_w = smoothstep(0.0, 0.16, edge);
+	float ang = ang_full * detile_w;
+	float shf = shf_full * detile_w;
+	vec2 cs = vec2(cos(ang), sin(ang));
+	vec2 center_uv = fma(cell, vec2(sh), vec2(0.5));
+	vec2 id_uv = t3d_rot_vec2(u0 - center_uv, cs) + center_uv + vec2(shf * sh * 0.06);
+	vec4 i_dd;
+	i_dd.xy = t3d_rot_vec2(base_dd.xy * sh, cs);
+	i_dd.zw = t3d_rot_vec2(base_dd.zw * sh, cs);
+	vec4 alb = textureGrad(_texture_array_albedo, vec3(id_uv, float(id)), i_dd.xy, i_dd.zw);
+	float world_normal = clamp(fma(p_tbn[0], vec3(io_nrm_acc.x), fma(p_tbn[1], vec3(io_nrm_acc.z), p_vn * vec3(io_nrm_acc.y))).y, 0., 1.);
+	vec4 nrm = textureGrad(_texture_array_normal, vec3(id_uv, float(id)), i_dd.xy, i_dd.zw);
+	alb.rgb *= _texture_color_array[id].rgb;
+	nrm.a = clamp(nrm.a + _texture_roughness_mod_array[id], 0., 1.);
+	nrm.xyz = fma(nrm.xzy, vec3(2.0), vec3(-1.0));
+	nrm.xz = t3d_rot_vec2(nrm.xz, cs);
+	float id_weight = exp2(sharpness * log2(kw + alb.a * world_normal));
+	io_albedo_height += alb * id_weight;
+	io_normal_rough += nrm * id_weight;
+	io_normal_map_depth += _texture_normal_depth_array[id] * id_weight;
+	io_ao_strength += _texture_ao_strength_array[id] * id_weight;
+	io_total_weight += id_weight;
+	io_nrm_acc = nrm;
+}
+
 void fragment() {
 	vec2 uv = UV;
 	vec2 uv2 = UV2;
@@ -235,21 +306,7 @@ void fragment() {
 					continue;
 				}
 				int id = k == 0 ? sand_texture_id : k == 1 ? dirt_texture_id : k == 2 ? grass_texture_id : k == 3 ? rock_texture_id : snow_texture_id;
-				float id_scale = _texture_uv_scale_array[id] * 0.5;
-				vec2 id_uv = fma(uv_s, vec2(id_scale), vec2(0.5));
-				vec4 i_dd = base_dd * id_scale;
-				vec4 alb = textureGrad(_texture_array_albedo, vec3(id_uv, float(id)), i_dd.xy, i_dd.zw);
-				float world_normal = clamp(fma(TBN[0], vec3(nrm_acc.x), fma(TBN[1], vec3(nrm_acc.z), v_normal * vec3(nrm_acc.y))).y, 0., 1.);
-				nrm_acc = textureGrad(_texture_array_normal, vec3(id_uv, float(id)), i_dd.xy, i_dd.zw);
-				alb.rgb *= _texture_color_array[id].rgb;
-				nrm_acc.a = clamp(nrm_acc.a + _texture_roughness_mod_array[id], 0., 1.);
-				nrm_acc.xyz = fma(nrm_acc.xzy, vec3(2.0), vec3(-1.0));
-				float id_weight = exp2(sharpness * log2(kw + alb.a * world_normal));
-				albedo_height += alb * id_weight;
-				normal_rough += nrm_acc * id_weight;
-				normal_map_depth += _texture_normal_depth_array[id] * id_weight;
-				ao_strength += _texture_ao_strength_array[id] * id_weight;
-				total_weight += id_weight;
+				t3d_sample_detiled(id, uv_s, base_dd, kw, sharpness, TBN, v_normal, albedo_height, normal_rough, normal_map_depth, ao_strength, total_weight, nrm_acc);
 			}
 			float weight_inv = 1.0 / total_weight;
 			albedo_height *= weight_inv;
@@ -297,21 +354,7 @@ void fragment() {
 					if ((id_read & mask) == 0u) {
 						id_read |= mask;
 						float id_w = t_weights[i][t];
-						float id_scale = _texture_uv_scale_array[id] * 0.5;
-						vec2 id_uv = fma(uv, vec2(id_scale), vec2(0.5));
-						vec4 i_dd = base_dd * id_scale;
-						vec4 alb = textureGrad(_texture_array_albedo, vec3(id_uv, float(id)), i_dd.xy, i_dd.zw);
-						float world_normal = clamp(fma(TBN[0], vec3(nrm.x), fma(TBN[1], vec3(nrm.z), v_normal * vec3(nrm.y))).y, 0., 1.);
-						nrm = textureGrad(_texture_array_normal, vec3(id_uv, float(id)), i_dd.xy, i_dd.zw);
-						alb.rgb *= _texture_color_array[id].rgb;
-						nrm.a = clamp(nrm.a + _texture_roughness_mod_array[id], 0., 1.);
-						nrm.xyz = fma(nrm.xzy, vec3(2.0), vec3(-1.0));
-						float id_weight = exp2(sharpness * log2(id_w + alb.a * world_normal));
-						albedo_height += alb * id_weight;
-						normal_rough += nrm * id_weight;
-						normal_map_depth += _texture_normal_depth_array[id] * id_weight;
-						ao_strength += _texture_ao_strength_array[id] * id_weight;
-						total_weight += id_weight;
+						t3d_sample_detiled(id, uv, base_dd, id_w, sharpness, TBN, v_normal, albedo_height, normal_rough, normal_map_depth, ao_strength, total_weight, nrm);
 					}
 				}
 			}
