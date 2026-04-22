@@ -53,7 +53,7 @@ extends Node3D
 @export_group("Sky tuning")
 @export var apply_stylized_sky_preset: bool = true
 ## ~60% of sun angular width when sun_disk_size ≈ 0.00225 (see `rune_sky.gdshader`).
-@export_range(0.0005, 0.06, 0.0001) var moon_disk_size_target: float = 0.00395
+@export_range(0.0005, 0.06, 0.0001) var moon_disk_size_target: float = 0.00420
 @export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 5.15
 @export var star_density_uv_target: Vector2 = Vector2(480.0, 265.0)
 @export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.0115
