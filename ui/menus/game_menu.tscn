@@ -75,7 +75,7 @@ size_flags_vertical = 0
 mouse_filter = 2
 texture = ExtResource("2_divider")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 0
 
 [node name="Body" type="HBoxContainer" parent="Center/BookPanel/InnerMargin/MainVBox"]
 layout_mode = 2
