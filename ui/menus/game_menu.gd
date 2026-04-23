@@ -42,6 +42,13 @@ const _EQUIP_ORDER: PackedStringArray = [
 var _tab_buttons: Array[Button] = []
 var _pages: Array[Control] = []
 var _current_tab: int = 0
+var _page_flipping: bool = false
+var _page_flip_tween: Tween
+var _pending_tab: int = -1
+
+## Half of the journal "page" flip: out (spine) + in. Total ~0.3s — between a soft fade and a long curl.
+const _FLIP_OUT_SEC := 0.14
+const _FLIP_IN_SEC := 0.17
 
 var _inv_grid: GridContainer
 var _inv_slots: Array[Panel] = []
@@ -72,6 +79,7 @@ func _ready() -> void:
 	_style_book_panel()
 	_build_tabs()
 	_build_pages()
+	call_deferred("_ensure_all_page_pivots")
 	_drag_preview.visible = false
 	_drag_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_drag_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
@@ -107,7 +115,7 @@ func open_menu(tab_idx: int = 0) -> void:
 	_was_mouse_captured = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	visible = true
-	_set_tab(clampi(tab_idx, 0, _TAB_NAMES.size() - 1))
+	_set_tab_instant(clampi(tab_idx, 0, _TAB_NAMES.size() - 1))
 	_play_open_anim()
 	_refresh_inv_grid()
 	_refresh_equip_slots()
@@ -119,6 +127,8 @@ func open_menu(tab_idx: int = 0) -> void:
 func close_menu() -> void:
 	_close_tackle_window()
 	_cancel_drag()
+	_kill_page_flip_tween()
+	_set_tab_instant(_get_selected_tab_index())
 	var tw := create_tween()
 	tw.tween_property(_book, "scale", Vector2(0.92, 0.92), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.parallel().tween_property(_book, "modulate:a", 0.0, 0.1)
@@ -229,7 +239,8 @@ func _build_pages() -> void:
 				_build_crafting_page(page)
 			6:
 				_build_building_page(page)
-	_set_tab(0)
+		_connect_page_resize(page)
+	_set_tab_instant(0)
 
 
 func _build_character_page(page: Control) -> void:
@@ -487,16 +498,129 @@ func _build_building_page(page: Control) -> void:
 	vb.add_child(body)
 
 
-func _set_tab(idx: int) -> void:
+func _set_tab_instant(idx: int) -> void:
+	_kill_page_flip_tween()
+	_page_flipping = false
+	_pending_tab = -1
+	if _tab_buttons.is_empty():
+		return
+	idx = clampi(idx, 0, _tab_buttons.size() - 1)
 	_current_tab = idx
 	for i in _tab_buttons.size():
 		_tab_buttons[i].set_pressed_no_signal(i == idx)
 	for i in _pages.size():
-		_pages[i].visible = (i == idx)
+		var p: Control = _pages[i]
+		p.visible = (i == idx)
+		p.scale = Vector2.ONE
+		p.modulate = Color.WHITE
+		_ensure_page_pivot(p)
+
+
+func _get_selected_tab_index() -> int:
+	for i in _tab_buttons.size():
+		if _tab_buttons[i].button_pressed:
+			return i
+	return _current_tab
+
+
+func _ensure_page_pivot(p: Control) -> void:
+	p.pivot_offset = Vector2(0.0, p.size.y * 0.5)
+
+
+func _connect_page_resize(page: Control) -> void:
+	page.resized.connect(_on_book_page_resized.bind(page))
+
+
+func _on_book_page_resized(page: Control) -> void:
+	_ensure_page_pivot(page)
+
+
+func _ensure_all_page_pivots() -> void:
+	for p in _pages:
+		_ensure_page_pivot(p)
+
+
+func _kill_page_flip_tween() -> void:
+	if _page_flip_tween != null and is_instance_valid(_page_flip_tween):
+		_page_flip_tween.kill()
+	_page_flip_tween = null
 
 
 func _on_tab_pressed(idx: int) -> void:
-	_set_tab(idx)
+	idx = clampi(idx, 0, _tab_buttons.size() - 1)
+	if _page_flipping:
+		_pending_tab = idx
+		for i in _tab_buttons.size():
+			_tab_buttons[i].set_pressed_no_signal(i == idx)
+		return
+	if idx == _current_tab:
+		return
+	for i in _tab_buttons.size():
+		_tab_buttons[i].set_pressed_no_signal(i == idx)
+	_begin_page_flip_to(idx)
+
+
+func _swap_book_page(old_idx: int, new_idx: int) -> void:
+	var out_p: Control = _pages[old_idx]
+	var in_p: Control = _pages[new_idx]
+	out_p.visible = false
+	out_p.scale = Vector2.ONE
+	out_p.modulate = Color.WHITE
+	_current_tab = new_idx
+	_ensure_page_pivot(in_p)
+	in_p.visible = true
+	in_p.scale = Vector2(0.0, 1.0)
+	in_p.modulate = Color(0.92, 0.9, 0.86, 0.78)
+
+
+func _on_page_flip_chain_finished() -> void:
+	_page_flipping = false
+	_page_flip_tween = null
+	if _current_tab < _pages.size():
+		var p: Control = _pages[_current_tab]
+		p.scale = Vector2.ONE
+		p.modulate = Color.WHITE
+	var next: int = _pending_tab
+	_pending_tab = -1
+	if next >= 0 and next != _current_tab:
+		for i in _tab_buttons.size():
+			_tab_buttons[i].set_pressed_no_signal(i == next)
+		_begin_page_flip_to(next)
+
+
+func _begin_page_flip_to(new_idx: int) -> void:
+	new_idx = clampi(new_idx, 0, _pages.size() - 1)
+	var old_idx: int = _current_tab
+	if old_idx == new_idx:
+		_page_flipping = false
+		return
+	_page_flipping = true
+	_kill_page_flip_tween()
+	var out_page: Control = _pages[old_idx]
+	var in_page: Control = _pages[new_idx]
+	_ensure_page_pivot(out_page)
+	_ensure_page_pivot(in_page)
+	for i in _pages.size():
+		_pages[i].visible = (i == old_idx)
+		if i == old_idx:
+			_pages[i].scale = Vector2.ONE
+			_pages[i].modulate = Color.WHITE
+	out_page.visible = true
+	# in_page stays hidden until _swap_book_page; others already not visible
+	var tw: Tween = create_tween()
+	_page_flip_tween = tw
+	tw.tween_property(out_page, "scale", Vector2(0.0, 1.0), _FLIP_OUT_SEC).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_IN
+	)
+	tw.parallel().tween_property(
+		out_page, "modulate", Color(0.78, 0.74, 0.68, 0.72), _FLIP_OUT_SEC
+	)
+	tw.tween_callback(_swap_book_page.bind(old_idx, new_idx))
+	tw.tween_property(in_page, "scale", Vector2(1.0, 1.0), _FLIP_IN_SEC).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
+	)
+	tw.parallel().tween_property(in_page, "modulate", Color(1, 1, 1, 1), _FLIP_IN_SEC)
+	tw.finished.connect(_on_page_flip_chain_finished, CONNECT_ONE_SHOT)
 
 
 func _refresh_inv_grid() -> void:
