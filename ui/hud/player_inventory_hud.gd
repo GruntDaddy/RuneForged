@@ -23,7 +23,7 @@ var _tackle_bait_labels: Array[Label] = []
 
 
 func _style_main_panel() -> void:
-	var path := "res://assets/ui/UI Borders/PNG/Double/Panel/panel-000.png"
+	var path := "res://assets/Fantasy RPG UI/Individual files/2x/Background boxes/BGbox_06A.png"
 	if not ResourceLoader.exists(path):
 		var flat := StyleBoxFlat.new()
 		flat.bg_color = Color(0.06, 0.05, 0.04, 0.94)
@@ -39,10 +39,11 @@ func _style_main_panel() -> void:
 	var tex: Texture2D = load(path)
 	var sb := StyleBoxTexture.new()
 	sb.texture = tex
-	sb.texture_margin_left = 14
-	sb.texture_margin_top = 14
-	sb.texture_margin_right = 14
-	sb.texture_margin_bottom = 14
+	var m := 44
+	sb.texture_margin_left = m
+	sb.texture_margin_top = m
+	sb.texture_margin_right = m
+	sb.texture_margin_bottom = m
 	_panel.add_theme_stylebox_override("panel", sb)
 
 

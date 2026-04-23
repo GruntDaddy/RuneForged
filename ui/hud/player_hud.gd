@@ -2,6 +2,8 @@ extends CanvasLayer
 
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 
+const _BTN_PANEL := "res://assets/Fantasy RPG UI/Individual files/2x/Buttons/Button_01A_Normal.png"
+
 @onready var _health_bar: ProgressBar = $Root/TopLeft/Margin/VBox/HealthRow/ProgressBar
 @onready var _stamina_bar: ProgressBar = $Root/TopLeft/Margin/VBox/StaminaRow/ProgressBar
 @onready var _health_val: Label = $Root/TopLeft/Margin/VBox/HealthRow/ValueLabel
@@ -27,6 +29,55 @@ func _ready() -> void:
 		_hotbar_panels.append(p)
 		_hotbar_labels.append(p.get_node("VBox/Name") as Label)
 	_style_bars()
+	_wire_journal_ribbon()
+	_style_journal_ribbon()
+
+
+func _game_menu() -> GameMenu:
+	var pl: Node = get_parent()
+	if pl == null:
+		return null
+	return pl.get_node_or_null("GameMenu") as GameMenu
+
+
+func _wire_journal_ribbon() -> void:
+	var row: HBoxContainer = $Root/JournalRibbon/Margin/VBox/BtnRow
+	(row.get_node("BtnJournal") as Button).pressed.connect(func(): _open_journal_tab(0))
+	(row.get_node("BtnSkills") as Button).pressed.connect(func(): _open_journal_tab(1))
+	(row.get_node("BtnQuests") as Button).pressed.connect(func(): _open_journal_tab(2))
+	(row.get_node("BtnCraft") as Button).pressed.connect(func(): _open_journal_tab(5))
+
+
+func _open_journal_tab(tab_idx: int) -> void:
+	var gm: GameMenu = _game_menu()
+	if gm:
+		gm.open_menu(tab_idx)
+
+
+func _style_journal_ribbon() -> void:
+	if not ResourceLoader.exists(_BTN_PANEL):
+		return
+	var tex: Texture2D = load(_BTN_PANEL) as Texture2D
+	var m := 18
+	var row: HBoxContainer = $Root/JournalRibbon/Margin/VBox/BtnRow
+	for b in row.get_children():
+		if b is Button:
+			var sb := StyleBoxTexture.new()
+			sb.texture = tex
+			sb.texture_margin_left = m
+			sb.texture_margin_top = m
+			sb.texture_margin_right = m
+			sb.texture_margin_bottom = m
+			var btn := b as Button
+			btn.add_theme_stylebox_override("normal", sb)
+			btn.add_theme_stylebox_override("hover", sb)
+			btn.add_theme_stylebox_override("pressed", sb)
+			btn.add_theme_color_override("font_color", Color(0.9, 0.84, 0.68, 1))
+			btn.add_theme_font_size_override("font_size", 14)
+			btn.add_theme_constant_override("content_margin_left", 10)
+			btn.add_theme_constant_override("content_margin_right", 10)
+			btn.add_theme_constant_override("content_margin_top", 4)
+			btn.add_theme_constant_override("content_margin_bottom", 4)
 
 
 func _style_bars() -> void:
