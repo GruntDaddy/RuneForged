@@ -29,10 +29,28 @@ const _EQUIP_ORDER: PackedStringArray = [
 	"off_hand",
 ]
 
+const _UI_ROOT := "res://assets/ui/UI Borders/PNG/Double/Panel/"
+const _PANEL_BOOK := _UI_ROOT + "panel-000.png"
+const _PANEL_TAB_IDLE := _UI_ROOT + "panel-002.png"
+const _PANEL_TAB_ACTIVE := _UI_ROOT + "panel-006.png"
+const _PANEL_INNER := _UI_ROOT + "panel-004.png"
+const _PANEL_SLOT := _UI_ROOT + "panel-003.png"
+const _SB_OUTER: int = 16
+const _SB_TAB: int = 10
+const _SB_INNER: int = 9
+const _SB_SLOT: int = 7
+
+## Parchment / ink palette for the journal
+const _COL_INK := Color(0.9, 0.84, 0.7, 1.0)
+const _COL_INK_MUTED := Color(0.68, 0.62, 0.54, 1.0)
+const _COL_TITLE := Color(0.96, 0.88, 0.55, 1.0)
+
+var _ui_tex: Dictionary = {}  ## String -> Texture2D
+
 @onready var _backdrop: ColorRect = $Backdrop
 @onready var _book: PanelContainer = $Center/BookPanel
-@onready var _tab_column: VBoxContainer = $Center/BookPanel/MainVBox/Body/TabColumn
-@onready var _page_host: Control = $Center/BookPanel/MainVBox/Body/PageHost
+@onready var _tab_column: VBoxContainer = $Center/BookPanel/InnerMargin/MainVBox/Body/TabColumn
+@onready var _page_host: Control = $Center/BookPanel/InnerMargin/MainVBox/Body/PageHost
 @onready var _drag_preview: Panel = $DragPreview
 @onready var _drag_icon: TextureRect = $DragPreview/Margin/VBox/IconTexture
 @onready var _drag_fallback: Label = $DragPreview/Margin/VBox/IconFallback
@@ -85,6 +103,7 @@ func _ready() -> void:
 	_drag_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	_backdrop.gui_input.connect(_on_backdrop_gui_input)
 	InventoryService.inventory_changed.connect(_on_inventory_changed)
+	_style_drag_preview()
 	_on_inventory_changed()
 
 
@@ -178,28 +197,123 @@ func _unhandled_input(event: InputEvent) -> void:
 			_finish_drag_at(event.global_position)
 
 
-func _style_book_panel() -> void:
-	var path := "res://assets/ui/UI Borders/PNG/Double/Panel/panel-000.png"
-	if not ResourceLoader.exists(path):
-		var flat := StyleBoxFlat.new()
-		flat.bg_color = Color(0.06, 0.05, 0.04, 0.94)
-		flat.border_color = Color(0.65, 0.52, 0.3, 1.0)
-		flat.set_border_width_all(3)
-		flat.set_corner_radius_all(6)
-		flat.content_margin_left = 14
-		flat.content_margin_top = 12
-		flat.content_margin_right = 14
-		flat.content_margin_bottom = 14
-		_book.add_theme_stylebox_override("panel", flat)
-		return
-	var tex: Texture2D = load(path)
+func _get_ui_tex(path: String) -> Texture2D:
+	if not _ui_tex.has(path) and ResourceLoader.exists(path):
+		_ui_tex[path] = load(path) as Texture2D
+	if _ui_tex.has(path):
+		return _ui_tex[path]
+	return null
+
+
+func _make_stylebox_texture(path: String, m: int) -> StyleBoxTexture:
+	var t: Texture2D = _get_ui_tex(path)
 	var sb := StyleBoxTexture.new()
-	sb.texture = tex
-	sb.texture_margin_left = 14
-	sb.texture_margin_top = 14
-	sb.texture_margin_right = 14
-	sb.texture_margin_bottom = 14
+	if t != null:
+		sb.texture = t
+		sb.texture_margin_left = m
+		sb.texture_margin_top = m
+		sb.texture_margin_right = m
+		sb.texture_margin_bottom = m
+	return sb
+
+
+func _stylebook_flat_for_book() -> void:
+	var flat := StyleBoxFlat.new()
+	flat.bg_color = Color(0.05, 0.04, 0.03, 0.96)
+	flat.border_color = Color(0.62, 0.5, 0.3, 1.0)
+	flat.set_border_width_all(3)
+	flat.set_corner_radius_all(6)
+	flat.set_content_margin_all(20)
+	_book.add_theme_stylebox_override("panel", flat)
+
+
+func _style_book_panel() -> void:
+	if not ResourceLoader.exists(_PANEL_BOOK):
+		_stylebook_flat_for_book()
+		return
+	var sb := _make_stylebox_texture(_PANEL_BOOK, _SB_OUTER)
+	if sb.texture == null:
+		_stylebook_flat_for_book()
+		return
 	_book.add_theme_stylebox_override("panel", sb)
+
+
+func _style_drag_preview() -> void:
+	if not ResourceLoader.exists(_PANEL_SLOT):
+		return
+	_drag_preview.add_theme_stylebox_override("panel", _make_stylebox_texture(_PANEL_SLOT, 8))
+	_drag_name.add_theme_color_override("font_color", _COL_INK)
+	_drag_count.add_theme_color_override("font_color", _COL_INK)
+
+
+func _apply_inner_card_style(p: PanelContainer) -> void:
+	if ResourceLoader.exists(_PANEL_INNER):
+		p.add_theme_stylebox_override("panel", _make_stylebox_texture(_PANEL_INNER, _SB_INNER))
+	else:
+		var flat := StyleBoxFlat.new()
+		flat.bg_color = Color(0.1, 0.09, 0.07, 0.5)
+		flat.border_color = Color(0.5, 0.42, 0.25, 0.65)
+		flat.set_border_width_all(2)
+		flat.set_corner_radius_all(4)
+		flat.set_content_margin_all(8)
+		p.add_theme_stylebox_override("panel", flat)
+
+
+func _apply_section_title(l: Label) -> void:
+	l.add_theme_color_override("font_color", _COL_TITLE)
+	l.add_theme_font_size_override("font_size", 19)
+
+
+func _apply_body_label(l: Label, font_size: int = 12) -> void:
+	l.add_theme_color_override("font_color", _COL_INK)
+	l.add_theme_font_size_override("font_size", font_size)
+
+
+func _style_tab_button(b: Button) -> void:
+	var path: String = _PANEL_TAB_ACTIVE if b.button_pressed else _PANEL_TAB_IDLE
+	if not ResourceLoader.exists(path):
+		return
+	var sb := _make_stylebox_texture(path, _SB_TAB)
+	if sb.texture == null:
+		return
+	b.add_theme_stylebox_override("normal", sb)
+	b.add_theme_stylebox_override("hover", sb)
+	b.add_theme_stylebox_override("pressed", sb)
+	if b.button_pressed:
+		b.add_theme_color_override("font_color", _COL_TITLE)
+		b.add_theme_color_override("font_focus_color", _COL_TITLE)
+	else:
+		b.add_theme_color_override("font_color", _COL_INK)
+		b.add_theme_color_override("font_focus_color", _COL_INK)
+	b.add_theme_font_size_override("font_size", 15)
+	b.add_theme_constant_override("content_margin_left", 12)
+	b.add_theme_constant_override("content_margin_right", 8)
+	b.add_theme_constant_override("content_margin_top", 5)
+	b.add_theme_constant_override("content_margin_bottom", 5)
+
+
+func _refresh_tab_styles() -> void:
+	for b in _tab_buttons:
+		_style_tab_button(b)
+
+
+func _style_generic_journal_button(b: BaseButton) -> void:
+	if not ResourceLoader.exists(_PANEL_TAB_IDLE):
+		return
+	var sb := _make_stylebox_texture(_PANEL_TAB_IDLE, 9)
+	if sb.texture == null:
+		return
+	b.add_theme_stylebox_override("normal", sb)
+	b.add_theme_stylebox_override("hover", sb)
+	b.add_theme_stylebox_override("pressed", sb)
+	b.add_theme_color_override("font_color", _COL_INK)
+	b.add_theme_font_size_override("font_size", 15)
+	b.add_theme_constant_override("content_margin_left", 10)
+	b.add_theme_constant_override("content_margin_right", 10)
+	b.add_theme_constant_override("content_margin_top", 4)
+	b.add_theme_constant_override("content_margin_bottom", 4)
+	if b is Button and not (b is OptionButton):
+		(b as Button).custom_minimum_size = Vector2(0, 32)
 
 
 func _build_tabs() -> void:
@@ -208,13 +322,22 @@ func _build_tabs() -> void:
 	_tab_buttons.clear()
 	for i in _TAB_NAMES.size():
 		var b := Button.new()
+		b.name = "TabBtn_%d" % i
 		b.text = _TAB_NAMES[i]
 		b.toggle_mode = true
 		b.focus_mode = Control.FOCUS_NONE
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.clip_text = true
+		b.custom_minimum_size = Vector2(0, 36)
 		b.pressed.connect(_on_tab_pressed.bind(i))
 		_tab_column.add_child(b)
 		_tab_buttons.append(b)
+	var tab_spacer := Control.new()
+	tab_spacer.name = "TabColumnSpacer"
+	tab_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tab_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_tab_column.add_child(tab_spacer)
+	_refresh_tab_styles()
 
 
 func _build_pages() -> void:
@@ -246,27 +369,36 @@ func _build_pages() -> void:
 func _build_character_page(page: Control) -> void:
 	var root := HBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_constant_override("separation", 14)
+	root.add_theme_constant_override("separation", 12)
 	page.add_child(root)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size = Vector2(260, 0)
+	left.custom_minimum_size = Vector2(292, 0)
 	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	root.add_child(left)
+	var left_card := PanelContainer.new()
+	left_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(left_card)
+	left.add_child(left_card)
+	var left_inner := VBoxContainer.new()
+	left_inner.add_theme_constant_override("separation", 8)
+	left_card.add_child(left_inner)
 	var lt := Label.new()
 	lt.text = "Equipment"
-	lt.add_theme_font_size_override("font_size", 18)
-	left.add_child(lt)
+	_apply_section_title(lt)
+	left_inner.add_child(lt)
 	var eg := GridContainer.new()
 	eg.columns = 2
 	eg.add_theme_constant_override("h_separation", 8)
 	eg.add_theme_constant_override("v_separation", 8)
-	left.add_child(eg)
+	left_inner.add_child(eg)
 	_equip_panels.clear()
 	for slot_id in _EQUIP_ORDER:
 		var cell := VBoxContainer.new()
 		var cap := Label.new()
 		cap.text = _equip_label(slot_id)
-		cap.add_theme_font_size_override("font_size", 11)
+		_apply_body_label(cap, 11)
+		cap.add_theme_color_override("font_color", _COL_INK_MUTED)
 		cell.add_child(cap)
 		var p := _make_slot_panel(_EQUIP_SLOT_SIZE)
 		p.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -277,26 +409,40 @@ func _build_character_page(page: Control) -> void:
 	var right := VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right.custom_minimum_size = Vector2(200, 0)
 	root.add_child(right)
+	var right_card := PanelContainer.new()
+	right_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(right_card)
+	right.add_child(right_card)
+	var right_inner := VBoxContainer.new()
+	right_inner.add_theme_constant_override("separation", 6)
+	right_card.add_child(right_inner)
 	var rt := Label.new()
 	rt.text = "Inventory"
-	rt.add_theme_font_size_override("font_size", 18)
-	right.add_child(rt)
+	_apply_section_title(rt)
+	right_inner.add_child(rt)
 	var sc := ScrollContainer.new()
-	sc.custom_minimum_size = Vector2(320, 400)
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right.add_child(sc)
+	sc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.custom_minimum_size = Vector2(120, 160)
+	sc.clip_contents = true
+	right_inner.add_child(sc)
 	_inv_grid = GridContainer.new()
+	_inv_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_inv_grid.columns = _SLOT_COLS
 	_inv_grid.add_theme_constant_override("h_separation", 6)
 	_inv_grid.add_theme_constant_override("v_separation", 6)
 	sc.add_child(_inv_grid)
 	_build_inv_slots()
 	var help := Label.new()
-	help.text = "Drag items between slots and equipment. Drop outside to place in the world. Right-click tackle box."
+	help.text = "Drag between slots and equipment. Drop outside to place. Right-click a tackle box to manage lures."
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	help.add_theme_font_size_override("font_size", 11)
-	right.add_child(help)
+	_apply_body_label(help, 11)
+	help.add_theme_color_override("font_color", _COL_INK_MUTED)
+	right_inner.add_child(help)
 
 
 func _equip_label(slot_id: String) -> String:
@@ -364,12 +510,13 @@ func _make_slot_panel(sz: Vector2) -> Panel:
 	name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_l.clip_text = true
-	name_l.add_theme_font_size_override("font_size", 10)
+	_apply_body_label(name_l, 10)
 	name_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	name_l.name = "NameLabel"
 	var count_l := Label.new()
 	count_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	count_l.add_theme_font_size_override("font_size", 12)
+	_apply_body_label(count_l, 12)
+	count_l.add_theme_color_override("font_color", _COL_TITLE)
 	count_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	count_l.name = "CountLabel"
 	vb.add_child(name_l)
@@ -391,16 +538,23 @@ func _build_inv_slots() -> void:
 func _build_skills_page(page: Control) -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_bottom", 2)
 	page.add_child(margin)
+	var card := PanelContainer.new()
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_apply_inner_card_style(card)
+	margin.add_child(card)
 	var vb := VBoxContainer.new()
-	vb.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_child(vb)
+	vb.add_theme_constant_override("separation", 10)
+	card.add_child(vb)
 	var t := Label.new()
 	t.name = "SkillsTitle"
 	t.text = "Skills & vitals"
-	t.add_theme_font_size_override("font_size", 20)
+	_apply_section_title(t)
+	t.add_theme_font_size_override("font_size", 21)
 	vb.add_child(t)
 	var grid := GridContainer.new()
 	grid.columns = 2
@@ -421,32 +575,60 @@ func _append_skill_row(grid: GridContainer, title: String, val: Label, is_header
 	var a := Label.new()
 	a.text = title
 	if is_header:
-		a.add_theme_font_size_override("font_size", 14)
+		a.add_theme_font_size_override("font_size", 15)
+		a.add_theme_color_override("font_color", _COL_TITLE)
+	else:
+		_apply_body_label(a, 14)
 	grid.add_child(a)
-	val.add_theme_font_size_override("font_size", 14)
+	if not is_header:
+		_apply_body_label(val, 14)
+	else:
+		val.add_theme_font_size_override("font_size", 15)
+		val.add_theme_color_override("font_color", _COL_TITLE)
 	val.name = "Val_%s" % title.replace(" ", "_")
 	grid.add_child(val)
 
 
 func _build_placeholder_page(page: Control, title: String) -> void:
+	var card := PanelContainer.new()
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_apply_inner_card_style(card)
+	page.add_child(card)
+	var m := MarginContainer.new()
+	m.set_anchors_preset(Control.PRESET_FULL_RECT)
+	m.add_theme_constant_override("margin_left", 12)
+	m.add_theme_constant_override("margin_right", 12)
+	m.add_theme_constant_override("margin_top", 10)
+	m.add_theme_constant_override("margin_bottom", 10)
+	card.add_child(m)
 	var l := Label.new()
-	l.set_anchors_preset(Control.PRESET_CENTER)
+	l.set_anchors_preset(Control.PRESET_FULL_RECT)
 	l.text = "%s — coming soon." % title
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", 18)
-	page.add_child(l)
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_apply_body_label(l, 18)
+	l.add_theme_color_override("font_color", _COL_INK_MUTED)
+	m.add_child(l)
 
 
 func _build_crafting_page(page: Control) -> void:
 	var root := HBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_constant_override("separation", 10)
+	root.add_theme_constant_override("separation", 12)
 	page.add_child(root)
+	var left_card := PanelContainer.new()
+	left_card.custom_minimum_size = Vector2(288, 0)
+	left_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(left_card)
+	root.add_child(left_card)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size = Vector2(280, 0)
-	root.add_child(left)
+	left.add_theme_constant_override("separation", 8)
+	left_card.add_child(left)
 	var fl := Label.new()
 	fl.text = "Station filter"
+	_apply_body_label(fl, 13)
+	fl.add_theme_color_override("font_color", _COL_INK_MUTED)
 	left.add_child(fl)
 	_page_crafting_filter = OptionButton.new()
 	_page_crafting_filter.add_item("All stations", -1)
@@ -459,38 +641,54 @@ func _build_crafting_page(page: Control) -> void:
 	_page_crafting_filter.select(0)
 	_page_crafting_filter.item_selected.connect(_on_craft_filter_selected)
 	left.add_child(_page_crafting_filter)
+	_style_generic_journal_button(_page_crafting_filter)
 	_page_crafting_list = ItemList.new()
 	_page_crafting_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_page_crafting_list.custom_minimum_size = Vector2(260, 360)
+	_page_crafting_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_page_crafting_list.custom_minimum_size = Vector2(120, 200)
+	_page_crafting_list.add_theme_color_override("font_color", _COL_INK)
+	_page_crafting_list.add_theme_color_override("font_hovered_color", _COL_TITLE)
 	_page_crafting_list.item_selected.connect(_on_craft_recipe_selected)
 	left.add_child(_page_crafting_list)
-	var right := VBoxContainer.new()
+	var right := PanelContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(right)
 	root.add_child(right)
+	var right_inner := VBoxContainer.new()
+	right_inner.add_theme_constant_override("separation", 8)
+	right.add_child(right_inner)
 	_page_crafting_detail = RichTextLabel.new()
 	_page_crafting_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_page_crafting_detail.bbcode_enabled = true
 	_page_crafting_detail.fit_content = false
 	_page_crafting_detail.scroll_active = true
-	right.add_child(_page_crafting_detail)
+	_page_crafting_detail.add_theme_color_override("default_color", _COL_INK)
+	right_inner.add_child(_page_crafting_detail)
 	_page_crafting_craft = Button.new()
 	_page_crafting_craft.text = "Craft"
 	_page_crafting_craft.pressed.connect(_on_craft_pressed)
-	right.add_child(_page_crafting_craft)
+	_style_generic_journal_button(_page_crafting_craft)
+	right_inner.add_child(_page_crafting_craft)
 
 
 func _build_building_page(page: Control) -> void:
+	var card := PanelContainer.new()
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_apply_inner_card_style(card)
+	page.add_child(card)
 	var vb := VBoxContainer.new()
-	vb.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vb.add_theme_constant_override("separation", 10)
-	page.add_child(vb)
+	card.add_child(vb)
 	var t := Label.new()
 	t.text = "Building"
-	t.add_theme_font_size_override("font_size", 20)
+	_apply_section_title(t)
+	t.add_theme_font_size_override("font_size", 21)
 	vb.add_child(t)
 	var body := RichTextLabel.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.bbcode_enabled = true
+	body.add_theme_color_override("default_color", _COL_INK)
 	body.text = (
 		"Place structures and furniture from a build palette (planned).\n\n"
 		+ "For now, use placeable items such as [b]campfire kits[/b] and [b]torches[/b] from inventory."
@@ -514,6 +712,7 @@ func _set_tab_instant(idx: int) -> void:
 		p.scale = Vector2.ONE
 		p.modulate = Color.WHITE
 		_ensure_page_pivot(p)
+	_refresh_tab_styles()
 
 
 func _get_selected_tab_index() -> int:
@@ -552,11 +751,13 @@ func _on_tab_pressed(idx: int) -> void:
 		_pending_tab = idx
 		for i in _tab_buttons.size():
 			_tab_buttons[i].set_pressed_no_signal(i == idx)
+		_refresh_tab_styles()
 		return
 	if idx == _current_tab:
 		return
 	for i in _tab_buttons.size():
 		_tab_buttons[i].set_pressed_no_signal(i == idx)
+	_refresh_tab_styles()
 	_begin_page_flip_to(idx)
 
 
@@ -580,11 +781,13 @@ func _on_page_flip_chain_finished() -> void:
 		var p: Control = _pages[_current_tab]
 		p.scale = Vector2.ONE
 		p.modulate = Color.WHITE
+	_refresh_tab_styles()
 	var next: int = _pending_tab
 	_pending_tab = -1
 	if next >= 0 and next != _current_tab:
 		for i in _tab_buttons.size():
 			_tab_buttons[i].set_pressed_no_signal(i == next)
+		_refresh_tab_styles()
 		_begin_page_flip_to(next)
 
 
@@ -1196,20 +1399,27 @@ func _item_icon_abbrev(item_id: String) -> String:
 
 
 func _apply_slot_style(slot: Panel, filled: bool) -> void:
-	var sb := StyleBoxFlat.new()
+	if ResourceLoader.exists(_PANEL_SLOT):
+		var sb := _make_stylebox_texture(_PANEL_SLOT, _SB_SLOT)
+		if sb.texture != null:
+			slot.add_theme_stylebox_override("panel", sb)
+			slot.modulate = Color(1.0, 0.98, 0.92, 1.0) if filled else Color(0.78, 0.76, 0.7, 0.88)
+			return
+	var sb2 := StyleBoxFlat.new()
 	if filled:
-		sb.bg_color = Color(0.12, 0.1, 0.08, 0.92)
-		sb.border_color = Color(0.72, 0.58, 0.35, 1.0)
+		sb2.bg_color = Color(0.12, 0.1, 0.08, 0.92)
+		sb2.border_color = Color(0.72, 0.58, 0.35, 1.0)
 	else:
-		sb.bg_color = Color(0.08, 0.07, 0.06, 0.75)
-		sb.border_color = Color(0.35, 0.32, 0.28, 0.85)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(4)
-	sb.content_margin_left = 4
-	sb.content_margin_top = 4
-	sb.content_margin_right = 4
-	sb.content_margin_bottom = 4
-	slot.add_theme_stylebox_override("panel", sb)
+		sb2.bg_color = Color(0.08, 0.07, 0.06, 0.75)
+		sb2.border_color = Color(0.35, 0.32, 0.28, 0.85)
+	sb2.set_border_width_all(2)
+	sb2.set_corner_radius_all(4)
+	sb2.content_margin_left = 4
+	sb2.content_margin_top = 4
+	sb2.content_margin_right = 4
+	sb2.content_margin_bottom = 4
+	slot.add_theme_stylebox_override("panel", sb2)
+	slot.modulate = Color.WHITE
 
 
 func _ensure_tackle_window() -> void:

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8k3game_menu01"]
+[gd_scene load_steps=3 format=3 uid="uid://b8k3game_menu01"]
 
 [ext_resource type="Script" path="res://ui/menus/game_menu.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://1oc2mjb8rqf7" path="res://assets/ui/UI Borders/PNG/Double/Divider/divider-005.png" id="2_divider"]
 
 [node name="GameMenu" type="CanvasLayer"]
 layer = 25
@@ -13,7 +14,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0.02, 0.02, 0.035, 0.55)
+color = Color(0.018, 0.012, 0.022, 0.68)
 
 [node name="Center" type="CenterContainer" parent="."]
 layout_mode = 3
@@ -23,50 +24,76 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+use_top_left = true
 
 [node name="BookPanel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(920, 580)
+custom_minimum_size = Vector2(960, 600)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="MainVBox" type="VBoxContainer" parent="Center/BookPanel"]
+[node name="InnerMargin" type="MarginContainer" parent="Center/BookPanel"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 20
 
-[node name="Header" type="HBoxContainer" parent="Center/BookPanel/MainVBox"]
-layout_mode = 2
-
-[node name="Title" type="Label" parent="Center/BookPanel/MainVBox/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.86, 0.72, 1)
-theme_override_font_sizes/font_size = 24
-text = "Journal"
-
-[node name="Spacer" type="Control" parent="Center/BookPanel/MainVBox/Header"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Hint" type="Label" parent="Center/BookPanel/MainVBox/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 0.95)
-theme_override_font_sizes/font_size = 13
-text = "[Esc] Close · [Tab] / [I] Toggle"
-
-[node name="Body" type="HBoxContainer" parent="Center/BookPanel/MainVBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="TabColumn" type="VBoxContainer" parent="Center/BookPanel/MainVBox/Body"]
-custom_minimum_size = Vector2(140, 0)
+[node name="MainVBox" type="VBoxContainer" parent="Center/BookPanel/InnerMargin"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="PageHost" type="Control" parent="Center/BookPanel/MainVBox/Body"]
-custom_minimum_size = Vector2(740, 500)
+[node name="Header" type="HBoxContainer" parent="Center/BookPanel/InnerMargin/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Center/BookPanel/InnerMargin/MainVBox/Header"]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.95, 0.88, 0.55, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 28
+text = "Journal"
+
+[node name="Spacer" type="Control" parent="Center/BookPanel/InnerMargin/MainVBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Hint" type="Label" parent="Center/BookPanel/InnerMargin/MainVBox/Header"]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.75, 0.7, 0.6, 0.95)
+theme_override_font_sizes/font_size = 13
+text = "[Esc] Close · [Tab] / [I] Toggle"
+
+[node name="HeaderRule" type="TextureRect" parent="Center/BookPanel/InnerMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_divider")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Body" type="HBoxContainer" parent="Center/BookPanel/InnerMargin/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="TabColumn" type="VBoxContainer" parent="Center/BookPanel/InnerMargin/MainVBox/Body"]
+custom_minimum_size = Vector2(172, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="PageHost" type="Control" parent="Center/BookPanel/InnerMargin/MainVBox/Body"]
+custom_minimum_size = Vector2(480, 360)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+clip_contents = true
 mouse_filter = 2
 
 [node name="DragPreview" type="Panel" parent="."]
@@ -113,10 +140,12 @@ mouse_filter = 2
 layout_mode = 2
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.9, 0.84, 0.7, 1)
 mouse_filter = 2
 
 [node name="CountLabel" type="Label" parent="DragPreview/Margin/VBox"]
 layout_mode = 2
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.88, 0.82, 0.65, 1)
 mouse_filter = 2
