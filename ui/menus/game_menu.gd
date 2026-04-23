@@ -35,7 +35,6 @@ const _SPELLBOOK := _FRPG + "Spellbook & Tabs/"
 ## Open grimoire frame + left spine tabs (Fantasy RPG UI — Spellbook & Tabs).
 const _PANEL_BOOK := _SPELLBOOK + "Spellbook_Opening.png"
 const _PANEL_BOOK_FALLBACK := _FRPG + "Background boxes/BGbox_06A.png"
-const _PANEL_INNER := _FRPG + "Background boxes/BGbox_03A.png"
 const _PANEL_TAB_IDLE := _SPELLBOOK + "Tab05_Left_Normal.png"
 const _PANEL_TAB_ACTIVE := _SPELLBOOK + "Tab05_Left_Selected.png"
 const _BTN_GENERIC_NORMAL := _FRPG + "Buttons/Button_01A_Normal.png"
@@ -43,7 +42,6 @@ const _BTN_GENERIC_PRESSED := _FRPG + "Buttons/Button_01A_Pressed.png"
 const _SLOT_INV_EMPTY := _FRPG + "Item slots/Slot_03_Empty.png"
 const _SB_OUTER := 52
 const _SB_TAB := 26
-const _SB_INNER := 28
 const _SB_SLOT := 14
 
 ## Parchment / ink palette for the journal
@@ -267,18 +265,27 @@ func _style_drag_preview() -> void:
 
 
 func _apply_inner_card_style(p: PanelContainer) -> void:
-	if ResourceLoader.exists(_PANEL_INNER):
-		var sb := _make_stylebox_texture(_PANEL_INNER, _SB_INNER)
-		if sb.texture != null:
-			p.add_theme_stylebox_override("panel", sb)
-			return
+	## Opaque BGbox textures hide the Spellbook_Opening parchment — use subtle glass + border only.
 	var flat := StyleBoxFlat.new()
-	flat.bg_color = Color(0.09, 0.08, 0.065, 0.42)
-	flat.border_color = Color(0.55, 0.44, 0.26, 0.55)
-	flat.set_border_width_all(1)
-	flat.set_corner_radius_all(5)
+	flat.bg_color = Color(0.06, 0.05, 0.045, 0.18)
+	flat.border_color = Color(0.72, 0.58, 0.38, 0.42)
+	flat.set_border_width_all(2)
+	flat.set_corner_radius_all(8)
 	flat.set_content_margin_all(10)
 	p.add_theme_stylebox_override("panel", flat)
+
+
+func _style_scroll_transparent(sc: ScrollContainer) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0, 0, 0, 0)
+	sb.set_content_margin_all(4)
+	sc.add_theme_stylebox_override("panel", sb)
+
+
+func _style_item_list_transparent(list: ItemList) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0, 0, 0, 0)
+	list.add_theme_stylebox_override("panel", sb)
 
 
 func _apply_section_title(l: Label) -> void:
@@ -465,6 +472,7 @@ func _build_character_page(page: Control) -> void:
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.custom_minimum_size = Vector2(120, 160)
 	sc.clip_contents = true
+	_style_scroll_transparent(sc)
 	right_inner.add_child(sc)
 	_inv_grid = GridContainer.new()
 	_inv_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -685,6 +693,7 @@ func _build_crafting_page(page: Control) -> void:
 	_page_crafting_list.add_theme_color_override("font_color", _COL_INK)
 	_page_crafting_list.add_theme_color_override("font_hovered_color", _COL_TITLE)
 	_page_crafting_list.item_selected.connect(_on_craft_recipe_selected)
+	_style_item_list_transparent(_page_crafting_list)
 	left.add_child(_page_crafting_list)
 	var right := PanelContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL

@@ -49,10 +49,10 @@ mouse_filter = 0
 
 [node name="InnerMargin" type="MarginContainer" parent="ScreenFill/Center/BookPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 34
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 34
 
 [node name="MainVBox" type="VBoxContainer" parent="ScreenFill/Center/BookPanel/InnerMargin"]
 layout_mode = 2
