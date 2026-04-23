@@ -98,11 +98,25 @@ func _ready() -> void:
 	if anim_player and anim_player.has_animation(_anim_path(_ANIM_IDLE)):
 		anim_player.play(_anim_path(_ANIM_IDLE))
 
+	_disable_equipped_tool_colliders()
 	_apply_tool_kind(_player_chosen_tool)
 
 
 func _anim_path(clip: String) -> StringName:
 	return StringName("%s/%s" % [_ANIM_LIB, clip])
+
+
+func _disable_equipped_tool_colliders() -> void:
+	if hand_r_slot == null:
+		return
+	var bodies: Array[Node] = hand_r_slot.find_children("*", "StaticBody3D", true, false)
+	for n in bodies:
+		var sb := n as StaticBody3D
+		if sb == null:
+			continue
+		# Equipped hand tools are visual props; their physics bodies can push/carry the player capsule.
+		sb.collision_layer = 0
+		sb.collision_mask = 0
 
 
 func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
