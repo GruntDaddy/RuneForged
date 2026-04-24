@@ -38,7 +38,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="BookPanel" type="PanelContainer" parent="ScreenFill/Center" unique_id=114862870]
-custom_minimum_size = Vector2(960, 600)
+custom_minimum_size = Vector2(1120, 700)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ud3gl")
 
@@ -101,7 +101,7 @@ theme_override_constants/separation = 6
 
 [node name="PageHost" type="Control" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Body" unique_id=586725286]
 clip_contents = true
-custom_minimum_size = Vector2(480, 360)
+custom_minimum_size = Vector2(620, 460)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

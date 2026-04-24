@@ -222,7 +222,7 @@ func _play_open_anim() -> void:
 	tw.tween_property(_book, "modulate:a", 1.0, 0.14)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 	if event.is_action_pressed("ui_cancel"):
@@ -1300,7 +1300,8 @@ func _refresh_inv_grid() -> void:
 			var item_id: String = str(s.get("id", ""))
 			_apply_icon_to_texture_rect(icon_tex, icon_fb, item_id)
 			name_l.text = _pretty_item_name(item_id)
-			count_l.text = str(int(s.get("count", 0)))
+			var count := int(s.get("count", 0))
+			count_l.text = str(count) if count > 1 else ""
 			_apply_slot_style(slot, true, "")
 		else:
 			icon_tex.texture = null
@@ -1322,7 +1323,8 @@ func _refresh_equip_slots() -> void:
 			var item_id: String = str(s.get("id", ""))
 			_apply_icon_to_texture_rect(icon_tex, icon_fb, item_id)
 			name_l.text = _pretty_item_name(item_id)
-			count_l.text = str(int(s.get("count", 1)))
+			var count := int(s.get("count", 1))
+			count_l.text = str(count) if count > 1 else ""
 			_apply_slot_style(slot, true, slot_id)
 		else:
 			icon_tex.texture = null
