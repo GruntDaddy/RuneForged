@@ -1,10 +1,11 @@
 [gd_scene format=3 uid="uid://mt7stqvut2t0"]
 
 [ext_resource type="Script" uid="uid://b2grcis8h11i2" path="res://ui/menus/game_menu.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dlpnbkxci6pdx" path="res://assets/Fantasy RPG UI/Individual files/2x/Dividers/Divider_06.png" id="2_divider"]
+[ext_resource type="FontFile" uid="uid://bb26ma55yuok7" path="res://assets/ui/fonts/EagleLake-Regular.ttf" id="2_2dpu2"]
+[ext_resource type="Texture2D" uid="uid://bsw8dx1rcindm" path="res://assets/ui/UI Borders/PNG/Default/Divider/divider-002.png" id="3_laoif"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ud3gl"]
-bg_color = Color(0.05, 0.07, 0.09, 0.31)
+bg_color = Color(0.13682577, 0.13682574, 0.13682571, 0.11764706)
 
 [node name="GameMenu" type="CanvasLayer" unique_id=104623462]
 layer = 25
@@ -16,7 +17,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.04, 0.06, 0.65)
+color = Color(0, 0, 0, 0.72156864)
 
 [node name="ScreenFill" type="Control" parent="." unique_id=556295786]
 layout_mode = 3
@@ -60,12 +61,13 @@ theme_override_constants/separation = 8
 [node name="Title" type="Label" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Header" unique_id=103998938]
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.98, 0.86, 0.48, 1)
-theme_override_colors/font_shadow_color = Color(0, 0.05, 0.1, 0.55)
+theme_override_colors/font_color = Color(0.5547915, 0.9426577, 0.96379715, 1)
+theme_override_colors/font_shadow_color = Color(7.893444e-06, 0.6277175, 0.9561284, 0.54901963)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
+theme_override_fonts/font = ExtResource("2_2dpu2")
 theme_override_font_sizes/font_size = 28
-text = "Rune chronicle"
+text = "Character Menu"
 
 [node name="Spacer" type="Control" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Header" unique_id=1845936318]
 layout_mode = 2
@@ -76,14 +78,14 @@ layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.62, 0.72, 0.78, 0.92)
 theme_override_font_sizes/font_size = 13
-text = "[Esc] Close · [Tab] Vitals · [I] Inventory · Side tabs switch pages"
+text = "[Esc] Close"
 
 [node name="HeaderRule" type="TextureRect" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox" unique_id=1528353218]
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 4.2)
 layout_mode = 2
 size_flags_vertical = 0
 mouse_filter = 2
-texture = ExtResource("2_divider")
+texture = ExtResource("3_laoif")
 expand_mode = 1
 
 [node name="Body" type="HBoxContainer" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox" unique_id=2077625474]
