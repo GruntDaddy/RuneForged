@@ -71,7 +71,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 28
-text = "Spellbook"
+text = "Wayfarer's folio"
 
 [node name="Spacer" type="Control" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Header"]
 layout_mode = 2
@@ -82,7 +82,7 @@ layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.75, 0.7, 0.6, 0.95)
 theme_override_font_sizes/font_size = 13
-text = "[Esc] Close · Tab / I · Bottom row opens here"
+text = "[Esc] Close · [Tab] Vitals · [I] Inventory · Ribbons jump to tabs"
 
 [node name="HeaderRule" type="TextureRect" parent="ScreenFill/Center/BookPanel/InnerMargin/MainVBox"]
 custom_minimum_size = Vector2(0, 10)

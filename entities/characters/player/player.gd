@@ -123,11 +123,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("character_menu") and game_menu:
-		game_menu.toggle(0)
+		game_menu.toggle(GameMenu.TAB_VITALS)
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("inventory") and game_menu:
-		game_menu.toggle(0)
+		game_menu.toggle(GameMenu.TAB_INVENTORY)
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:

@@ -1,18 +1,54 @@
 extends CanvasLayer
 class_name GameMenu
 
+## Spine tab indices (7 tabs + Codex uses World / People / Items filters inside).
+const TAB_VITALS := 0
+const TAB_SKILLS := 1
+const TAB_INVENTORY := 2
+const TAB_MAGIC := 3
+const TAB_FORGE := 4
+const TAB_QUESTS := 5
+const TAB_CODEX := 6
+
 const _SLOT_COLS := 4
 const _INV_SLOT_SIZE := Vector2(76, 90)
 const _EQUIP_SLOT_SIZE := Vector2(68, 82)
 
 const _TAB_NAMES: PackedStringArray = [
-	"Character",
+	"Vitals",
 	"Skills",
-	"Quests",
+	"Inventory",
 	"Magic",
-	"Abilities",
-	"Crafting",
-	"Building",
+	"Forge",
+	"Quests",
+	"Codex",
+]
+
+const _CODEX_WORLD: Array[Dictionary] = [
+	{
+		"id": "regions_intro",
+		"title": "The Shattered North",
+		"body": "Runesinger sagas tell of kingdoms drowned in ash-sea and forests that remember every axe-stroke. Your road is inked one camp at a time.\n\n[i]Explore to uncover more verses.[/i]",
+	},
+	{
+		"id": "map_stub",
+		"title": "Traveler’s chart",
+		"body": "No master cartographer walks with you yet. Markers and fog-of-war will appear here as waypoints are earned.\n\n[b]Tip:[/b] high ground reveals paths at dawn.",
+	},
+]
+const _CODEX_PEOPLE: Array[Dictionary] = [
+	{
+		"id": "you",
+		"title": "Your hero",
+		"body": "Name and deeds are written as you play. Factions and bonds will appear when dialogue systems hook this codex.",
+	},
+]
+const _CODEX_ITEMS: Array[Dictionary] = [
+	{
+		"id": "codex_items_hint",
+		"title": "Relics & materials",
+		"body": "Items you examine or loot will log short lore here (schemas already live under ItemCatalog).\n\n[i]Select an entry after discovery is wired.[/i]",
+	},
 ]
 
 const _EQUIP_ORDER: PackedStringArray = [
@@ -93,6 +129,16 @@ var _tackle_hook_labels: Array[Label] = []
 var _tackle_bobber_labels: Array[Label] = []
 var _tackle_bait_labels: Array[Label] = []
 
+var _vital_health_bar: ProgressBar
+var _vital_stamina_bar: ProgressBar
+var _vital_health_lbl: Label
+var _vital_stamina_lbl: Label
+var _vital_effects_body: RichTextLabel
+
+var _codex_filter: OptionButton
+var _codex_list: ItemList
+var _codex_detail: RichTextLabel
+
 
 func _ready() -> void:
 	layer = 25
@@ -143,8 +189,11 @@ func open_menu(tab_idx: int = 0) -> void:
 	_refresh_inv_grid()
 	_refresh_equip_slots()
 	_refresh_skills_page()
+	_refresh_vitals_page()
 	_refresh_crafting_list()
 	_refresh_crafting_detail()
+	if _current_tab == TAB_CODEX:
+		_refresh_codex_list()
 
 
 func close_menu() -> void:
@@ -395,21 +444,114 @@ func _build_pages() -> void:
 		_page_host.add_child(page)
 		_pages.append(page)
 		match i:
-			0:
-				_build_character_page(page)
-			1:
+			TAB_VITALS:
+				_build_vitals_page(page)
+			TAB_SKILLS:
 				_build_skills_page(page)
-			2, 3, 4:
-				_build_placeholder_page(page, _TAB_NAMES[i])
-			5:
-				_build_crafting_page(page)
-			6:
-				_build_building_page(page)
+			TAB_INVENTORY:
+				_build_inventory_page(page)
+			TAB_MAGIC:
+				_build_magic_page(page)
+			TAB_FORGE:
+				_build_forge_page(page)
+			TAB_QUESTS:
+				_build_quests_page(page)
+			TAB_CODEX:
+				_build_codex_page(page)
 		_connect_page_resize(page)
 	_set_tab_instant(0)
 
 
-func _build_character_page(page: Control) -> void:
+func _build_vitals_page(page: Control) -> void:
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_bottom", 2)
+	page.add_child(margin)
+	var card := PanelContainer.new()
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_apply_inner_card_style(card)
+	margin.add_child(card)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 12)
+	card.add_child(vb)
+	var t := Label.new()
+	t.text = "Vitals & effects"
+	_apply_section_title(t)
+	t.add_theme_font_size_override("font_size", 21)
+	vb.add_child(t)
+	var hp_row := HBoxContainer.new()
+	hp_row.add_theme_constant_override("separation", 10)
+	vb.add_child(hp_row)
+	var hp_l := Label.new()
+	hp_l.text = "Health"
+	hp_l.custom_minimum_size = Vector2(72, 0)
+	_apply_body_label(hp_l, 14)
+	hp_row.add_child(hp_l)
+	_vital_health_bar = ProgressBar.new()
+	_vital_health_bar.custom_minimum_size = Vector2(180, 22)
+	_vital_health_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vital_health_bar.max_value = 100.0
+	_vital_health_bar.value = 100.0
+	_vital_health_bar.show_percentage = false
+	_style_vitals_bar(_vital_health_bar, Color(0.72, 0.22, 0.18, 1.0))
+	hp_row.add_child(_vital_health_bar)
+	_vital_health_lbl = Label.new()
+	_vital_health_lbl.custom_minimum_size = Vector2(88, 0)
+	_vital_health_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_apply_body_label(_vital_health_lbl, 13)
+	hp_row.add_child(_vital_health_lbl)
+	var st_row := HBoxContainer.new()
+	st_row.add_theme_constant_override("separation", 10)
+	vb.add_child(st_row)
+	var st_l := Label.new()
+	st_l.text = "Stamina"
+	st_l.custom_minimum_size = Vector2(72, 0)
+	_apply_body_label(st_l, 14)
+	st_row.add_child(st_l)
+	_vital_stamina_bar = ProgressBar.new()
+	_vital_stamina_bar.custom_minimum_size = Vector2(180, 22)
+	_vital_stamina_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vital_stamina_bar.max_value = 100.0
+	_vital_stamina_bar.value = 100.0
+	_vital_stamina_bar.show_percentage = false
+	_style_vitals_bar(_vital_stamina_bar, Color(0.28, 0.55, 0.82, 1.0))
+	st_row.add_child(_vital_stamina_bar)
+	_vital_stamina_lbl = Label.new()
+	_vital_stamina_lbl.custom_minimum_size = Vector2(88, 0)
+	_vital_stamina_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_apply_body_label(_vital_stamina_lbl, 13)
+	st_row.add_child(_vital_stamina_lbl)
+	var fx := Label.new()
+	fx.text = "Active effects"
+	_apply_section_title(fx)
+	fx.add_theme_font_size_override("font_size", 17)
+	vb.add_child(fx)
+	_vital_effects_body = RichTextLabel.new()
+	_vital_effects_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_vital_effects_body.bbcode_enabled = true
+	_vital_effects_body.fit_content = false
+	_vital_effects_body.scroll_active = true
+	_vital_effects_body.custom_minimum_size = Vector2(0, 120)
+	_vital_effects_body.add_theme_color_override("default_color", _COL_INK_MUTED)
+	_vital_effects_body.text = "[i]No ailments or blessings tracked yet.[/i]"
+	vb.add_child(_vital_effects_body)
+
+
+func _style_vitals_bar(bar: ProgressBar, fill_col: Color) -> void:
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.08, 0.07, 0.06, 0.92)
+	bg.set_corner_radius_all(4)
+	var fill := StyleBoxFlat.new()
+	fill.set_corner_radius_all(4)
+	fill.bg_color = fill_col
+	bar.add_theme_stylebox_override("background", bg)
+	bar.add_theme_stylebox_override("fill", fill)
+
+
+func _build_inventory_page(page: Control) -> void:
 	var root := HBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_theme_constant_override("separation", 12)
@@ -596,7 +738,7 @@ func _build_skills_page(page: Control) -> void:
 	card.add_child(vb)
 	var t := Label.new()
 	t.name = "SkillsTitle"
-	t.text = "Skills & vitals"
+	t.text = "Skills"
 	_apply_section_title(t)
 	t.add_theme_font_size_override("font_size", 21)
 	vb.add_child(t)
@@ -741,6 +883,214 @@ func _build_building_page(page: Control) -> void:
 	vb.add_child(body)
 
 
+func _build_magic_page(page: Control) -> void:
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_bottom", 2)
+	page.add_child(margin)
+	var card := PanelContainer.new()
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_apply_inner_card_style(card)
+	margin.add_child(card)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 10)
+	card.add_child(vb)
+	var t := Label.new()
+	t.text = "Magic & spells"
+	_apply_section_title(t)
+	t.add_theme_font_size_override("font_size", 21)
+	vb.add_child(t)
+	var body := RichTextLabel.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.bbcode_enabled = true
+	body.add_theme_color_override("default_color", _COL_INK)
+	body.text = (
+		"Grimoire pages will list known spells, costs, and attunements.\n\n"
+		+ "[i]Binding runes to the hotbar is planned alongside the combat magic loop.[/i]\n\n"
+		+ "Until then, keep your [b]relics[/b] close and read item tooltips for arcane bonuses."
+	)
+	vb.add_child(body)
+
+
+func _build_forge_page(page: Control) -> void:
+	var tabs := TabContainer.new()
+	tabs.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tabs.tab_alignment = TabBar.ALIGNMENT_CENTER
+	page.add_child(tabs)
+	var craft_host := Control.new()
+	craft_host.name = "Crafting"
+	craft_host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tabs.add_child(craft_host)
+	_build_crafting_page(craft_host)
+	var build_host := Control.new()
+	build_host.name = "Building"
+	build_host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tabs.add_child(build_host)
+	_build_building_page(build_host)
+
+
+func _build_quests_page(page: Control) -> void:
+	var card := PanelContainer.new()
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_apply_inner_card_style(card)
+	page.add_child(card)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 10)
+	card.add_child(vb)
+	var t := Label.new()
+	t.text = "Quests"
+	_apply_section_title(t)
+	t.add_theme_font_size_override("font_size", 21)
+	vb.add_child(t)
+	var body := RichTextLabel.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.bbcode_enabled = true
+	body.add_theme_color_override("default_color", _COL_INK)
+	body.text = (
+		"No sworn oaths logged yet.\n\n"
+		+ "When the quest journal is wired, [b]active[/b] and [b]completed[/b] tasks will appear here with rewards and map hints."
+	)
+	vb.add_child(body)
+
+
+func _build_codex_page(page: Control) -> void:
+	var root := VBoxContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_theme_constant_override("separation", 10)
+	page.add_child(root)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 12)
+	root.add_child(head)
+	var title := Label.new()
+	title.text = "Codex"
+	_apply_section_title(title)
+	title.add_theme_font_size_override("font_size", 21)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	_codex_filter = OptionButton.new()
+	_codex_filter.focus_mode = Control.FOCUS_NONE
+	_codex_filter.add_item("World", 0)
+	_codex_filter.add_item("People", 1)
+	_codex_filter.add_item("Items", 2)
+	_codex_filter.select(0)
+	_codex_filter.item_selected.connect(_on_codex_filter_changed)
+	_style_generic_journal_button(_codex_filter)
+	head.add_child(_codex_filter)
+	var body := HBoxContainer.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 12)
+	root.add_child(body)
+	var left_card := PanelContainer.new()
+	left_card.custom_minimum_size = Vector2(260, 0)
+	left_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(left_card)
+	body.add_child(left_card)
+	var left_v := VBoxContainer.new()
+	left_v.add_theme_constant_override("separation", 6)
+	left_card.add_child(left_v)
+	var fl := Label.new()
+	fl.text = "Entries"
+	_apply_body_label(fl, 12)
+	fl.add_theme_color_override("font_color", _COL_INK_MUTED)
+	left_v.add_child(fl)
+	_codex_list = ItemList.new()
+	_codex_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_codex_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_codex_list.add_theme_color_override("font_color", _COL_INK)
+	_codex_list.add_theme_color_override("font_hovered_color", _COL_TITLE)
+	_codex_list.item_selected.connect(_on_codex_entry_selected)
+	_style_item_list_transparent(_codex_list)
+	left_v.add_child(_codex_list)
+	var right_card := PanelContainer.new()
+	right_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(right_card)
+	body.add_child(right_card)
+	_codex_detail = RichTextLabel.new()
+	_codex_detail.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_codex_detail.bbcode_enabled = true
+	_codex_detail.fit_content = false
+	_codex_detail.scroll_active = true
+	_codex_detail.add_theme_color_override("default_color", _COL_INK)
+	right_card.add_child(_codex_detail)
+	_refresh_codex_list()
+
+
+func _codex_entries_for_filter(idx: int) -> Array[Dictionary]:
+	match idx:
+		0:
+			return _CODEX_WORLD
+		1:
+			return _CODEX_PEOPLE
+		2:
+			return _CODEX_ITEMS
+		_:
+			return _CODEX_WORLD
+
+
+func _refresh_codex_list() -> void:
+	if _codex_list == null or _codex_detail == null:
+		return
+	_codex_list.clear()
+	var f := _codex_filter.get_selected_id() if _codex_filter else 0
+	var entries: Array[Dictionary] = _codex_entries_for_filter(int(f))
+	for e in entries:
+		var t: String = str(e.get("title", "???"))
+		_codex_list.add_item(t)
+		var li := _codex_list.item_count - 1
+		_codex_list.set_item_metadata(li, e.get("id", ""))
+	if _codex_list.item_count > 0:
+		_codex_list.select(0)
+		_on_codex_entry_selected(0)
+	else:
+		_codex_detail.text = "[i]Nothing written here yet.[/i]"
+
+
+func _on_codex_filter_changed(_i: int) -> void:
+	_refresh_codex_list()
+
+
+func _on_codex_entry_selected(idx: int) -> void:
+	if _codex_detail == null or _codex_list == null:
+		return
+	if idx < 0 or idx >= _codex_list.item_count:
+		return
+	var f := _codex_filter.get_selected_id() if _codex_filter else 0
+	var entries: Array[Dictionary] = _codex_entries_for_filter(int(f))
+	var pick_id: Variant = _codex_list.get_item_metadata(idx)
+	for e in entries:
+		if str(e.get("id", "")) == str(pick_id):
+			var tit: String = str(e.get("title", ""))
+			var bod: String = str(e.get("body", ""))
+			_codex_detail.text = "[b]%s[/b]\n\n%s" % [tit, bod]
+			return
+	_codex_detail.text = "[i]Entry missing.[/i]"
+
+
+func _refresh_vitals_page() -> void:
+	if _vital_health_bar == null:
+		return
+	var p: Node = get_parent()
+	if p == null or not p.has_method("get_hud_snapshot"):
+		return
+	var s: Dictionary = p.get_hud_snapshot()
+	var mh: float = float(s.get("max_health", 1.0))
+	var h: float = float(s.get("health", 0.0))
+	var ms: float = float(s.get("max_stamina", 1.0))
+	var st: float = float(s.get("stamina", 0.0))
+	_vital_health_bar.max_value = mh
+	_vital_health_bar.value = h
+	_vital_stamina_bar.max_value = ms
+	_vital_stamina_bar.value = st
+	if _vital_health_lbl:
+		_vital_health_lbl.text = "%d / %d" % [int(round(h)), int(round(mh))]
+	if _vital_stamina_lbl:
+		_vital_stamina_lbl.text = "%d / %d" % [int(round(st)), int(round(ms))]
+
+
 func _set_tab_instant(idx: int) -> void:
 	_kill_page_flip_tween()
 	_page_flipping = false
@@ -826,6 +1176,10 @@ func _on_page_flip_chain_finished() -> void:
 		var p: Control = _pages[_current_tab]
 		p.scale = Vector2.ONE
 		p.modulate = Color.WHITE
+	if _current_tab == TAB_VITALS:
+		_refresh_vitals_page()
+	if _current_tab == TAB_CODEX:
+		_refresh_codex_list()
 	_refresh_tab_styles()
 	var next: int = _pending_tab
 	_pending_tab = -1
@@ -918,7 +1272,7 @@ func _refresh_equip_slots() -> void:
 
 
 func _refresh_skills_page() -> void:
-	var page: Control = _pages[1]
+	var page: Control = _pages[TAB_SKILLS]
 	var grid: GridContainer = page.find_child("SkillsGrid", true, false) as GridContainer
 	if grid == null:
 		return
@@ -1076,6 +1430,8 @@ func _on_craft_pressed() -> void:
 
 
 func _inv_slot_from_mouse(global_pos: Vector2) -> int:
+	if _current_tab != TAB_INVENTORY:
+		return -1
 	for i in _inv_slots.size():
 		if _inv_slots[i].get_global_rect().has_point(global_pos):
 			return i
@@ -1083,6 +1439,8 @@ func _inv_slot_from_mouse(global_pos: Vector2) -> int:
 
 
 func _equip_slot_from_mouse(global_pos: Vector2) -> String:
+	if _current_tab != TAB_INVENTORY:
+		return ""
 	for slot_id in _equip_panels.keys():
 		var p: Panel = _equip_panels[slot_id]
 		if p.get_global_rect().has_point(global_pos):

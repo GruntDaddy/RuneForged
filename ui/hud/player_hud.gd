@@ -42,10 +42,18 @@ func _game_menu() -> GameMenu:
 
 func _wire_journal_ribbon() -> void:
 	var row: HBoxContainer = $Root/JournalRibbon/Margin/VBox/BtnRow
-	(row.get_node("BtnJournal") as Button).pressed.connect(func(): _open_journal_tab(0))
-	(row.get_node("BtnSkills") as Button).pressed.connect(func(): _open_journal_tab(1))
-	(row.get_node("BtnQuests") as Button).pressed.connect(func(): _open_journal_tab(2))
-	(row.get_node("BtnCraft") as Button).pressed.connect(func(): _open_journal_tab(5))
+	(row.get_node("BtnJournal") as Button).pressed.connect(
+		func(): _open_journal_tab(GameMenu.TAB_CODEX)
+	)
+	(row.get_node("BtnSkills") as Button).pressed.connect(
+		func(): _open_journal_tab(GameMenu.TAB_SKILLS)
+	)
+	(row.get_node("BtnQuests") as Button).pressed.connect(
+		func(): _open_journal_tab(GameMenu.TAB_QUESTS)
+	)
+	(row.get_node("BtnCraft") as Button).pressed.connect(
+		func(): _open_journal_tab(GameMenu.TAB_FORGE)
+	)
 
 
 func _open_journal_tab(tab_idx: int) -> void:
