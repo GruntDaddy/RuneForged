@@ -65,19 +65,20 @@ const _EQUIP_ORDER: PackedStringArray = [
 	"off_hand",
 ]
 
-## Fantasy RPG UI — Individual files / 2x (project path matches your assets folder).
-const _FRPG := "res://assets/Fantasy RPG UI/Individual files/2x/"
-## Ornate stone frame + pressed-metal tab ribbons (same asset pack, no spellbook kit).
-const _PANEL_MAIN := _FRPG + "Background boxes/BGbox_05A.png"
-const _PANEL_MAIN_FALLBACK := _FRPG + "Background boxes/BGbox_06A.png"
-const _TAB_IDLE := _FRPG + "Buttons/Button_02A_Normal.png"
-const _TAB_ACTIVE := _FRPG + "Buttons/Button_02A_Selected.png"
-const _BTN_GENERIC_NORMAL := _FRPG + "Buttons/Button_01B_Normal.png"
-const _BTN_GENERIC_PRESSED := _FRPG + "Buttons/Button_01B_Pressed.png"
-const _SLOT_INV_EMPTY := _FRPG + "Item slots/Slot_03_Empty.png"
-const _MARGIN_PANEL := 42
-const _MARGIN_TAB := 22
-const _SB_SLOT := 14
+## UI Borders pack (new default visual language for the menu shell and widgets).
+const _UIB := "res://assets/ui/UI Borders/PNG/Default/"
+const _PANEL_MAIN := _UIB + "Border/panel-border-016.png"
+const _PANEL_MAIN_FALLBACK := _UIB + "Border/panel-border-012.png"
+const _PANEL_CARD := _UIB + "Transparent border/panel-transparent-border-020.png"
+const _TAB_IDLE := _UIB + "Border/panel-border-009.png"
+const _TAB_ACTIVE := _UIB + "Border/panel-border-004.png"
+const _BTN_GENERIC_NORMAL := _UIB + "Border/panel-border-007.png"
+const _BTN_GENERIC_PRESSED := _UIB + "Border/panel-border-003.png"
+const _SLOT_INV_EMPTY := _UIB + "Border/panel-border-010.png"
+const _SLOT_EQUIP := _UIB + "Border/panel-border-011.png"
+const _MARGIN_PANEL := 24
+const _MARGIN_TAB := 16
+const _SB_SLOT := 16
 
 ## Frost ledger — pale ink on cool stone
 const _COL_INK := Color(0.82, 0.9, 0.95, 1.0)
@@ -313,6 +314,11 @@ func _style_drag_preview() -> void:
 
 
 func _apply_inner_card_style(p: PanelContainer) -> void:
+	if ResourceLoader.exists(_PANEL_CARD):
+		var sb_tex := _make_stylebox_texture(_PANEL_CARD, 20)
+		if sb_tex.texture != null:
+			p.add_theme_stylebox_override("panel", sb_tex)
+			return
 	var flat := StyleBoxFlat.new()
 	flat.bg_color = Color(0.03, 0.06, 0.09, 0.42)
 	flat.border_color = Color(0.42, 0.62, 0.78, 0.45)
@@ -417,7 +423,7 @@ func _refresh_tab_styles() -> void:
 func _style_generic_journal_button(b: BaseButton) -> void:
 	if not ResourceLoader.exists(_BTN_GENERIC_NORMAL):
 		return
-	var sb_n := _make_stylebox_texture(_BTN_GENERIC_NORMAL, 20)
+	var sb_n := _make_stylebox_texture(_BTN_GENERIC_NORMAL, 14)
 	if sb_n.texture == null:
 		return
 	b.add_theme_stylebox_override("normal", sb_n)
@@ -1834,25 +1840,9 @@ func _item_icon_abbrev(item_id: String) -> String:
 
 
 func _equip_slot_bg_path(slot_id: String) -> String:
-	match slot_id:
-		"head":
-			return _FRPG + "Item slots/Slot_03_Headgear.png"
-		"neck":
-			return _FRPG + "Item slots/Slot_03_Necklace.png"
-		"chest", "legs", "back":
-			return _FRPG + "Item slots/Slot_03_Armor.png"
-		"hands":
-			return _FRPG + "Item slots/Slot_03_Gloves.png"
-		"feet":
-			return _FRPG + "Item slots/Slot_03_Footwear.png"
-		"ring_1", "ring_2":
-			return _FRPG + "Item slots/Slot_03_Ring.png"
-		"main_hand":
-			return _FRPG + "Item slots/Slot_03_Weapon.png"
-		"off_hand":
-			return _FRPG + "Item slots/Slot_03_Shield.png"
-		_:
-			return _SLOT_INV_EMPTY
+	if slot_id.is_empty():
+		return _SLOT_INV_EMPTY
+	return _SLOT_EQUIP
 
 
 func _apply_slot_style(slot: Panel, filled: bool, equip_slot_id: String = "") -> void:
