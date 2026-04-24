@@ -232,13 +232,13 @@ func _physics_process(delta: float) -> void:
 
 	if not tool_busy:
 		if Input.is_action_just_pressed("tool_axe"):
-			_set_player_tool(_BaseCharacter.ToolKind.AXE)
+			_use_hotbar_slot(0)
 		if Input.is_action_just_pressed("tool_pickaxe"):
-			_set_player_tool(_BaseCharacter.ToolKind.PICKAXE)
+			_use_hotbar_slot(1)
 		if Input.is_action_just_pressed("tool_fishing"):
-			_set_player_tool(_BaseCharacter.ToolKind.FISHING_ROD)
+			_use_hotbar_slot(2)
 		if Input.is_action_just_pressed("tool_hands"):
-			_set_player_tool(_BaseCharacter.ToolKind.NONE)
+			_use_hotbar_slot(3)
 
 	if Input.is_action_just_pressed("attack"):
 		if _pending_chop_hit:
@@ -269,6 +269,53 @@ func _apply_from_gamestate() -> void:
 func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 	if base_character.has_method("set_active_tool"):
 		base_character.set_active_tool(kind)
+
+
+func _use_hotbar_slot(slot_idx: int) -> void:
+	if GameState.hotbar_item_ids.size() > slot_idx:
+		var item_id := str(GameState.hotbar_item_ids[slot_idx])
+		if not item_id.is_empty():
+			_use_hotbar_item(item_id)
+			return
+	_set_player_tool(_default_tool_for_slot(slot_idx))
+
+
+func _use_hotbar_item(item_id: String) -> void:
+	if not InventoryService.has_item(item_id):
+		show_gameplay_message("Missing: %s" % InventoryService.get_item_display_name(item_id))
+		return
+	var tool_kind := _tool_kind_for_item(item_id)
+	if tool_kind != _BaseCharacter.ToolKind.NONE:
+		_set_player_tool(tool_kind)
+		return
+	show_gameplay_message("Cannot quick-use that item yet.")
+
+
+func _tool_kind_for_item(item_id: String) -> _BaseCharacter.ToolKind:
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it == null:
+		return _BaseCharacter.ToolKind.NONE
+	for tag in it.tags:
+		var t := str(tag)
+		if t == "hatchet" or t == "axe":
+			return _BaseCharacter.ToolKind.AXE
+		if t == "pickaxe":
+			return _BaseCharacter.ToolKind.PICKAXE
+		if t == "fishing_rod" or t == "fishing":
+			return _BaseCharacter.ToolKind.FISHING_ROD
+	return _BaseCharacter.ToolKind.NONE
+
+
+func _default_tool_for_slot(slot_idx: int) -> _BaseCharacter.ToolKind:
+	match slot_idx:
+		0:
+			return _BaseCharacter.ToolKind.AXE
+		1:
+			return _BaseCharacter.ToolKind.PICKAXE
+		2:
+			return _BaseCharacter.ToolKind.FISHING_ROD
+		_:
+			return _BaseCharacter.ToolKind.NONE
 
 
 func get_hud_snapshot() -> Dictionary:

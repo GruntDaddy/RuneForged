@@ -92,76 +92,6 @@ theme_override_font_sizes/font_size = 13
 text = "100 / 100"
 horizontal_alignment = 2
 
-[node name="JournalRibbon" type="Control" parent="Root"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -280.0
-offset_top = -178.0
-offset_right = 280.0
-offset_bottom = -108.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="Margin" type="MarginContainer" parent="Root/JournalRibbon"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 0
-
-[node name="VBox" type="VBoxContainer" parent="Root/JournalRibbon/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="BtnRow" type="HBoxContainer" parent="Root/JournalRibbon/Margin/VBox"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 8
-
-[node name="BtnJournal" type="Button" parent="Root/JournalRibbon/Margin/VBox/BtnRow"]
-custom_minimum_size = Vector2(104, 32)
-layout_mode = 2
-focus_mode = 0
-mouse_filter = 0
-text = "Codex"
-
-[node name="BtnSkills" type="Button" parent="Root/JournalRibbon/Margin/VBox/BtnRow"]
-custom_minimum_size = Vector2(104, 32)
-layout_mode = 2
-focus_mode = 0
-mouse_filter = 0
-text = "Skills"
-
-[node name="BtnQuests" type="Button" parent="Root/JournalRibbon/Margin/VBox/BtnRow"]
-custom_minimum_size = Vector2(104, 32)
-layout_mode = 2
-focus_mode = 0
-mouse_filter = 0
-text = "Quests"
-
-[node name="BtnCraft" type="Button" parent="Root/JournalRibbon/Margin/VBox/BtnRow"]
-custom_minimum_size = Vector2(104, 32)
-layout_mode = 2
-focus_mode = 0
-mouse_filter = 0
-text = "Craft"
-
-[node name="RibbonHint" type="Label" parent="Root/JournalRibbon/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.58, 0.5, 0.92)
-theme_override_font_sizes/font_size = 11
-text = "Quick open: Codex · Skills · Quests · Forge · Below: tools [1]–[4]"
-horizontal_alignment = 1
-
 [node name="Hotbar" type="Control" parent="Root"]
 layout_mode = 1
 anchors_preset = 7
@@ -170,7 +100,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -260.0
-offset_top = -104.0
+offset_top = -84.0
 offset_right = 260.0
 offset_bottom = -20.0
 grow_horizontal = 2
@@ -210,7 +140,7 @@ theme_override_constants/separation = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.7, 0.6, 1)
 theme_override_font_sizes/font_size = 12
-text = "[1] Axe"
+text = "[1]"
 horizontal_alignment = 1
 
 [node name="Name" type="Label" parent="Root/Hotbar/Margin/HBox/Slot0/VBox"]
@@ -237,7 +167,7 @@ theme_override_constants/separation = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.7, 0.6, 1)
 theme_override_font_sizes/font_size = 12
-text = "[2] Pick"
+text = "[2]"
 horizontal_alignment = 1
 
 [node name="Name" type="Label" parent="Root/Hotbar/Margin/HBox/Slot1/VBox"]
@@ -264,7 +194,7 @@ theme_override_constants/separation = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.7, 0.6, 1)
 theme_override_font_sizes/font_size = 12
-text = "[3] Rod"
+text = "[3]"
 horizontal_alignment = 1
 
 [node name="Name" type="Label" parent="Root/Hotbar/Margin/HBox/Slot2/VBox"]
@@ -291,7 +221,7 @@ theme_override_constants/separation = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.7, 0.6, 1)
 theme_override_font_sizes/font_size = 12
-text = "[4] Hands"
+text = "[4]"
 horizontal_alignment = 1
 
 [node name="Name" type="Label" parent="Root/Hotbar/Margin/HBox/Slot3/VBox"]

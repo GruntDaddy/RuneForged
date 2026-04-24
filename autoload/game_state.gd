@@ -40,6 +40,8 @@ var campfire_night_run_bonus: float = 0.2
 var campfire_night_penalty: float = 0.15
 ## Equipped items: slot id -> { "id": String, "count": int }. Slots: head, chest, legs, feet, hands, main_hand, off_hand, back, neck, ring_1, ring_2
 var equipment: Dictionary = {}
+## Hotbar quick-use item ids for keys [1]-[4].
+var hotbar_item_ids: Array[String] = ["", "", "", ""]
 
 
 func reset() -> void:
@@ -63,6 +65,7 @@ func reset() -> void:
 	campfire_night_run_bonus = 0.2
 	campfire_night_penalty = 0.15
 	equipment = {}
+	hotbar_item_ids = ["", "", "", ""]
 
 
 func to_dict() -> Dictionary:
@@ -87,6 +90,7 @@ func to_dict() -> Dictionary:
 		"campfire_night_run_bonus": campfire_night_run_bonus,
 		"campfire_night_penalty": campfire_night_penalty,
 		"equipment": equipment.duplicate(true),
+		"hotbar_item_ids": hotbar_item_ids.duplicate(),
 	}
 
 
@@ -125,6 +129,12 @@ func from_dict(data: Variant) -> void:
 		equipment = (d.get("equipment", {}) as Dictionary).duplicate(true)
 	else:
 		equipment = {}
+	hotbar_item_ids = ["", "", "", ""]
+	var hb: Variant = d.get("hotbar_item_ids", null)
+	if typeof(hb) == TYPE_ARRAY:
+		var arr: Array = hb
+		for i in mini(4, arr.size()):
+			hotbar_item_ids[i] = str(arr[i])
 
 
 func scene_path_for_saved_region(saved_region: String) -> String:

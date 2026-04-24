@@ -163,7 +163,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				if to_idx >= 0:
 					InventoryService.move_or_merge(_drag_from_idx, to_idx)
 				else:
-					_drop_dragged_item_to_world(event.global_position)
+					if not _try_drop_on_hotbar(event.global_position):
+						_drop_dragged_item_to_world(event.global_position)
 				_cancel_drag()
 
 
@@ -213,6 +214,21 @@ func _drop_dragged_item_to_world(mouse_pos: Vector2) -> void:
 	if hit.size() > 0:
 		drop_pos = (hit["position"] as Vector3) + Vector3.UP * 0.3
 	InventoryService.drop_slot_to_world(_drag_from_idx, drop_pos, player.get_parent())
+
+
+func _try_drop_on_hotbar(global_pos: Vector2) -> bool:
+	var player := get_parent()
+	if player == null:
+		return false
+	var hud := player.get_node_or_null("PlayerHud")
+	if hud == null or not hud.has_method("hotbar_slot_from_global"):
+		return false
+	var slot_idx: int = int(hud.call("hotbar_slot_from_global", global_pos))
+	if slot_idx < 0:
+		return false
+	if not hud.has_method("assign_hotbar_from_inventory"):
+		return false
+	return bool(hud.call("assign_hotbar_from_inventory", slot_idx, _drag_from_idx))
 
 
 func _refresh_grid() -> void:

@@ -2,8 +2,6 @@ extends CanvasLayer
 
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 
-const _BTN_PANEL := "res://assets/Fantasy RPG UI/Individual files/2x/Buttons/Button_01A_Normal.png"
-
 @onready var _health_bar: ProgressBar = $Root/TopLeft/Margin/VBox/HealthRow/ProgressBar
 @onready var _stamina_bar: ProgressBar = $Root/TopLeft/Margin/VBox/StaminaRow/ProgressBar
 @onready var _health_val: Label = $Root/TopLeft/Margin/VBox/HealthRow/ValueLabel
@@ -12,13 +10,7 @@ const _BTN_PANEL := "res://assets/Fantasy RPG UI/Individual files/2x/Buttons/But
 
 var _hotbar_panels: Array[Panel] = []
 var _hotbar_labels: Array[Label] = []
-
-const _HOT_TOOLS: Array[int] = [
-	int(_BaseCharacter.ToolKind.AXE),
-	int(_BaseCharacter.ToolKind.PICKAXE),
-	int(_BaseCharacter.ToolKind.FISHING_ROD),
-	int(_BaseCharacter.ToolKind.NONE),
-]
+var _hotbar_keys: Array[Label] = []
 
 
 func _ready() -> void:
@@ -27,65 +19,9 @@ func _ready() -> void:
 	for path in ["Slot0", "Slot1", "Slot2", "Slot3"]:
 		var p: Panel = $Root/Hotbar/Margin/HBox.get_node(path) as Panel
 		_hotbar_panels.append(p)
+		_hotbar_keys.append(p.get_node("VBox/Key") as Label)
 		_hotbar_labels.append(p.get_node("VBox/Name") as Label)
 	_style_bars()
-	_wire_journal_ribbon()
-	_style_journal_ribbon()
-
-
-func _game_menu() -> GameMenu:
-	var pl: Node = get_parent()
-	if pl == null:
-		return null
-	return pl.get_node_or_null("GameMenu") as GameMenu
-
-
-func _wire_journal_ribbon() -> void:
-	var row: HBoxContainer = $Root/JournalRibbon/Margin/VBox/BtnRow
-	(row.get_node("BtnJournal") as Button).pressed.connect(
-		func(): _open_journal_tab(GameMenu.TAB_CODEX)
-	)
-	(row.get_node("BtnSkills") as Button).pressed.connect(
-		func(): _open_journal_tab(GameMenu.TAB_SKILLS)
-	)
-	(row.get_node("BtnQuests") as Button).pressed.connect(
-		func(): _open_journal_tab(GameMenu.TAB_QUESTS)
-	)
-	(row.get_node("BtnCraft") as Button).pressed.connect(
-		func(): _open_journal_tab(GameMenu.TAB_FORGE)
-	)
-
-
-func _open_journal_tab(tab_idx: int) -> void:
-	var gm: GameMenu = _game_menu()
-	if gm:
-		gm.open_menu(tab_idx)
-
-
-func _style_journal_ribbon() -> void:
-	if not ResourceLoader.exists(_BTN_PANEL):
-		return
-	var tex: Texture2D = load(_BTN_PANEL) as Texture2D
-	var m := 18
-	var row: HBoxContainer = $Root/JournalRibbon/Margin/VBox/BtnRow
-	for b in row.get_children():
-		if b is Button:
-			var sb := StyleBoxTexture.new()
-			sb.texture = tex
-			sb.texture_margin_left = m
-			sb.texture_margin_top = m
-			sb.texture_margin_right = m
-			sb.texture_margin_bottom = m
-			var btn := b as Button
-			btn.add_theme_stylebox_override("normal", sb)
-			btn.add_theme_stylebox_override("hover", sb)
-			btn.add_theme_stylebox_override("pressed", sb)
-			btn.add_theme_color_override("font_color", Color(0.9, 0.84, 0.68, 1))
-			btn.add_theme_font_size_override("font_size", 14)
-			btn.add_theme_constant_override("content_margin_left", 10)
-			btn.add_theme_constant_override("content_margin_right", 10)
-			btn.add_theme_constant_override("content_margin_top", 4)
-			btn.add_theme_constant_override("content_margin_bottom", 4)
 
 
 func _style_bars() -> void:
@@ -120,9 +56,14 @@ func _physics_process(_delta: float) -> void:
 	_stamina_val.text = "%d / %d" % [int(round(st)), int(round(ms))]
 	var tool_i: int = int(s.get("tool_kind", 0))
 	for i in _hotbar_panels.size():
-		var active: bool = tool_i == _HOT_TOOLS[i]
+		_hotbar_keys[i].text = "[%d]" % (i + 1)
+		var item_id := _hotbar_item_id(i)
+		var kind: int = _tool_kind_for_item(item_id)
+		if item_id.is_empty():
+			kind = _default_tool_kind_for_slot(i)
+		var active: bool = tool_i == kind
 		_apply_hotbar_style(_hotbar_panels[i], active)
-		_hotbar_labels[i].text = _hot_tool_caption(_HOT_TOOLS[i])
+		_hotbar_labels[i].text = _hot_item_caption(i, item_id)
 
 
 func _apply_hotbar_style(panel: Panel, active: bool) -> void:
@@ -142,13 +83,81 @@ func _apply_hotbar_style(panel: Panel, active: bool) -> void:
 	panel.add_theme_stylebox_override("panel", sb)
 
 
-func _hot_tool_caption(kind: int) -> String:
-	match kind:
-		int(_BaseCharacter.ToolKind.AXE):
-			return "Axe"
-		int(_BaseCharacter.ToolKind.PICKAXE):
-			return "Pick"
-		int(_BaseCharacter.ToolKind.FISHING_ROD):
-			return "Fish"
+func hotbar_slot_from_global(global_pos: Vector2) -> int:
+	for i in _hotbar_panels.size():
+		if _hotbar_panels[i].get_global_rect().has_point(global_pos):
+			return i
+	return -1
+
+
+func assign_hotbar_from_inventory(slot_idx: int, inv_idx: int) -> bool:
+	if slot_idx < 0 or slot_idx >= 4:
+		return false
+	var s: Variant = InventoryService.get_slot_data(inv_idx)
+	if s == null:
+		return false
+	var item_id := str(s.get("id", ""))
+	if item_id.is_empty():
+		return false
+	_set_hotbar_item(slot_idx, item_id)
+	return true
+
+
+func _set_hotbar_item(slot_idx: int, item_id: String) -> void:
+	while GameState.hotbar_item_ids.size() < 4:
+		GameState.hotbar_item_ids.append("")
+	GameState.hotbar_item_ids[slot_idx] = item_id
+
+
+func _hotbar_item_id(slot_idx: int) -> String:
+	if slot_idx < 0:
+		return ""
+	if GameState.hotbar_item_ids.size() <= slot_idx:
+		return ""
+	return str(GameState.hotbar_item_ids[slot_idx])
+
+
+func _hot_item_caption(slot_idx: int, item_id: String) -> String:
+	if item_id.is_empty():
+		match _default_tool_kind_for_slot(slot_idx):
+			int(_BaseCharacter.ToolKind.AXE):
+				return "Axe"
+			int(_BaseCharacter.ToolKind.PICKAXE):
+				return "Pick"
+			int(_BaseCharacter.ToolKind.FISHING_ROD):
+				return "Fish"
+			_:
+				return "Hands"
+	var n := InventoryService.get_item_display_name(item_id)
+	if n.is_empty():
+		n = item_id.replace("_", " ").capitalize()
+	return n
+
+
+func _tool_kind_for_item(item_id: String) -> int:
+	if item_id.is_empty():
+		return int(_BaseCharacter.ToolKind.NONE)
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it == null:
+		return int(_BaseCharacter.ToolKind.NONE)
+	for tag in it.tags:
+		var t := str(tag)
+		if t == "hatchet" or t == "axe":
+			return int(_BaseCharacter.ToolKind.AXE)
+		if t == "pickaxe":
+			return int(_BaseCharacter.ToolKind.PICKAXE)
+		if t == "fishing_rod" or t == "fishing":
+			return int(_BaseCharacter.ToolKind.FISHING_ROD)
+	return int(_BaseCharacter.ToolKind.NONE)
+
+
+func _default_tool_kind_for_slot(slot_idx: int) -> int:
+	match slot_idx:
+		0:
+			return int(_BaseCharacter.ToolKind.AXE)
+		1:
+			return int(_BaseCharacter.ToolKind.PICKAXE)
+		2:
+			return int(_BaseCharacter.ToolKind.FISHING_ROD)
 		_:
-			return "Hands"
+			return int(_BaseCharacter.ToolKind.NONE)
