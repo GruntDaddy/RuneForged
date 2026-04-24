@@ -54,6 +54,11 @@ extends Node3D
 @export var apply_stylized_sky_preset: bool = true
 ## ~60% of sun angular width when sun_disk_size ≈ 0.00225 (see `rune_sky.gdshader`).
 @export_range(0.0005, 0.06, 0.0001) var moon_disk_size_target: float = 0.00285
+@export var moon_disk_color_target: Color = Color(0.81, 0.85, 0.93)
+@export_range(0.0, 1.0, 0.01) var moon_detail_strength_target: float = 0.22
+@export_range(0.0, 1.0, 0.01) var moon_phase_strength_target: float = 0.35
+@export_range(0.0, 0.5, 0.005) var moon_earthshine_target: float = 0.05
+@export var moon_earthshine_color_target: Color = Color(0.2, 0.24, 0.32)
 @export_range(0.0, 2.5, 0.01) var star_brightness_target: float = 1.85
 @export var star_density_uv_target: Vector2 = Vector2(920.0, 505.0)
 @export_range(0.02, 0.35, 0.001) var star_point_size_target: float = 0.0072
@@ -241,6 +246,11 @@ func _apply_time() -> void:
 	if _sky_material != null:
 		if apply_stylized_sky_preset:
 			_sky_material.set_shader_parameter(&"moon_disk_size", moon_disk_size_target)
+			_sky_material.set_shader_parameter(&"moon_disk_color", moon_disk_color_target)
+			_sky_material.set_shader_parameter(&"moon_detail_strength", moon_detail_strength_target)
+			_sky_material.set_shader_parameter(&"moon_phase_strength", moon_phase_strength_target)
+			_sky_material.set_shader_parameter(&"moon_earthshine", moon_earthshine_target)
+			_sky_material.set_shader_parameter(&"moon_earthshine_color", moon_earthshine_color_target)
 			_sky_material.set_shader_parameter(&"star_brightness", star_brightness_target)
 			_sky_material.set_shader_parameter(&"star_density_uv", star_density_uv_target)
 			_sky_material.set_shader_parameter(&"star_point_size", star_point_size_target)
