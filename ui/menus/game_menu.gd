@@ -12,7 +12,7 @@ const TAB_CODEX := 6
 
 const _SLOT_COLS := 4
 const _INV_SLOT_SIZE := Vector2(70, 82)
-const _EQUIP_SLOT_SIZE := Vector2(62, 74)
+const _EQUIP_SLOT_SIZE := Vector2(58, 70)
 
 const _TAB_NAMES: PackedStringArray = [
 	"Vitals",
@@ -620,7 +620,7 @@ func _build_inventory_page(page: Control) -> void:
 	_style_scroll_transparent(eq_sc)
 	left_inner.add_child(eq_sc)
 	var eg := GridContainer.new()
-	eg.columns = 2
+	eg.columns = 3
 	eg.add_theme_constant_override("h_separation", 8)
 	eg.add_theme_constant_override("v_separation", 8)
 	eq_sc.add_child(eg)
@@ -1564,7 +1564,8 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 		elif to_eq != "":
 			_try_drop_inv_on_equip(from_i, to_eq)
 		else:
-			_drop_dragged_to_world(global_pos)
+			if not _try_drop_inv_on_hotbar(from_i, global_pos):
+				_drop_dragged_to_world(global_pos)
 	elif _drag["k"] == "eq":
 		var from_s: String = str(_drag["s"])
 		if to_inv >= 0:
@@ -1574,6 +1575,21 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 		else:
 			_drop_equipped_to_world(global_pos, from_s)
 	_cancel_drag()
+
+
+func _try_drop_inv_on_hotbar(from_i: int, global_pos: Vector2) -> bool:
+	var p := get_parent()
+	if p == null:
+		return false
+	var hud := p.get_node_or_null("PlayerHud")
+	if hud == null or not hud.has_method("hotbar_slot_from_global"):
+		return false
+	var slot_idx: int = int(hud.call("hotbar_slot_from_global", global_pos))
+	if slot_idx < 0:
+		return false
+	if not hud.has_method("assign_hotbar_from_inventory"):
+		return false
+	return bool(hud.call("assign_hotbar_from_inventory", slot_idx, from_i))
 
 
 func _cancel_drag() -> void:
