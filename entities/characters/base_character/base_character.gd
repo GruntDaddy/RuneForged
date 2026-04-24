@@ -28,9 +28,17 @@ enum ActionState {
 
 @onready var equipped_tool_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight
 @onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hatchet_Basic
+@onready var axe_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hatchet_Bronze
 @onready var pickaxe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Pickaxe_Basic
+@onready var pickaxe_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Pickaxe_Bronze
 @onready var fishing_pole_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Fishing_Pole
+@onready var hammer_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Tool_Hammer
+@onready var equipped_weapon_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight
+@onready var dagger_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Dagger_Bronze
+@onready var sword_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bronze1hSword
 @onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Tacklebox
+@onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
+@onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Chisel
 @onready var tacklebox_back_mesh: Node3D = $Rig_Medium/Skeleton3D/Back_Slot/Tool_Tacklebox_Back
 
 ## Order matches cycling in the character creator; one head visible at a time.
@@ -72,6 +80,8 @@ var _action_state: ActionState = ActionState.LOCOMOTION
 var _player_chosen_tool: ToolKind = ToolKind.AXE
 ## When using FISHING_ROD, show tacklebox on back only if true (e.g. player owns `tool_tacklebox`).
 var _show_tacklebox_on_back: bool = true
+var _equipped_main_hand_item_id: String = ""
+var _equipped_off_hand_item_id: String = ""
 
 
 func _ready() -> void:
@@ -158,16 +168,31 @@ func _on_animation_finished(anim_name: StringName) -> void:
 
 
 func _apply_tool_kind(kind: ToolKind) -> void:
-	if axe_mesh != null:
-		axe_mesh.visible = kind == ToolKind.AXE
-	if pickaxe_mesh != null:
-		pickaxe_mesh.visible = kind == ToolKind.PICKAXE
-	if fishing_pole_mesh != null:
-		fishing_pole_mesh.visible = kind == ToolKind.FISHING_ROD
+	_set_right_hand_meshes_visible(false)
+	_set_weapon_meshes_visible(false)
+	var show_tool_root := false
+	if kind == ToolKind.AXE:
+		show_tool_root = true
+		_pick_right_hand_tool(["hatchet_bronze", "hatchet_basic"], axe_bronze_mesh, axe_mesh)
+	elif kind == ToolKind.PICKAXE:
+		show_tool_root = true
+		_pick_right_hand_tool(["pickaxe_bronze", "pickaxe_basic"], pickaxe_bronze_mesh, pickaxe_mesh)
+	elif kind == ToolKind.FISHING_ROD:
+		show_tool_root = true
+		if fishing_pole_mesh != null:
+			fishing_pole_mesh.visible = true
+	elif _equipped_main_hand_item_id in ["dagger_bronze", "sword_1h_bronze"]:
+		if equipped_weapon_root != null:
+			equipped_weapon_root.visible = true
+		if _equipped_main_hand_item_id == "dagger_bronze" and dagger_bronze_mesh != null:
+			dagger_bronze_mesh.visible = true
+		elif _equipped_main_hand_item_id == "sword_1h_bronze" and sword_bronze_mesh != null:
+			sword_bronze_mesh.visible = true
+	if hammer_mesh != null:
+		hammer_mesh.visible = show_tool_root and _equipped_main_hand_item_id == "tool_hammer"
 	if equipped_tool_root != null:
-		equipped_tool_root.visible = kind != ToolKind.NONE
-	if tacklebox_hand_mesh != null:
-		tacklebox_hand_mesh.visible = false
+		equipped_tool_root.visible = show_tool_root
+	_apply_off_hand_visibility()
 	if tacklebox_back_mesh != null:
 		tacklebox_back_mesh.visible = kind == ToolKind.FISHING_ROD and _show_tacklebox_on_back
 
@@ -175,6 +200,13 @@ func _apply_tool_kind(kind: ToolKind) -> void:
 ## When the active tool is the fishing rod, controls whether the back tacklebox mesh is shown (e.g. inventory has `tool_tacklebox`).
 func set_tacklebox_back_display_enabled(enabled: bool) -> void:
 	_show_tacklebox_on_back = enabled
+	if _action_state == ActionState.LOCOMOTION:
+		_apply_tool_kind(_player_chosen_tool)
+
+
+func set_equipped_hand_items(main_hand_item_id: String, off_hand_item_id: String) -> void:
+	_equipped_main_hand_item_id = main_hand_item_id
+	_equipped_off_hand_item_id = off_hand_item_id
 	if _action_state == ActionState.LOCOMOTION:
 		_apply_tool_kind(_player_chosen_tool)
 
@@ -311,3 +343,40 @@ func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 		var mixed: Color = bm.albedo_color * tint
 		bm.albedo_color = mixed.lerp(tint, 0.22)
 		mi.set_surface_override_material(surf_idx, dup)
+
+
+func _pick_right_hand_tool(ids: Array[String], primary: Node3D, fallback: Node3D) -> void:
+	for id in ids:
+		if _equipped_main_hand_item_id == id:
+			if id.find("bronze") >= 0:
+				if primary != null:
+					primary.visible = true
+			else:
+				if fallback != null:
+					fallback.visible = true
+			return
+	if fallback != null:
+		fallback.visible = true
+
+
+func _set_right_hand_meshes_visible(enabled: bool) -> void:
+	for n in [axe_mesh, axe_bronze_mesh, pickaxe_mesh, pickaxe_bronze_mesh, fishing_pole_mesh, hammer_mesh]:
+		if n != null:
+			n.visible = enabled
+
+
+func _set_weapon_meshes_visible(enabled: bool) -> void:
+	if equipped_weapon_root != null:
+		equipped_weapon_root.visible = enabled
+	for n in [dagger_bronze_mesh, sword_bronze_mesh]:
+		if n != null:
+			n.visible = enabled
+
+
+func _apply_off_hand_visibility() -> void:
+	if torch_mesh != null:
+		torch_mesh.visible = _equipped_off_hand_item_id == "tool_torch"
+	if chisel_mesh != null:
+		chisel_mesh.visible = _equipped_off_hand_item_id == "tool_chisel"
+	if tacklebox_hand_mesh != null:
+		tacklebox_hand_mesh.visible = _equipped_off_hand_item_id == "tool_tacklebox"

@@ -157,7 +157,7 @@ func _default_tool_kind_for_slot(slot_idx: int) -> int:
 			return int(_BaseCharacter.ToolKind.AXE)
 		1:
 			return int(_BaseCharacter.ToolKind.PICKAXE)
-		2:
+		3:
 			return int(_BaseCharacter.ToolKind.FISHING_ROD)
 		_:
 			return int(_BaseCharacter.ToolKind.NONE)

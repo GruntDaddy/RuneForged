@@ -75,6 +75,8 @@ var _harvest_auto_target: WeakRef
 var _harvest_auto_gen: int = 0
 
 var _day_night: Node = null
+var _last_equipped_main_hand_id: String = ""
+var _last_equipped_off_hand_id: String = ""
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -99,6 +101,7 @@ func _ready() -> void:
 	if inv != null and inv.has_signal("inventory_changed"):
 		inv.inventory_changed.connect(_on_inventory_changed)
 	_refresh_tacklebox_back_visual()
+	_sync_equipped_hand_visuals()
 
 
 func _on_inventory_changed() -> void:
@@ -229,15 +232,16 @@ func _physics_process(delta: float) -> void:
 
 	_update_interaction_ray()
 	_update_interaction_prompt()
+	_sync_equipped_hand_visuals()
 
 	if not tool_busy:
 		if Input.is_action_just_pressed("tool_axe"):
 			_use_hotbar_slot(0)
 		if Input.is_action_just_pressed("tool_pickaxe"):
 			_use_hotbar_slot(1)
-		if Input.is_action_just_pressed("tool_fishing"):
-			_use_hotbar_slot(2)
 		if Input.is_action_just_pressed("tool_hands"):
+			_use_hotbar_slot(2)
+		if Input.is_action_just_pressed("tool_fishing"):
 			_use_hotbar_slot(3)
 
 	if Input.is_action_just_pressed("attack"):
@@ -269,6 +273,24 @@ func _apply_from_gamestate() -> void:
 func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 	if base_character.has_method("set_active_tool"):
 		base_character.set_active_tool(kind)
+
+
+func _sync_equipped_hand_visuals() -> void:
+	if base_character == null or not base_character.has_method("set_equipped_hand_items"):
+		return
+	var main_id := ""
+	var off_id := ""
+	var m: Variant = GameState.equipment.get("main_hand", null)
+	if m != null:
+		main_id = str(m.get("id", ""))
+	var o: Variant = GameState.equipment.get("off_hand", null)
+	if o != null:
+		off_id = str(o.get("id", ""))
+	if main_id == _last_equipped_main_hand_id and off_id == _last_equipped_off_hand_id:
+		return
+	_last_equipped_main_hand_id = main_id
+	_last_equipped_off_hand_id = off_id
+	base_character.set_equipped_hand_items(main_id, off_id)
 
 
 func _use_hotbar_slot(slot_idx: int) -> void:
@@ -312,7 +334,7 @@ func _default_tool_for_slot(slot_idx: int) -> _BaseCharacter.ToolKind:
 			return _BaseCharacter.ToolKind.AXE
 		1:
 			return _BaseCharacter.ToolKind.PICKAXE
-		2:
+		3:
 			return _BaseCharacter.ToolKind.FISHING_ROD
 		_:
 			return _BaseCharacter.ToolKind.NONE

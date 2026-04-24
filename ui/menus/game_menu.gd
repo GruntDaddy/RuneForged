@@ -11,8 +11,8 @@ const TAB_QUESTS := 5
 const TAB_CODEX := 6
 
 const _SLOT_COLS := 4
-const _INV_SLOT_SIZE := Vector2(76, 90)
-const _EQUIP_SLOT_SIZE := Vector2(68, 82)
+const _INV_SLOT_SIZE := Vector2(70, 82)
+const _EQUIP_SLOT_SIZE := Vector2(62, 74)
 
 const _TAB_NAMES: PackedStringArray = [
 	"Vitals",
@@ -595,7 +595,7 @@ func _build_inventory_page(page: Control) -> void:
 	root.add_theme_constant_override("separation", 12)
 	page.add_child(root)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size = Vector2(292, 0)
+	left.custom_minimum_size = Vector2(238, 0)
 	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	root.add_child(left)
@@ -632,7 +632,7 @@ func _build_inventory_page(page: Control) -> void:
 	var right := VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right.custom_minimum_size = Vector2(200, 0)
+	right.custom_minimum_size = Vector2(0, 0)
 	root.add_child(right)
 	var right_card := PanelContainer.new()
 	right_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
