@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cdg0426wfw3io" path="res://assets/kaykit/resources/Wood_Log_B.gltf" id="2_ec2hj"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
-radius = 0.38
+radius = 0.58
 
 [node name="ResourcePickupWood" type="Area3D" unique_id=1596851580]
 script = ExtResource("1_script")

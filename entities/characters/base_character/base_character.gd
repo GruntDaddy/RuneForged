@@ -35,11 +35,17 @@ enum ActionState {
 @onready var hammer_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Tool_Hammer
 @onready var equipped_weapon_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight
 @onready var dagger_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Dagger_Bronze
-@onready var sword_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bronze1hSword
+@onready var sword_wooden_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Sword_Wooden"
+) as Node3D
+@onready var sword_bronze_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Katana_Bronze"
+) as Node3D
 @onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Tacklebox
 @onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
 @onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Chisel
-@onready var tacklebox_back_mesh: Node3D = $Rig_Medium/Skeleton3D/Back_Slot/Tool_Tacklebox_Back
+@onready var helmets_root: Node3D = $Rig_Medium/Skeleton3D/Helmets
+@onready var armor_root: Node3D = $Rig_Medium/Skeleton3D/Armor
 
 ## Order matches cycling in the character creator; one head visible at a time.
 var _head_paths: Array[String] = [
@@ -78,10 +84,11 @@ const _ANIM_USE_ITEM := "Use_Item"
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–4). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
 var _player_chosen_tool: ToolKind = ToolKind.AXE
-## When using FISHING_ROD, show tacklebox on back only if true (e.g. player owns `tool_tacklebox`).
-var _show_tacklebox_on_back: bool = true
 var _equipped_main_hand_item_id: String = ""
 var _equipped_off_hand_item_id: String = ""
+var _equipped_head_item_id: String = ""
+var _equipped_chest_item_id: String = ""
+var _equipped_legs_item_id: String = ""
 
 
 func _ready() -> void:
@@ -109,6 +116,7 @@ func _ready() -> void:
 		anim_player.play(_anim_path(_ANIM_IDLE))
 
 	_disable_equipped_tool_colliders()
+	_apply_armor_visibility()
 	_apply_tool_kind(_player_chosen_tool)
 
 
@@ -181,27 +189,25 @@ func _apply_tool_kind(kind: ToolKind) -> void:
 		show_tool_root = true
 		if fishing_pole_mesh != null:
 			fishing_pole_mesh.visible = true
-	elif _equipped_main_hand_item_id in ["dagger_bronze", "sword_1h_bronze"]:
-		if equipped_weapon_root != null:
-			equipped_weapon_root.visible = true
-		if _equipped_main_hand_item_id == "dagger_bronze" and dagger_bronze_mesh != null:
-			dagger_bronze_mesh.visible = true
-		elif _equipped_main_hand_item_id == "sword_1h_bronze" and sword_bronze_mesh != null:
-			sword_bronze_mesh.visible = true
+	else:
+		if _equipped_main_hand_item_id == "tool_hammer":
+			show_tool_root = true
+			if hammer_mesh != null:
+				hammer_mesh.visible = true
+		else:
+			_show_equipped_weapon_mesh()
 	if hammer_mesh != null:
 		hammer_mesh.visible = show_tool_root and _equipped_main_hand_item_id == "tool_hammer"
 	if equipped_tool_root != null:
 		equipped_tool_root.visible = show_tool_root
 	_apply_off_hand_visibility()
-	if tacklebox_back_mesh != null:
-		tacklebox_back_mesh.visible = kind == ToolKind.FISHING_ROD and _show_tacklebox_on_back
 
 
 ## When the active tool is the fishing rod, controls whether the back tacklebox mesh is shown (e.g. inventory has `tool_tacklebox`).
 func set_tacklebox_back_display_enabled(enabled: bool) -> void:
-	_show_tacklebox_on_back = enabled
-	if _action_state == ActionState.LOCOMOTION:
-		_apply_tool_kind(_player_chosen_tool)
+	# Back-slot tacklebox visuals are disabled by design (off-hand only).
+	if enabled:
+		return
 
 
 func set_equipped_hand_items(main_hand_item_id: String, off_hand_item_id: String) -> void:
@@ -209,6 +215,13 @@ func set_equipped_hand_items(main_hand_item_id: String, off_hand_item_id: String
 	_equipped_off_hand_item_id = off_hand_item_id
 	if _action_state == ActionState.LOCOMOTION:
 		_apply_tool_kind(_player_chosen_tool)
+
+
+func set_equipped_armor_items(head_item_id: String, chest_item_id: String, legs_item_id: String) -> void:
+	_equipped_head_item_id = head_item_id
+	_equipped_chest_item_id = chest_item_id
+	_equipped_legs_item_id = legs_item_id
+	_apply_armor_visibility()
 
 
 ## Player tool selection (keys 1–4): updates which KayKit mesh is shown when idle.
@@ -368,7 +381,7 @@ func _set_right_hand_meshes_visible(enabled: bool) -> void:
 func _set_weapon_meshes_visible(enabled: bool) -> void:
 	if equipped_weapon_root != null:
 		equipped_weapon_root.visible = enabled
-	for n in [dagger_bronze_mesh, sword_bronze_mesh]:
+	for n in [dagger_bronze_mesh, sword_wooden_mesh, sword_bronze_mesh]:
 		if n != null:
 			n.visible = enabled
 
@@ -380,3 +393,64 @@ func _apply_off_hand_visibility() -> void:
 		chisel_mesh.visible = _equipped_off_hand_item_id == "tool_chisel"
 	if tacklebox_hand_mesh != null:
 		tacklebox_hand_mesh.visible = _equipped_off_hand_item_id == "tool_tacklebox"
+
+
+func _apply_armor_visibility() -> void:
+	if helmets_root != null:
+		for n in helmets_root.get_children():
+			if n is Node3D:
+				(n as Node3D).visible = false
+	var head_tier := _armor_tier_from_item_id(_equipped_head_item_id, "armor_head_")
+	if not head_tier.is_empty() and helmets_root != null:
+		var head_node := helmets_root.get_node_or_null("FullHelm_%s" % _tier_to_node_suffix(head_tier)) as Node3D
+		if head_node != null:
+			head_node.visible = true
+	if armor_root != null:
+		for n in armor_root.get_children():
+			if n is Node3D:
+				(n as Node3D).visible = false
+	var chest_tier := _armor_tier_from_item_id(_equipped_chest_item_id, "armor_chest_")
+	var legs_tier := _armor_tier_from_item_id(_equipped_legs_item_id, "armor_legs_")
+	var body_tier := chest_tier if not chest_tier.is_empty() else legs_tier
+	if not body_tier.is_empty() and armor_root != null:
+		var set_root := armor_root.get_node_or_null(_tier_to_node_suffix(body_tier)) as Node3D
+		if set_root != null:
+			set_root.visible = true
+			if not chest_tier.is_empty():
+				var body := set_root.get_node_or_null("Platebody_%s" % _tier_to_node_suffix(chest_tier)) as Node3D
+				if body != null:
+					body.visible = true
+			if not legs_tier.is_empty():
+				var legs := set_root.get_node_or_null("Platelegs_%s" % _tier_to_node_suffix(legs_tier)) as Node3D
+				if legs != null:
+					legs.visible = true
+
+
+func _show_equipped_weapon_mesh() -> void:
+	if equipped_weapon_root == null:
+		return
+	equipped_weapon_root.visible = true
+	match _equipped_main_hand_item_id:
+		"dagger_bronze":
+			if dagger_bronze_mesh != null:
+				dagger_bronze_mesh.visible = true
+		"sword_1h_wooden":
+			if sword_wooden_mesh != null:
+				sword_wooden_mesh.visible = true
+		"sword_1h_bronze":
+			if sword_bronze_mesh != null:
+				sword_bronze_mesh.visible = true
+		_:
+			equipped_weapon_root.visible = false
+
+
+func _armor_tier_from_item_id(item_id: String, prefix: String) -> String:
+	if item_id.begins_with(prefix):
+		return item_id.trim_prefix(prefix)
+	return ""
+
+
+func _tier_to_node_suffix(tier: String) -> String:
+	if tier.is_empty():
+		return ""
+	return tier.substr(0, 1).to_upper() + tier.substr(1)

@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cd7oy6gnofvub" path="res://assets/kaykit/resources/Stone_Chunks_Small.gltf" id="2_stone"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
-radius = 0.42
+radius = 0.62
 
 [node name="ResourcePickupStone" type="Area3D" unique_id=1592813652]
 script = ExtResource("1_script")

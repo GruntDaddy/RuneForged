@@ -14,6 +14,7 @@ const SLOT_SIZE := Vector2(80, 96)
 var _slots: Array[Panel] = []
 var _was_mouse_captured: bool = false
 var _drag_from_idx: int = -1
+var _default_slot_icon: Texture2D = null
 
 var _tackle_window: Window = null
 var _tackle_inventory_slot: int = -1
@@ -255,6 +256,8 @@ func _refresh_grid() -> void:
 
 func _apply_icon_to_texture_rect(tex_rect: TextureRect, fallback: Label, item_id: String) -> void:
 	var tex: Texture2D = ItemCatalog.get_item_icon(item_id)
+	if tex == null:
+		tex = _get_default_slot_icon()
 	if tex != null:
 		tex_rect.texture = tex
 		tex_rect.visible = true
@@ -264,6 +267,22 @@ func _apply_icon_to_texture_rect(tex_rect: TextureRect, fallback: Label, item_id
 		tex_rect.visible = false
 		fallback.visible = true
 		fallback.text = _item_icon(item_id)
+
+
+func _get_default_slot_icon() -> Texture2D:
+	if _default_slot_icon != null:
+		return _default_slot_icon
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.15, 0.12, 0.09, 1.0))
+	for y in range(32):
+		for x in range(32):
+			if x <= 1 or x >= 30 or y <= 1 or y >= 30:
+				img.set_pixel(x, y, Color(0.86, 0.72, 0.46, 1.0))
+	for i in range(6, 27):
+		img.set_pixel(i, i, Color(0.95, 0.86, 0.7, 0.68))
+		img.set_pixel(31 - i, i, Color(0.95, 0.86, 0.7, 0.68))
+	_default_slot_icon = ImageTexture.create_from_image(img)
+	return _default_slot_icon
 
 
 func _pretty_item_name(item_id: String) -> String:
@@ -291,7 +310,7 @@ func _item_icon(item_id: String) -> String:
 		"ore_copper":
 			return "Cu"
 		_:
-			return "•"
+			return "??"
 
 
 func _apply_slot_style(slot: Panel, filled: bool) -> void:

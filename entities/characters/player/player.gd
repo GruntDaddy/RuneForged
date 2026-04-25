@@ -21,6 +21,9 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var gravity_multiplier: float = 1.35
 @export var interaction_range: float = 3.45
 @export var interaction_height: float = 1.35
+@export var interaction_fallback_radius: float = 0.6
+@export var crosshair_screen_offset_px: Vector2 = Vector2(220.0, -18.0)
+@export var camera_shoulder_h_offset: float = 0.52
 ## Harvest/interaction ray uses character facing (not camera look). Slight downward bias helps short ground nodes.
 @export var harvest_ray_downward_blend: float = 0.22
 @export var harvest_click_cooldown_sec: float = 1.5
@@ -60,6 +63,7 @@ var stamina: float = 100.0
 @onready var game_menu: GameMenu = $GameMenu
 @onready var player_hud: CanvasLayer = $PlayerHud
 @onready var interaction_prompt: Label = $InteractionPrompt
+@onready var reticle: Label = $Reticle
 @onready var gameplay_toast: CanvasLayer = $GameplayToast
 
 var _input_enabled: bool = true
@@ -77,6 +81,9 @@ var _harvest_auto_gen: int = 0
 var _day_night: Node = null
 var _last_equipped_main_hand_id: String = ""
 var _last_equipped_off_hand_id: String = ""
+var _last_equipped_head_id: String = ""
+var _last_equipped_chest_id: String = ""
+var _last_equipped_legs_id: String = ""
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -92,8 +99,12 @@ func _ready() -> void:
 	health = max_health
 	stamina = max_stamina
 	if interaction_ray != null:
+		interaction_ray.top_level = true
 		interaction_ray.collide_with_areas = true
 		interaction_ray.collide_with_bodies = true
+	if camera_3d != null:
+		camera_3d.h_offset = camera_shoulder_h_offset
+	_update_reticle_position()
 	_resolve_day_night_controller()
 	_apply_from_gamestate()
 	if _input_enabled:
@@ -234,6 +245,7 @@ func _physics_process(delta: float) -> void:
 	_update_underwater_fog(wl_cam)
 
 	_update_interaction_ray()
+	_update_reticle_position()
 	_update_interaction_prompt()
 	_sync_equipped_hand_visuals()
 
@@ -279,21 +291,59 @@ func _set_player_tool(kind: _BaseCharacter.ToolKind) -> void:
 
 
 func _sync_equipped_hand_visuals() -> void:
-	if base_character == null or not base_character.has_method("set_equipped_hand_items"):
+	if base_character == null:
 		return
 	var main_id := ""
 	var off_id := ""
+	var head_id := ""
+	var chest_id := ""
+	var legs_id := ""
 	var m: Variant = GameState.equipment.get("main_hand", null)
 	if m != null:
 		main_id = str(m.get("id", ""))
 	var o: Variant = GameState.equipment.get("off_hand", null)
 	if o != null:
 		off_id = str(o.get("id", ""))
-	if main_id == _last_equipped_main_hand_id and off_id == _last_equipped_off_hand_id:
+	var h: Variant = GameState.equipment.get("head", null)
+	if h != null:
+		head_id = str(h.get("id", ""))
+	var c: Variant = GameState.equipment.get("chest", null)
+	if c != null:
+		chest_id = str(c.get("id", ""))
+	var l: Variant = GameState.equipment.get("legs", null)
+	if l != null:
+		legs_id = str(l.get("id", ""))
+	if (
+		main_id == _last_equipped_main_hand_id
+		and off_id == _last_equipped_off_hand_id
+		and head_id == _last_equipped_head_id
+		and chest_id == _last_equipped_chest_id
+		and legs_id == _last_equipped_legs_id
+	):
 		return
 	_last_equipped_main_hand_id = main_id
 	_last_equipped_off_hand_id = off_id
-	base_character.set_equipped_hand_items(main_id, off_id)
+	_last_equipped_head_id = head_id
+	_last_equipped_chest_id = chest_id
+	_last_equipped_legs_id = legs_id
+	if base_character.has_method("set_equipped_hand_items"):
+		base_character.set_equipped_hand_items(main_id, off_id)
+	if base_character.has_method("set_equipped_armor_items"):
+		base_character.set_equipped_armor_items(head_id, chest_id, legs_id)
+	if base_character.has_method("set_active_tool"):
+		base_character.set_active_tool(_tool_kind_for_equipped_main(main_id))
+
+
+func _tool_kind_for_equipped_main(item_id: String) -> _BaseCharacter.ToolKind:
+	match item_id:
+		"hatchet_basic", "hatchet_bronze":
+			return _BaseCharacter.ToolKind.AXE
+		"pickaxe_basic", "pickaxe_bronze":
+			return _BaseCharacter.ToolKind.PICKAXE
+		"fishing_pole":
+			return _BaseCharacter.ToolKind.FISHING_ROD
+		_:
+			return _BaseCharacter.ToolKind.NONE
 
 
 func _use_hotbar_slot(slot_idx: int) -> void:
@@ -309,7 +359,7 @@ func _use_hotbar_item(item_id: String) -> void:
 	if not InventoryService.has_item(item_id):
 		show_gameplay_message("Missing: %s" % InventoryService.get_item_display_name(item_id))
 		return
-	var tool_kind := _tool_kind_for_item(item_id)
+	var tool_kind: _BaseCharacter.ToolKind = _tool_kind_for_item(item_id)
 	if tool_kind != _BaseCharacter.ToolKind.NONE:
 		_set_player_tool(tool_kind)
 		return
@@ -406,11 +456,89 @@ func _get_harvest_facing_direction() -> Vector3:
 
 
 func _update_interaction_ray() -> void:
-	var interaction_origin := global_position + Vector3(0.0, interaction_height, 0.0)
-	var cast_dir := _get_harvest_facing_direction()
+	var vp := get_viewport()
+	if vp == null or camera_3d == null:
+		return
+	var center := _get_crosshair_screen_point()
+	var interaction_origin := camera_3d.project_ray_origin(center)
+	var cast_dir := camera_3d.project_ray_normal(center).normalized()
+	var cam_forward := (-camera_3d.global_transform.basis.z).normalized()
+	# Some camera setups can return an inverted screen-ray vector; ensure it always points where camera faces.
+	if cast_dir.dot(cam_forward) < 0.0:
+		cast_dir = -cast_dir
+	interaction_ray.global_basis = Basis.IDENTITY
 	interaction_ray.global_position = interaction_origin
 	interaction_ray.target_position = cast_dir * interaction_range
 	interaction_ray.force_raycast_update()
+
+
+func _is_interaction_candidate(collider: Object) -> bool:
+	if collider == null:
+		return false
+	if collider.has_method("harvest_hit"):
+		return true
+	return _resolve_interactable_target(collider) != null
+
+
+func _fallback_interaction_collider() -> Object:
+	if camera_3d == null:
+		return null
+	var shape := SphereShape3D.new()
+	shape.radius = maxf(0.05, interaction_fallback_radius)
+	var vp := get_viewport()
+	if vp == null:
+		return null
+	var center := _get_crosshair_screen_point()
+	var from := camera_3d.project_ray_origin(center)
+	var dir := camera_3d.project_ray_normal(center).normalized()
+	var cam_forward := (-camera_3d.global_transform.basis.z).normalized()
+	if dir.dot(cam_forward) < 0.0:
+		dir = -dir
+	var xform := Transform3D(Basis.IDENTITY, from + dir * minf(interaction_range, 2.0))
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = shape
+	q.transform = xform
+	q.collide_with_areas = true
+	q.collide_with_bodies = true
+	var hits: Array[Dictionary] = get_world_3d().direct_space_state.intersect_shape(q, 12)
+	if hits.is_empty():
+		return null
+	var best: Object = null
+	var best_d2 := INF
+	for h in hits:
+		var c: Object = h.get("collider", null)
+		if not _is_interaction_candidate(c):
+			continue
+		var p: Vector3 = h.get("point", from + dir * interaction_range)
+		var d2 := from.distance_squared_to(p)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = c
+	return best
+
+
+func _get_interaction_collider() -> Object:
+	_update_interaction_ray()
+	if interaction_ray != null and interaction_ray.is_colliding():
+		var ray_c: Object = interaction_ray.get_collider()
+		if _is_interaction_candidate(ray_c):
+			return ray_c
+	return _fallback_interaction_collider()
+
+
+func _get_crosshair_screen_point() -> Vector2:
+	var vp := get_viewport()
+	if vp == null:
+		return Vector2.ZERO
+	var rect := vp.get_visible_rect()
+	return rect.size * 0.5 + crosshair_screen_offset_px
+
+
+func _update_reticle_position() -> void:
+	if reticle == null:
+		return
+	var p := _get_crosshair_screen_point()
+	reticle.position = p - reticle.size * 0.5
 
 
 ## True if the ray hits this collider, or it is still in range and roughly in front of the character (camera-independent).
@@ -572,10 +700,7 @@ func _abort_harvest_tool_animation() -> void:
 
 
 func _try_harvest_hit_with_cooldown() -> Array:
-	_update_interaction_ray()
-	if not interaction_ray.is_colliding():
-		return [false, harvest_click_cooldown_sec]
-	var collider: Object = interaction_ray.get_collider()
+	var collider: Object = _get_interaction_collider()
 	if collider == null:
 		return [false, harvest_click_cooldown_sec]
 	if not collider.has_method("harvest_hit"):
@@ -638,10 +763,7 @@ func _harvest_swing_outcome(c: Object) -> int:
 func _update_interaction_prompt() -> void:
 	if interaction_prompt == null:
 		return
-	if not interaction_ray.is_colliding():
-		interaction_prompt.visible = false
-		return
-	var collider: Object = interaction_ray.get_collider()
+	var collider: Object = _get_interaction_collider()
 	if collider == null:
 		interaction_prompt.visible = false
 		return
@@ -682,10 +804,9 @@ func _resolve_interactable_target(collider: Object) -> Object:
 
 
 func _try_interact() -> void:
-	_update_interaction_ray()
-	if not interaction_ray.is_colliding():
+	var collider: Object = _get_interaction_collider()
+	if collider == null:
 		return
-	var collider: Object = interaction_ray.get_collider()
 	var interactable: Object = _resolve_interactable_target(collider)
 	if interactable == null or not interactable.has_method("interact"):
 		return

@@ -86,6 +86,7 @@ const _COL_INK_MUTED := Color(0.55, 0.64, 0.72, 1.0)
 const _COL_TITLE := Color(0.98, 0.86, 0.48, 1.0)
 
 var _ui_tex: Dictionary = {}  ## String -> Texture2D
+var _default_slot_icon: Texture2D = null
 
 @onready var _backdrop: ColorRect = $Backdrop
 @onready var _book: PanelContainer = $ScreenFill/Center/BookPanel
@@ -1843,6 +1844,8 @@ func _toast(msg: String) -> void:
 
 func _apply_icon_to_texture_rect(tex_rect: TextureRect, fallback: Label, item_id: String) -> void:
 	var tex: Texture2D = ItemCatalog.get_item_icon(item_id)
+	if tex == null:
+		tex = _get_default_slot_icon()
 	if tex != null:
 		tex_rect.texture = tex
 		tex_rect.visible = true
@@ -1852,6 +1855,22 @@ func _apply_icon_to_texture_rect(tex_rect: TextureRect, fallback: Label, item_id
 		tex_rect.visible = false
 		fallback.visible = true
 		fallback.text = _item_icon_abbrev(item_id)
+
+
+func _get_default_slot_icon() -> Texture2D:
+	if _default_slot_icon != null:
+		return _default_slot_icon
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.12, 0.16, 0.22, 1.0))
+	for y in range(32):
+		for x in range(32):
+			if x <= 1 or x >= 30 or y <= 1 or y >= 30:
+				img.set_pixel(x, y, Color(0.66, 0.76, 0.9, 1.0))
+	for i in range(6, 27):
+		img.set_pixel(i, i, Color(0.84, 0.9, 0.98, 0.68))
+		img.set_pixel(31 - i, i, Color(0.84, 0.9, 0.98, 0.68))
+	_default_slot_icon = ImageTexture.create_from_image(img)
+	return _default_slot_icon
 
 
 func _pretty_item_name(item_id: String) -> String:
@@ -1877,7 +1896,7 @@ func _item_icon_abbrev(item_id: String) -> String:
 		"ore_copper":
 			return "Cu"
 		_:
-			return "•"
+			return "??"
 
 
 func _equip_slot_bg_path(slot_id: String) -> String:
