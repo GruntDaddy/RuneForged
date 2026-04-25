@@ -116,6 +116,7 @@ func _ready() -> void:
 		anim_player.play(_anim_path(_ANIM_IDLE))
 
 	_disable_equipped_tool_colliders()
+	_rebind_equipment_mesh_skeleton_paths()
 	_apply_armor_visibility()
 	_apply_tool_kind(_player_chosen_tool)
 
@@ -135,6 +136,25 @@ func _disable_equipped_tool_colliders() -> void:
 		# Equipped hand tools are visual props; their physics bodies can push/carry the player capsule.
 		sb.collision_layer = 0
 		sb.collision_mask = 0
+
+
+func _rebind_equipment_mesh_skeleton_paths() -> void:
+	if skeleton == null:
+		return
+	_rebind_meshes_under(helmets_root)
+	_rebind_meshes_under(armor_root)
+
+
+func _rebind_meshes_under(root: Node) -> void:
+	if root == null:
+		return
+	var meshes: Array[Node] = root.find_children("*", "MeshInstance3D", true, false)
+	for n in meshes:
+		var mi := n as MeshInstance3D
+		if mi == null:
+			continue
+		# Armor/helmet scenes are instanced under different parents; compute skeleton path dynamically.
+		mi.skeleton = mi.get_path_to(skeleton)
 
 
 func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
