@@ -91,6 +91,9 @@ func _ready() -> void:
 	add_to_group("player")
 	health = max_health
 	stamina = max_stamina
+	if interaction_ray != null:
+		interaction_ray.collide_with_areas = true
+		interaction_ray.collide_with_bodies = true
 	_resolve_day_night_controller()
 	_apply_from_gamestate()
 	if _input_enabled:
