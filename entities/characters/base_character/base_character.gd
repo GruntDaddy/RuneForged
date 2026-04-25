@@ -46,6 +46,11 @@ enum ActionState {
 @onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Chisel
 @onready var helmets_root: Node3D = $Rig_Medium/Skeleton3D/Helmets
 @onready var armor_root: Node3D = $Rig_Medium/Skeleton3D/Armor
+@onready var base_body_mesh: MeshInstance3D = $Rig_Medium/Base_Body
+@onready var base_arm_left_mesh: MeshInstance3D = $Rig_Medium/Base_ArmLeft
+@onready var base_arm_right_mesh: MeshInstance3D = $Rig_Medium/Base_ArmRight
+@onready var base_leg_left_mesh: MeshInstance3D = $Rig_Medium/Base_LegLeft
+@onready var base_leg_right_mesh: MeshInstance3D = $Rig_Medium/Base_LegRight
 
 ## Order matches cycling in the character creator; one head visible at a time.
 var _head_paths: Array[String] = [
@@ -430,6 +435,7 @@ func _apply_armor_visibility() -> void:
 	var chest_tier := _armor_tier_from_item_id(_equipped_chest_item_id, "armor_chest_")
 	var legs_tier := _armor_tier_from_item_id(_equipped_legs_item_id, "armor_legs_")
 	var body_tier := chest_tier if not chest_tier.is_empty() else legs_tier
+	_set_base_outfit_visibility(chest_tier.is_empty(), legs_tier.is_empty())
 	if not body_tier.is_empty() and armor_root != null:
 		var set_root := armor_root.get_node_or_null(_tier_to_node_suffix(body_tier)) as Node3D
 		if set_root != null:
@@ -442,6 +448,19 @@ func _apply_armor_visibility() -> void:
 				var legs := set_root.get_node_or_null("Platelegs_%s" % _tier_to_node_suffix(legs_tier)) as Node3D
 				if legs != null:
 					legs.visible = true
+
+
+func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
+	if base_body_mesh != null:
+		base_body_mesh.visible = show_chest
+	if base_arm_left_mesh != null:
+		base_arm_left_mesh.visible = show_chest
+	if base_arm_right_mesh != null:
+		base_arm_right_mesh.visible = show_chest
+	if base_leg_left_mesh != null:
+		base_leg_left_mesh.visible = show_legs
+	if base_leg_right_mesh != null:
+		base_leg_right_mesh.visible = show_legs
 
 
 func _show_equipped_weapon_mesh() -> void:
