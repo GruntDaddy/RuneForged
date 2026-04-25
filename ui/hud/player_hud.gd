@@ -117,17 +117,9 @@ func _hotbar_item_id(slot_idx: int) -> String:
 	return str(GameState.hotbar_item_ids[slot_idx])
 
 
-func _hot_item_caption(slot_idx: int, item_id: String) -> String:
+func _hot_item_caption(_slot_idx: int, item_id: String) -> String:
 	if item_id.is_empty():
-		match _default_tool_kind_for_slot(slot_idx):
-			int(_BaseCharacter.ToolKind.AXE):
-				return "Axe"
-			int(_BaseCharacter.ToolKind.PICKAXE):
-				return "Pick"
-			int(_BaseCharacter.ToolKind.FISHING_ROD):
-				return "Fish"
-			_:
-				return "Hands"
+		return ""
 	var n := InventoryService.get_item_display_name(item_id)
 	if n.is_empty():
 		n = item_id.replace("_", " ").capitalize()
@@ -151,13 +143,5 @@ func _tool_kind_for_item(item_id: String) -> int:
 	return int(_BaseCharacter.ToolKind.NONE)
 
 
-func _default_tool_kind_for_slot(slot_idx: int) -> int:
-	match slot_idx:
-		0:
-			return int(_BaseCharacter.ToolKind.AXE)
-		1:
-			return int(_BaseCharacter.ToolKind.PICKAXE)
-		3:
-			return int(_BaseCharacter.ToolKind.FISHING_ROD)
-		_:
-			return int(_BaseCharacter.ToolKind.NONE)
+func _default_tool_kind_for_slot(_slot_idx: int) -> int:
+	return int(_BaseCharacter.ToolKind.NONE)

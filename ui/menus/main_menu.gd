@@ -30,7 +30,6 @@ func _on_animation_finished(anim_name: StringName) -> void:
 func _on_new_pressed() -> void:
 	GameState.reset()
 	InventoryService.clear_all_slots()
-	_grant_starter_items()
 	_pending_scene = GameState.SCENE_CHARACTER_CREATOR
 	anim_player.play("fade_out")
 
@@ -43,7 +42,6 @@ func _on_load_pressed() -> void:
 		# No save yet – fall back to fresh character creation
 		GameState.reset()
 		InventoryService.clear_all_slots()
-		_grant_starter_items()
 		_pending_scene = GameState.SCENE_CHARACTER_CREATOR
 
 	anim_player.play("fade_out")
@@ -62,6 +60,4 @@ func _on_quit_pressed() -> void:
 
 
 func _grant_starter_items() -> void:
-	for item_id in ["hatchet_basic", "pickaxe_basic", "fishing_pole", "tool_torch", "tool_tacklebox"]:
-		InventoryService.add_item(item_id, 1)
-	GameState.hotbar_item_ids = ["hatchet_basic", "pickaxe_basic", "", "fishing_pole"]
+	return

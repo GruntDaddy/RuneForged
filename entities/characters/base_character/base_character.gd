@@ -83,7 +83,7 @@ const _ANIM_USE_ITEM := "Use_Item"
 
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–4). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
-var _player_chosen_tool: ToolKind = ToolKind.AXE
+var _player_chosen_tool: ToolKind = ToolKind.NONE
 var _equipped_main_hand_item_id: String = ""
 var _equipped_off_hand_item_id: String = ""
 var _equipped_head_item_id: String = ""
@@ -368,8 +368,6 @@ func _pick_right_hand_tool(ids: Array[String], primary: Node3D, fallback: Node3D
 				if fallback != null:
 					fallback.visible = true
 			return
-	if fallback != null:
-		fallback.visible = true
 
 
 func _set_right_hand_meshes_visible(enabled: bool) -> void:

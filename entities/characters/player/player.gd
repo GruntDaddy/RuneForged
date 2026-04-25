@@ -381,16 +381,8 @@ func _tool_kind_for_item(item_id: String) -> _BaseCharacter.ToolKind:
 	return _BaseCharacter.ToolKind.NONE
 
 
-func _default_tool_for_slot(slot_idx: int) -> _BaseCharacter.ToolKind:
-	match slot_idx:
-		0:
-			return _BaseCharacter.ToolKind.AXE
-		1:
-			return _BaseCharacter.ToolKind.PICKAXE
-		3:
-			return _BaseCharacter.ToolKind.FISHING_ROD
-		_:
-			return _BaseCharacter.ToolKind.NONE
+func _default_tool_for_slot(_slot_idx: int) -> _BaseCharacter.ToolKind:
+	return _BaseCharacter.ToolKind.NONE
 
 
 func get_hud_snapshot() -> Dictionary:
