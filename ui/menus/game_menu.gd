@@ -182,7 +182,6 @@ func toggle(default_tab: int = 0) -> void:
 
 
 func open_menu(tab_idx: int = 0) -> void:
-	_ensure_starter_items_if_empty()
 	_was_mouse_captured = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	visible = true
@@ -680,17 +679,7 @@ func _build_inventory_page(page: Control) -> void:
 
 
 func _ensure_starter_items_if_empty() -> void:
-	if InventoryService.get_items_copy().size() > 0:
-		return
-	for item_id in ["hatchet_basic", "pickaxe_basic", "fishing_pole", "tool_torch", "tool_tacklebox"]:
-		InventoryService.add_item(item_id, 1)
-	var hb_empty := true
-	for i in GameState.hotbar_item_ids.size():
-		if not str(GameState.hotbar_item_ids[i]).is_empty():
-			hb_empty = false
-			break
-	if GameState.hotbar_item_ids.size() < 4 or hb_empty:
-		GameState.hotbar_item_ids = ["hatchet_basic", "pickaxe_basic", "", "fishing_pole"]
+	return
 
 
 func _equip_label(slot_id: String) -> String:

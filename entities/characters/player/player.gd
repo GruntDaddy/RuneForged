@@ -22,7 +22,7 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var interaction_range: float = 3.45
 @export var interaction_height: float = 1.35
 @export var interaction_fallback_radius: float = 0.6
-@export var crosshair_screen_offset_px: Vector2 = Vector2(220.0, -18.0)
+@export var crosshair_screen_offset_px: Vector2 = Vector2.ZERO
 @export var camera_shoulder_h_offset: float = 0.52
 ## Harvest/interaction ray uses character facing (not camera look). Slight downward bias helps short ground nodes.
 @export var harvest_ray_downward_blend: float = 0.22
@@ -460,7 +460,7 @@ func _update_interaction_ray() -> void:
 	if vp == null or camera_3d == null:
 		return
 	var center := _get_crosshair_screen_point()
-	var interaction_origin := camera_3d.project_ray_origin(center)
+	var interaction_origin := global_position + Vector3(0.0, interaction_height, 0.0)
 	var cast_dir := camera_3d.project_ray_normal(center).normalized()
 	var cam_forward := (-camera_3d.global_transform.basis.z).normalized()
 	# Some camera setups can return an inverted screen-ray vector; ensure it always points where camera faces.
@@ -489,12 +489,12 @@ func _fallback_interaction_collider() -> Object:
 	if vp == null:
 		return null
 	var center := _get_crosshair_screen_point()
-	var from := camera_3d.project_ray_origin(center)
+	var from := global_position + Vector3(0.0, interaction_height, 0.0)
 	var dir := camera_3d.project_ray_normal(center).normalized()
 	var cam_forward := (-camera_3d.global_transform.basis.z).normalized()
 	if dir.dot(cam_forward) < 0.0:
 		dir = -dir
-	var xform := Transform3D(Basis.IDENTITY, from + dir * minf(interaction_range, 2.0))
+	var xform := Transform3D(Basis.IDENTITY, from + dir * minf(interaction_range * 0.6, 2.2))
 	var q := PhysicsShapeQueryParameters3D.new()
 	q.shape = shape
 	q.transform = xform
