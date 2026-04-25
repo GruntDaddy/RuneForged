@@ -359,11 +359,35 @@ func _use_hotbar_item(item_id: String) -> void:
 	if not InventoryService.has_item(item_id):
 		show_gameplay_message("Missing: %s" % InventoryService.get_item_display_name(item_id))
 		return
+	_quick_equip_hotbar_item(item_id)
 	var tool_kind: _BaseCharacter.ToolKind = _tool_kind_for_item(item_id)
 	if tool_kind != _BaseCharacter.ToolKind.NONE:
 		_set_player_tool(tool_kind)
 		return
-	show_gameplay_message("Cannot quick-use that item yet.")
+	if base_character != null and base_character.has_method("set_active_tool"):
+		base_character.set_active_tool(_BaseCharacter.ToolKind.NONE)
+
+
+func _quick_equip_hotbar_item(item_id: String) -> void:
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it == null:
+		return
+	var equip_slot := ""
+	match it.category:
+		ItemData.Category.TOOL, ItemData.Category.WEAPON:
+			equip_slot = "main_hand"
+		ItemData.Category.RELIC:
+			equip_slot = "off_hand"
+		_:
+			return
+	# Shields and similar defensive items should be off-hand when quick-selected.
+	for tag in it.tags:
+		var t := str(tag)
+		if t == "shield":
+			equip_slot = "off_hand"
+			break
+	GameState.equipment[equip_slot] = {"id": item_id, "count": 1}
+	_sync_equipped_hand_visuals()
 
 
 func _tool_kind_for_item(item_id: String) -> _BaseCharacter.ToolKind:

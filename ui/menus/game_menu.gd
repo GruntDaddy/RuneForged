@@ -1674,12 +1674,10 @@ func _try_drop_inv_on_equip(from_i: int, equip_slot: String) -> void:
 		if not _equip_one_from_inv(from_i, equip_slot):
 			return
 	else:
-		if int(inv_s.get("count", 0)) == 1:
-			if not _swap_inv_equip(from_i, equip_slot):
-				return
-		else:
-			if not _equip_replace_from_inv(from_i, equip_slot):
-				return
+		# Always unequip the current item first, then equip the new one.
+		# This keeps slot behavior consistent for armor/clothing replacements.
+		if not _equip_replace_from_inv(from_i, equip_slot):
+			return
 	_refresh_inv_grid()
 	_refresh_equip_slots()
 
