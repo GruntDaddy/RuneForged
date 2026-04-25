@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cf4063mim5rv0"]
+
+[ext_resource type="Texture2D" uid="uid://dvcs04g36wj6m" path="res://assets/kaykit/characters/raw/hiker_texture.png" id="1_oh1hh"]
+
+[resource]
+resource_name = "hiker"
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.8301694, 0.115756, 0.11271531, 1)
+albedo_texture = ExtResource("1_oh1hh")
+metallic = 1.0
+roughness = 0.0
+emission_enabled = true

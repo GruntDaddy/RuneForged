@@ -4,7 +4,7 @@
 
 [resource]
 resource_name = "paladin_metallic"
-albedo_color = Color(0.5578952, 0.32735237, 0.085481085, 1)
+albedo_color = Color(0.67463887, 0.48083544, 0, 1)
 albedo_texture = ExtResource("1_xqh57")
 metallic = 1.0
-roughness = 0.5
+roughness = 0.42

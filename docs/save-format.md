@@ -20,6 +20,7 @@
 
 ## Game State Additions (`SaveManager` v2 payload.game_state)
 
+- **`survival_level`**: int survival skill level used by crafting requirements such as torch crafting/repair.
 - **`time_of_day`**: float in `[0, 1)`, used by `DayNightController` to resume cycle position.
 - **`moon_phase`**: float in `[0, 1)`, moon phase offset used by sky shader/controller.
 - **`world_fire_states`**: dictionary keyed by node path (string), values are dictionaries with fire runtime state (e.g. `lit`, `fuel_seconds`).

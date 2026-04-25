@@ -7,6 +7,8 @@ func can_craft(recipe: RecipeData, station: RecipeData.CraftStation) -> bool:
 		return false
 	if recipe.station != RecipeData.CraftStation.NONE and recipe.station != station:
 		return false
+	if not _meets_skill_requirement(recipe):
+		return false
 	for ing in recipe.inputs:
 		if ing == null:
 			continue
@@ -18,6 +20,21 @@ func can_craft(recipe: RecipeData, station: RecipeData.CraftStation) -> bool:
 		if not InventoryService.has_item(req_id):
 			return false
 	return true
+
+
+func _meets_skill_requirement(recipe: RecipeData) -> bool:
+	if recipe.required_skill_level <= 0:
+		return true
+	if recipe.skill_id.is_empty():
+		return true
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null:
+		return true
+	var key: String = "%s_level" % recipe.skill_id
+	if not (key in gs):
+		return true
+	var level: int = int(gs.get(key))
+	return level >= recipe.required_skill_level
 
 
 func craft(recipe: RecipeData, station: RecipeData.CraftStation) -> bool:

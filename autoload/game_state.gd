@@ -26,6 +26,7 @@ var region: String = ""
 ## Survival skills (harvest gates). Tune when XP/progression exists.
 var woodcutting_level: int = 10
 var mining_level: int = 10
+var survival_level: int = 10
 ## Day/night persistence used by world sky controller.
 var time_of_day: float = 0.32
 var moon_phase: float = 0.18
@@ -57,6 +58,7 @@ func reset() -> void:
 	region = ""
 	woodcutting_level = 10
 	mining_level = 10
+	survival_level = 10
 	time_of_day = 0.32
 	moon_phase = 0.18
 	world_fire_states = {}
@@ -82,6 +84,7 @@ func to_dict() -> Dictionary:
 		"region": region,
 		"woodcutting_level": woodcutting_level,
 		"mining_level": mining_level,
+		"survival_level": survival_level,
 		"time_of_day": time_of_day,
 		"moon_phase": moon_phase,
 		"world_fire_states": world_fire_states.duplicate(true),
@@ -112,6 +115,7 @@ func from_dict(data: Variant) -> void:
 		region = REGION_TUTORIAL_ISLE
 	woodcutting_level = int(d.get("woodcutting_level", 10))
 	mining_level = int(d.get("mining_level", 10))
+	survival_level = int(d.get("survival_level", 10))
 	time_of_day = clampf(float(d.get("time_of_day", 0.32)), 0.0, 0.999999)
 	moon_phase = clampf(float(d.get("moon_phase", 0.18)), 0.0, 0.999999)
 	if typeof(d.get("world_fire_states", null)) == TYPE_DICTIONARY:
