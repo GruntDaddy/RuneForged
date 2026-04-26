@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://w2wjjlh28yp2"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_hkkye"]
-[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="2_n7lad"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://entities/harvestable/harvestable_resource.gd" id="1_hkkye"]
+[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://entities/resource/resource_pickup_logs.tscn" id="2_n7lad"]
 [ext_resource type="PackedScene" uid="uid://o2r3hp0urpbi" path="res://assets/Ultimate Nature Pack/PalmTree_1.fbx" id="3_fdvhw"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
@@ -20,7 +20,7 @@ particle_height = 1.85
 shake_amount = 0.08
 tree_scale_multiplier = 1.5
 respawn_seconds = 30.0
-respawn_scene_path = "res://world/world_building_parts/props/harvestable_tree.tscn"
+respawn_scene_path = "res://entities/harvestable/harvestable_tree_palm_1.tscn"
 prompt_detail = "Tree"
 resource_display_name = "Regular Logs"
 

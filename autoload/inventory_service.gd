@@ -18,14 +18,15 @@ const TAG_FISHING_BOBBER := "fishing_bobber"
 const TAG_FISHING_BAIT := "fishing_bait"
 
 const PICKUP_SCENES := {
-	"logs": preload("res://world/world_building_parts/props/resource_pickup_logs.tscn"),
-	"oak_logs": preload("res://world/world_building_parts/props/resource_pickup_logs_oak.tscn"),
-	"stone": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
-	"tin_ore": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
-	"ore_tin": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
-	"ore_copper": preload("res://world/world_building_parts/props/resource_pickup_stone.tscn"),
-	"tool_torch": preload("res://world/world_building_parts/props/torch_light.tscn"),
-	"campfire_kit": preload("res://world/world_building_parts/props/campfire.tscn"),
+	"logs": preload("res://entities/resource/resource_pickup_logs.tscn"),
+	"logs_oak": preload("res://entities/resource/resource_pickup_logs_oak.tscn"),
+	"oak_logs": preload("res://entities/resource/resource_pickup_logs_oak.tscn"),
+	"stone": preload("res://entities/resource/resource_pickup_stone.tscn"),
+	"tin_ore": preload("res://entities/resource/resource_pickup_stone.tscn"),
+	"ore_tin": preload("res://entities/resource/resource_pickup_stone.tscn"),
+	"ore_copper": preload("res://entities/resource/resource_pickup_stone.tscn"),
+	"tool_torch": preload("res://world/torch_light.tscn"),
+	"campfire_kit": preload("res://entities/building_parts/campfire.tscn"),
 }
 
 ## Each entry: null or Dictionary with "id", "count", optional "tackle"
@@ -208,7 +209,7 @@ func get_item_display_name(item_id: String) -> String:
 	match item_id:
 		"logs", "wood":
 			return "Logs"
-		"oak_logs":
+		"oak_logs", "logs_oak":
 			return "Oak logs"
 		"stone":
 			return "Stone"
@@ -450,9 +451,9 @@ func _persist_placeable_fire_if_needed(item_id: String, node: Node3D) -> void:
 	var fire_scene_path := ""
 	match item_id:
 		"tool_torch":
-			fire_scene_path = "res://world/world_building_parts/props/torch_light.tscn"
+			fire_scene_path = "res://world/torch_light.tscn"
 		"campfire_kit":
-			fire_scene_path = "res://world/world_building_parts/props/campfire.tscn"
+			fire_scene_path = "res://entities/building_parts/campfire.tscn"
 	var state_id := "placed_fire_%s" % str(int(Time.get_unix_time_from_system() * 1000.0))
 	if "fire_state_id" in node:
 		node.fire_state_id = state_id
@@ -507,6 +508,8 @@ func apply_save_dict(d: Variant) -> void:
 		var id := str(entry.get("id", ""))
 		if id == "wood":
 			id = "logs"
+		elif id == "oak_logs":
+			id = "logs_oak"
 		var c := int(entry.get("count", 0))
 		if id.is_empty() or c < 1:
 			slots[i] = null

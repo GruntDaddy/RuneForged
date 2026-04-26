@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://40knn32wykjk"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cai6plwofvost" path="res://world/world_building_parts/props/static/rock_3_q_color_1.tscn" id="3_430bt"]
-[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://world/world_building_parts/props/resource_pickup_stone.tscn" id="3_drop"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://entities/harvestable/harvestable_resource.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cai6plwofvost" path="res://entities/props/static/rock_3_q_color_1.tscn" id="3_430bt"]
+[ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://entities/resource/resource_pickup_stone.tscn" id="3_drop"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rock"]
 radius = 1.7387
@@ -19,7 +19,7 @@ particle_color = Color(0.62, 0.62, 0.64, 1)
 particle_height = 0.675
 shake_amount = 0.225
 respawn_seconds = 30.0
-respawn_scene_path = "res://world/world_building_parts/props/harvestable_rock.tscn"
+respawn_scene_path = "res://entities/harvestable/harvestable_rock.tscn"
 prompt_detail = "Small Rock"
 resource_item_id = "stone"
 resource_display_name = "Stone"

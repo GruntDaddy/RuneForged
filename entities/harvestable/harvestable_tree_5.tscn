@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://id52snjl08id"]
 
-[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://world/world_building_parts/props/harvestable_resource.gd" id="1_w7n6x"]
-[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://world/world_building_parts/props/resource_pickup_logs.tscn" id="2_mrrks"]
-[ext_resource type="PackedScene" uid="uid://bxeo8svqrs8mi" path="res://world/world_building_parts/props/static/common_tree_5.tscn" id="3_p7alv"]
+[ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://entities/harvestable/harvestable_resource.gd" id="1_w7n6x"]
+[ext_resource type="PackedScene" uid="uid://soc87nv76knk" path="res://entities/resource/resource_pickup_logs.tscn" id="2_mrrks"]
+[ext_resource type="PackedScene" uid="uid://bxeo8svqrs8mi" path="res://entities/props/static/common_tree_5.tscn" id="3_p7alv"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trunk"]
 radius = 0.4345703
@@ -20,7 +20,7 @@ particle_height = 1.85
 shake_amount = 0.08
 tree_scale_multiplier = 1.5
 respawn_seconds = 30.0
-respawn_scene_path = "res://world/world_building_parts/props/harvestable_tree.tscn"
+respawn_scene_path = "res://entities/harvestable/harvestable_tree_5.tscn"
 prompt_detail = "Tree"
 resource_display_name = "Regular Logs"
 

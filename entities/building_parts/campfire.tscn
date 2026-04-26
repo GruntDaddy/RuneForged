@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3]
 
-[ext_resource type="Script" path="res://world/world_building_parts/props/campfire.gd" id="1_script"]
+[ext_resource type="Script" path="res://entities/building_parts/campfire.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://assets/kaykit/items/Campfire_Base.gltf" id="2_base"]
 [ext_resource type="PackedScene" path="res://assets/kaykit/items/Campfire_Logs.gltf" id="3_logs"]
 [ext_resource type="AudioStream" path="res://assets/audio/Campfire Loop.mp3" id="4_audio"]

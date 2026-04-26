@@ -21,10 +21,10 @@ enum ActionState {
 
 @onready var hand_r_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_R
 @onready var hand_l_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_L
-@onready var head_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Head_Slot
-@onready var chest_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Chest_Slot
-@onready var legs_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Legs_Slot
-@onready var back_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/Back_Slot
+@onready var head_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Head_Slot") as BoneAttachment3D
+@onready var chest_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Chest_Slot") as BoneAttachment3D
+@onready var legs_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Legs_Slot") as BoneAttachment3D
+@onready var back_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot") as BoneAttachment3D
 
 @onready var equipped_tool_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight
 @onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hatchet_Basic
@@ -32,7 +32,7 @@ enum ActionState {
 @onready var pickaxe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Pickaxe_Basic
 @onready var pickaxe_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Pickaxe_Bronze
 @onready var fishing_pole_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Fishing_Pole
-@onready var hammer_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Tool_Hammer
+@onready var hammer_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hammer_Common
 @onready var equipped_weapon_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight
 @onready var dagger_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Dagger_Bronze
 @onready var sword_wooden_mesh: Node3D = get_node_or_null(
@@ -41,22 +41,41 @@ enum ActionState {
 @onready var sword_bronze_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Katana_Bronze"
 ) as Node3D
-@onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Tacklebox
+@onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tacklebox
 @onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
-@onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tool_Chisel
+@onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Chisel
+@onready var shield_bronze_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Kite_Bronze"
+) as Node3D
+@onready var shield_iron_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Kite_Iron"
+) as Node3D
+@onready var shield_square_bronze_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Square_Bronze"
+) as Node3D
+@onready var shield_square_iron_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Square_Iron"
+) as Node3D
+@onready var shield_wooden_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Wooden"
+) as Node3D
+@onready var clothing_root: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing") as Node3D
+@onready var outfit_green: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green") as Node3D
+@onready var outfit_yellow: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow") as Node3D
 @onready var helmets_root: Node3D = $Rig_Medium/Skeleton3D/Helmets
 @onready var armor_root: Node3D = $Rig_Medium/Skeleton3D/Armor
-@onready var base_body_mesh: MeshInstance3D = $Rig_Medium/Base_Body
-@onready var base_arm_left_mesh: MeshInstance3D = $Rig_Medium/Base_ArmLeft
-@onready var base_arm_right_mesh: MeshInstance3D = $Rig_Medium/Base_ArmRight
-@onready var base_leg_left_mesh: MeshInstance3D = $Rig_Medium/Base_LegLeft
-@onready var base_leg_right_mesh: MeshInstance3D = $Rig_Medium/Base_LegRight
+@onready var base_body_mesh: MeshInstance3D = get_node_or_null("Rig_Medium/Base_Body") as MeshInstance3D
+@onready var base_arm_left_mesh: MeshInstance3D = get_node_or_null("Rig_Medium/Base_ArmLeft") as MeshInstance3D
+@onready var base_arm_right_mesh: MeshInstance3D = get_node_or_null("Rig_Medium/Base_ArmRight") as MeshInstance3D
+@onready var base_leg_left_mesh: MeshInstance3D = get_node_or_null("Rig_Medium/Base_LegLeft") as MeshInstance3D
+@onready var base_leg_right_mesh: MeshInstance3D = get_node_or_null("Rig_Medium/Base_LegRight") as MeshInstance3D
 
 ## Order matches cycling in the character creator; one head visible at a time.
 var _head_paths: Array[String] = [
-	"Rig_Medium/Head_M-W_01_R",
-	"Rig_Medium/Ranger_Head",
-	"Rig_Medium/Mage_Head_F_Red",
+	"Rig_Medium/Skeleton3D/Head_M-W_01_R",
+	"Rig_Medium/Skeleton3D/Head_M-W_02_R",
+	"Rig_Medium/Skeleton3D/Head_F-W_01_R",
+	"Rig_Medium/Skeleton3D/Head_F-W_02_R",
 ]
 
 ## Placeholder outfit tints until separate KayKit shirt/pants meshes are hooked up.
@@ -342,17 +361,18 @@ func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int) -> void:
 		if h:
 			h.visible = i == pick
 
-	var shirt_col: Color = SHIRT_TINTS[posmod(shirt_idx, SHIRT_TINTS.size())]
-	var pants_col: Color = PANTS_TINTS[posmod(pants_idx, PANTS_TINTS.size())]
+	# Outfit variants replaced base-body tint placeholders in the current scene layout.
+	_apply_outfit_selection(shirt_idx, pants_idx)
 
-	for p in [
-		"Rig_Medium/Base_Body",
-		"Rig_Medium/Base_ArmLeft",
-		"Rig_Medium/Base_ArmRight",
-	]:
-		_tint_mesh_surfaces(get_node_or_null(p) as MeshInstance3D, shirt_col)
-	for p in ["Rig_Medium/Base_LegLeft", "Rig_Medium/Base_LegRight"]:
-		_tint_mesh_surfaces(get_node_or_null(p) as MeshInstance3D, pants_col)
+
+func _apply_outfit_selection(shirt_idx: int, pants_idx: int) -> void:
+	if outfit_green == null and outfit_yellow == null:
+		return
+	var pick := posmod(shirt_idx + pants_idx, 2)
+	if outfit_yellow != null:
+		outfit_yellow.visible = pick == 0
+	if outfit_green != null:
+		outfit_green.visible = pick != 0
 
 
 ## Godot 4: MeshInstance3D has no modulate (CanvasItem-only). Tint via material albedo.
@@ -416,6 +436,16 @@ func _apply_off_hand_visibility() -> void:
 		chisel_mesh.visible = _equipped_off_hand_item_id == "tool_chisel"
 	if tacklebox_hand_mesh != null:
 		tacklebox_hand_mesh.visible = _equipped_off_hand_item_id == "tool_tacklebox"
+	if shield_bronze_mesh != null:
+		shield_bronze_mesh.visible = _equipped_off_hand_item_id == "shield_bronze"
+	if shield_iron_mesh != null:
+		shield_iron_mesh.visible = _equipped_off_hand_item_id == "shield_iron"
+	if shield_square_bronze_mesh != null:
+		shield_square_bronze_mesh.visible = _equipped_off_hand_item_id == "shield_square_bronze"
+	if shield_square_iron_mesh != null:
+		shield_square_iron_mesh.visible = _equipped_off_hand_item_id == "shield_square_iron"
+	if shield_wooden_mesh != null:
+		shield_wooden_mesh.visible = _equipped_off_hand_item_id == "shield_wooden"
 
 
 func _apply_armor_visibility() -> void:
@@ -451,6 +481,8 @@ func _apply_armor_visibility() -> void:
 
 
 func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
+	if clothing_root != null:
+		clothing_root.visible = show_chest or show_legs
 	if base_body_mesh != null:
 		base_body_mesh.visible = show_chest
 	if base_arm_left_mesh != null:

@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://ctjcl1fy0nk6p"]
 
-[ext_resource type="PackedScene" uid="uid://ceeqmxtxr6tif" path="res://world/world_building_parts/props/static/scattered_rocks_small_pile.tscn" id="1_1lelt"]
+[ext_resource type="PackedScene" uid="uid://ceeqmxtxr6tif" path="res://entities/props/static/scattered_rocks_small_pile.tscn" id="1_1lelt"]
 [ext_resource type="Texture2D" uid="uid://brcfquahc8iug" path="res://assets/kaykit/Forest & Nature Pack/Color1/forest_texture.png" id="2_jkpoa"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t6xiv"]

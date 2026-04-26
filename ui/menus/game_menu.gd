@@ -1896,7 +1896,7 @@ func _item_icon_abbrev(item_id: String) -> String:
 	match item_id:
 		"logs", "wood":
 			return "LG"
-		"oak_logs":
+		"oak_logs", "logs_oak":
 			return "OK"
 		"stone":
 			return "ST"

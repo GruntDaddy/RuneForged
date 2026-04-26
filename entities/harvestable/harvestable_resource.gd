@@ -6,7 +6,7 @@ const _InventoryService = preload("res://autoload/inventory_service.gd")
 ## Gameplay harvestable (trees, rocks). **Collision layer 2** is applied in `_ready` so the player ray (mask 2) hits props.
 ##
 ## ## Reusing / placing on a map (editor)
-## - **Scenes:** `res://world/world_building_parts/props/harvestable_tree.tscn` (chop) and `harvestable_rock.tscn` (mine). Open your level scene, drag the scene from the FileSystem dock, or **Instance Child Scene** and pick the same path.
+## - **Scenes:** `res://entities/harvestable/harvestable_tree_1.tscn` (chop) and `res://entities/harvestable/harvestable_rock.tscn` (mine). Open your level scene, drag the scene from the FileSystem dock, or **Instance Child Scene** and pick the same path.
 ## - **Move / duplicate:** Select the instance, move/rotate in the viewport. **Ctrl+D** duplicates. Adjust **Transform** in the inspector for fine placement.
 ## - **Exports:** Per-instance you can change `max_hits`, drops, particle color, `harvest_interaction` (Chop vs Mine) on rocks if you duplicate the rock scene or override in the inspector.
 ##
@@ -19,7 +19,7 @@ const _InventoryService = preload("res://autoload/inventory_service.gd")
 ## ## Terrain3D “Meshes” / foliage painter (Asset Dock → Meshes)
 ## - That tool instances **MultiMeshes** for rendering. Official limitation: **no physics collision** on painted instances (see Terrain3D docs: *Foliage Instancing* → *Limitations* → *No Collision*).
 ## - So you **cannot** paint these `harvestable_*.tscn` scenes there and still get **chop/mine** + triggers — the painter does not spawn full `StaticBody3D` gameplay nodes.
-## - Use the painter for **decorative-only** trees/rocks (visual mesh/scene), and place **separate** `harvestable_tree.tscn` / `harvestable_rock.tscn` under **TerrainObjects** for anything the player must harvest; or use an editor tool like **AssetPlacer / Scatter** (third-party) for bulk placement of real scenes.
+## - Use the painter for **decorative-only** trees/rocks (visual mesh/scene), and place **separate** harvestable scenes under `res://entities/harvestable/` for anything the player must harvest; or use an editor tool like **AssetPlacer / Scatter** (third-party) for bulk placement of real scenes.
 
 enum HarvestInteraction { CHOP, MINE }
 

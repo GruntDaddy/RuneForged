@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://world/world_building_parts/props/torch_light.gd" id="1_script"]
+[ext_resource type="Script" path="res://world/torch_light.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://entities/equipment/off_hand/torch.tscn" id="2_torch"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_flame"]
