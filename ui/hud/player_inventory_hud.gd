@@ -220,7 +220,9 @@ func _build_hover_tooltip() -> void:
 	_hover_tooltip = PanelContainer.new()
 	_hover_tooltip.visible = false
 	_hover_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hover_tooltip.z_index = 100
+	_hover_tooltip.set_as_top_level(true)
+	_hover_tooltip.z_as_relative = false
+	_hover_tooltip.z_index = 10000
 	add_child(_hover_tooltip)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.06, 0.08, 0.11, 0.95)
@@ -250,7 +252,9 @@ func _update_hover_tooltip(global_pos: Vector2) -> void:
 	if not visible or _drag_from_idx >= 0:
 		_hide_hover_tooltip()
 		return
-	var idx := _slot_from_mouse(global_pos)
+	var idx := _slot_from_hovered_control()
+	if idx < 0:
+		idx = _slot_from_mouse(global_pos)
 	if idx < 0:
 		_hide_hover_tooltip()
 		return
@@ -295,6 +299,19 @@ func _update_hover_tooltip(global_pos: Vector2) -> void:
 func _hide_hover_tooltip() -> void:
 	if _hover_tooltip != null:
 		_hover_tooltip.visible = false
+
+
+func _slot_from_hovered_control() -> int:
+	var vp := get_viewport()
+	if vp == null:
+		return -1
+	var hovered := vp.gui_get_hovered_control()
+	while hovered != null:
+		for i in _slots.size():
+			if hovered == _slots[i]:
+				return i
+		hovered = hovered.get_parent() as Control
+	return -1
 
 
 func _category_label(cat: int) -> String:

@@ -477,34 +477,30 @@ func _normalize_item_id(id: String) -> String:
 
 func _apply_armor_visibility() -> void:
 	if helmets_root != null:
-		for n in helmets_root.get_children():
-			if n is Node3D:
-				(n as Node3D).visible = false
+		_set_node3d_tree_visible(helmets_root, false, false)
 	var head_tier := _armor_tier_from_item_id(_equipped_head_item_id, "armor_head_")
 	if not head_tier.is_empty() and helmets_root != null:
 		var head_node := helmets_root.get_node_or_null("FullHelm_%s" % _tier_to_node_suffix(head_tier)) as Node3D
 		if head_node != null:
 			head_node.visible = true
+			_set_node3d_tree_visible(head_node, true, true)
 	if armor_root != null:
-		for n in armor_root.get_children():
-			if n is Node3D:
-				(n as Node3D).visible = false
+		_set_node3d_tree_visible(armor_root, false, false)
 	var chest_tier := _armor_tier_from_item_id(_equipped_chest_item_id, "armor_chest_")
 	var legs_tier := _armor_tier_from_item_id(_equipped_legs_item_id, "armor_legs_")
-	var body_tier := chest_tier if not chest_tier.is_empty() else legs_tier
 	_set_base_outfit_visibility(chest_tier.is_empty(), legs_tier.is_empty())
-	if not body_tier.is_empty() and armor_root != null:
-		var set_root := armor_root.get_node_or_null(_tier_to_node_suffix(body_tier)) as Node3D
-		if set_root != null:
-			set_root.visible = true
-			if not chest_tier.is_empty():
-				var body := set_root.get_node_or_null("Platebody_%s" % _tier_to_node_suffix(chest_tier)) as Node3D
-				if body != null:
-					body.visible = true
-			if not legs_tier.is_empty():
-				var legs := set_root.get_node_or_null("Platelegs_%s" % _tier_to_node_suffix(legs_tier)) as Node3D
-				if legs != null:
-					legs.visible = true
+	if armor_root != null and not chest_tier.is_empty():
+		var chest_suffix := _tier_to_node_suffix(chest_tier)
+		var body := armor_root.get_node_or_null("%s/Platebody_%s" % [chest_suffix, chest_suffix]) as Node3D
+		if body != null:
+			_set_ancestor_visible_until(body, armor_root)
+			_set_node3d_tree_visible(body, true, true)
+	if armor_root != null and not legs_tier.is_empty():
+		var legs_suffix := _tier_to_node_suffix(legs_tier)
+		var legs := armor_root.get_node_or_null("%s/Platelegs_%s" % [legs_suffix, legs_suffix]) as Node3D
+		if legs != null:
+			_set_ancestor_visible_until(legs, armor_root)
+			_set_node3d_tree_visible(legs, true, true)
 
 
 func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
@@ -558,3 +554,24 @@ func _tier_to_node_suffix(tier: String) -> String:
 	if tier.is_empty():
 		return ""
 	return tier.substr(0, 1).to_upper() + tier.substr(1)
+
+
+func _set_node3d_tree_visible(root: Node, enabled: bool, include_root: bool = true) -> void:
+	if root == null:
+		return
+	if include_root and root is Node3D:
+		(root as Node3D).visible = enabled
+	for c in root.get_children():
+		if c is Node3D:
+			(c as Node3D).visible = enabled
+		_set_node3d_tree_visible(c, enabled, false)
+
+
+func _set_ancestor_visible_until(start: Node, stop_parent: Node) -> void:
+	var n := start
+	while n != null and n != stop_parent:
+		if n is Node3D:
+			(n as Node3D).visible = true
+		n = n.get_parent()
+	if stop_parent is Node3D:
+		(stop_parent as Node3D).visible = true
