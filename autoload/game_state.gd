@@ -39,7 +39,7 @@ var warmth_until_unix_ms: int = 0
 ## Run-speed tuning while in nighttime conditions.
 var campfire_night_run_bonus: float = 0.2
 var campfire_night_penalty: float = 0.15
-## Equipped items: slot id -> { "id": String, "count": int }. Slots: head, chest, legs, feet, hands, main_hand, off_hand, back, neck, ring_1, ring_2
+## Equipped items: slot id -> { "id": String, "count": int }. Slots: head, neck, ring_1, ring_2, cape, chest, hands, legs, feet, main_hand, off_hand, back
 var equipment: Dictionary = {}
 ## Hotbar quick-use item ids for keys [1]-[4].
 var hotbar_item_ids: Array[String] = ["", "", "", ""]

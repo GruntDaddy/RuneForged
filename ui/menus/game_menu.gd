@@ -13,7 +13,7 @@ const TAB_CODEX := 6
 
 const _SLOT_COLS := 4
 const _INV_SLOT_SIZE := Vector2(70, 82)
-const _EQUIP_SLOT_SIZE := Vector2(58, 70)
+const _EQUIP_SLOT_SIZE := _INV_SLOT_SIZE
 
 const _TAB_NAMES: PackedStringArray = [
 	"Vitals",
@@ -55,6 +55,7 @@ const _CODEX_ITEMS: Array[Dictionary] = [
 const _EQUIP_ORDER: PackedStringArray = [
 	"head",
 	"neck",
+	"cape",
 	"chest",
 	"hands",
 	"legs",
@@ -344,14 +345,9 @@ func _style_drag_preview() -> void:
 
 
 func _apply_inner_card_style(p: PanelContainer) -> void:
-	if ResourceLoader.exists(_PANEL_CARD):
-		var sb_tex := _make_stylebox_texture(_PANEL_CARD, 20)
-		if sb_tex.texture != null:
-			p.add_theme_stylebox_override("panel", sb_tex)
-			return
 	var flat := StyleBoxFlat.new()
-	flat.bg_color = Color(0.02, 0.04, 0.07, 0.56)
-	flat.border_color = Color(0.45, 0.58, 0.76, 0.55)
+	flat.bg_color = Color(0.09, 0.09, 0.1, 0.94)
+	flat.border_color = Color(0.34, 0.38, 0.46, 0.92)
 	flat.set_border_width_all(2)
 	flat.set_corner_radius_all(8)
 	flat.set_content_margin_all(10)
@@ -620,25 +616,39 @@ func _build_inventory_page(page: Control) -> void:
 	eq_sc.custom_minimum_size = Vector2(0, 180)
 	_style_scroll_transparent(eq_sc)
 	left_inner.add_child(eq_sc)
-	var eg := GridContainer.new()
-	eg.columns = 3
-	eg.add_theme_constant_override("h_separation", 8)
-	eg.add_theme_constant_override("v_separation", 8)
+	var eg := VBoxContainer.new()
+	eg.add_theme_constant_override("separation", 8)
 	eq_sc.add_child(eg)
 	_equip_panels.clear()
-	for slot_id in _EQUIP_ORDER:
-		var cell := VBoxContainer.new()
-		var cap := Label.new()
-		cap.text = _equip_label(slot_id)
-		_apply_body_label(cap, 11)
-		cap.add_theme_color_override("font_color", _COL_INK_MUTED)
-		cell.add_child(cap)
-		var p := _make_slot_panel(_EQUIP_SLOT_SIZE)
-		p.mouse_filter = Control.MOUSE_FILTER_STOP
-		p.name = "Equip_%s" % slot_id
-		cell.add_child(p)
-		_equip_panels[slot_id] = p
-		eg.add_child(cell)
+	var equip_rows: Array[Array] = [
+		["", "head", ""],
+		["ring_1", "neck", "ring_2"],
+		["cape", "chest", "back"],
+		["main_hand", "legs", "off_hand"],
+	]
+	for row in equip_rows:
+		var row_box := HBoxContainer.new()
+		row_box.add_theme_constant_override("separation", 8)
+		eg.add_child(row_box)
+		for slot_id in row:
+			var cell := VBoxContainer.new()
+			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row_box.add_child(cell)
+			if slot_id == "":
+				var spacer := Control.new()
+				spacer.custom_minimum_size = _EQUIP_SLOT_SIZE
+				cell.add_child(spacer)
+				continue
+			var cap := Label.new()
+			cap.text = _equip_label(slot_id)
+			_apply_body_label(cap, 11)
+			cap.add_theme_color_override("font_color", _COL_INK)
+			cell.add_child(cap)
+			var p := _make_slot_panel(_EQUIP_SLOT_SIZE)
+			p.mouse_filter = Control.MOUSE_FILTER_STOP
+			p.name = "Equip_%s" % slot_id
+			cell.add_child(p)
+			_equip_panels[slot_id] = p
 	var right := VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -688,7 +698,9 @@ func _equip_label(slot_id: String) -> String:
 		"head":
 			return "Head"
 		"neck":
-			return "Neck"
+			return "Amulet"
+		"cape":
+			return "Cape"
 		"chest":
 			return "Chest"
 		"hands":
@@ -698,15 +710,15 @@ func _equip_label(slot_id: String) -> String:
 		"feet":
 			return "Feet"
 		"back":
-			return "Back"
+			return "Back Slot: Quiver/Backpack/etc"
 		"ring_1":
 			return "Ring"
 		"ring_2":
 			return "Ring"
 		"main_hand":
-			return "Main hand"
+			return "Right Hand"
 		"off_hand":
-			return "Off hand"
+			return "Left Hand"
 		_:
 			return slot_id
 
@@ -1808,6 +1820,7 @@ func _swap_inv_equip(inv_idx: int, equip_slot: String) -> bool:
 func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 	if it == null:
 		return false
+	var item_id := str(it.id).to_lower()
 	match equip_slot:
 		"main_hand":
 			return it.category in [ItemData.Category.TOOL, ItemData.Category.WEAPON]
@@ -1821,6 +1834,10 @@ func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 			]
 		"head", "chest", "legs", "feet", "hands", "back":
 			return it.category in [ItemData.Category.ARMOR, ItemData.Category.CLOTHING]
+		"cape":
+			if item_id.begins_with("cape_"):
+				return true
+			return it.category in [ItemData.Category.CLOTHING, ItemData.Category.ARMOR]
 		"neck", "ring_1", "ring_2":
 			return it.category == ItemData.Category.JEWERLY
 		_:
@@ -1874,6 +1891,8 @@ func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
 				return "off_hand"
 			return "main_hand"
 		ItemData.Category.ARMOR, ItemData.Category.CLOTHING:
+			if id.begins_with("cape_"):
+				return "cape"
 			if id.begins_with("armor_head_"):
 				return "head"
 			if id.begins_with("armor_chest_"):
@@ -1884,7 +1903,17 @@ func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
 				return "hands"
 			if id.begins_with("armor_feet_"):
 				return "feet"
+			if id.begins_with("quiver_") or id.begins_with("backpack_"):
+				return "back"
 		ItemData.Category.JEWERLY:
+			if id.find("amulet") >= 0 or id.begins_with("neck_") or id.begins_with("jewelry_neck_"):
+				return "neck"
+			if id.find("ring") >= 0:
+				if GameState.equipment.get("ring_1", null) == null:
+					return "ring_1"
+				if GameState.equipment.get("ring_2", null) == null:
+					return "ring_2"
+				return "ring_1"
 			if GameState.equipment.get("ring_1", null) == null:
 				return "ring_1"
 			if GameState.equipment.get("ring_2", null) == null:
