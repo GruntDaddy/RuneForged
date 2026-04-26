@@ -1655,7 +1655,7 @@ func _drop_equipped_to_world(global_pos: Vector2, equip_slot: String) -> void:
 	var id := str(s.get("id", ""))
 	var count := int(s.get("count", 1))
 	GameState.equipment.erase(equip_slot)
-	var scene: PackedScene = InventoryService.PICKUP_SCENES.get(id, null)
+	var scene: PackedScene = InventoryService.get_pickup_scene_for_item(id)
 	if scene == null:
 		_toast("Cannot drop that item.")
 		GameState.equipment[equip_slot] = s

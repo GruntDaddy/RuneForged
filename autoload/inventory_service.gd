@@ -211,6 +211,12 @@ func get_item_display_name(item_id: String) -> String:
 			return "Logs"
 		"oak_logs", "logs_oak":
 			return "Oak logs"
+		"torch", "tool_torch":
+			return "Torch"
+		"hammer", "tool_hammer":
+			return "Hammer"
+		"chisel", "tool_chisel":
+			return "Chisel"
 		"stone":
 			return "Stone"
 		"tin_ore", "ore_tin":
@@ -221,6 +227,10 @@ func get_item_display_name(item_id: String) -> String:
 			if item_id.is_empty():
 				return ""
 			return item_id.replace("_", " ").capitalize()
+
+
+func get_pickup_scene_for_item(item_id: String) -> PackedScene:
+	return PICKUP_SCENES.get(item_id, null) as PackedScene
 
 
 func add_item(item_name: String, quantity: int = 1) -> int:
@@ -505,11 +515,7 @@ func apply_save_dict(d: Variant) -> void:
 		if entry == null or typeof(entry) != TYPE_DICTIONARY:
 			slots[i] = null
 			continue
-		var id := str(entry.get("id", ""))
-		if id == "wood":
-			id = "logs"
-		elif id == "oak_logs":
-			id = "logs_oak"
+		var id := _normalize_item_id(str(entry.get("id", "")))
 		var c := int(entry.get("count", 0))
 		if id.is_empty() or c < 1:
 			slots[i] = null
@@ -522,6 +528,22 @@ func apply_save_dict(d: Variant) -> void:
 			slot_d["tackle"] = empty_tackle()
 		slots[i] = slot_d
 	inventory_changed.emit()
+
+
+func _normalize_item_id(id: String) -> String:
+	match id:
+		"wood":
+			return "logs"
+		"oak_logs":
+			return "logs_oak"
+		"torch":
+			return "tool_torch"
+		"hammer":
+			return "tool_hammer"
+		"chisel":
+			return "tool_chisel"
+		_:
+			return id
 
 
 func clear_all_slots() -> void:

@@ -430,22 +430,37 @@ func _set_weapon_meshes_visible(enabled: bool) -> void:
 
 
 func _apply_off_hand_visibility() -> void:
+	var off_id := _normalize_item_id(_equipped_off_hand_item_id)
 	if torch_mesh != null:
-		torch_mesh.visible = _equipped_off_hand_item_id == "tool_torch"
+		torch_mesh.visible = off_id == "tool_torch"
 	if chisel_mesh != null:
-		chisel_mesh.visible = _equipped_off_hand_item_id == "tool_chisel"
+		chisel_mesh.visible = off_id == "tool_chisel"
 	if tacklebox_hand_mesh != null:
-		tacklebox_hand_mesh.visible = _equipped_off_hand_item_id == "tool_tacklebox"
+		tacklebox_hand_mesh.visible = off_id == "tool_tacklebox"
 	if shield_bronze_mesh != null:
-		shield_bronze_mesh.visible = _equipped_off_hand_item_id == "shield_bronze"
+		shield_bronze_mesh.visible = off_id == "shield_bronze"
 	if shield_iron_mesh != null:
-		shield_iron_mesh.visible = _equipped_off_hand_item_id == "shield_iron"
+		shield_iron_mesh.visible = off_id == "shield_iron"
 	if shield_square_bronze_mesh != null:
-		shield_square_bronze_mesh.visible = _equipped_off_hand_item_id == "shield_square_bronze"
+		shield_square_bronze_mesh.visible = off_id == "shield_square_bronze"
 	if shield_square_iron_mesh != null:
-		shield_square_iron_mesh.visible = _equipped_off_hand_item_id == "shield_square_iron"
+		shield_square_iron_mesh.visible = off_id == "shield_square_iron"
 	if shield_wooden_mesh != null:
-		shield_wooden_mesh.visible = _equipped_off_hand_item_id == "shield_wooden"
+		shield_wooden_mesh.visible = off_id == "shield_wooden"
+
+
+func _normalize_item_id(id: String) -> String:
+	match id:
+		"torch":
+			return "tool_torch"
+		"hammer":
+			return "tool_hammer"
+		"chisel":
+			return "tool_chisel"
+		"oak_logs":
+			return "logs_oak"
+		_:
+			return id
 
 
 func _apply_armor_visibility() -> void:

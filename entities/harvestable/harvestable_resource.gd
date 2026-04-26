@@ -54,7 +54,7 @@ const HARVEST_INVENTORY_FULL := 3
 @export var prompt_detail: String = ""
 ## If true: each impact rolls for success; success grants one item and reduces yield; failure has no yield. If false: legacy (every impact reduces yield; burst drops at depletion).
 @export var rs_style_gathering: bool = true
-## Must match InventoryService item ids (e.g. logs, stone, oak_logs, tin_ore).
+## Must match InventoryService item ids (e.g. logs, stone, logs_oak, tin_ore).
 @export var resource_item_id: String = "logs"
 ## If set, used for harvest UI messages; otherwise InventoryService.get_item_display_name.
 @export var resource_display_name: String = ""

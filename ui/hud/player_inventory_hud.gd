@@ -21,6 +21,8 @@ var _tackle_inventory_slot: int = -1
 var _tackle_hook_labels: Array[Label] = []
 var _tackle_bobber_labels: Array[Label] = []
 var _tackle_bait_labels: Array[Label] = []
+var _hover_tooltip: Panel = null
+var _hover_tooltip_label: RichTextLabel = null
 
 
 func _style_main_panel() -> void:
@@ -58,6 +60,7 @@ func _ready() -> void:
 	_drag_preview.visible = false
 	_drag_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_drag_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	_build_hover_tooltip()
 
 
 func _on_inventory_service_changed() -> void:
@@ -72,6 +75,7 @@ func toggle_inventory() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		_refresh_grid()
 	else:
+		_hide_hover_tooltip()
 		_close_tackle_window()
 		if _was_mouse_captured:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -153,8 +157,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 	if event is InputEventMouseMotion and _drag_from_idx >= 0:
 		_drag_preview.global_position = event.global_position + Vector2(16, 16)
+	elif event is InputEventMouseMotion:
+		_update_hover_tooltip(event.global_position)
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			_hide_hover_tooltip()
 			var idx := _slot_from_mouse(event.global_position)
 			if idx >= 0:
 				_try_begin_drag(idx)
@@ -167,6 +174,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					if not _try_drop_on_hotbar(event.global_position):
 						_drop_dragged_item_to_world(event.global_position)
 				_cancel_drag()
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		_hide_hover_tooltip()
 
 
 func _slot_from_mouse(global_pos: Vector2) -> int:
@@ -195,6 +204,139 @@ func _try_begin_drag(idx: int) -> void:
 func _cancel_drag() -> void:
 	_drag_from_idx = -1
 	_drag_preview.visible = false
+
+
+func _build_hover_tooltip() -> void:
+	_hover_tooltip = Panel.new()
+	_hover_tooltip.visible = false
+	_hover_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hover_tooltip.z_index = 100
+	add_child(_hover_tooltip)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.08, 0.11, 0.95)
+	sb.border_color = Color(0.67, 0.76, 0.92, 1.0)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 8
+	sb.content_margin_top = 6
+	sb.content_margin_right = 8
+	sb.content_margin_bottom = 6
+	_hover_tooltip.add_theme_stylebox_override("panel", sb)
+	_hover_tooltip_label = RichTextLabel.new()
+	_hover_tooltip_label.bbcode_enabled = true
+	_hover_tooltip_label.fit_content = true
+	_hover_tooltip_label.scroll_active = false
+	_hover_tooltip_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hover_tooltip_label.custom_minimum_size = Vector2(240, 0)
+	_hover_tooltip_label.add_theme_font_size_override("normal_font_size", 12)
+	_hover_tooltip_label.add_theme_color_override("default_color", Color(0.92, 0.94, 1.0, 1.0))
+	_hover_tooltip.add_child(_hover_tooltip_label)
+
+
+func _update_hover_tooltip(global_pos: Vector2) -> void:
+	if _hover_tooltip == null or _hover_tooltip_label == null:
+		return
+	if not visible or _drag_from_idx >= 0:
+		_hide_hover_tooltip()
+		return
+	var idx := _slot_from_mouse(global_pos)
+	if idx < 0:
+		_hide_hover_tooltip()
+		return
+	var s: Variant = InventoryService.get_slot_data(idx)
+	if s == null:
+		_hide_hover_tooltip()
+		return
+	var item_id := str(s.get("id", ""))
+	if item_id.is_empty():
+		_hide_hover_tooltip()
+		return
+	var title := _pretty_item_name(item_id)
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	var count := int(s.get("count", 1))
+	var desc := ""
+	var category := ""
+	var rarity := ""
+	if it != null:
+		desc = it.description.strip_edges()
+		category = _category_label(it.category)
+		rarity = _rarity_label(it.rarity)
+	var rarity_color := _rarity_hex(it.rarity if it != null else ItemData.Rarity.COMMON)
+	var lines: PackedStringArray = []
+	lines.append("[b]%s[/b]" % _bbcode_escape(title))
+	if not rarity.is_empty() or not category.is_empty():
+		lines.append("[color=#%s]%s[/color]  [i]%s[/i]" % [rarity_color, _bbcode_escape(rarity), _bbcode_escape(category)])
+	lines.append("Stack: %d" % count)
+	if not desc.is_empty():
+		lines.append(_bbcode_escape(desc))
+	_hover_tooltip_label.text = "\n".join(lines)
+	_hover_tooltip.global_position = global_pos + Vector2(20, 20)
+	_hover_tooltip.visible = true
+
+
+func _hide_hover_tooltip() -> void:
+	if _hover_tooltip != null:
+		_hover_tooltip.visible = false
+
+
+func _category_label(cat: int) -> String:
+	match cat:
+		ItemData.Category.MATERIAL:
+			return "Material"
+		ItemData.Category.CONSUMABLE:
+			return "Consumable"
+		ItemData.Category.TOOL:
+			return "Tool"
+		ItemData.Category.WEAPON:
+			return "Weapon"
+		ItemData.Category.ARMOR:
+			return "Armor"
+		ItemData.Category.CLOTHING:
+			return "Clothing"
+		ItemData.Category.JEWERLY:
+			return "Jewelry"
+		ItemData.Category.RELIC:
+			return "Relic"
+		ItemData.Category.RUNE:
+			return "Rune"
+		ItemData.Category.QUEST:
+			return "Quest"
+		_:
+			return ""
+
+
+func _rarity_label(r: int) -> String:
+	match r:
+		ItemData.Rarity.COMMON:
+			return "Common"
+		ItemData.Rarity.UNCOMMON:
+			return "Uncommon"
+		ItemData.Rarity.RARE:
+			return "Rare"
+		ItemData.Rarity.EPIC:
+			return "Epic"
+		ItemData.Rarity.LEGENDARY:
+			return "Legendary"
+		_:
+			return "Common"
+
+
+func _rarity_hex(r: int) -> String:
+	match r:
+		ItemData.Rarity.UNCOMMON:
+			return "66CC66"
+		ItemData.Rarity.RARE:
+			return "5CA9FF"
+		ItemData.Rarity.EPIC:
+			return "C17DFF"
+		ItemData.Rarity.LEGENDARY:
+			return "FFCC4D"
+		_:
+			return "D2D8E8"
+
+
+func _bbcode_escape(s: String) -> String:
+	return s.replace("[", "\\[").replace("]", "\\]")
 
 
 func _drop_dragged_item_to_world(mouse_pos: Vector2) -> void:

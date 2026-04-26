@@ -314,10 +314,14 @@ func _sync_equipped_hand_visuals() -> void:
 	var legs_id := ""
 	var m: Variant = GameState.equipment.get("main_hand", null)
 	if m != null:
-		main_id = str(m.get("id", ""))
+		main_id = _normalize_item_id(str(m.get("id", "")))
+		m["id"] = main_id
+		GameState.equipment["main_hand"] = m
 	var o: Variant = GameState.equipment.get("off_hand", null)
 	if o != null:
-		off_id = str(o.get("id", ""))
+		off_id = _normalize_item_id(str(o.get("id", "")))
+		o["id"] = off_id
+		GameState.equipment["off_hand"] = o
 	var h: Variant = GameState.equipment.get("head", null)
 	if h != null:
 		head_id = str(h.get("id", ""))
@@ -346,6 +350,22 @@ func _sync_equipped_hand_visuals() -> void:
 		base_character.set_equipped_armor_items(head_id, chest_id, legs_id)
 	if base_character.has_method("set_active_tool"):
 		base_character.set_active_tool(_tool_kind_for_equipped_main(main_id))
+
+
+func _normalize_item_id(id: String) -> String:
+	match id:
+		"wood":
+			return "logs"
+		"oak_logs":
+			return "logs_oak"
+		"torch":
+			return "tool_torch"
+		"hammer":
+			return "tool_hammer"
+		"chisel":
+			return "tool_chisel"
+		_:
+			return id
 
 
 func _tool_kind_for_equipped_main(item_id: String) -> _BaseCharacter.ToolKind:
@@ -400,6 +420,8 @@ func _quick_equip_hotbar_item(item_id: String) -> void:
 		if t == "shield":
 			equip_slot = "off_hand"
 			break
+	if item_id == "tool_torch":
+		equip_slot = "off_hand"
 	GameState.equipment[equip_slot] = {"id": item_id, "count": 1}
 	_sync_equipped_hand_visuals()
 
