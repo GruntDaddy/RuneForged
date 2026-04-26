@@ -3,28 +3,29 @@ extends Node
 ## Loads all `ItemData` `.tres` under `res://data/items/` (recursive). Inventory saves still use string ids only.
 
 var _items: Dictionary = {}  ## id -> ItemData
-var _rpg_icon_cache: Dictionary = {}  ## import filename -> Texture2D
+var _rpg_icon_cache: Dictionary = {}  ## icon filename -> Texture2D
+var _warned_missing_icon_for_item: Dictionary = {}  ## item_id -> true
 
 const _RPG_ICON_BY_ITEM_ID := {
-	"tool_torch": "I_Torch01.png.import",
-	"tool_torch_burnt": "I_Torch02.png.import",
-	"logs": "I_Rock05.png.import",
-	"logs_oak": "I_Rock04.png.import",
-	"stone": "I_Rock01.png.import",
-	"ore_tin": "I_Rock02.png.import",
-	"ore_copper": "I_Rock03.png.import",
-	"ingot_bronze": "I_SilverBar.png.import",
-	"dagger_bronze": "S_Dagger02.png.import",
-	"sword_1h_wooden": "S_Dagger04.png.import",
-	"sword_1h_bronze": "S_Dagger03.png.import",
-	"hatchet_basic": "S_Axe01.png.import",
-	"hatchet_bronze": "S_Axe02.png.import",
-	"pickaxe_basic": "S_Axe03.png.import",
-	"pickaxe_bronze": "S_Axe04.png.import",
-	"fishing_pole": "S_Bow01.png.import",
-	"tool_hammer": "S_Axe05.png.import",
-	"tool_chisel": "S_Axe06.png.import",
-	"tool_tacklebox": "I_Mirror.png.import",
+	"tool_torch": "I_Torch01.png",
+	"tool_torch_burnt": "I_Torch02.png",
+	"logs": "I_Rock05.png",
+	"logs_oak": "I_Rock04.png",
+	"stone": "I_Rock01.png",
+	"ore_tin": "I_Rock02.png",
+	"ore_copper": "I_Rock03.png",
+	"ingot_bronze": "I_SilverBar.png",
+	"dagger_bronze": "S_Dagger02.png",
+	"sword_1h_wooden": "S_Dagger04.png",
+	"sword_1h_bronze": "S_Dagger03.png",
+	"hatchet_basic": "S_Axe01.png",
+	"hatchet_bronze": "S_Axe02.png",
+	"pickaxe_basic": "S_Axe03.png",
+	"pickaxe_bronze": "S_Axe04.png",
+	"fishing_pole": "S_Bow01.png",
+	"tool_hammer": "S_Axe05.png",
+	"tool_chisel": "S_Axe06.png",
+	"tool_tacklebox": "I_Mirror.png",
 }
 
 
@@ -66,32 +67,50 @@ func get_item_icon(id: String) -> Texture2D:
 	var it: ItemData = get_item(id)
 	if it != null and it.icon != null:
 		return it.icon
-	var icon_import := str(_RPG_ICON_BY_ITEM_ID.get(id, ""))
-	if icon_import.is_empty() and id == "oak_logs":
-		icon_import = str(_RPG_ICON_BY_ITEM_ID.get("logs_oak", ""))
-	if icon_import.is_empty():
+	var icon_file := str(_RPG_ICON_BY_ITEM_ID.get(id, ""))
+	if icon_file.is_empty() and id == "oak_logs":
+		icon_file = str(_RPG_ICON_BY_ITEM_ID.get("logs_oak", ""))
+	if icon_file.is_empty():
+		_warn_missing_icon_once(id, "<no mapping in _RPG_ICON_BY_ITEM_ID>")
 		return null
-	return _load_rpg_icon_from_import(icon_import)
-
-
-func _load_rpg_icon_from_import(import_file_name: String) -> Texture2D:
-	if _rpg_icon_cache.has(import_file_name):
-		return _rpg_icon_cache[import_file_name] as Texture2D
-	var import_path := "res://data/rpg_icons/%s" % import_file_name
-	if not ResourceLoader.exists(import_path):
-		_rpg_icon_cache[import_file_name] = null
-		return null
-	var cfg := ConfigFile.new()
-	if cfg.load(import_path) != OK:
-		_rpg_icon_cache[import_file_name] = null
-		return null
-	var tex_path := str(cfg.get_value("remap", "path", ""))
-	if tex_path.is_empty() or not ResourceLoader.exists(tex_path):
-		_rpg_icon_cache[import_file_name] = null
-		return null
-	var tex := load(tex_path) as Texture2D
-	_rpg_icon_cache[import_file_name] = tex
+	var tex := _load_rpg_icon(icon_file)
+	if tex == null:
+		_warn_missing_icon_once(id, icon_file)
 	return tex
+
+
+func _load_rpg_icon(icon_file_name: String) -> Texture2D:
+	if _rpg_icon_cache.has(icon_file_name):
+		return _rpg_icon_cache[icon_file_name] as Texture2D
+	var tex_path := "res://data/rpg_icons/%s" % icon_file_name
+	if not ResourceLoader.exists(tex_path):
+		var import_path := tex_path + ".import"
+		if ResourceLoader.exists(import_path):
+			var cfg := ConfigFile.new()
+			if cfg.load(import_path) == OK:
+				var remap_path := str(cfg.get_value("remap", "path", ""))
+				if not remap_path.is_empty() and ResourceLoader.exists(remap_path):
+					tex_path = remap_path
+		if not ResourceLoader.exists(tex_path):
+			_rpg_icon_cache[icon_file_name] = null
+			return null
+	var tex := load(tex_path) as Texture2D
+	_rpg_icon_cache[icon_file_name] = tex
+	return tex
+
+
+func _warn_missing_icon_once(item_id: String, expected_icon: String) -> void:
+	if item_id.is_empty():
+		return
+	if _warned_missing_icon_for_item.has(item_id):
+		return
+	_warned_missing_icon_for_item[item_id] = true
+	push_warning(
+		"ItemCatalog: missing icon for item '%s' (expected '%s' under res://data/rpg_icons/)." % [
+			item_id,
+			expected_icon,
+		]
+	)
 
 
 func has_id(id: String) -> bool:
