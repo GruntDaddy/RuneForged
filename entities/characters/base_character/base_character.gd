@@ -62,6 +62,18 @@ enum ActionState {
 @onready var clothing_root: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing") as Node3D
 @onready var outfit_green: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green") as Node3D
 @onready var outfit_yellow: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow") as Node3D
+@onready var shirt_green_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green/Shirt_Green"
+) as Node3D
+@onready var pants_green_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green/Pants_Green"
+) as Node3D
+@onready var shirt_yellow_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow/Shirt_Yellow"
+) as Node3D
+@onready var pants_yellow_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow/Pants_Yellow"
+) as Node3D
 @onready var helmets_root: Node3D = $Rig_Medium/Skeleton3D/Helmets
 @onready var armor_root: Node3D = $Rig_Medium/Skeleton3D/Armor
 @onready var base_body_mesh: MeshInstance3D = get_node_or_null("Rig_Medium/Base_Body") as MeshInstance3D
@@ -498,6 +510,14 @@ func _apply_armor_visibility() -> void:
 func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
 	if clothing_root != null:
 		clothing_root.visible = show_chest or show_legs
+	if shirt_green_mesh != null:
+		shirt_green_mesh.visible = show_chest
+	if shirt_yellow_mesh != null:
+		shirt_yellow_mesh.visible = show_chest
+	if pants_green_mesh != null:
+		pants_green_mesh.visible = show_legs
+	if pants_yellow_mesh != null:
+		pants_yellow_mesh.visible = show_legs
 	if base_body_mesh != null:
 		base_body_mesh.visible = show_chest
 	if base_arm_left_mesh != null:
