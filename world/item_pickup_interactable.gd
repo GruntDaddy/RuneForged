@@ -3,6 +3,7 @@ extends Node3D
 @export var item_id: String = ""
 @export_range(1, 999, 1) var quantity: int = 1
 @export var prompt_verb: String = "Pick up"
+var _consumed: bool = false
 
 
 func get_interaction_prompt(_player: Node) -> String:
@@ -13,6 +14,8 @@ func get_interaction_prompt(_player: Node) -> String:
 
 
 func interact(player: Node) -> bool:
+	if _consumed:
+		return false
 	if item_id.is_empty():
 		return false
 	var inv: Node = get_node_or_null("/root/InventoryService")
@@ -29,6 +32,7 @@ func interact(player: Node) -> bool:
 		quantity = left
 		_notify_player(player, "Picked up %d %s. Inventory is full." % [added, label])
 		return true
+	_consumed = true
 	_notify_player(player, "Picked up %s." % label)
 	queue_free()
 	return true

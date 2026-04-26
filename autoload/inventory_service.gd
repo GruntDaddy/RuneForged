@@ -43,7 +43,19 @@ func _stack_cap_for(item_id: String) -> int:
 	var it: ItemData = ItemCatalog.get_item(item_id)
 	if it == null:
 		return MAX_STACK
-	return clampi(it.max_stack, 1, 9999)
+	var cap := clampi(it.max_stack, 1, 9999)
+	# Equipment-like categories should never stack even if authoring data is incorrect.
+	if it.category in [
+		ItemData.Category.TOOL,
+		ItemData.Category.WEAPON,
+		ItemData.Category.ARMOR,
+		ItemData.Category.CLOTHING,
+		ItemData.Category.JEWERLY,
+		ItemData.Category.RELIC,
+		ItemData.Category.RUNE,
+	]:
+		return 1
+	return cap
 
 
 func empty_tackle() -> Dictionary:

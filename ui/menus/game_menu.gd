@@ -81,16 +81,18 @@ const _MARGIN_PANEL := 24
 const _MARGIN_TAB := 16
 const _SB_SLOT := 16
 
-## Frost ledger — pale ink on cool stone
-const _COL_INK := Color(0.82, 0.9, 0.95, 1.0)
-const _COL_INK_MUTED := Color(0.55, 0.64, 0.72, 1.0)
-const _COL_TITLE := Color(0.98, 0.86, 0.48, 1.0)
+## High-contrast dark menu palette.
+const _COL_INK := Color(0.97, 0.98, 1.0, 1.0)
+const _COL_INK_MUTED := Color(0.95, 0.97, 1.0, 1.0)
+const _COL_TITLE := Color(1.0, 1.0, 1.0, 1.0)
 
 var _ui_tex: Dictionary = {}  ## String -> Texture2D
 var _default_slot_icon: Texture2D = null
 
 @onready var _backdrop: ColorRect = $Backdrop
 @onready var _book: PanelContainer = $ScreenFill/Center/BookPanel
+@onready var _header_title: Label = $ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Header/Title
+@onready var _header_hint: Label = $ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Header/Hint
 @onready var _tab_column: VBoxContainer = $ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Body/TabColumn
 @onready var _page_host: Control = $ScreenFill/Center/BookPanel/InnerMargin/MainVBox/Body/PageHost
 @onready var _drag_preview: Panel = $DragPreview
@@ -150,6 +152,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_forge_tab.setup(self)
 	_style_book_panel()
+	_apply_header_style()
 	_build_tabs()
 	_build_pages()
 	call_deferred("_ensure_all_page_pivots")
@@ -160,6 +163,16 @@ func _ready() -> void:
 	InventoryService.inventory_changed.connect(_on_inventory_changed)
 	_style_drag_preview()
 	_on_inventory_changed()
+
+
+func _apply_header_style() -> void:
+	if _backdrop != null:
+		_backdrop.color = Color(0.0, 0.0, 0.0, 0.84)
+	if _header_title != null:
+		_header_title.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		_header_title.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.62))
+	if _header_hint != null:
+		_header_hint.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0, 0.96))
 
 
 func _on_inventory_changed() -> void:
@@ -299,26 +312,16 @@ func _make_stylebox_texture(path: String, m: int) -> StyleBoxTexture:
 
 func _stylebook_flat_for_book() -> void:
 	var flat := StyleBoxFlat.new()
-	flat.bg_color = Color(0.04, 0.07, 0.1, 0.96)
-	flat.border_color = Color(0.45, 0.62, 0.78, 1.0)
-	flat.set_border_width_all(3)
+	flat.bg_color = Color(0.02, 0.03, 0.05, 0.97)
+	flat.border_color = Color(0.38, 0.48, 0.62, 1.0)
+	flat.set_border_width_all(4)
 	flat.set_corner_radius_all(6)
 	flat.set_content_margin_all(20)
 	_book.add_theme_stylebox_override("panel", flat)
 
 
 func _style_book_panel() -> void:
-	var path := _PANEL_MAIN
-	if not ResourceLoader.exists(path) and ResourceLoader.exists(_PANEL_MAIN_FALLBACK):
-		path = _PANEL_MAIN_FALLBACK
-	if not ResourceLoader.exists(path):
-		_stylebook_flat_for_book()
-		return
-	var sb := _make_stylebox_texture(path, _MARGIN_PANEL)
-	if sb.texture == null:
-		_stylebook_flat_for_book()
-		return
-	_book.add_theme_stylebox_override("panel", sb)
+	_stylebook_flat_for_book()
 
 
 func _style_drag_preview() -> void:
@@ -347,8 +350,8 @@ func _apply_inner_card_style(p: PanelContainer) -> void:
 			p.add_theme_stylebox_override("panel", sb_tex)
 			return
 	var flat := StyleBoxFlat.new()
-	flat.bg_color = Color(0.03, 0.06, 0.09, 0.42)
-	flat.border_color = Color(0.42, 0.62, 0.78, 0.45)
+	flat.bg_color = Color(0.02, 0.04, 0.07, 0.56)
+	flat.border_color = Color(0.45, 0.58, 0.76, 0.55)
 	flat.set_border_width_all(2)
 	flat.set_corner_radius_all(8)
 	flat.set_content_margin_all(10)
@@ -379,47 +382,19 @@ func _apply_body_label(l: Label, font_size: int = 12) -> void:
 
 
 func _style_tab_button(b: Button) -> void:
-	var path_idle := _TAB_IDLE
-	var path_active := _TAB_ACTIVE
-	if not ResourceLoader.exists(path_idle) or not ResourceLoader.exists(path_active):
-		_style_tab_button_flat(b)
-		return
-	var sb_idle := _make_stylebox_texture(path_idle, _MARGIN_TAB)
-	var sb_active := _make_stylebox_texture(path_active, _MARGIN_TAB)
-	if sb_idle.texture == null or sb_active.texture == null:
-		_style_tab_button_flat(b)
-		return
-	if b.button_pressed:
-		b.add_theme_stylebox_override("normal", sb_active)
-		b.add_theme_stylebox_override("hover", sb_active)
-		b.add_theme_stylebox_override("pressed", sb_active)
-	else:
-		b.add_theme_stylebox_override("normal", sb_idle)
-		b.add_theme_stylebox_override("hover", sb_idle)
-		b.add_theme_stylebox_override("pressed", sb_idle)
-	if b.button_pressed:
-		b.add_theme_color_override("font_color", _COL_TITLE)
-		b.add_theme_color_override("font_focus_color", _COL_TITLE)
-	else:
-		b.add_theme_color_override("font_color", _COL_INK)
-		b.add_theme_color_override("font_focus_color", _COL_INK)
-	b.add_theme_font_size_override("font_size", 15)
-	b.add_theme_constant_override("content_margin_left", 14)
-	b.add_theme_constant_override("content_margin_right", 10)
-	b.add_theme_constant_override("content_margin_top", 6)
-	b.add_theme_constant_override("content_margin_bottom", 6)
+	_style_tab_button_flat(b)
 
 
 func _style_tab_button_flat(b: Button) -> void:
 	var sb_on := StyleBoxFlat.new()
-	sb_on.bg_color = Color(0.12, 0.18, 0.24, 0.88)
-	sb_on.border_color = Color(0.55, 0.75, 0.92, 0.85)
+	sb_on.bg_color = Color(0.08, 0.1, 0.13, 0.98)
+	sb_on.border_color = Color(0.9, 0.94, 1.0, 0.95)
 	sb_on.set_border_width_all(2)
 	sb_on.set_corner_radius_all(5)
 	sb_on.set_content_margin_all(8)
 	var sb_off := StyleBoxFlat.new()
-	sb_off.bg_color = Color(0.06, 0.09, 0.12, 0.65)
-	sb_off.border_color = Color(0.35, 0.48, 0.58, 0.55)
+	sb_off.bg_color = Color(0.03, 0.04, 0.06, 0.95)
+	sb_off.border_color = Color(0.5, 0.56, 0.66, 0.85)
 	sb_off.set_border_width_all(2)
 	sb_off.set_corner_radius_all(5)
 	sb_off.set_content_margin_all(8)
@@ -448,22 +423,22 @@ func _refresh_tab_styles() -> void:
 
 
 func _style_generic_journal_button(b: BaseButton) -> void:
-	if not ResourceLoader.exists(_BTN_GENERIC_NORMAL):
-		return
-	var sb_n := _make_stylebox_texture(_BTN_GENERIC_NORMAL, 14)
-	if sb_n.texture == null:
-		return
+	var sb_n := StyleBoxFlat.new()
+	sb_n.bg_color = Color(0.06, 0.08, 0.11, 0.95)
+	sb_n.border_color = Color(0.58, 0.66, 0.78, 0.95)
+	sb_n.set_border_width_all(2)
+	sb_n.set_corner_radius_all(4)
+	sb_n.set_content_margin_all(8)
 	b.add_theme_stylebox_override("normal", sb_n)
 	b.add_theme_stylebox_override("hover", sb_n)
-	if ResourceLoader.exists(_BTN_GENERIC_PRESSED):
-		var sb_p := _make_stylebox_texture(_BTN_GENERIC_PRESSED, 20)
-		if sb_p.texture != null:
-			b.add_theme_stylebox_override("pressed", sb_p)
-		else:
-			b.add_theme_stylebox_override("pressed", sb_n)
-	else:
-		b.add_theme_stylebox_override("pressed", sb_n)
+	var sb_p := sb_n.duplicate() as StyleBoxFlat
+	sb_p.bg_color = Color(0.1, 0.13, 0.17, 1.0)
+	sb_p.border_color = Color(0.96, 0.98, 1.0, 1.0)
+	b.add_theme_stylebox_override("pressed", sb_p)
 	b.add_theme_color_override("font_color", _COL_INK)
+	b.add_theme_color_override("font_hover_color", _COL_INK)
+	b.add_theme_color_override("font_pressed_color", _COL_INK)
+	b.add_theme_color_override("font_focus_color", _COL_INK)
 	b.add_theme_font_size_override("font_size", 15)
 	b.add_theme_constant_override("content_margin_left", 10)
 	b.add_theme_constant_override("content_margin_right", 10)
@@ -2005,24 +1980,21 @@ func _equip_slot_bg_path(slot_id: String) -> String:
 
 func _apply_slot_style(slot: Panel, filled: bool, equip_slot_id: String = "") -> void:
 	slot.modulate = Color.WHITE
-	var tex_path: String = _equip_slot_bg_path(equip_slot_id) if equip_slot_id != "" else _SLOT_INV_EMPTY
-	if ResourceLoader.exists(tex_path):
-		var sb := _make_stylebox_texture(tex_path, _SB_SLOT)
-		if sb.texture != null:
-			slot.add_theme_stylebox_override("panel", sb)
-			if filled:
-				slot.modulate = Color(1.02, 1.04, 1.06, 1.0)
-			else:
-				slot.modulate = Color(0.88, 0.92, 0.96, 1.0)
-			return
 	var sb2 := StyleBoxFlat.new()
-	if filled:
-		sb2.bg_color = Color(0.1, 0.14, 0.18, 0.88)
-		sb2.border_color = Color(0.45, 0.68, 0.82, 0.95)
+	var equip_slot := not equip_slot_id.is_empty()
+	if filled and equip_slot:
+		sb2.bg_color = Color(0.07, 0.11, 0.15, 0.9)
+		sb2.border_color = Color(0.95, 0.82, 0.52, 1.0)
+	elif filled:
+		sb2.bg_color = Color(0.07, 0.11, 0.15, 0.9)
+		sb2.border_color = Color(0.36, 0.78, 1.0, 1.0)
+	elif equip_slot:
+		sb2.bg_color = Color(0.04, 0.06, 0.1, 0.75)
+		sb2.border_color = Color(0.55, 0.62, 0.72, 0.88)
 	else:
-		sb2.bg_color = Color(0.05, 0.07, 0.09, 0.72)
-		sb2.border_color = Color(0.28, 0.4, 0.48, 0.75)
-	sb2.set_border_width_all(2)
+		sb2.bg_color = Color(0.04, 0.06, 0.1, 0.75)
+		sb2.border_color = Color(0.44, 0.54, 0.66, 0.86)
+	sb2.set_border_width_all(3)
 	sb2.set_corner_radius_all(4)
 	sb2.content_margin_left = 4
 	sb2.content_margin_top = 4

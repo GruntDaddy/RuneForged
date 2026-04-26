@@ -23,7 +23,18 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var interaction_height: float = 1.35
 @export var interaction_fallback_radius: float = 0.6
 @export var crosshair_screen_offset_px: Vector2 = Vector2.ZERO
-@export var camera_shoulder_h_offset: float = 0.52
+@export var camera_shoulder_h_offset: float = 1.02
+@export var zoom_min_distance: float = 5.2
+@export var zoom_max_distance: float = 13.0
+@export var zoom_step: float = 0.7
+@export var zoom_lerp_speed: float = 10.0
+@export var reticle_icon_default: Texture2D = preload("res://assets/ui/UI assets/Mobile Controls/Sprites/Icons/Default/icon_crosshair.png")
+@export var reticle_icon_interact: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/door_enter.png")
+@export var reticle_icon_attack: Texture2D = preload("res://assets/ui/UI assets/UI Pack - Sci-fi/PNG/Blue/Default/crosshair_color_a.png")
+@export var reticle_icon_mine: Texture2D = preload("res://assets/ui/UI assets/UI Pack - Sci-fi/PNG/Yellow/Default/crosshair_color_b.png")
+@export var reticle_icon_door_locked: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/lock.png")
+@export var reticle_icon_door_unlocked: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/lock_unlocked.png")
+@export var reticle_icon_watering: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/tool_watering_can.png")
 ## Harvest/interaction ray uses character facing (not camera look). Slight downward bias helps short ground nodes.
 @export var harvest_ray_downward_blend: float = 0.22
 @export var harvest_click_cooldown_sec: float = 1.5
@@ -63,7 +74,7 @@ var stamina: float = 100.0
 @onready var game_menu: GameMenu = $GameMenu
 @onready var player_hud: CanvasLayer = $PlayerHud
 @onready var interaction_prompt: Label = $InteractionPrompt
-@onready var reticle: Label = $Reticle
+@onready var reticle: TextureRect = $Reticle
 @onready var gameplay_toast: CanvasLayer = $GameplayToast
 
 var _input_enabled: bool = true
@@ -77,6 +88,7 @@ var _harvest_timer_generation: int = 0
 var _harvest_auto_active: bool = false
 var _harvest_auto_target: WeakRef
 var _harvest_auto_gen: int = 0
+var _zoom_target_distance: float = 0.0
 
 var _day_night: Node = null
 var _last_equipped_main_hand_id: String = ""
@@ -104,7 +116,11 @@ func _ready() -> void:
 		interaction_ray.collide_with_bodies = true
 	if camera_3d != null:
 		camera_3d.h_offset = camera_shoulder_h_offset
+	if spring_arm != null:
+		spring_arm.spring_length = clampf(spring_arm.spring_length, zoom_min_distance, zoom_max_distance)
+		_zoom_target_distance = spring_arm.spring_length
 	_update_reticle_position()
+	_update_reticle_icon()
 	_resolve_day_night_controller()
 	_apply_from_gamestate()
 	if _input_enabled:
@@ -161,6 +177,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			game_menu.toggle(GameMenu.TAB_FORGE)
 		get_viewport().set_input_as_handled()
 		return
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_target_distance = clampf(_zoom_target_distance - zoom_step, zoom_min_distance, zoom_max_distance)
+			return
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_target_distance = clampf(_zoom_target_distance + zoom_step, zoom_min_distance, zoom_max_distance)
+			return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		camera_rig.rotate_y(-event.relative.x * mouse_sensitivity)
 		spring_arm.rotation.x = clamp(
@@ -259,7 +282,10 @@ func _physics_process(delta: float) -> void:
 	_update_underwater_fog(wl_cam)
 
 	_update_interaction_ray()
+	if spring_arm != null:
+		spring_arm.spring_length = lerpf(spring_arm.spring_length, _zoom_target_distance, clampf(zoom_lerp_speed * delta, 0.0, 1.0))
 	_update_reticle_position()
+	_update_reticle_icon()
 	_update_interaction_prompt()
 	_sync_equipped_hand_visuals()
 
@@ -512,12 +538,16 @@ func _update_interaction_ray() -> void:
 	if vp == null or camera_3d == null:
 		return
 	var center := _get_crosshair_screen_point()
-	var interaction_origin := global_position + Vector3(0.0, interaction_height, 0.0)
+	var interaction_anchor := global_position + Vector3(0.0, interaction_height, 0.0)
+	var camera_origin := camera_3d.project_ray_origin(center)
 	var cast_dir := camera_3d.project_ray_normal(center).normalized()
 	var cam_forward := (-camera_3d.global_transform.basis.z).normalized()
 	# Some camera setups can return an inverted screen-ray vector; ensure it always points where camera faces.
 	if cast_dir.dot(cam_forward) < 0.0:
 		cast_dir = -cast_dir
+	# Keep the ray on the reticle line while projecting near the player's interaction height.
+	var along := maxf(0.0, (interaction_anchor - camera_origin).dot(cast_dir))
+	var interaction_origin := camera_origin + cast_dir * along
 	interaction_ray.global_basis = Basis.IDENTITY
 	interaction_ray.global_position = interaction_origin
 	interaction_ray.target_position = cast_dir * interaction_range
@@ -541,11 +571,14 @@ func _fallback_interaction_collider() -> Object:
 	if vp == null:
 		return null
 	var center := _get_crosshair_screen_point()
-	var from := global_position + Vector3(0.0, interaction_height, 0.0)
+	var interaction_anchor := global_position + Vector3(0.0, interaction_height, 0.0)
+	var camera_origin := camera_3d.project_ray_origin(center)
 	var dir := camera_3d.project_ray_normal(center).normalized()
 	var cam_forward := (-camera_3d.global_transform.basis.z).normalized()
 	if dir.dot(cam_forward) < 0.0:
 		dir = -dir
+	var along := maxf(0.0, (interaction_anchor - camera_origin).dot(dir))
+	var from := camera_origin + dir * along
 	var xform := Transform3D(Basis.IDENTITY, from + dir * minf(interaction_range * 0.6, 2.2))
 	var q := PhysicsShapeQueryParameters3D.new()
 	q.shape = shape
@@ -591,6 +624,68 @@ func _update_reticle_position() -> void:
 		return
 	var p := _get_crosshair_screen_point()
 	reticle.position = p - reticle.size * 0.5
+
+
+func _is_door_like_target(target: Object) -> bool:
+	if target == null:
+		return false
+	if target.has_method("is_locked"):
+		return true
+	var n := target as Node
+	if n == null:
+		return false
+	if n.has_meta("door_locked") or n.has_meta("is_door"):
+		return true
+	var lower_name := n.name.to_lower()
+	return lower_name.find("door") >= 0
+
+
+## Returns -1 when lock state is unknown, 0 unlocked, 1 locked.
+func _door_lock_state(target: Object) -> int:
+	if target == null:
+		return -1
+	if target.has_method("is_locked"):
+		return 1 if bool(target.call("is_locked")) else 0
+	var n := target as Node
+	if n == null:
+		return -1
+	if n.has_meta("door_locked"):
+		return 1 if bool(n.get_meta("door_locked")) else 0
+	return -1
+
+
+func _update_reticle_icon() -> void:
+	if reticle == null:
+		return
+	var icon: Texture2D = reticle_icon_default
+	var collider: Object = _get_interaction_collider()
+	if collider != null:
+		var interactable: Object = _resolve_interactable_target(collider)
+		if collider.has_method("harvest_hit"):
+			var action := "chop"
+			if collider.has_method("get_harvest_action"):
+				action = String(collider.get_harvest_action())
+			icon = reticle_icon_mine if action == "mine" else reticle_icon_attack
+		elif interactable != null:
+			if _is_door_like_target(interactable):
+				var lock_state := _door_lock_state(interactable)
+				if lock_state == 1:
+					icon = reticle_icon_door_locked
+				elif lock_state == 0:
+					icon = reticle_icon_door_unlocked
+				else:
+					icon = reticle_icon_interact
+			elif interactable.has_method("get_interaction_prompt"):
+				var prompt := String(interactable.call("get_interaction_prompt", self)).to_lower()
+				if prompt.find("water") >= 0 and reticle_icon_watering != null:
+					icon = reticle_icon_watering
+				else:
+					icon = reticle_icon_interact
+			else:
+				icon = reticle_icon_interact
+	if icon == null:
+		icon = reticle_icon_default
+	reticle.texture = icon
 
 
 ## True if the ray hits this collider, or it is still in range and roughly in front of the character (camera-independent).
@@ -720,16 +815,23 @@ func _harvest_skill_met(collider: Object) -> bool:
 	if gs == null or not (gs is _GameState):
 		return true
 	var state := gs as _GameState
+	var active_tool_kind: int = int(_BaseCharacter.ToolKind.NONE)
+	if base_character != null and base_character.has_method("get_active_tool_kind"):
+		active_tool_kind = int(base_character.get_active_tool_kind())
 	var action := "chop"
 	if collider.has_method("get_harvest_action"):
 		action = String(collider.get_harvest_action())
 	if action == "mine":
+		if active_tool_kind != int(_BaseCharacter.ToolKind.PICKAXE):
+			return false
 		var req := 0
 		if collider.has_method("get_required_mining_level"):
 			req = int(collider.get_required_mining_level())
 		if req <= 0:
 			return true
 		return state.mining_level >= req
+	if active_tool_kind != int(_BaseCharacter.ToolKind.AXE):
+		return false
 	var req_wc := 0
 	if collider.has_method("get_required_woodcutting_level"):
 		req_wc = int(collider.get_required_woodcutting_level())
