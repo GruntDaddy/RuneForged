@@ -21,7 +21,7 @@ var _tackle_inventory_slot: int = -1
 var _tackle_hook_labels: Array[Label] = []
 var _tackle_bobber_labels: Array[Label] = []
 var _tackle_bait_labels: Array[Label] = []
-var _hover_tooltip: Panel = null
+var _hover_tooltip: PanelContainer = null
 var _hover_tooltip_label: RichTextLabel = null
 
 
@@ -66,6 +66,16 @@ func _ready() -> void:
 func _on_inventory_service_changed() -> void:
 	_refresh_grid()
 	_refresh_tackle_panel()
+
+
+func _process(_delta: float) -> void:
+	if not visible:
+		_hide_hover_tooltip()
+		return
+	if _drag_from_idx >= 0:
+		_hide_hover_tooltip()
+		return
+	_update_hover_tooltip(get_viewport().get_mouse_position())
 
 
 func toggle_inventory() -> void:
@@ -207,7 +217,7 @@ func _cancel_drag() -> void:
 
 
 func _build_hover_tooltip() -> void:
-	_hover_tooltip = Panel.new()
+	_hover_tooltip = PanelContainer.new()
 	_hover_tooltip.visible = false
 	_hover_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hover_tooltip.z_index = 100
@@ -230,6 +240,7 @@ func _build_hover_tooltip() -> void:
 	_hover_tooltip_label.custom_minimum_size = Vector2(240, 0)
 	_hover_tooltip_label.add_theme_font_size_override("normal_font_size", 12)
 	_hover_tooltip_label.add_theme_color_override("default_color", Color(0.92, 0.94, 1.0, 1.0))
+	_hover_tooltip_label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_hover_tooltip.add_child(_hover_tooltip_label)
 
 
@@ -270,7 +281,14 @@ func _update_hover_tooltip(global_pos: Vector2) -> void:
 	if not desc.is_empty():
 		lines.append(_bbcode_escape(desc))
 	_hover_tooltip_label.text = "\n".join(lines)
+	var h: float = maxf(44.0, _hover_tooltip_label.get_content_height() + 12.0)
+	_hover_tooltip.size = Vector2(260.0, h)
 	_hover_tooltip.global_position = global_pos + Vector2(20, 20)
+	var vp_rect := get_viewport().get_visible_rect()
+	if _hover_tooltip.global_position.x + _hover_tooltip.size.x > vp_rect.end.x:
+		_hover_tooltip.global_position.x = global_pos.x - _hover_tooltip.size.x - 16.0
+	if _hover_tooltip.global_position.y + _hover_tooltip.size.y > vp_rect.end.y:
+		_hover_tooltip.global_position.y = global_pos.y - _hover_tooltip.size.y - 16.0
 	_hover_tooltip.visible = true
 
 
