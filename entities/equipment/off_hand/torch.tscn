@@ -42,8 +42,6 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_gxs2g")
 
 [node name="Torch" type="Node3D" unique_id=1765022816]
-transform = Transform3D(-0.12826094, 0.94290036, 0.30738863, -0.94290096, -0.21200725, 0.2568874, 0.30738792, -0.25688824, 0.916254, 0, 0, 0)
-visible = false
 
 [node name="Torch" type="MeshInstance3D" parent="." unique_id=1345376534]
 mesh = SubResource("ArrayMesh_vvo66")

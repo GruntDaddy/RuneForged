@@ -1,5 +1,6 @@
 extends CanvasLayer
 class_name GameMenu
+const ForgeTabScript = preload("res://ui/menus/tabs/forge_tab.gd")
 
 ## Spine tab indices (7 tabs + Codex uses World / People / Items filters inside).
 const TAB_VITALS := 0
@@ -9,8 +10,6 @@ const TAB_MAGIC := 3
 const TAB_FORGE := 4
 const TAB_QUESTS := 5
 const TAB_CODEX := 6
-const _FORGE_SUBTAB_CRAFTING := 0
-const _FORGE_SUBTAB_BUILDING := 1
 
 const _SLOT_COLS := 4
 const _INV_SLOT_SIZE := Vector2(70, 82)
@@ -123,6 +122,7 @@ var _craft_recipes: Array[RecipeData] = []
 var _craft_selected: RecipeData = null
 var _station_filter_idx: int = -1
 var _forge_tabs: TabContainer
+var _forge_tab = ForgeTabScript.new()
 
 var _was_mouse_captured: bool = false
 var _drag: Dictionary = {}
@@ -148,6 +148,7 @@ func _ready() -> void:
 	layer = 25
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_forge_tab.setup(self)
 	_style_book_panel()
 	_build_tabs()
 	_build_pages()
@@ -167,7 +168,7 @@ func _on_inventory_changed() -> void:
 		_refresh_equip_slots()
 		_refresh_tackle_panel()
 		_refresh_skills_page()
-		_refresh_crafting_detail()
+		_forge_tab.on_inventory_changed()
 
 
 func _on_backdrop_gui_input(event: InputEvent) -> void:
@@ -194,41 +195,27 @@ func open_menu(tab_idx: int = 0) -> void:
 	_refresh_equip_slots()
 	_refresh_skills_page()
 	_refresh_vitals_page()
-	_refresh_crafting_list()
-	_refresh_crafting_detail()
+	_forge_tab.refresh_on_open()
 	if _current_tab == TAB_CODEX:
 		_refresh_codex_list()
 
 
 func open_forge_crafting_basic() -> void:
 	open_menu(TAB_FORGE)
-	_set_forge_subtab(_FORGE_SUBTAB_CRAFTING)
-	_set_craft_station_filter(RecipeData.CraftStation.NONE)
-	_refresh_crafting_detail()
+	_forge_tab.open_crafting_basic()
 
 
 func open_forge_building() -> void:
 	open_menu(TAB_FORGE)
-	_set_forge_subtab(_FORGE_SUBTAB_BUILDING)
+	_forge_tab.open_building()
 
 
 func _set_forge_subtab(tab_idx: int) -> void:
-	if _forge_tabs == null:
-		return
-	_forge_tabs.current_tab = clampi(tab_idx, 0, _forge_tabs.get_tab_count() - 1)
+	_forge_tab.set_subtab(tab_idx)
 
 
 func _set_craft_station_filter(station_id: int) -> void:
-	if _page_crafting_filter == null:
-		return
-	for i in _page_crafting_filter.item_count:
-		if int(_page_crafting_filter.get_item_id(i)) == station_id:
-			_page_crafting_filter.select(i)
-			_on_craft_filter_selected(i)
-			return
-	if _page_crafting_filter.item_count > 0:
-		_page_crafting_filter.select(0)
-		_on_craft_filter_selected(0)
+	_forge_tab.set_station_filter(station_id)
 
 
 func close_menu() -> void:
@@ -526,7 +513,7 @@ func _build_pages() -> void:
 			TAB_MAGIC:
 				_build_magic_page(page)
 			TAB_FORGE:
-				_build_forge_page(page)
+				_forge_tab.build_into(page)
 			TAB_QUESTS:
 				_build_quests_page(page)
 			TAB_CODEX:

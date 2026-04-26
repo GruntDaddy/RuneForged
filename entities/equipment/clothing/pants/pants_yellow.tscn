@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dup7xnluhutog"]
+
+[ext_resource type="PackedScene" uid="uid://cptu7k6tthp5l" path="res://entities/characters/base_character/legL_default.tscn" id="1_gulkr"]
+[ext_resource type="PackedScene" uid="uid://3qh650bksi38" path="res://entities/characters/base_character/legR_default.tscn" id="2_p33vp"]
+
+[node name="Pants_Yellow" type="Node3D" unique_id=436448979]
+transform = Transform3D(0.99999994, 2.3283064e-10, -2.2351742e-08, -2.3283064e-10, 0.99999887, -0.0013973434, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
+
+[node name="LegLeft_Yellow" parent="." unique_id=510793509 instance=ExtResource("1_gulkr")]
+transform = Transform3D(1.0000001, -2.640634e-10, 2.2351397e-08, 2.015974e-10, 0.9999992, 0.0013973436, -2.2352047e-08, -0.001397338, 0.99999905, 0, 0, 0)
+skeleton = NodePath("../../../..")
+
+[node name="LegRight_Yellow" parent="." unique_id=1358135811 instance=ExtResource("2_p33vp")]
+transform = Transform3D(1.0000001, -2.640634e-10, 2.2351397e-08, 2.015974e-10, 0.9999992, 0.0013973436, -2.2352047e-08, -0.001397338, 0.99999905, 0, 0, 0)
+skeleton = NodePath("../../../..")

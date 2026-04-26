@@ -42,7 +42,6 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_wbujf")
 
 [node name="Tool_Hammer" type="Node3D" unique_id=632950477]
-transform = Transform3D(0.52304894, -1.6371882, -0.32944542, 1.6519701, 0.4566319, 0.35353094, -0.24477792, -0.41665602, 1.6819578, 0, 0, 0)
 
 [node name="hammer" type="MeshInstance3D" parent="." unique_id=271298927]
 transform = Transform3D(0.9889926, -0.14054075, -0.04627931, 0.1453802, 0.9811669, 0.12718536, 0.027532998, -0.1325135, 0.99079865, 0.037530005, 0.0137983635, 0.011706471)

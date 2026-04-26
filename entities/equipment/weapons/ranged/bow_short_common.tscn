@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://d1megw7ip7oq4"]
+
+[ext_resource type="PackedScene" uid="uid://wm56y0cqrhx3" path="res://assets/kaykit/items/bow_withString.gltf" id="1_yb1dr"]
+
+[node name="Bow_Short_Common" type="Node3D" unique_id=989506472]
+transform = Transform3D(-0.0813942, -0.12046663, 1.2415166, 0.6832742, 1.0365821, 0.14537713, -1.0435569, 0.68810344, -0.0016480386, 0, 0, 0)
+
+[node name="bow_short_common" parent="." unique_id=1379662105 instance=ExtResource("1_yb1dr")]
+transform = Transform3D(0.091552705, -1.4545044, -0.35501546, 1.4879396, 0.04888621, 0.18342885, -0.16629508, -0.36335647, 1.4457933, 0.002307415, -0.00042283535, -0.007830024)

@@ -43,7 +43,6 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_yc3e3")
 
 [node name="Katana_1h_Bronze" type="Node3D" unique_id=267845661]
-transform = Transform3D(-0.045347746, -1.920541, 0.5562956, -1.9017017, 0.21330993, 0.5814043, -0.6176374, -0.51577127, -1.8309844, 0, 0, 0)
 
 [node name="katana_1h_bronze" type="MeshInstance3D" parent="." unique_id=1080133562]
 transform = Transform3D(0.99625844, 0.08641182, 0.0014679139, -0.086420454, 0.99590963, 0.026369195, 0.0008167572, -0.02639737, 0.9996512, -0.0063479543, -0.06124683, 0.0017073154)

@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://dfs8h7xsrog7i"]
+
+[ext_resource type="PackedScene" uid="uid://cv1o84ye1kgjc" path="res://entities/characters/base_character/armR_default.tscn" id="1_5vc16"]
+[ext_resource type="PackedScene" uid="uid://5vxi2vbd3arf" path="res://entities/characters/base_character/body_default.tscn" id="2_kfvlq"]
+[ext_resource type="PackedScene" uid="uid://c7bum8q1w6sal" path="res://entities/characters/base_character/armL_default.tscn" id="3_62r4i"]
+
+[node name="Shirt_Yellow" type="Node3D" unique_id=83882374]
+transform = Transform3D(0.99999994, 2.3283064e-10, -2.2351742e-08, -2.3283064e-10, 0.99999887, -0.0013973434, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
+
+[node name="ArmRight_Yellow" parent="." unique_id=17494229 instance=ExtResource("1_5vc16")]
+transform = Transform3D(1, 1.7347235e-17, 0, -6.938894e-18, 1, 0, 0, 1.1641532e-10, 1, 0, 0, 0)
+skeleton = NodePath("../../../..")
+
+[node name="Body_Yellow" parent="." unique_id=692757183 instance=ExtResource("2_kfvlq")]
+transform = Transform3D(1, -9.117664e-10, 3.7253102e-08, 5.508431e-10, 0.9999997, -0.0008749288, -2.2352534e-08, 0.0008749296, 0.99999964, 0, 0, 0)
+skeleton = NodePath("../../../..")
+
+[node name="ArmLeft_Yellow" parent="." unique_id=1248779387 instance=ExtResource("3_62r4i")]
+transform = Transform3D(1.0000001, -2.640634e-10, 2.2351397e-08, 2.015974e-10, 0.9999992, 0.0013973436, -2.2352047e-08, -0.001397338, 0.99999905, 0, 0, 0)
+skeleton = NodePath("../../../..")

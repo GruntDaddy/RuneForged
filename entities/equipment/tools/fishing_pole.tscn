@@ -76,8 +76,6 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_b11am")
 
 [node name="Fishing_Pole" type="Node3D" unique_id=245412400]
-transform = Transform3D(0.39867634, -1.3474324, -1.0430642, 0.08306985, -1.0545905, 1.3940727, -1.7019566, -0.3671034, -0.176291, 0, 0, 0)
-visible = false
 
 [node name="fishing_rod_base" type="MeshInstance3D" parent="." unique_id=144101584]
 transform = Transform3D(0.99992484, 0.012196014, -0.0012613228, -0.012195965, 0.9787531, -0.20467964, -0.0012617595, 0.20467964, 0.97882813, -0.004118383, 0.015176415, -0.06911647)

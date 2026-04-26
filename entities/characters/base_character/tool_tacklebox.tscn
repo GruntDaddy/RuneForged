@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://b01fur407hh45"]
 
 [ext_resource type="Texture2D" uid="uid://bydb2wmwb0svj" path="res://assets/kaykit/items/tools_bits_texture.png" id="1_8d1ko"]
+[ext_resource type="Material" uid="uid://t8my3v650kfp" path="res://shared/materials/barbarian.tres" id="1_r7cra"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bay4u"]
 resource_name = "tools"
@@ -75,12 +76,14 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_hmaee")
 
-[node name="Tool_Tacklebox" type="Node3D" unique_id=855795433]
+[node name="Tacklebox" type="Node3D" unique_id=855795433]
 
 [node name="fishing_tacklebox" type="MeshInstance3D" parent="." unique_id=1660792304]
 transform = Transform3D(1, 5.684342e-14, -2.9802322e-08, 0, 1.0000001, -2.1316282e-14, 2.9802322e-08, -1.4210855e-14, 1, 0, 0, 0)
+material_override = ExtResource("1_r7cra")
 mesh = SubResource("ArrayMesh_4hmhw")
 
 [node name="fishing_tacklebox_lid" type="MeshInstance3D" parent="fishing_tacklebox" unique_id=465387075]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27678204, -0.23976994)
+material_override = ExtResource("1_r7cra")
 mesh = SubResource("ArrayMesh_rni5w")

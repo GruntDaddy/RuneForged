@@ -190,7 +190,6 @@ bind/22/bone = -1
 bind/22/pose = Transform3D(-1, 1.5343471e-07, -6.460088e-15, -3.0319768e-12, 5.960463e-08, 0.99999976, 1.5343466e-07, 1, -2.9802315e-08, 0.17094503, -0.09639277, -0.025990315)
 
 [node name="FullHelm_Steel" type="Node3D" unique_id=302897788]
-visible = false
 
 [node name="Helmet_Steel" type="MeshInstance3D" parent="." unique_id=2115504960]
 material_override = ExtResource("1_mdt6u")

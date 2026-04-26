@@ -1,11 +1,11 @@
-[gd_scene format=4 uid="uid://btmlhr2obivim"]
+[gd_scene format=4 uid="uid://4414nds6m8iu"]
 
-[ext_resource type="Material" uid="uid://d3a6q2uifsq0v" path="res://shared/materials/Bronze.tres" id="1_epwdn"]
-[ext_resource type="Texture2D" uid="uid://brj414wfk4pv6" path="res://assets/kaykit/items/weapons_bits_texture.png" id="2_y2wn5"]
+[ext_resource type="Material" uid="uid://cg5p7xbkumh0l" path="res://shared/materials/Iron.tres" id="1_x0kuv"]
+[ext_resource type="Texture2D" uid="uid://brj414wfk4pv6" path="res://assets/kaykit/items/weapons_bits_texture.png" id="2_qeyw3"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_unjkc"]
 resource_name = "weapons"
-albedo_texture = ExtResource("2_y2wn5")
+albedo_texture = ExtResource("2_qeyw3")
 roughness = 0.5
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_k8e8s"]
@@ -42,8 +42,8 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_k8e8s")
 
-[node name="1h_ShortSword_Adamant" type="Node3D" unique_id=2143609465]
+[node name="1h_ShortSword_Iron" type="Node3D" unique_id=1884864841]
 
-[node name="1h_short_sword_adamant" type="MeshInstance3D" parent="." unique_id=817807057]
-material_override = ExtResource("1_epwdn")
+[node name="1h_short_sword_iron" type="MeshInstance3D" parent="." unique_id=1415587414]
+material_override = ExtResource("1_x0kuv")
 mesh = SubResource("ArrayMesh_xr5fr")
