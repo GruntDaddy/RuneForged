@@ -4,6 +4,7 @@
 
 [resource]
 resource_name = "paladin_metallic"
+cull_mode = 2
 albedo_color = Color(0.67463887, 0.48083544, 0, 1)
 albedo_texture = ExtResource("1_xqh57")
 metallic = 1.0

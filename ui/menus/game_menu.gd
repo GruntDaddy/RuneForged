@@ -9,6 +9,8 @@ const TAB_MAGIC := 3
 const TAB_FORGE := 4
 const TAB_QUESTS := 5
 const TAB_CODEX := 6
+const _FORGE_SUBTAB_CRAFTING := 0
+const _FORGE_SUBTAB_BUILDING := 1
 
 const _SLOT_COLS := 4
 const _INV_SLOT_SIZE := Vector2(70, 82)
@@ -120,6 +122,7 @@ var _page_crafting_filter: OptionButton
 var _craft_recipes: Array[RecipeData] = []
 var _craft_selected: RecipeData = null
 var _station_filter_idx: int = -1
+var _forge_tabs: TabContainer
 
 var _was_mouse_captured: bool = false
 var _drag: Dictionary = {}
@@ -195,6 +198,37 @@ func open_menu(tab_idx: int = 0) -> void:
 	_refresh_crafting_detail()
 	if _current_tab == TAB_CODEX:
 		_refresh_codex_list()
+
+
+func open_forge_crafting_basic() -> void:
+	open_menu(TAB_FORGE)
+	_set_forge_subtab(_FORGE_SUBTAB_CRAFTING)
+	_set_craft_station_filter(RecipeData.CraftStation.NONE)
+	_refresh_crafting_detail()
+
+
+func open_forge_building() -> void:
+	open_menu(TAB_FORGE)
+	_set_forge_subtab(_FORGE_SUBTAB_BUILDING)
+
+
+func _set_forge_subtab(tab_idx: int) -> void:
+	if _forge_tabs == null:
+		return
+	_forge_tabs.current_tab = clampi(tab_idx, 0, _forge_tabs.get_tab_count() - 1)
+
+
+func _set_craft_station_filter(station_id: int) -> void:
+	if _page_crafting_filter == null:
+		return
+	for i in _page_crafting_filter.item_count:
+		if int(_page_crafting_filter.get_item_id(i)) == station_id:
+			_page_crafting_filter.select(i)
+			_on_craft_filter_selected(i)
+			return
+	if _page_crafting_filter.item_count > 0:
+		_page_crafting_filter.select(0)
+		_on_craft_filter_selected(0)
 
 
 func close_menu() -> void:
@@ -970,6 +1004,7 @@ func _build_forge_page(page: Control) -> void:
 	var tabs := TabContainer.new()
 	tabs.set_anchors_preset(Control.PRESET_FULL_RECT)
 	tabs.tab_alignment = TabBar.ALIGNMENT_CENTER
+	_forge_tabs = tabs
 	page.add_child(tabs)
 	var craft_host := Control.new()
 	craft_host.name = "Crafting"

@@ -15,7 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://cptu7k6tthp5l" path="res://entities/characters/base_character/legL_default.tscn" id="5_swqeb"]
 [ext_resource type="PackedScene" uid="uid://lafnf4dbnsv3" path="res://entities/equipment/tools/fishing_pole.tscn" id="6_633uw"]
 [ext_resource type="PackedScene" uid="uid://3qh650bksi38" path="res://entities/characters/base_character/legR_default.tscn" id="6_gq86d"]
-[ext_resource type="PackedScene" uid="uid://hff5eby587u3" path="res://entities/equipment/tools/tool_hammer.tscn" id="7_hcn84"]
+[ext_resource type="PackedScene" uid="uid://hff5eby587u3" path="res://entities/equipment/tools/hammer.tscn" id="7_hcn84"]
 [ext_resource type="PackedScene" uid="uid://bowouj2mkapt8" path="res://entities/equipment/weapons/melee/dagger_bronze.tscn" id="8_5l5lm"]
 [ext_resource type="PackedScene" uid="uid://b7pnqddunrelb" path="res://entities/equipment/off_hand/torch.tscn" id="10_lfxo5"]
 [ext_resource type="Animation" uid="uid://shplmx2jg2pf" path="res://assets/animations/rig_medium/movement/Jump_Idle.res" id="11_ey55c"]

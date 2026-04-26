@@ -147,6 +147,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		game_menu.toggle(GameMenu.TAB_INVENTORY)
 		get_viewport().set_input_as_handled()
 		return
+	if event.is_action_pressed("craft_menu") and game_menu:
+		if game_menu.has_method("open_forge_crafting_basic"):
+			game_menu.open_forge_crafting_basic()
+		else:
+			game_menu.toggle(GameMenu.TAB_FORGE)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("build_menu") and game_menu:
+		if game_menu.has_method("open_forge_building"):
+			game_menu.open_forge_building()
+		else:
+			game_menu.toggle(GameMenu.TAB_FORGE)
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		camera_rig.rotate_y(-event.relative.x * mouse_sensitivity)
 		spring_arm.rotation.x = clamp(
