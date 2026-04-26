@@ -267,6 +267,11 @@ func _input(event: InputEvent) -> void:
 		_drag_preview.global_position = event.global_position + Vector2(16, 16)
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			if event.double_click:
+				var dbl_inv_idx := _inv_slot_from_mouse(event.global_position)
+				if dbl_inv_idx >= 0 and _try_quick_equip_inventory_slot(dbl_inv_idx):
+					get_viewport().set_input_as_handled()
+					return
 			_try_begin_drag_at(event.global_position)
 		else:
 			_finish_drag_at(event.global_position)
@@ -1832,6 +1837,8 @@ func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 		"main_hand":
 			return it.category in [ItemData.Category.TOOL, ItemData.Category.WEAPON]
 		"off_hand":
+			if _is_shield_item(it):
+				return true
 			return it.category in [
 				ItemData.Category.TOOL,
 				ItemData.Category.WEAPON,
@@ -1843,6 +1850,88 @@ func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 			return it.category == ItemData.Category.JEWERLY
 		_:
 			return false
+
+
+func _try_quick_equip_inventory_slot(inv_idx: int) -> bool:
+	var inv_s: Variant = InventoryService.get_slot_data(inv_idx)
+	if inv_s == null:
+		return false
+	var item_id := str(inv_s.get("id", ""))
+	if item_id.is_empty():
+		return false
+	var it := ItemCatalog.get_item(item_id)
+	if it == null:
+		_toast("Cannot equip that item.")
+		return false
+	var target_slot := _preferred_equip_slot_for_item(it, item_id)
+	if target_slot.is_empty():
+		_toast("That item has no equipment slot.")
+		return false
+	_try_drop_inv_on_equip(inv_idx, target_slot)
+	return true
+
+
+func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
+	var id := item_id.to_lower()
+	if _is_shield_item(it):
+		return "off_hand"
+	if it is ArmorData:
+		var ad := it as ArmorData
+		if ad.armor_stats != null:
+			match ad.armor_stats.slot:
+				ArmorStats.ArmorSlot.HEAD:
+					return "head"
+				ArmorStats.ArmorSlot.CHEST:
+					return "chest"
+				ArmorStats.ArmorSlot.LEGS:
+					return "legs"
+				ArmorStats.ArmorSlot.HANDS:
+					return "hands"
+				ArmorStats.ArmorSlot.FEET:
+					return "feet"
+				ArmorStats.ArmorSlot.SHIELD:
+					return "off_hand"
+	match it.category:
+		ItemData.Category.WEAPON:
+			return "main_hand"
+		ItemData.Category.TOOL:
+			if id == "tool_torch" or id == "tool_chisel" or id == "tool_tacklebox":
+				return "off_hand"
+			return "main_hand"
+		ItemData.Category.ARMOR, ItemData.Category.CLOTHING:
+			if id.begins_with("armor_head_"):
+				return "head"
+			if id.begins_with("armor_chest_"):
+				return "chest"
+			if id.begins_with("armor_legs_"):
+				return "legs"
+			if id.begins_with("armor_hands_"):
+				return "hands"
+			if id.begins_with("armor_feet_"):
+				return "feet"
+		ItemData.Category.JEWERLY:
+			if GameState.equipment.get("ring_1", null) == null:
+				return "ring_1"
+			if GameState.equipment.get("ring_2", null) == null:
+				return "ring_2"
+			return "ring_1"
+		ItemData.Category.RELIC:
+			return "off_hand"
+		_:
+			return ""
+	return ""
+
+
+func _is_shield_item(it: ItemData) -> bool:
+	if it == null:
+		return false
+	if str(it.id).begins_with("shield_"):
+		return true
+	if it is ArmorData:
+		var ad := it as ArmorData
+		if ad.armor_stats != null and ad.armor_stats.slot == ArmorStats.ArmorSlot.SHIELD:
+			return true
+	return false
 
 
 func _toast(msg: String) -> void:
