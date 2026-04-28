@@ -1083,7 +1083,7 @@ func _harvest_auto_continue_async(gen: int) -> void:
 	if move_check.length_squared() > 0.0001:
 		_stop_harvest_auto()
 		return
-	if not _harvest_target_still_valid(c):
+	if not _harvest_auto_target_still_valid(c):
 		_stop_harvest_auto()
 		return
 	if not _harvest_skill_met(c):
@@ -1109,7 +1109,7 @@ func _harvest_auto_continue_async(gen: int) -> void:
 	if c.has_method("can_harvest") and not c.can_harvest():
 		_stop_harvest_auto()
 		return
-	if not _harvest_target_still_valid(c):
+	if not _harvest_auto_target_still_valid(c):
 		_stop_harvest_auto()
 		return
 	if not _harvest_skill_met(c):
@@ -1120,6 +1120,19 @@ func _harvest_auto_continue_async(gen: int) -> void:
 		_stop_harvest_auto()
 		return
 	_schedule_harvest_auto_followup(float(res[1]), gen)
+
+
+func _harvest_auto_target_still_valid(c: Object) -> bool:
+	if c == null or not is_instance_valid(c):
+		return false
+	if not (c is Node3D):
+		return false
+	var t := c as Node3D
+	if global_position.distance_to(t.global_position) > interaction_range + 1.0:
+		return false
+	if c.has_method("can_harvest") and not c.can_harvest():
+		return false
+	return true
 
 
 func _begin_harvest_on_collider(collider: Object) -> Array:

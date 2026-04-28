@@ -29,6 +29,9 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var flee_on_hit: bool = true
 @export var flee_duration_sec: float = 2.0
 @export var flee_speed_multiplier: float = 1.85
+## Safety leash: keep wildlife near its spawn and recover from terrain falls.
+@export var max_spawn_wander_multiplier: float = 3.0
+@export var fall_reset_depth: float = 15.0
 
 ## Negative values move the mesh down so feet align with the ground when the FBX pivot sits high.
 @export var visual_mesh_vertical_offset: float = 0.0
@@ -73,6 +76,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
+	_enforce_spawn_leash()
 	_phase_timeout -= delta
 	_flee_timeout = maxf(0.0, _flee_timeout - delta)
 	if _phase_timeout <= 0.0:
@@ -107,6 +111,27 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 	move_and_slide()
 	_update_anim()
+
+
+func _enforce_spawn_leash() -> void:
+	if global_position.y < _spawn_position.y - fall_reset_depth:
+		_reset_to_spawn()
+		return
+	var max_dist := maxf(roam_radius, 1.0) * maxf(max_spawn_wander_multiplier, 1.5)
+	if global_position.distance_to(_spawn_position) <= max_dist:
+		return
+	# Too far away: force a return leg instead of letting wildlife drift out of play space.
+	_flee_timeout = 0.0
+	_is_walking = true
+	_phase_timeout = randf_range(maxf(0.1, walk_time_min), maxf(walk_time_min, walk_time_max))
+	_walk_target = _spawn_position + Vector3(randf_range(-roam_radius, roam_radius), 0.0, randf_range(-roam_radius, roam_radius))
+
+
+func _reset_to_spawn() -> void:
+	global_position = _spawn_position
+	velocity = Vector3.ZERO
+	_flee_timeout = 0.0
+	_set_idle_phase()
 
 
 func can_receive_hit() -> bool:
