@@ -3,6 +3,10 @@ extends CharacterBody3D
 const _GameState = preload("res://autoload/game_state.gd")
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd")
+const _AnimalChickenScene = preload("res://entities/characters/animals/chicken.tscn")
+const _AnimalRabbitScene = preload("res://entities/characters/animals/rabbit.tscn")
+const _AnimalRoosterScene = preload("res://entities/characters/animals/rooster.tscn")
+const _AnimalChickScene = preload("res://entities/characters/animals/chick.tscn")
 
 const _H_INVALID := 0
 const _H_WHIFF := 1
@@ -42,6 +46,8 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.5])
 @export var mine_animation_duration_sec: float = 1.7
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
+@export var creature_attack_damage: float = 8.0
+@export var creature_attack_cooldown_sec: float = 0.7
 
 @export_group("Water")
 @export var water_buoyancy_strength: float = 14.0
@@ -123,6 +129,7 @@ func _ready() -> void:
 	_update_reticle_icon()
 	_resolve_day_night_controller()
 	_apply_from_gamestate()
+	_setup_tutorial_animals_if_needed()
 	if _input_enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if interaction_prompt:
@@ -132,6 +139,44 @@ func _ready() -> void:
 		inv.inventory_changed.connect(_on_inventory_changed)
 	_refresh_tacklebox_back_visual()
 	_sync_equipped_hand_visuals()
+
+
+func _setup_tutorial_animals_if_needed() -> void:
+	var scene := get_tree().current_scene
+	if scene == null or String(scene.name) != "TutorialIsle":
+		return
+	if scene.get_node_or_null("AnimalsGameplay") != null:
+		return
+	var src_root := scene.get_node_or_null("Animals") as Node3D
+	if src_root == null:
+		return
+	var spawned := Node3D.new()
+	spawned.name = "AnimalsGameplay"
+	spawned.transform = src_root.transform
+	scene.add_child(spawned)
+	var scene_by_name := {
+		"Chicken": _AnimalChickenScene,
+		"Rabbit": _AnimalRabbitScene,
+		"Rooster": _AnimalRoosterScene,
+		"Chick": _AnimalChickScene,
+	}
+	var spawned_count := 0
+	for k in scene_by_name.keys():
+		var src := src_root.get_node_or_null(String(k)) as Node3D
+		if src == null:
+			continue
+		var animal_scene: PackedScene = scene_by_name[k]
+		if animal_scene == null:
+			continue
+		var inst := animal_scene.instantiate()
+		spawned.add_child(inst)
+		if inst is Node3D:
+			(inst as Node3D).transform = src.transform
+		spawned_count += 1
+	if spawned_count > 0:
+		src_root.visible = false
+	else:
+		spawned.queue_free()
 
 
 func _on_inventory_changed() -> void:
@@ -304,6 +349,9 @@ func _physics_process(delta: float) -> void:
 			return
 		var now_ms: int = Time.get_ticks_msec()
 		if now_ms >= _next_harvest_allowed_ms:
+			if _try_creature_hit_with_cooldown():
+				_next_harvest_allowed_ms = now_ms + int(creature_attack_cooldown_sec * 1000.0)
+				return
 			var harvest_res: Array = _try_harvest_hit_with_cooldown()
 			if harvest_res[0]:
 				_next_harvest_allowed_ms = now_ms + int(harvest_res[1] * 1000.0)
@@ -559,7 +607,19 @@ func _is_interaction_candidate(collider: Object) -> bool:
 		return false
 	if collider.has_method("harvest_hit"):
 		return true
+	if _is_creature_candidate(collider):
+		return true
 	return _resolve_interactable_target(collider) != null
+
+
+func _is_creature_candidate(collider: Object) -> bool:
+	if collider == null:
+		return false
+	if not collider.has_method("receive_hit"):
+		return false
+	if collider.has_method("can_receive_hit"):
+		return bool(collider.call("can_receive_hit"))
+	return true
 
 
 func _fallback_interaction_collider() -> Object:
@@ -666,6 +726,8 @@ func _update_reticle_icon() -> void:
 			if collider.has_method("get_harvest_action"):
 				action = String(collider.get_harvest_action())
 			icon = reticle_icon_mine if action == "mine" else reticle_icon_attack
+		elif _is_creature_candidate(collider):
+			icon = reticle_icon_attack
 		elif interactable != null:
 			if _is_door_like_target(interactable):
 				var lock_state := _door_lock_state(interactable)
@@ -926,6 +988,10 @@ func _update_interaction_prompt() -> void:
 		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
 		interaction_prompt.visible = not interaction_prompt.text.is_empty()
 		return
+	if _is_creature_candidate(collider):
+		interaction_prompt.text = "LMB: Attack"
+		interaction_prompt.visible = true
+		return
 	if not collider.has_method("harvest_hit"):
 		interaction_prompt.visible = false
 		return
@@ -965,6 +1031,15 @@ func _try_interact() -> void:
 	if interactable == null or not interactable.has_method("interact"):
 		return
 	interactable.interact(self)
+
+
+func _try_creature_hit_with_cooldown() -> bool:
+	var collider: Object = _get_interaction_collider()
+	if not _is_creature_candidate(collider):
+		return false
+	if base_character.has_method("try_play_action_for_harvest"):
+		base_character.try_play_action_for_harvest("interact")
+	return bool(collider.call("receive_hit", creature_attack_damage, self))
 
 
 func _night_speed_factor() -> float:

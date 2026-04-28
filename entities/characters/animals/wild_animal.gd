@@ -1,0 +1,235 @@
+extends CharacterBody3D
+class_name WildAnimal
+
+const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_entry.gd")
+
+@export var max_health: float = 20.0
+@export var species_id: String = ""
+@export var move_speed: float = 1.1
+@export var turn_speed: float = 5.5
+@export var roam_radius: float = 3.0
+@export var idle_time_min: float = 1.2
+@export var idle_time_max: float = 3.5
+@export var walk_time_min: float = 1.5
+@export var walk_time_max: float = 3.8
+@export var attack_damage: float = 8.0
+@export var death_remove_delay_sec: float = 0.3
+@export var respawn_seconds: float = 0.0
+
+@export var idle_animation: StringName = &"Idle"
+@export var walk_animation: StringName = &"Walk"
+@export var death_animation: StringName = &"Death"
+
+@export var drops: Array[_AnimalDropEntry] = []
+
+@onready var animation_player: AnimationPlayer = get_node_or_null("VisualRoot/AnimationPlayer")
+
+var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var _spawn_position: Vector3 = Vector3.ZERO
+var _health: float = 0.0
+var _dead: bool = false
+var _is_walking: bool = false
+var _phase_timeout: float = 0.0
+var _walk_target: Vector3 = Vector3.ZERO
+
+
+func _ready() -> void:
+	add_to_group("creature")
+	_spawn_position = global_position
+	_health = maxf(1.0, max_health)
+	if drops.is_empty():
+		drops = _default_drops_for_species(species_id)
+	_set_idle_phase()
+
+
+func _physics_process(delta: float) -> void:
+	if _dead:
+		return
+	_phase_timeout -= delta
+	if _phase_timeout <= 0.0:
+		if _is_walking:
+			_set_idle_phase()
+		else:
+			_set_walk_phase()
+	var planar_velocity := Vector3.ZERO
+	if _is_walking:
+		var to_target := _walk_target - global_position
+		to_target.y = 0.0
+		if to_target.length_squared() > 0.04:
+			var dir := to_target.normalized()
+			planar_velocity = dir * move_speed
+			var target_yaw := atan2(dir.x, dir.z)
+			rotation.y = lerp_angle(rotation.y, target_yaw, clampf(turn_speed * delta, 0.0, 1.0))
+	velocity.x = planar_velocity.x
+	velocity.z = planar_velocity.z
+	if not is_on_floor():
+		velocity.y -= _gravity * delta
+	else:
+		velocity.y = 0.0
+	move_and_slide()
+	_update_anim()
+
+
+func can_receive_hit() -> bool:
+	return not _dead
+
+
+func get_interaction_prompt(_player: Node) -> String:
+	if _dead:
+		return ""
+	return "LMB: Attack"
+
+
+func receive_hit(damage: float, _source: Node = null) -> bool:
+	if _dead:
+		return false
+	var dealt := maxf(0.0, damage)
+	if dealt <= 0.0:
+		return false
+	_health -= dealt
+	if _health <= 0.0:
+		_die()
+	return true
+
+
+func _die() -> void:
+	if _dead:
+		return
+	_dead = true
+	collision_layer = 0
+	collision_mask = 0
+	velocity = Vector3.ZERO
+	_play_anim(death_animation)
+	_spawn_drops()
+	_schedule_respawn()
+	get_tree().create_timer(maxf(0.0, death_remove_delay_sec)).timeout.connect(func() -> void:
+		queue_free()
+	)
+
+
+func _spawn_drops() -> void:
+	var inv: Node = get_node_or_null("/root/InventoryService")
+	if inv == null or not inv.has_method("get_pickup_scene_for_item"):
+		return
+	var parent_node := get_parent()
+	if parent_node == null:
+		return
+	for entry in drops:
+		if entry == null:
+			continue
+		if entry.item_id.is_empty():
+			continue
+		if randf() > clampf(entry.chance, 0.0, 1.0):
+			continue
+		var scene: PackedScene = inv.get_pickup_scene_for_item(entry.item_id)
+		if scene == null:
+			continue
+		var drop_count := randi_range(mini(entry.min_count, entry.max_count), maxi(entry.min_count, entry.max_count))
+		var node := scene.instantiate()
+		if node == null:
+			continue
+		parent_node.add_child(node)
+		if node is Node3D:
+			var o := Vector3(randf_range(-0.45, 0.45), 0.2, randf_range(-0.45, 0.45))
+			(node as Node3D).global_position = global_position + o
+		if node.has_method("set_resource_type"):
+			node.set_resource_type(entry.item_id)
+		elif "resource_type" in node:
+			node.resource_type = entry.item_id
+		if node.has_method("set_quantity"):
+			node.set_quantity(drop_count)
+		elif "quantity" in node:
+			node.quantity = drop_count
+
+
+func _schedule_respawn() -> void:
+	if respawn_seconds <= 0.0:
+		return
+	var parent_node := get_parent()
+	if parent_node == null:
+		return
+	var p := scene_file_path
+	if p.is_empty():
+		return
+	var scene: Resource = load(p)
+	if not (scene is PackedScene):
+		return
+	var delay := respawn_seconds
+	var spawn_xf := global_transform
+	get_tree().create_timer(delay).timeout.connect(func() -> void:
+		if not is_instance_valid(parent_node):
+			return
+		var inst := (scene as PackedScene).instantiate()
+		parent_node.add_child(inst)
+		if inst is Node3D:
+			(inst as Node3D).global_transform = spawn_xf
+	)
+
+
+func _set_idle_phase() -> void:
+	_is_walking = false
+	_phase_timeout = randf_range(maxf(0.1, idle_time_min), maxf(idle_time_min, idle_time_max))
+	_walk_target = global_position
+
+
+func _set_walk_phase() -> void:
+	_is_walking = true
+	_phase_timeout = randf_range(maxf(0.1, walk_time_min), maxf(walk_time_min, walk_time_max))
+	_walk_target = _spawn_position + Vector3(randf_range(-roam_radius, roam_radius), 0.0, randf_range(-roam_radius, roam_radius))
+
+
+func _update_anim() -> void:
+	if _dead:
+		return
+	if _is_walking and velocity.length_squared() > 0.05:
+		_play_anim(walk_animation)
+	else:
+		_play_anim(idle_animation)
+
+
+func _play_anim(anim_name: StringName) -> void:
+	if animation_player == null or anim_name == StringName():
+		return
+	if not animation_player.has_animation(anim_name):
+		return
+	if animation_player.current_animation == anim_name and animation_player.is_playing():
+		return
+	animation_player.play(anim_name, 0.15)
+
+
+func _default_drops_for_species(species: String) -> Array[_AnimalDropEntry]:
+	match species:
+		"chicken":
+			return [
+				_make_drop("feather", 0.95, 1, 3),
+				_make_drop("meat_raw", 0.65, 1, 2),
+				_make_drop("bone", 0.20, 1, 1),
+			]
+		"rooster":
+			return [
+				_make_drop("feather", 0.98, 2, 4),
+				_make_drop("meat_raw", 0.75, 1, 2),
+				_make_drop("bone", 0.25, 1, 1),
+			]
+		"chick":
+			return [
+				_make_drop("feather", 0.35, 1, 1),
+				_make_drop("meat_raw", 0.40, 1, 1),
+				_make_drop("bone", 0.05, 1, 1),
+			]
+		"rabbit":
+			return [
+				_make_drop("meat_raw", 0.85, 1, 2),
+				_make_drop("hide_raw", 0.75, 1, 1),
+				_make_drop("bone", 0.30, 1, 1),
+			]
+	return []
+
+
+func _make_drop(item_id: String, chance: float, min_count: int, max_count: int) -> _AnimalDropEntry:
+	var d := _AnimalDropEntry.new()
+	d.item_id = item_id
+	d.chance = chance
+	d.min_count = min_count
+	d.max_count = max_count
+	return d

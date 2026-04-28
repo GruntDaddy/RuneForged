@@ -25,6 +25,10 @@ const PICKUP_SCENES := {
 	"tin_ore": preload("res://entities/resource/resource_pickup_stone.tscn"),
 	"ore_tin": preload("res://entities/resource/resource_pickup_stone.tscn"),
 	"ore_copper": preload("res://entities/resource/resource_pickup_stone.tscn"),
+	"meat_raw": preload("res://entities/resource/resource_pickup_meat.tscn"),
+	"hide_raw": preload("res://entities/resource/resource_pickup_hide.tscn"),
+	"feather": preload("res://entities/resource/resource_pickup_feather.tscn"),
+	"bone": preload("res://entities/resource/resource_pickup_bone.tscn"),
 	"tool_torch": preload("res://world/torch_light.tscn"),
 	"campfire_kit": preload("res://entities/building_parts/campfire.tscn"),
 }
@@ -235,6 +239,14 @@ func get_item_display_name(item_id: String) -> String:
 			return "Tin ore"
 		"ore_copper":
 			return "Copper ore"
+		"meat_raw":
+			return "Raw meat"
+		"hide_raw":
+			return "Raw hide"
+		"feather":
+			return "Feather"
+		"bone":
+			return "Bone"
 		_:
 			if item_id.is_empty():
 				return ""
