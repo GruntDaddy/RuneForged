@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_item"]
-[ext_resource type="Texture2D" path="res://assets/ui/icons/items/icon_ore_tin.svg" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -10,4 +9,4 @@ display_name = "Silver ore"
 description = "Pale ore chunks that can be refined into silver bars."
 max_stack = 99
 tags = PackedStringArray("resource", "ore", "silver")
-icon = ExtResource("2_icon")
+icon = null

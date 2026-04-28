@@ -32,7 +32,7 @@ const PICKUP_SCENES := {
 	"ingot_iron": preload("res://entities/resource/resource_pickup_ingot_iron.tscn"),
 	"ingot_silver": preload("res://entities/resource/resource_pickup_ingot_silver.tscn"),
 	"ingot_gold": preload("res://entities/resource/resource_pickup_ingot_gold.tscn"),
-	"ingot_bronze": preload("res://entities/resource/resource_pickup_ingot_copper.tscn"),
+	"ingot_bronze": preload("res://entities/resource/resource_pickup_ingot_bronze.tscn"),
 	"meat_raw": preload("res://entities/resource/resource_pickup_meat.tscn"),
 	"hide_raw": preload("res://entities/resource/resource_pickup_hide.tscn"),
 	"feather": preload("res://entities/resource/resource_pickup_feather.tscn"),
