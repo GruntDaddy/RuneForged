@@ -141,6 +141,8 @@ const _ANIM_BOW_RELEASE := "Bow_Release"
 const _ANIM_UNARMED_PUNCH := "Melee_Unarmed_Attack_Punch_A"
 const _ANIM_UNARMED_KICK := "Melee_Unarmed_Attack_Kick"
 
+@export var melee_combo_reset_seconds: float = 1.25
+
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–4). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
 var _player_chosen_tool: ToolKind = ToolKind.NONE
@@ -156,6 +158,7 @@ var _bow_phase: int = 0
 var _next_unarmed_kick: bool = false
 var _melee_combo_step: int = 0
 var _active_melee_clip: String = ""
+var _last_melee_attack_ms: int = -1
 
 
 func _ready() -> void:
@@ -420,6 +423,7 @@ func try_play_melee_attack_1h() -> bool:
 		return false
 	if is_animation_locked():
 		return false
+	_reset_combo_if_timed_out()
 	var attack_clip := _ANIM_MELEE_1H
 	if _equipped_main_hand_item_id.is_empty():
 		attack_clip = _ANIM_UNARMED_KICK if _next_unarmed_kick else _ANIM_UNARMED_PUNCH
@@ -442,6 +446,7 @@ func try_play_melee_attack_1h() -> bool:
 	_apply_weapon_visual_for_attack()
 	anim_player.speed_scale = 1.0
 	anim_player.play(path, 0.12)
+	_last_melee_attack_ms = Time.get_ticks_msec()
 	return true
 
 
@@ -466,6 +471,16 @@ func _first_available_clip(candidates: Array) -> String:
 		if anim_player != null and anim_player.has_animation(_anim_path(clip)):
 			return clip
 	return _ANIM_MELEE_1H
+
+
+func _reset_combo_if_timed_out() -> void:
+	if _last_melee_attack_ms < 0:
+		_melee_combo_step = 0
+		return
+	var timeout_ms := int(maxf(0.1, melee_combo_reset_seconds) * 1000.0)
+	var elapsed := Time.get_ticks_msec() - _last_melee_attack_ms
+	if elapsed > timeout_ms:
+		_melee_combo_step = 0
 
 
 func try_begin_bow_draw() -> bool:

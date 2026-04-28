@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bxtbx04i7obd2"]
+
+[resource]
+resource_name = "hiker"
+disable_ambient_light = true
+vertex_color_use_as_albedo = true
+metallic = 1.0
+metallic_specular = 0.55
+roughness = 0.51
+emission_enabled = true

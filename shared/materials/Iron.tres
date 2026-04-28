@@ -4,9 +4,10 @@
 
 [resource]
 resource_name = "hiker"
+disable_ambient_light = true
 vertex_color_use_as_albedo = true
-albedo_color = Color(0.6127935, 0.5687338, 0.4801224, 1)
+albedo_color = Color(0.7465098, 0.7272358, 0.7208176, 1)
 albedo_texture = ExtResource("1_mmx4j")
 metallic = 1.0
-roughness = 0.42
+roughness = 0.61
 emission_enabled = true

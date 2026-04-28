@@ -24,7 +24,15 @@ const PICKUP_SCENES := {
 	"stone": preload("res://entities/resource/resource_pickup_stone.tscn"),
 	"tin_ore": preload("res://entities/resource/resource_pickup_stone.tscn"),
 	"ore_tin": preload("res://entities/resource/resource_pickup_stone.tscn"),
-	"ore_copper": preload("res://entities/resource/resource_pickup_stone.tscn"),
+	"ore_copper": preload("res://entities/resource/resource_pickup_ore_copper.tscn"),
+	"ore_iron": preload("res://entities/resource/resource_pickup_ore_iron.tscn"),
+	"ore_silver": preload("res://entities/resource/resource_pickup_ore_silver.tscn"),
+	"ore_gold": preload("res://entities/resource/resource_pickup_ore_gold.tscn"),
+	"ingot_copper": preload("res://entities/resource/resource_pickup_ingot_copper.tscn"),
+	"ingot_iron": preload("res://entities/resource/resource_pickup_ingot_iron.tscn"),
+	"ingot_silver": preload("res://entities/resource/resource_pickup_ingot_silver.tscn"),
+	"ingot_gold": preload("res://entities/resource/resource_pickup_ingot_gold.tscn"),
+	"ingot_bronze": preload("res://entities/resource/resource_pickup_ingot_copper.tscn"),
 	"meat_raw": preload("res://entities/resource/resource_pickup_meat.tscn"),
 	"hide_raw": preload("res://entities/resource/resource_pickup_hide.tscn"),
 	"feather": preload("res://entities/resource/resource_pickup_feather.tscn"),
@@ -243,6 +251,22 @@ func get_item_display_name(item_id: String) -> String:
 			return "Tin ore"
 		"ore_copper":
 			return "Copper ore"
+		"ore_iron":
+			return "Iron ore"
+		"ore_silver":
+			return "Silver ore"
+		"ore_gold":
+			return "Gold ore"
+		"ingot_copper":
+			return "Copper ingot"
+		"ingot_iron":
+			return "Iron ingot"
+		"ingot_silver":
+			return "Silver ingot"
+		"ingot_gold":
+			return "Gold ingot"
+		"ingot_bronze":
+			return "Bronze ingot"
 		"meat_raw":
 			return "Raw meat"
 		"hide_raw":

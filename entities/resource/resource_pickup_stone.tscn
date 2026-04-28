@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cxxtur5k87o3a"]
 
 [ext_resource type="Script" uid="uid://la6fktgrdvn6" path="res://entities/resource/resource_pickup.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cd7oy6gnofvub" path="res://assets/kaykit/resources/Stone_Chunks_Small.gltf" id="2_stone"]
+[ext_resource type="PackedScene" path="res://entities/props/static/stone_chunks_medium.tscn" id="2_stone"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
 radius = 0.62
@@ -16,5 +16,5 @@ shape = SubResource("SphereShape3D_pickup")
 
 [node name="Visual" type="Node3D" parent="." unique_id=965164408]
 
-[node name="Stone_Chunks_Small" parent="Visual" unique_id=468364528 instance=ExtResource("2_stone")]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0, 0)
+[node name="Stone_Chunks_Medium" parent="Visual" unique_id=468364528 instance=ExtResource("2_stone")]
+transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0, 0)

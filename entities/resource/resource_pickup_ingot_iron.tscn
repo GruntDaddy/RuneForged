@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/resource/resource_pickup.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://entities/props/static/iron_bar.tscn" id="2_visual"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
+radius = 0.52
+
+[node name="ResourcePickupIngotIron" type="Area3D"]
+script = ExtResource("1_script")
+resource_type = "ingot_iron"
+ground_clearance = 0.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_pickup")
+
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="IronBar" parent="Visual" instance=ExtResource("2_visual")]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0, 0, 0)
