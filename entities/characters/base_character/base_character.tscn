@@ -76,6 +76,7 @@
 [ext_resource type="PackedScene" uid="uid://bcul3po0f5uyt" path="res://entities/equipment/clothing/pants/pants_green.tscn" id="53_iieiw"]
 [ext_resource type="PackedScene" uid="uid://dfs8h7xsrog7i" path="res://entities/equipment/clothing/shirts/shirt_yellow.tscn" id="54_csl7y"]
 [ext_resource type="PackedScene" uid="uid://dup7xnluhutog" path="res://entities/equipment/clothing/pants/pants_yellow.tscn" id="55_ae42p"]
+[ext_resource type="Animation" uid="uid://j2v8qt67ebbn" path="res://assets/animations/rig_medium/tools/Chop.res" id="71_41cp6"]
 [ext_resource type="Animation" uid="uid://btib02hn62m65" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Jump_Chop.res" id="74_pbyn3"]
 [ext_resource type="Animation" uid="uid://dg6dac7ar3s8l" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Slice_Diagonal.res" id="75_41cp6"]
 [ext_resource type="Animation" uid="uid://0entig14wpy2" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Stab.res" id="76_k1esd"]
@@ -94,6 +95,7 @@ _data = {
 &"Bow_Draw": ExtResource("comb_bow_dr"),
 &"Bow_Release": ExtResource("comb_bow_rel"),
 &"Chop": ExtResource("comb_m1h_ch"),
+&"Chop 2": ExtResource("71_41cp6"),
 &"Idle_A": ExtResource("14_idle"),
 &"Interact": ExtResource("17_interact"),
 &"Jump_Idle": ExtResource("11_ey55c"),
