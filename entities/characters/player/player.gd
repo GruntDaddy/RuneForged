@@ -488,7 +488,19 @@ func _sync_equipped_hand_visuals() -> void:
 	if base_character.has_method("set_equipped_armor_items"):
 		base_character.set_equipped_armor_items(head_id, chest_id, legs_id)
 	if base_character.has_method("set_active_tool"):
-		base_character.set_active_tool(_tool_kind_for_equipped_main(main_id))
+		var desired_tool := _tool_kind_for_equipped_main(main_id)
+		var harvest_target: Object = null
+		if _harvest_interact_pending:
+			harvest_target = _harvest_interact_target.get_ref() if _harvest_interact_target != null else null
+		elif _harvest_auto_active:
+			harvest_target = _harvest_auto_target.get_ref() if _harvest_auto_target != null else null
+		if harvest_target != null and is_instance_valid(harvest_target) and harvest_target.has_method("get_harvest_action"):
+			var harvest_action := String(harvest_target.call("get_harvest_action"))
+			if harvest_action == "mine":
+				desired_tool = _BaseCharacter.ToolKind.PICKAXE
+			elif harvest_action == "chop":
+				desired_tool = _BaseCharacter.ToolKind.AXE
+		base_character.set_active_tool(desired_tool)
 
 
 func _normalize_item_id(id: String) -> String:
@@ -1255,7 +1267,8 @@ func _harvest_auto_target_still_valid(c: Object) -> bool:
 	if not (c is Node3D):
 		return false
 	var t := c as Node3D
-	if global_position.distance_to(t.global_position) > interaction_range + 1.0:
+	var max_dist := maxf(interaction_range + 1.0, _harvest_interact_distance_for(c) + 2.0)
+	if global_position.distance_to(t.global_position) > max_dist:
 		return false
 	if c.has_method("can_harvest") and not c.can_harvest():
 		return false
@@ -1405,15 +1418,15 @@ func _update_interaction_prompt() -> void:
 	if collider == null:
 		interaction_prompt.visible = false
 		return
-	var interactable: Object = _resolve_interactable_target(collider)
-	if interactable != null and interactable.has_method("get_interaction_prompt"):
-		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
-		interaction_prompt.visible = not interaction_prompt.text.is_empty()
-		return
 	var world_item_id := _resolve_world_item_id_from_collider(collider)
 	if not world_item_id.is_empty():
 		interaction_prompt.text = "E: Pick up %s" % InventoryService.get_item_display_name(world_item_id)
 		interaction_prompt.visible = true
+		return
+	var interactable: Object = _resolve_interactable_target(collider)
+	if interactable != null and interactable.has_method("get_interaction_prompt"):
+		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
+		interaction_prompt.visible = not interaction_prompt.text.is_empty()
 		return
 	if _is_creature_candidate(collider):
 		interaction_prompt.text = "LMB: Attack"
@@ -1473,9 +1486,10 @@ func _try_interact() -> void:
 		if not _harvest_skill_met(harvest_target):
 			show_gameplay_message("You need the right tool and level to harvest this.")
 		return
+	if _try_pickup_item_from_world(collider):
+		return
 	var interactable: Object = _resolve_interactable_target(collider)
 	if interactable == null or not interactable.has_method("interact"):
-		_try_pickup_item_from_world(collider)
 		return
 	interactable.interact(self)
 
