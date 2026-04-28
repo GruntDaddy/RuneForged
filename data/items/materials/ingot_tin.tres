@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://data/rpg_icons/I_BronzeBar.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = "ingot_tin"
+display_name = "Tin ingot"
+description = "A smelted tin ingot used in low-tier smithing recipes."
+max_stack = 99
+tags = PackedStringArray("resource", "ingot", "tin")
+icon = ExtResource("2_icon")

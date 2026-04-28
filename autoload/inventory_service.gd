@@ -29,6 +29,7 @@ const PICKUP_SCENES := {
 	"ore_silver": preload("res://entities/resource/resource_pickup_ore_silver.tscn"),
 	"ore_gold": preload("res://entities/resource/resource_pickup_ore_gold.tscn"),
 	"ingot_copper": preload("res://entities/resource/resource_pickup_ingot_copper.tscn"),
+	"ingot_tin": preload("res://entities/resource/resource_pickup_ingot_bronze.tscn"),
 	"ingot_iron": preload("res://entities/resource/resource_pickup_ingot_iron.tscn"),
 	"ingot_silver": preload("res://entities/resource/resource_pickup_ingot_silver.tscn"),
 	"ingot_gold": preload("res://entities/resource/resource_pickup_ingot_gold.tscn"),
@@ -259,6 +260,8 @@ func get_item_display_name(item_id: String) -> String:
 			return "Gold ore"
 		"ingot_copper":
 			return "Copper ingot"
+		"ingot_tin":
+			return "Tin ingot"
 		"ingot_iron":
 			return "Iron ingot"
 		"ingot_silver":

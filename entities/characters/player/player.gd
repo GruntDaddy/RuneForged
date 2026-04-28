@@ -124,6 +124,7 @@ var _last_equipped_off_hand_id: String = ""
 var _last_equipped_head_id: String = ""
 var _last_equipped_chest_id: String = ""
 var _last_equipped_legs_id: String = ""
+var _last_equipped_back_id: String = ""
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
@@ -407,8 +408,6 @@ func _attack_input_tick() -> void:
 	if _pending_chop_hit:
 		return
 	var now_ms: int = Time.get_ticks_msec()
-	if now_ms < _next_harvest_allowed_ms:
-		return
 
 	if _equipped_weapon_is_bow():
 		var aiming_bow: bool = Input.is_action_pressed("block")
@@ -426,6 +425,8 @@ func _attack_input_tick() -> void:
 				drawing = bool(base_character.is_bow_drawn_or_drawing())
 			if not drawing and base_character != null and base_character.has_method("try_begin_bow_draw"):
 				base_character.try_begin_bow_draw()
+		return
+	if now_ms < _next_harvest_allowed_ms:
 		return
 
 	if Input.is_action_just_pressed("attack"):
@@ -460,6 +461,7 @@ func _sync_equipped_hand_visuals() -> void:
 	var head_id := ""
 	var chest_id := ""
 	var legs_id := ""
+	var back_id := ""
 	var m: Variant = GameState.equipment.get("main_hand", null)
 	if m != null:
 		main_id = _normalize_item_id(str(m.get("id", "")))
@@ -479,12 +481,18 @@ func _sync_equipped_hand_visuals() -> void:
 	var l: Variant = GameState.equipment.get("legs", null)
 	if l != null:
 		legs_id = str(l.get("id", ""))
+	var b: Variant = GameState.equipment.get("back", null)
+	if b != null:
+		back_id = _normalize_item_id(str(b.get("id", "")))
+		b["id"] = back_id
+		GameState.equipment["back"] = b
 	if (
 		main_id == _last_equipped_main_hand_id
 		and off_id == _last_equipped_off_hand_id
 		and head_id == _last_equipped_head_id
 		and chest_id == _last_equipped_chest_id
 		and legs_id == _last_equipped_legs_id
+		and back_id == _last_equipped_back_id
 	):
 		return
 	_last_equipped_main_hand_id = main_id
@@ -492,10 +500,11 @@ func _sync_equipped_hand_visuals() -> void:
 	_last_equipped_head_id = head_id
 	_last_equipped_chest_id = chest_id
 	_last_equipped_legs_id = legs_id
+	_last_equipped_back_id = back_id
 	if base_character.has_method("set_equipped_hand_items"):
 		base_character.set_equipped_hand_items(main_id, off_id)
 	if base_character.has_method("set_equipped_armor_items"):
-		base_character.set_equipped_armor_items(head_id, chest_id, legs_id)
+		base_character.set_equipped_armor_items(head_id, chest_id, legs_id, back_id)
 	if base_character.has_method("set_active_tool"):
 		var desired_tool := _tool_kind_for_equipped_main(main_id)
 		var harvest_target: Object = null
@@ -760,6 +769,8 @@ func _quick_equip_hotbar_item(item_id: String) -> void:
 			break
 	if item_id == "tool_torch":
 		equip_slot = "off_hand"
+	if item_id.begins_with("quiver_") or item_id.begins_with("backpack_"):
+		equip_slot = "back"
 	GameState.equipment[equip_slot] = {"id": item_id, "count": 1}
 	_sync_equipped_hand_visuals()
 
@@ -1541,7 +1552,7 @@ func _extract_world_item_id(node: Node) -> String:
 		"iron_bar": "ingot_iron",
 		"silver_bar": "ingot_silver",
 		"gold_bar": "ingot_gold",
-		"tin_bar": "ore_tin",
+		"tin_bar": "ingot_tin",
 		"copper_nuggets": "ore_copper",
 		"iron_nuggets": "ore_iron",
 		"silver_nuggets": "ore_silver",

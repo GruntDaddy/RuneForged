@@ -85,6 +85,9 @@ enum ActionState {
 	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Wooden"
 ) as Node3D
 @onready var clothing_root: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing") as Node3D
+@onready var cape_blue_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Capes/Cape_Blue") as Node3D
+@onready var backpack_large_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Backpacks/Backpack_Large") as Node3D
+@onready var quiver_common_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Common") as Node3D
 @onready var outfit_green: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green") as Node3D
 @onready var outfit_yellow: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow") as Node3D
 @onready var shirt_green_mesh: Node3D = get_node_or_null(
@@ -160,6 +163,7 @@ var _equipped_off_hand_item_id: String = ""
 var _equipped_head_item_id: String = ""
 var _equipped_chest_item_id: String = ""
 var _equipped_legs_item_id: String = ""
+var _equipped_back_item_id: String = ""
 
 var _block_hold_active: bool = false
 ## 0 idle, 1 draw playing, 2 fully drawn (held pose), 3 release playing.
@@ -345,10 +349,11 @@ func set_equipped_hand_items(main_hand_item_id: String, off_hand_item_id: String
 		_apply_tool_kind(_player_chosen_tool)
 
 
-func set_equipped_armor_items(head_item_id: String, chest_item_id: String, legs_item_id: String) -> void:
+func set_equipped_armor_items(head_item_id: String, chest_item_id: String, legs_item_id: String, back_item_id: String = "") -> void:
 	_equipped_head_item_id = head_item_id
 	_equipped_chest_item_id = chest_item_id
 	_equipped_legs_item_id = legs_item_id
+	_equipped_back_item_id = back_item_id
 	_apply_armor_visibility()
 
 
@@ -796,6 +801,17 @@ func _apply_armor_visibility() -> void:
 		if legs != null:
 			_set_ancestor_visible_until(legs, armor_root)
 			_set_node3d_tree_visible(legs, true, true)
+	_apply_back_slot_visibility()
+
+
+func _apply_back_slot_visibility() -> void:
+	var back_id := _normalize_item_id(_equipped_back_item_id)
+	if cape_blue_mesh != null:
+		cape_blue_mesh.visible = back_id.begins_with("cape_")
+	if backpack_large_mesh != null:
+		backpack_large_mesh.visible = back_id.begins_with("backpack_")
+	if quiver_common_mesh != null:
+		quiver_common_mesh.visible = back_id.begins_with("quiver_")
 
 
 func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
@@ -824,7 +840,8 @@ func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
 func _show_equipped_weapon_mesh() -> void:
 	if equipped_weapon_root == null and equipped_weapon_left_root == null:
 		return
-	equipped_weapon_root.visible = true
+	if equipped_weapon_root != null:
+		equipped_weapon_root.visible = true
 	if equipped_weapon_left_root != null:
 		equipped_weapon_left_root.visible = false
 	match _equipped_main_hand_item_id:

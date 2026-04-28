@@ -18,6 +18,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 	"ore_silver": "I_Rock05.png",
 	"ore_gold": "I_Rock06.png",
 	"ingot_copper": "I_BronzeBar.png",
+	"ingot_tin": "I_BronzeBar.png",
 	"ingot_iron": "I_IronBall.png",
 	"ingot_silver": "I_SilverBar.png",
 	"ingot_gold": "I_GoldBar.png",

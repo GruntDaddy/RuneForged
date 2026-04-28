@@ -1827,12 +1827,16 @@ func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 		"off_hand":
 			if _is_shield_item(it):
 				return true
+			if _is_back_relic_item_id(item_id):
+				return false
 			return it.category in [
 				ItemData.Category.TOOL,
 				ItemData.Category.WEAPON,
 				ItemData.Category.RELIC,
 			]
 		"head", "chest", "legs", "feet", "hands", "back":
+			if equip_slot == "back" and _is_back_relic_item_id(item_id):
+				return true
 			return it.category in [ItemData.Category.ARMOR, ItemData.Category.CLOTHING]
 		"cape":
 			if item_id.begins_with("cape_"):
@@ -1920,10 +1924,16 @@ func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
 				return "ring_2"
 			return "ring_1"
 		ItemData.Category.RELIC:
+			if _is_back_relic_item_id(id):
+				return "back"
 			return "off_hand"
 		_:
 			return ""
 	return ""
+
+
+func _is_back_relic_item_id(item_id: String) -> bool:
+	return item_id.begins_with("quiver_") or item_id.begins_with("backpack_")
 
 
 func _is_shield_item(it: ItemData) -> bool:
