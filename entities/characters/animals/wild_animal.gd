@@ -166,7 +166,12 @@ func _spawn_drops() -> void:
 		parent_node.add_child(node)
 		if node is Node3D:
 			var o := Vector3(randf_range(-0.45, 0.45), 0.2, randf_range(-0.45, 0.45))
-			(node as Node3D).global_position = global_position + o
+			var drop_node := node as Node3D
+			drop_node.global_position = global_position + o
+			if node.has_method("launch_from_harvest"):
+				node.launch_from_harvest(global_position, get_rid())
+			else:
+				_snap_drop_to_ground(drop_node)
 		if node.has_method("set_resource_type"):
 			node.set_resource_type(entry.item_id)
 		elif "resource_type" in node:
@@ -175,6 +180,17 @@ func _spawn_drops() -> void:
 			node.set_quantity(drop_count)
 		elif "quantity" in node:
 			node.quantity = drop_count
+
+
+func _snap_drop_to_ground(drop_node: Node3D) -> void:
+	var from := drop_node.global_position + Vector3.UP * 1.5
+	var to := from + Vector3.DOWN * 10.0
+	var query := PhysicsRayQueryParameters3D.create(from, to)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.size() > 0:
+		drop_node.global_position.y = (hit["position"] as Vector3).y + 0.06
 
 
 func _schedule_respawn() -> void:
