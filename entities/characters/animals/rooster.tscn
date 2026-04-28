@@ -20,6 +20,7 @@ walk_time_max = 3.1
 attack_damage = 9.0
 respawn_seconds = 26.0
 visual_mesh_vertical_offset = -0.31
+visual_mesh_yaw_offset_deg = -90.0
 idle_animation = &"Idle"
 walk_animation = &"Walk"
 death_animation = &"Death"

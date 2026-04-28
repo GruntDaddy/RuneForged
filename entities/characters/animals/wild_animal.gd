@@ -28,6 +28,8 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 
 ## Negative values move the mesh down so feet align with the ground when the FBX pivot sits high.
 @export var visual_mesh_vertical_offset: float = 0.0
+## Yaw offset (degrees) for imported meshes whose authored forward axis is not Godot's -Z.
+@export var visual_mesh_yaw_offset_deg: float = 0.0
 
 @export var drops: Array[_AnimalDropEntry] = []
 
@@ -267,11 +269,13 @@ func _resolve_clip_name(preferred: StringName) -> String:
 
 
 func _apply_visual_vertical_offset() -> void:
-	if is_zero_approx(visual_mesh_vertical_offset):
-		return
 	var vr := get_node_or_null("VisualRoot")
-	if vr:
+	if vr == null:
+		return
+	if not is_zero_approx(visual_mesh_vertical_offset):
 		vr.position.y += visual_mesh_vertical_offset
+	if not is_zero_approx(visual_mesh_yaw_offset_deg):
+		vr.rotation.y += deg_to_rad(visual_mesh_yaw_offset_deg)
 
 
 func _default_drops_for_species(species: String) -> Array[_AnimalDropEntry]:
