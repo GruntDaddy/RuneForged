@@ -647,9 +647,6 @@ func _find_creature_melee_target() -> Object:
 	var best: Object = null
 	var best_d2: float = INF
 	var origin := global_position + Vector3(0.0, interaction_height, 0.0)
-	var raw_fwd := -camera_3d.global_transform.basis.z if camera_3d != null else base_character.global_transform.basis.z
-	raw_fwd.y = 0.0
-	var fwd := raw_fwd.normalized() if raw_fwd.length_squared() > 0.0001 else Vector3(0.0, 0.0, 1.0)
 	for n in get_tree().get_nodes_in_group("creature"):
 		if not (n is Node3D):
 			continue
@@ -661,11 +658,6 @@ func _find_creature_melee_target() -> Object:
 		to_t.y = 0.0
 		var d2 := to_t.length_squared()
 		if d2 > pow(melee_reach_distance + melee_hit_radius, 2.0):
-			continue
-		var dot_ok := true
-		if to_t.length_squared() > 0.0001:
-			dot_ok = fwd.dot(to_t.normalized()) >= melee_forward_dot_min
-		if not dot_ok:
 			continue
 		if d2 < best_d2:
 			best_d2 = d2

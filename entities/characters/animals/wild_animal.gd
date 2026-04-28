@@ -22,6 +22,7 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var health_bar_height: float = 1.15
 @export var health_bar_width: float = 0.75
 @export var health_bar_thickness: float = 0.07
+@export var health_bar_visible_seconds_after_hit: float = 3.0
 
 ## Extra yaw (radians) after aligning facing to velocity. Uses atan2(-x,-z) so local −Z matches movement.
 @export var facing_yaw_offset: float = 0.0
@@ -62,6 +63,7 @@ var _flee_timeout: float = 0.0
 var _health_bar_root: Node3D
 var _health_bar_bg: MeshInstance3D
 var _health_bar_fill: MeshInstance3D
+var _health_bar_visible_until_ms: int = 0
 
 
 func _ready() -> void:
@@ -121,6 +123,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_anim()
 	_update_health_bar_billboard()
+	_update_health_bar_visibility()
 
 
 func _enforce_spawn_leash() -> void:
@@ -173,6 +176,7 @@ func receive_hit(damage: float, _source: Node = null) -> bool:
 	if dealt <= 0.0:
 		return false
 	_health -= dealt
+	_show_health_bar_temporarily()
 	_update_health_bar_visual()
 	if _health <= 0.0:
 		_die()
@@ -425,6 +429,7 @@ func _setup_health_bar() -> void:
 	var bg_mat := StandardMaterial3D.new()
 	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	bg_mat.albedo_color = Color(0.12, 0.12, 0.12, 0.85)
+	bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	bg_mat.no_depth_test = false
 	_health_bar_bg.material_override = bg_mat
 	_health_bar_root.add_child(_health_bar_bg)
@@ -436,10 +441,12 @@ func _setup_health_bar() -> void:
 	var fill_mat := StandardMaterial3D.new()
 	fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	fill_mat.albedo_color = Color(0.2, 0.85, 0.3, 0.95)
+	fill_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	fill_mat.no_depth_test = false
 	_health_bar_fill.material_override = fill_mat
 	_health_bar_fill.position = Vector3(0.0, 0.0, -0.001)
 	_health_bar_root.add_child(_health_bar_fill)
+	_health_bar_root.visible = false
 
 
 func _update_health_bar_billboard() -> void:
@@ -466,3 +473,22 @@ func _update_health_bar_visual() -> void:
 			mat.albedo_color = Color(0.95, 0.78, 0.2, 0.95)
 		else:
 			mat.albedo_color = Color(0.9, 0.2, 0.2, 0.95)
+
+
+func _show_health_bar_temporarily() -> void:
+	if _health_bar_root == null or _dead:
+		return
+	_health_bar_visible_until_ms = Time.get_ticks_msec() + int(maxf(0.1, health_bar_visible_seconds_after_hit) * 1000.0)
+	_health_bar_root.visible = true
+
+
+func _update_health_bar_visibility() -> void:
+	if _health_bar_root == null:
+		return
+	if _dead:
+		_health_bar_root.visible = false
+		return
+	if _health <= 0.0:
+		_health_bar_root.visible = false
+		return
+	_health_bar_root.visible = Time.get_ticks_msec() <= _health_bar_visible_until_ms
