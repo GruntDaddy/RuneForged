@@ -679,22 +679,6 @@ func _try_play_attack_air_whiff() -> bool:
 		return false
 	if base_character.has_method("is_animation_locked") and base_character.is_animation_locked():
 		return false
-	var tk: _BaseCharacter.ToolKind = _BaseCharacter.ToolKind.NONE
-	if base_character.has_method("get_active_tool_kind"):
-		tk = base_character.get_active_tool_kind()
-	match tk:
-		_BaseCharacter.ToolKind.AXE:
-			if base_character.has_method("try_play_action_for_harvest"):
-				return base_character.try_play_action_for_harvest("chop")
-			return false
-		_BaseCharacter.ToolKind.PICKAXE:
-			if base_character.has_method("try_play_action_for_harvest"):
-				return base_character.try_play_action_for_harvest("mine")
-			return false
-		_BaseCharacter.ToolKind.FISHING_ROD:
-			return false
-		_:
-			pass
 	var family := _main_hand_weapon_family()
 	match family:
 		_WeaponStats.WeaponFamily.BOW:
