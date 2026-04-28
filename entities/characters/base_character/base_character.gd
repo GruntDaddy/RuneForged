@@ -622,6 +622,8 @@ func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 
 func _pick_right_hand_tool(ids: Array[String], primary: Node3D, fallback: Node3D) -> void:
 	var selected: bool = false
+	var inv: Node = get_node_or_null("/root/InventoryService")
+	var has_item_fn: bool = inv != null and inv.has_method("has_item")
 	for id in ids:
 		if _equipped_main_hand_item_id == id:
 			selected = true
@@ -632,6 +634,17 @@ func _pick_right_hand_tool(ids: Array[String], primary: Node3D, fallback: Node3D
 				if fallback != null:
 					fallback.visible = true
 			break
+	if not selected and has_item_fn:
+		for id in ids:
+			if bool(inv.call("has_item", id)):
+				selected = true
+				if id.find("bronze") >= 0:
+					if primary != null:
+						primary.visible = true
+				else:
+					if fallback != null:
+						fallback.visible = true
+				break
 	if not selected and fallback != null:
 		# Allow harvest/tool actions to still show a default mesh even when the tool is not equipped.
 		fallback.visible = true

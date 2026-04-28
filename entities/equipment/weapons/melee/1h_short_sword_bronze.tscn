@@ -42,8 +42,8 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_k8e8s")
 
-[node name="1h_ShortSword_Adamant" type="Node3D" unique_id=2143609465]
+[node name="1h_ShortSword_Bronze" type="Node3D" unique_id=2143609465]
 
-[node name="1h_short_sword_adamant" type="MeshInstance3D" parent="." unique_id=817807057]
+[node name="1h_short_sword_bronze" type="MeshInstance3D" parent="." unique_id=817807057]
 material_override = ExtResource("1_epwdn")
 mesh = SubResource("ArrayMesh_xr5fr")

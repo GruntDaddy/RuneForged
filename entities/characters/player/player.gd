@@ -48,6 +48,12 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.5])
 @export var mine_animation_duration_sec: float = 1.7
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
+@export var harvest_interact_start_distance: float = 1.95
+@export var harvest_interact_start_distance_chop: float = 2.05
+@export var harvest_interact_start_distance_mine: float = 1.65
+@export var harvest_interact_face_dot_min: float = 0.62
+@export var harvest_interact_face_dot_min_chop: float = 0.55
+@export var harvest_interact_face_dot_min_mine: float = 0.72
 @export var creature_attack_damage: float = 8.0
 @export var unarmed_melee_damage: float = 1.0
 @export var tool_melee_damage: float = 2.0
@@ -108,6 +114,8 @@ var _pending_creature_ref: WeakRef
 var _harvest_auto_active: bool = false
 var _harvest_auto_target: WeakRef
 var _harvest_auto_gen: int = 0
+var _harvest_interact_pending: bool = false
+var _harvest_interact_target: WeakRef
 var _zoom_target_distance: float = 0.0
 
 var _day_night: Node = null
@@ -313,7 +321,12 @@ func _physics_process(delta: float) -> void:
 	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if _harvest_auto_active and raw_move.length_squared() > 0.0001:
 		_stop_harvest_auto()
+	if _harvest_interact_pending and raw_move.length_squared() > 0.0001:
+		_clear_harvest_interact_approach()
 	var input_vec := raw_move
+	var approach_input := _harvest_interact_move_input()
+	if approach_input.length_squared() > 0.0001:
+		input_vec = approach_input
 	if anim_busy:
 		input_vec = Vector2.ZERO
 	var cam_basis := camera_3d.global_transform.basis
@@ -351,6 +364,7 @@ func _physics_process(delta: float) -> void:
 		velocity.z *= water_horizontal_drag
 
 	move_and_slide()
+	_try_start_pending_harvest_interact()
 
 	if not in_water and is_on_floor():
 		if running and dir.length_squared() > 0.0001:
@@ -1047,6 +1061,119 @@ func _stop_harvest_auto() -> void:
 	_harvest_auto_gen += 1
 
 
+func _clear_harvest_interact_approach() -> void:
+	_harvest_interact_pending = false
+	_harvest_interact_target = null
+
+
+func _start_harvest_interact_approach(collider: Object) -> void:
+	_harvest_interact_pending = true
+	_harvest_interact_target = weakref(collider)
+
+
+func _harvest_interact_move_input() -> Vector2:
+	if not _harvest_interact_pending:
+		return Vector2.ZERO
+	var c: Object = _harvest_interact_target.get_ref() if _harvest_interact_target != null else null
+	if c == null or not is_instance_valid(c):
+		_clear_harvest_interact_approach()
+		return Vector2.ZERO
+	if not (c is Node3D):
+		_clear_harvest_interact_approach()
+		return Vector2.ZERO
+	var t := c as Node3D
+	var to_t := t.global_position - global_position
+	to_t.y = 0.0
+	var dist := to_t.length()
+	var start_dist := _harvest_interact_distance_for(c)
+	if dist <= start_dist:
+		return Vector2.ZERO
+	var world_dir := to_t.normalized()
+	if camera_3d == null:
+		return Vector2(world_dir.x, -world_dir.z)
+	var cam_basis := camera_3d.global_transform.basis
+	var forward := -cam_basis.z
+	forward.y = 0.0
+	var right := cam_basis.x
+	right.y = 0.0
+	if forward.length_squared() < 0.0001 or right.length_squared() < 0.0001:
+		return Vector2.ZERO
+	forward = forward.normalized()
+	right = right.normalized()
+	var x := world_dir.dot(right)
+	var y := -world_dir.dot(forward)
+	return Vector2(x, y).limit_length(1.0)
+
+
+func _harvest_interact_ready(collider: Object) -> bool:
+	if collider == null or not is_instance_valid(collider):
+		return false
+	if not (collider is Node3D):
+		return false
+	var t := collider as Node3D
+	var to_t := t.global_position - global_position
+	to_t.y = 0.0
+	var start_dist := _harvest_interact_distance_for(collider)
+	if to_t.length() > start_dist:
+		return false
+	var fwd := base_character.global_transform.basis.z
+	fwd.y = 0.0
+	if fwd.length_squared() < 0.0001 or to_t.length_squared() < 0.0001:
+		return false
+	fwd = fwd.normalized()
+	to_t = to_t.normalized()
+	return fwd.dot(to_t) >= _harvest_interact_face_dot_for(collider)
+
+
+func _harvest_interact_distance_for(collider: Object) -> float:
+	if collider != null and collider.has_method("get_harvest_action"):
+		var action := String(collider.call("get_harvest_action"))
+		if action == "mine":
+			return harvest_interact_start_distance_mine
+		if action == "chop":
+			return harvest_interact_start_distance_chop
+	return harvest_interact_start_distance
+
+
+func _harvest_interact_face_dot_for(collider: Object) -> float:
+	if collider != null and collider.has_method("get_harvest_action"):
+		var action := String(collider.call("get_harvest_action"))
+		if action == "mine":
+			return harvest_interact_face_dot_min_mine
+		if action == "chop":
+			return harvest_interact_face_dot_min_chop
+	return harvest_interact_face_dot_min
+
+
+func _try_start_pending_harvest_interact() -> void:
+	if not _harvest_interact_pending:
+		return
+	var c: Object = _harvest_interact_target.get_ref() if _harvest_interact_target != null else null
+	if c == null or not is_instance_valid(c):
+		_clear_harvest_interact_approach()
+		return
+	if c.has_method("can_harvest") and not c.can_harvest():
+		_clear_harvest_interact_approach()
+		return
+	if not _harvest_interact_ready(c):
+		return
+	if base_character != null and base_character.has_method("is_movement_locked") and base_character.is_movement_locked():
+		return
+	var now_ms: int = Time.get_ticks_msec()
+	if now_ms < _next_harvest_allowed_ms:
+		return
+	var res: Array = _begin_harvest_on_collider(c)
+	if bool(res[0]):
+		var dur_sec: float = float(res[1])
+		_next_harvest_allowed_ms = now_ms + int(dur_sec * 1000.0)
+		_harvest_schedule_auto_chain(c, dur_sec)
+		_clear_harvest_interact_approach()
+		return
+	if not _harvest_skill_met(c):
+		show_gameplay_message("You need the right tool and level to harvest this.")
+	_clear_harvest_interact_approach()
+
+
 func _harvest_schedule_auto_chain(collider: Object, duration_sec: float) -> void:
 	if collider == null or not collider.has_method("can_harvest"):
 		return
@@ -1326,6 +1453,9 @@ func _try_interact() -> void:
 		return
 	var harvest_target: Object = _resolve_harvest_target(collider)
 	if harvest_target != null:
+		if not _harvest_interact_ready(harvest_target):
+			_start_harvest_interact_approach(harvest_target)
+			return
 		var now_ms: int = Time.get_ticks_msec()
 		if now_ms < _next_harvest_allowed_ms:
 			return
