@@ -768,8 +768,7 @@ func _show_equipped_weapon_mesh() -> void:
 			if sword_wooden_mesh != null:
 				sword_wooden_mesh.visible = true
 		"sword_1h_bronze":
-			if sword_bronze_mesh != null:
-				sword_bronze_mesh.visible = true
+			_show_short_sword_variant(0)
 		"sword_1h_iron":
 			_show_short_sword_variant(1)
 		"sword_1h_steel":

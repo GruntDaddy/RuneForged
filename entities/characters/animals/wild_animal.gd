@@ -428,7 +428,7 @@ func _setup_health_bar() -> void:
 	_health_bar_bg.mesh = bg_mesh
 	var bg_mat := StandardMaterial3D.new()
 	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	bg_mat.albedo_color = Color(0.05, 0.05, 0.05, 0.95)
+	bg_mat.albedo_color = Color(0.08, 0.08, 0.08, 1.0)
 	bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	bg_mat.no_depth_test = false
 	_health_bar_bg.material_override = bg_mat
@@ -447,7 +447,8 @@ func _setup_health_bar() -> void:
 	fill_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	fill_mat.no_depth_test = false
 	_health_bar_fill.material_override = fill_mat
-	_health_bar_fill.position = Vector3(0.0, 0.0, -0.01)
+	# Keep fill slightly in front of the black frame so it cannot be depth-occluded.
+	_health_bar_fill.position = Vector3(0.0, 0.0, 0.01)
 	_health_bar_root.add_child(_health_bar_fill)
 	_health_bar_root.visible = false
 
