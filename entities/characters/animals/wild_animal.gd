@@ -19,7 +19,7 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var death_cleanup_after_anim_sec: float = 0.5
 @export var respawn_seconds: float = 0.0
 
-## Extra yaw (radians) after aligning movement with Godot forward (−Z). Leave at 0 unless a specific rig needs a twist.
+## Extra yaw (radians) after aligning facing to velocity. Uses atan2(-x,-z) so local −Z matches movement.
 @export var facing_yaw_offset: float = 0.0
 
 @export var idle_animation: StringName = &"Idle"
@@ -77,8 +77,8 @@ func _physics_process(delta: float) -> void:
 		var len_sq := to_target.length_squared()
 		if len_sq > 1e-8:
 			var dir := to_target.normalized()
-			var flat_dir := Vector3(dir.x, 0.0, dir.z).normalized()
-			var target_yaw := Basis.looking_at(flat_dir, Vector3.UP).get_euler().y + facing_yaw_offset
+			# −Z is forward; do not use Basis.get_euler().y — wrong component/order can skew 90° vs velocity.
+			var target_yaw := atan2(-dir.x, -dir.z) + facing_yaw_offset
 			rotation.y = lerp_angle(rotation.y, target_yaw, clampf(turn_speed * delta, 0.0, 1.0))
 			if len_sq > 0.04:
 				planar_velocity = dir * move_speed
