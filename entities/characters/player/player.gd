@@ -49,10 +49,13 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var mine_animation_duration_sec: float = 1.7
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 @export var creature_attack_damage: float = 8.0
+@export var tool_melee_damage: float = 3.5
 @export var creature_attack_cooldown_sec: float = 0.7
 ## Seconds from melee swing start until each creature hit registers. Empty = immediate on swing start after animation confirms.
 @export var melee_creature_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.42])
 @export var shield_block_damage_multiplier: float = 0.15
+@export var shield_block_move_multiplier: float = 0.55
+@export var shield_block_turn_multiplier: float = 0.6
 
 @export_group("Water")
 @export var water_buoyancy_strength: float = 14.0
@@ -265,9 +268,11 @@ func _physics_process(delta: float) -> void:
 	if not _input_enabled:
 		return
 
-	var anim_busy: bool = base_character.has_method("is_animation_locked") and base_character.is_animation_locked()
+	var anim_busy: bool = base_character.has_method("is_movement_locked") and base_character.is_movement_locked()
+	var wants_block: bool = Input.is_action_pressed("block") and _off_hand_has_shield_equipped()
 	if base_character.has_method("set_blocking"):
-		base_character.set_blocking(Input.is_action_pressed("block") and _off_hand_has_shield_equipped())
+		base_character.set_blocking(wants_block)
+	var actively_blocking: bool = base_character != null and base_character.has_method("is_blocking") and base_character.is_blocking()
 
 	var wl: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), global_position)
 	var in_water: bool = (
@@ -319,14 +324,17 @@ func _physics_process(delta: float) -> void:
 	var dir := right * input_vec.x + forward * (-input_vec.y)
 
 	var want_run := Input.is_action_pressed("run")
-	var running := want_run and stamina > 0.05
+	var running := want_run and stamina > 0.05 and not actively_blocking
 	var speed_factor: float = _night_speed_factor()
 	var speed := move_speed * speed_factor * (run_multiplier if running else 1.0)
+	if actively_blocking:
+		speed *= shield_block_move_multiplier
 
 	if dir.length_squared() > 0.0001:
 		dir = dir.normalized()
 		var target_rot := atan2(dir.x, dir.z)
-		base_character.rotation.y = lerp_angle(base_character.rotation.y, target_rot, turn_speed * delta)
+		var turn_mult := shield_block_turn_multiplier if actively_blocking else 1.0
+		base_character.rotation.y = lerp_angle(base_character.rotation.y, target_rot, turn_speed * turn_mult * delta)
 
 		velocity.x = dir.x * speed
 		velocity.z = dir.z * speed
@@ -397,9 +405,8 @@ func _attack_input_tick() -> void:
 		if _try_creature_melee_hit():
 			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
 			return
-		var harvest_res: Array = _try_harvest_hit_with_cooldown()
-		if harvest_res[0]:
-			_next_harvest_allowed_ms = now_ms + int(harvest_res[1] * 1000.0)
+		if _try_play_attack_air_whiff():
+			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
 
 
 func _apply_from_gamestate() -> void:
@@ -520,6 +527,8 @@ func _equipped_weapon_is_bow() -> bool:
 
 func _creature_damage_amount() -> float:
 	var id := _equipped_main_hand_id_str()
+	if id in ["hatchet_basic", "hatchet_bronze", "pickaxe_basic", "pickaxe_bronze"]:
+		return tool_melee_damage
 	var it: ItemData = ItemCatalog.get_item(id)
 	if it is _WeaponData:
 		var wd: WeaponData = it as WeaponData
@@ -596,6 +605,42 @@ func _invalidate_pending_creature_impacts() -> void:
 
 func _on_creature_melee_impact_timeout(seq: int) -> void:
 	_apply_creature_melee_damage_at_impact(seq)
+
+
+## Visual-only swing when reticle has no valid harvest/creature target (no damage, no harvest timers).
+func _try_play_attack_air_whiff() -> bool:
+	if base_character == null:
+		return false
+	if base_character.has_method("is_animation_locked") and base_character.is_animation_locked():
+		return false
+	var tk: _BaseCharacter.ToolKind = _BaseCharacter.ToolKind.NONE
+	if base_character.has_method("get_active_tool_kind"):
+		tk = base_character.get_active_tool_kind()
+	match tk:
+		_BaseCharacter.ToolKind.AXE:
+			if base_character.has_method("try_play_action_for_harvest"):
+				return base_character.try_play_action_for_harvest("chop")
+			return false
+		_BaseCharacter.ToolKind.PICKAXE:
+			if base_character.has_method("try_play_action_for_harvest"):
+				return base_character.try_play_action_for_harvest("mine")
+			return false
+		_BaseCharacter.ToolKind.FISHING_ROD:
+			return false
+		_:
+			pass
+	var family := _main_hand_weapon_family()
+	match family:
+		_WeaponStats.WeaponFamily.BOW:
+			return false
+		_WeaponStats.WeaponFamily.STAFF:
+			if base_character.has_method("try_play_action_for_harvest"):
+				return base_character.try_play_action_for_harvest("interact")
+			return false
+		_:
+			if base_character.has_method("try_play_melee_attack_1h"):
+				return base_character.try_play_melee_attack_1h()
+			return false
 
 
 func _try_bow_release_creature_hit() -> bool:
@@ -1047,14 +1092,11 @@ func _harvest_skill_met(collider: Object) -> bool:
 	if gs == null or not (gs is _GameState):
 		return true
 	var state := gs as _GameState
-	var active_tool_kind: int = int(_BaseCharacter.ToolKind.NONE)
-	if base_character != null and base_character.has_method("get_active_tool_kind"):
-		active_tool_kind = int(base_character.get_active_tool_kind())
 	var action := "chop"
 	if collider.has_method("get_harvest_action"):
 		action = String(collider.get_harvest_action())
 	if action == "mine":
-		if active_tool_kind != int(_BaseCharacter.ToolKind.PICKAXE):
+		if not _inventory_has_any(["pickaxe_basic", "pickaxe_bronze"]):
 			return false
 		var req := 0
 		if collider.has_method("get_required_mining_level"):
@@ -1062,7 +1104,7 @@ func _harvest_skill_met(collider: Object) -> bool:
 		if req <= 0:
 			return true
 		return state.mining_level >= req
-	if active_tool_kind != int(_BaseCharacter.ToolKind.AXE):
+	if not _inventory_has_any(["hatchet_basic", "hatchet_bronze"]):
 		return false
 	var req_wc := 0
 	if collider.has_method("get_required_woodcutting_level"):
@@ -1070,6 +1112,13 @@ func _harvest_skill_met(collider: Object) -> bool:
 	if req_wc <= 0:
 		return true
 	return state.woodcutting_level >= req_wc
+
+
+func _inventory_has_any(item_ids: Array[String]) -> bool:
+	for item_id in item_ids:
+		if InventoryService.has_item(item_id):
+			return true
+	return false
 
 
 func _bump_harvest_timer_generation() -> int:
@@ -1168,17 +1217,19 @@ func _update_interaction_prompt() -> void:
 	if not collider.has_method("harvest_hit"):
 		interaction_prompt.visible = false
 		return
-	var txt := "LMB: Chop"
+	var txt := "E: Chop"
 	if collider.has_method("get_harvest_action"):
 		var act := String(collider.get_harvest_action())
 		if act == "mine":
-			txt = "LMB: Mine"
+			txt = "E: Mine"
+		else:
+			txt = "E: Chop"
 	if collider.has_method("get_prompt_detail"):
 		var detail := String(collider.get_prompt_detail())
 		if detail != "":
 			txt += "\n" + detail
 	if not _harvest_skill_met(collider):
-		txt += "\n(Requirements not met)"
+		txt += "\n(Requires tool in inventory / level)"
 	interaction_prompt.text = txt
 	interaction_prompt.visible = true
 
@@ -1199,6 +1250,16 @@ func _resolve_interactable_target(collider: Object) -> Object:
 func _try_interact() -> void:
 	var collider: Object = _get_interaction_collider()
 	if collider == null:
+		return
+	if collider.has_method("harvest_hit"):
+		var now_ms: int = Time.get_ticks_msec()
+		if now_ms < _next_harvest_allowed_ms:
+			return
+		var res: Array = _begin_harvest_on_collider(collider)
+		if bool(res[0]):
+			var dur_sec: float = float(res[1])
+			_next_harvest_allowed_ms = now_ms + int(dur_sec * 1000.0)
+			_harvest_schedule_auto_chain(collider, dur_sec)
 		return
 	var interactable: Object = _resolve_interactable_target(collider)
 	if interactable == null or not interactable.has_method("interact"):

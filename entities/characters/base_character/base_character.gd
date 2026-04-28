@@ -354,6 +354,15 @@ func is_animation_locked() -> bool:
 	return false
 
 
+## Movement can continue while shield blocking; this excludes block-hold from hard lock checks.
+func is_movement_locked() -> bool:
+	if _action_state == ActionState.TOOL_ACTION or _action_state == ActionState.COMBAT_ACTION:
+		return true
+	if _bow_phase > 0:
+		return true
+	return false
+
+
 func is_blocking() -> bool:
 	return _block_hold_active
 
