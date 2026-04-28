@@ -428,7 +428,7 @@ func _setup_health_bar() -> void:
 	_health_bar_bg.mesh = bg_mesh
 	var bg_mat := StandardMaterial3D.new()
 	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	bg_mat.albedo_color = Color(0.12, 0.12, 0.12, 0.85)
+	bg_mat.albedo_color = Color(0.05, 0.05, 0.05, 0.95)
 	bg_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	bg_mat.no_depth_test = false
 	_health_bar_bg.material_override = bg_mat
@@ -440,11 +440,14 @@ func _setup_health_bar() -> void:
 	_health_bar_fill.mesh = fill_mesh
 	var fill_mat := StandardMaterial3D.new()
 	fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	fill_mat.albedo_color = Color(0.2, 0.85, 0.3, 0.95)
+	fill_mat.albedo_color = Color(0.95, 0.12, 0.12, 1.0)
+	fill_mat.emission_enabled = true
+	fill_mat.emission = Color(0.95, 0.12, 0.12, 1.0)
+	fill_mat.emission_energy_multiplier = 0.7
 	fill_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	fill_mat.no_depth_test = false
 	_health_bar_fill.material_override = fill_mat
-	_health_bar_fill.position = Vector3(0.0, 0.0, -0.001)
+	_health_bar_fill.position = Vector3(0.0, 0.0, -0.01)
 	_health_bar_root.add_child(_health_bar_fill)
 	_health_bar_root.visible = false
 
@@ -465,14 +468,6 @@ func _update_health_bar_visual() -> void:
 	_health_bar_fill.visible = ratio > 0.0
 	_health_bar_fill.scale.x = maxf(0.001, ratio)
 	_health_bar_fill.position.x = -(1.0 - ratio) * health_bar_width * 0.5
-	if _health_bar_fill.material_override is StandardMaterial3D:
-		var mat := _health_bar_fill.material_override as StandardMaterial3D
-		if ratio > 0.6:
-			mat.albedo_color = Color(0.2, 0.85, 0.3, 0.95)
-		elif ratio > 0.3:
-			mat.albedo_color = Color(0.95, 0.78, 0.2, 0.95)
-		else:
-			mat.albedo_color = Color(0.9, 0.2, 0.2, 0.95)
 
 
 func _show_health_bar_temporarily() -> void:
