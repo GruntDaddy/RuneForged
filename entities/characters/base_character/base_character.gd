@@ -134,6 +134,7 @@ const _ANIM_PICKUP := "PickUp"
 const _ANIM_USE_ITEM := "Use_Item"
 ## Combat clips are authored under `Base/` in AnimationLibrary (may alias survival poses until sword/block/bow slices ship).
 const _ANIM_MELEE_1H := "Melee_Attack_1H"
+const _ANIM_MELEE_ALT_CHOP := "Chop"
 const _ANIM_BLOCK_LOOP := "Shield_Block_Loop"
 const _ANIM_BOW_DRAW := "Bow_Draw"
 const _ANIM_BOW_RELEASE := "Bow_Release"
@@ -153,6 +154,8 @@ var _block_hold_active: bool = false
 ## 0 idle, 1 draw playing, 2 fully drawn (held pose), 3 release playing.
 var _bow_phase: int = 0
 var _next_unarmed_kick: bool = false
+var _melee_combo_step: int = 0
+var _active_melee_clip: String = ""
 
 
 func _ready() -> void:
@@ -270,7 +273,8 @@ func _on_animation_finished(anim_name: StringName) -> void:
 		_apply_tool_kind(_player_chosen_tool)
 		return
 
-	if _action_state == ActionState.COMBAT_ACTION and clip_name == _ANIM_MELEE_1H:
+	if _action_state == ActionState.COMBAT_ACTION and clip_name == _active_melee_clip:
+		_active_melee_clip = ""
 		_action_state = ActionState.LOCOMOTION
 		_apply_tool_kind(_player_chosen_tool)
 		return
@@ -420,17 +424,48 @@ func try_play_melee_attack_1h() -> bool:
 	if _equipped_main_hand_item_id.is_empty():
 		attack_clip = _ANIM_UNARMED_KICK if _next_unarmed_kick else _ANIM_UNARMED_PUNCH
 		_next_unarmed_kick = not _next_unarmed_kick
+	else:
+		attack_clip = _resolve_weapon_combo_clip()
 	var path := _anim_path(attack_clip)
 	if not anim_player.has_animation(path):
 		if attack_clip != _ANIM_MELEE_1H:
+			attack_clip = _ANIM_MELEE_1H
 			path = _anim_path(_ANIM_MELEE_1H)
+	if not anim_player.has_animation(path):
+		if attack_clip != _ANIM_MELEE_ALT_CHOP:
+			attack_clip = _ANIM_MELEE_ALT_CHOP
+			path = _anim_path(_ANIM_MELEE_ALT_CHOP)
 	if not anim_player.has_animation(path):
 		return false
 	_action_state = ActionState.COMBAT_ACTION
+	_active_melee_clip = attack_clip
 	_apply_weapon_visual_for_attack()
 	anim_player.speed_scale = 1.0
 	anim_player.play(path, 0.12)
 	return true
+
+
+func _resolve_weapon_combo_clip() -> String:
+	# Requested sequence: diagonal slice -> stab -> current 1H attack -> jump chop.
+	var seq: Array[Array] = [
+		["Melee_1H_Attack_Slice_Diagonal", "Melee_Attack_1H_Diagonal", "Melee_Attack_Diagonal", _ANIM_MELEE_1H],
+		["Melee_1H_Attack_Stab", "Melee_Attack_1H_Stab", "Melee_Attack_Stab", _ANIM_MELEE_1H],
+		[_ANIM_MELEE_1H],
+		["Melee_1H_Attack_Jump_Chop", "Melee_Attack_1H_Jump_Chop", "Melee_Attack_Jump_Chop", _ANIM_MELEE_ALT_CHOP],
+	]
+	var idx := posmod(_melee_combo_step, seq.size())
+	_melee_combo_step += 1
+	return _first_available_clip(seq[idx])
+
+
+func _first_available_clip(candidates: Array) -> String:
+	for c in candidates:
+		var clip := str(c)
+		if clip.is_empty():
+			continue
+		if anim_player != null and anim_player.has_animation(_anim_path(clip)):
+			return clip
+	return _ANIM_MELEE_1H
 
 
 func try_begin_bow_draw() -> bool:
