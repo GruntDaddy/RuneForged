@@ -884,6 +884,19 @@ func _get_interaction_collider() -> Object:
 	return _fallback_interaction_collider()
 
 
+func _resolve_harvest_target(collider: Object) -> Object:
+	if collider == null:
+		return null
+	var cur: Node = collider as Node
+	var hops: int = 0
+	while cur != null and hops < 6:
+		if cur.has_method("harvest_hit"):
+			return cur
+		cur = cur.get_parent()
+		hops += 1
+	return null
+
+
 func _get_crosshair_screen_point() -> Vector2:
 	var vp := get_viewport()
 	if vp == null:
@@ -1251,20 +1264,68 @@ func _try_interact() -> void:
 	var collider: Object = _get_interaction_collider()
 	if collider == null:
 		return
-	if collider.has_method("harvest_hit"):
+	var harvest_target: Object = _resolve_harvest_target(collider)
+	if harvest_target != null:
 		var now_ms: int = Time.get_ticks_msec()
 		if now_ms < _next_harvest_allowed_ms:
 			return
-		var res: Array = _begin_harvest_on_collider(collider)
+		var res: Array = _begin_harvest_on_collider(harvest_target)
 		if bool(res[0]):
 			var dur_sec: float = float(res[1])
 			_next_harvest_allowed_ms = now_ms + int(dur_sec * 1000.0)
-			_harvest_schedule_auto_chain(collider, dur_sec)
+			_harvest_schedule_auto_chain(harvest_target, dur_sec)
+			return
+		if not _harvest_skill_met(harvest_target):
+			show_gameplay_message("You need the right tool and level to harvest this.")
 		return
 	var interactable: Object = _resolve_interactable_target(collider)
 	if interactable == null or not interactable.has_method("interact"):
+		_try_pickup_item_from_world(collider)
 		return
 	interactable.interact(self)
+
+
+func _try_pickup_item_from_world(collider: Object) -> bool:
+	var cur: Node = collider as Node
+	var hops: int = 0
+	while cur != null and hops < 6:
+		var item_id := _extract_world_item_id(cur)
+		if not item_id.is_empty():
+			if not ItemCatalog.has_method("get_item"):
+				return false
+			var item: ItemData = ItemCatalog.get_item(item_id)
+			if item == null:
+				return false
+			var left: int = InventoryService.add_item(item_id, 1)
+			if left > 0:
+				show_gameplay_message("Inventory full.")
+				return false
+			show_gameplay_message("Picked up %s." % InventoryService.get_item_display_name(item_id))
+			cur.queue_free()
+			return true
+		cur = cur.get_parent()
+		hops += 1
+	return false
+
+
+func _extract_world_item_id(node: Node) -> String:
+	if node == null:
+		return ""
+	if "item_id" in node:
+		var explicit := str(node.get("item_id"))
+		if not explicit.is_empty():
+			return explicit
+	var raw_name := String(node.name).to_lower()
+	var by_name := {
+		"1h_sword_wooden": "sword_1h_wooden",
+		"1h_katana_bronze": "sword_1h_bronze",
+		"bow_short_common": "bow_short_common",
+		"bow_long_common": "bow_long_common",
+		"quiver_common": "quiver_common",
+	}
+	if by_name.has(raw_name):
+		return str(by_name[raw_name])
+	return ""
 
 
 func _night_speed_factor() -> float:

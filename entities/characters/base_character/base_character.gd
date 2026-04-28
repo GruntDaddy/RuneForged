@@ -137,6 +137,8 @@ const _ANIM_MELEE_1H := "Melee_Attack_1H"
 const _ANIM_BLOCK_LOOP := "Shield_Block_Loop"
 const _ANIM_BOW_DRAW := "Bow_Draw"
 const _ANIM_BOW_RELEASE := "Bow_Release"
+const _ANIM_UNARMED_PUNCH := "Melee_Unarmed_Attack_Punch_A"
+const _ANIM_UNARMED_KICK := "Melee_Unarmed_Attack_Kick"
 
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–4). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
@@ -150,6 +152,7 @@ var _equipped_legs_item_id: String = ""
 var _block_hold_active: bool = false
 ## 0 idle, 1 draw playing, 2 fully drawn (held pose), 3 release playing.
 var _bow_phase: int = 0
+var _next_unarmed_kick: bool = false
 
 
 func _ready() -> void:
@@ -268,6 +271,10 @@ func _on_animation_finished(anim_name: StringName) -> void:
 		return
 
 	if _action_state == ActionState.COMBAT_ACTION and clip_name == _ANIM_MELEE_1H:
+		_action_state = ActionState.LOCOMOTION
+		_apply_tool_kind(_player_chosen_tool)
+		return
+	if _action_state == ActionState.COMBAT_ACTION and (clip_name == _ANIM_UNARMED_PUNCH or clip_name == _ANIM_UNARMED_KICK):
 		_action_state = ActionState.LOCOMOTION
 		_apply_tool_kind(_player_chosen_tool)
 		return
@@ -409,7 +416,14 @@ func try_play_melee_attack_1h() -> bool:
 		return false
 	if is_animation_locked():
 		return false
-	var path := _anim_path(_ANIM_MELEE_1H)
+	var attack_clip := _ANIM_MELEE_1H
+	if _equipped_main_hand_item_id.is_empty():
+		attack_clip = _ANIM_UNARMED_KICK if _next_unarmed_kick else _ANIM_UNARMED_PUNCH
+		_next_unarmed_kick = not _next_unarmed_kick
+	var path := _anim_path(attack_clip)
+	if not anim_player.has_animation(path):
+		if attack_clip != _ANIM_MELEE_1H:
+			path = _anim_path(_ANIM_MELEE_1H)
 	if not anim_player.has_animation(path):
 		return false
 	_action_state = ActionState.COMBAT_ACTION
@@ -473,11 +487,27 @@ func _off_hand_has_shield() -> bool:
 
 
 func _apply_weapon_visual_for_attack() -> void:
+	var tool_kind := _tool_kind_for_main_hand_item_id()
+	if tool_kind != ToolKind.NONE:
+		_apply_tool_kind(tool_kind)
+		return
 	_set_right_hand_meshes_visible(false)
 	if equipped_tool_root != null:
 		equipped_tool_root.visible = false
 	_set_weapon_meshes_visible(false)
 	_show_equipped_weapon_mesh()
+
+
+func _tool_kind_for_main_hand_item_id() -> ToolKind:
+	match _equipped_main_hand_item_id:
+		"hatchet_basic", "hatchet_bronze":
+			return ToolKind.AXE
+		"pickaxe_basic", "pickaxe_bronze":
+			return ToolKind.PICKAXE
+		"fishing_pole":
+			return ToolKind.FISHING_ROD
+		_:
+			return ToolKind.NONE
 
 
 ## Plays a one-shot survival/tool clip. Returns false if a tool action is already playing.
