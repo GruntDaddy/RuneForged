@@ -4,8 +4,8 @@
 [ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Rabbit.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.20
-height = 0.46
+radius = 0.26
+height = 0.54
 
 [node name="Rabbit" type="CharacterBody3D"]
 script = ExtResource("1_wild")
@@ -19,7 +19,7 @@ walk_time_min = 1.0
 walk_time_max = 2.3
 attack_damage = 8.0
 respawn_seconds = 22.0
-visual_mesh_vertical_offset = -0.09
+visual_mesh_vertical_offset = -0.2
 idle_animation = &"Idle"
 walk_animation = &"Walk"
 death_animation = &"Death"
@@ -30,6 +30,6 @@ collision_mask = 1
 shape = SubResource("CapsuleShape3D_body")
 
 [node name="VisualRoot" type="Node3D" parent="."]
-transform = Transform3D(0.45, 0, 0, 0, 0.45, 0, 0, 0, 0.45, 0, 0, 0)
+transform = Transform3D(0.58, 0, 0, 0, 0.58, 0, 0, 0, 0.58, 0, 0, 0)
 
 [node name="RabbitModel" parent="VisualRoot" instance=ExtResource("2_model")]

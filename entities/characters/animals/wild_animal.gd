@@ -13,8 +13,14 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var walk_time_min: float = 1.5
 @export var walk_time_max: float = 3.8
 @export var attack_damage: float = 8.0
-@export var death_remove_delay_sec: float = 0.3
+## Used when no death clip is resolved (fallback).
+@export var death_remove_delay_sec: float = 0.5
+## Extra time after the death animation finishes before the body is freed.
+@export var death_cleanup_after_anim_sec: float = 0.5
 @export var respawn_seconds: float = 0.0
+
+## FBX meshes usually face +Z; Godot uses -Z as forward. Default PI fixes “walks backward” unless your model matches Godot.
+@export var facing_yaw_offset: float = PI
 
 @export var idle_animation: StringName = &"Idle"
 @export var walk_animation: StringName = &"Walk"
@@ -68,11 +74,13 @@ func _physics_process(delta: float) -> void:
 	if _is_walking:
 		var to_target := _walk_target - global_position
 		to_target.y = 0.0
-		if to_target.length_squared() > 0.04:
+		var len_sq := to_target.length_squared()
+		if len_sq > 1e-8:
 			var dir := to_target.normalized()
-			planar_velocity = dir * move_speed
-			var target_yaw := atan2(dir.x, dir.z)
+			var target_yaw := atan2(dir.x, dir.z) + facing_yaw_offset
 			rotation.y = lerp_angle(rotation.y, target_yaw, clampf(turn_speed * delta, 0.0, 1.0))
+			if len_sq > 0.04:
+				planar_velocity = dir * move_speed
 	velocity.x = planar_velocity.x
 	velocity.z = planar_velocity.z
 	if not is_on_floor():
@@ -115,7 +123,12 @@ func _die() -> void:
 	_play_clip(_death_clip)
 	_spawn_drops()
 	_schedule_respawn()
-	get_tree().create_timer(maxf(0.0, death_remove_delay_sec)).timeout.connect(func() -> void:
+	var remove_after := maxf(0.0, death_remove_delay_sec)
+	if animation_player != null and not _death_clip.is_empty() and animation_player.has_animation(_death_clip):
+		var anim: Animation = animation_player.get_animation(_death_clip)
+		if anim != null:
+			remove_after = maxf(remove_after, anim.length + death_cleanup_after_anim_sec)
+	get_tree().create_timer(remove_after).timeout.connect(func() -> void:
 		queue_free()
 	)
 

@@ -4,8 +4,8 @@
 [ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Chick.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.16
-height = 0.34
+radius = 0.20
+height = 0.42
 
 [node name="Chick" type="CharacterBody3D"]
 script = ExtResource("1_wild")
@@ -19,7 +19,7 @@ walk_time_min = 0.9
 walk_time_max = 2.2
 attack_damage = 6.0
 respawn_seconds = 20.0
-visual_mesh_vertical_offset = -0.1
+visual_mesh_vertical_offset = -0.22
 idle_animation = &"Idle"
 walk_animation = &"Walk"
 death_animation = &"Death"
@@ -30,6 +30,6 @@ collision_mask = 1
 shape = SubResource("CapsuleShape3D_body")
 
 [node name="VisualRoot" type="Node3D" parent="."]
-transform = Transform3D(0.82, 0, 0, 0, 0.82, 0, 0, 0, 0.82, 0, 0, 0)
+transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 0, 0, 0)
 
 [node name="ChickModel" parent="VisualRoot" instance=ExtResource("2_model")]
