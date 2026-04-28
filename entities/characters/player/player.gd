@@ -143,9 +143,12 @@ func _ready() -> void:
 
 func _setup_tutorial_animals_if_needed() -> void:
 	var scene := get_tree().current_scene
-	if scene == null or String(scene.name) != "TutorialIsle":
+	if scene == null or not _scene_is_tutorial_isle(scene):
 		return
 	if scene.get_node_or_null("AnimalsGameplay") != null:
+		return
+	var wildlife := scene.get_node_or_null("Wildlife") as Node3D
+	if wildlife != null and wildlife.get_child_count() > 0:
 		return
 	var src_root := scene.get_node_or_null("Animals") as Node3D
 	if src_root == null:
@@ -177,6 +180,13 @@ func _setup_tutorial_animals_if_needed() -> void:
 		src_root.visible = false
 	else:
 		spawned.queue_free()
+
+
+func _scene_is_tutorial_isle(scene: Node) -> bool:
+	if String(scene.name) == "TutorialIsle":
+		return true
+	var p := String(scene.scene_file_path)
+	return p.ends_with("tutorial_isle/tutorial_isle.tscn") or p.ends_with("tutorial_isle.tscn")
 
 
 func _on_inventory_changed() -> void:
