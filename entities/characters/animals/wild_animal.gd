@@ -6,7 +6,7 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var max_health: float = 20.0
 @export var species_id: String = ""
 @export var move_speed: float = 1.1
-@export var turn_speed: float = 5.5
+@export var turn_speed: float = 10.0
 @export var roam_radius: float = 3.0
 @export var idle_time_min: float = 1.2
 @export var idle_time_max: float = 3.5
@@ -77,11 +77,17 @@ func _physics_process(delta: float) -> void:
 		var len_sq := to_target.length_squared()
 		if len_sq > 1e-8:
 			var dir := to_target.normalized()
-			# −Z is forward; do not use Basis.get_euler().y — wrong component/order can skew 90° vs velocity.
 			var target_yaw := atan2(-dir.x, -dir.z) + facing_yaw_offset
 			rotation.y = lerp_angle(rotation.y, target_yaw, clampf(turn_speed * delta, 0.0, 1.0))
 			if len_sq > 0.04:
-				planar_velocity = dir * move_speed
+				# Move along facing, not straight at the target. Mixing lerped yaw with full path
+				# velocity makes the body slide sideways (strafe) while the walk clip plays forward.
+				var forward := -global_transform.basis.z
+				forward.y = 0.0
+				if forward.length_squared() > 1e-8:
+					planar_velocity = forward.normalized() * move_speed
+				else:
+					planar_velocity = dir * move_speed
 	velocity.x = planar_velocity.x
 	velocity.z = planar_velocity.z
 	if not is_on_floor():
