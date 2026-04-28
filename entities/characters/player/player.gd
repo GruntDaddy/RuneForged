@@ -49,10 +49,14 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var mine_animation_duration_sec: float = 1.7
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 @export var creature_attack_damage: float = 8.0
-@export var tool_melee_damage: float = 3.5
+@export var unarmed_melee_damage: float = 1.0
+@export var tool_melee_damage: float = 2.0
 @export var creature_attack_cooldown_sec: float = 0.7
 ## Seconds from melee swing start until each creature hit registers. Empty = immediate on swing start after animation confirms.
 @export var melee_creature_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.42])
+@export var melee_reach_distance: float = 2.15
+@export var melee_hit_radius: float = 0.65
+@export var melee_forward_dot_min: float = 0.1
 @export var shield_block_damage_multiplier: float = 0.15
 @export var shield_block_move_multiplier: float = 0.55
 @export var shield_block_turn_multiplier: float = 0.6
@@ -527,6 +531,8 @@ func _equipped_weapon_is_bow() -> bool:
 
 func _creature_damage_amount() -> float:
 	var id := _equipped_main_hand_id_str()
+	if id.is_empty():
+		return unarmed_melee_damage
 	if id in ["hatchet_basic", "hatchet_bronze", "pickaxe_basic", "pickaxe_bronze"]:
 		return tool_melee_damage
 	var it: ItemData = ItemCatalog.get_item(id)
@@ -548,7 +554,7 @@ func _creature_attack_interval_sec() -> float:
 
 
 func _try_creature_melee_hit() -> bool:
-	var collider: Object = _get_interaction_collider()
+	var collider: Object = _find_creature_melee_target()
 	if not _is_creature_candidate(collider):
 		return false
 	var family := _main_hand_weapon_family()
@@ -584,18 +590,22 @@ func _apply_creature_melee_damage_at_impact(seq: int) -> void:
 	if seq != _creature_impact_generation:
 		return
 	var c: Object = _pending_creature_ref.get_ref() if _pending_creature_ref != null else null
-	if c == null or not is_instance_valid(c):
-		return
-	if not _creature_target_still_valid_for_hit(c):
-		return
-	if not _is_creature_candidate(c):
-		return
+	if c == null or not is_instance_valid(c) or not _creature_target_still_valid_for_hit(c) or not _is_creature_candidate(c):
+		c = _find_creature_melee_target()
+		if c == null or not _is_creature_candidate(c):
+			return
 	var dmg := _creature_damage_amount()
 	c.call("receive_hit", dmg, self)
 
 
 func _creature_target_still_valid_for_hit(c: Object) -> bool:
-	return _harvest_target_still_valid(c)
+	if c == null or not is_instance_valid(c):
+		return false
+	if c is Node3D:
+		var n := c as Node3D
+		if global_position.distance_to(n.global_position) > melee_reach_distance + 0.9:
+			return false
+	return true
 
 
 func _invalidate_pending_creature_impacts() -> void:
@@ -605,6 +615,36 @@ func _invalidate_pending_creature_impacts() -> void:
 
 func _on_creature_melee_impact_timeout(seq: int) -> void:
 	_apply_creature_melee_damage_at_impact(seq)
+
+
+func _find_creature_melee_target() -> Object:
+	var best: Object = null
+	var best_d2: float = INF
+	var origin := global_position + Vector3(0.0, interaction_height, 0.0)
+	var raw_fwd := -camera_3d.global_transform.basis.z if camera_3d != null else base_character.global_transform.basis.z
+	raw_fwd.y = 0.0
+	var fwd := raw_fwd.normalized() if raw_fwd.length_squared() > 0.0001 else Vector3(0.0, 0.0, 1.0)
+	for n in get_tree().get_nodes_in_group("creature"):
+		if not (n is Node3D):
+			continue
+		var c := n as Object
+		if not _is_creature_candidate(c):
+			continue
+		var t := n as Node3D
+		var to_t := t.global_position - origin
+		to_t.y = 0.0
+		var d2 := to_t.length_squared()
+		if d2 > pow(melee_reach_distance + melee_hit_radius, 2.0):
+			continue
+		var dot_ok := true
+		if to_t.length_squared() > 0.0001:
+			dot_ok = fwd.dot(to_t.normalized()) >= melee_forward_dot_min
+		if not dot_ok:
+			continue
+		if d2 < best_d2:
+			best_d2 = d2
+			best = c
+	return best
 
 
 ## Visual-only swing when reticle has no valid harvest/creature target (no damage, no harvest timers).
@@ -1109,7 +1149,7 @@ func _harvest_skill_met(collider: Object) -> bool:
 	if collider.has_method("get_harvest_action"):
 		action = String(collider.get_harvest_action())
 	if action == "mine":
-		if not _inventory_has_any(["pickaxe_basic", "pickaxe_bronze"]):
+		if not _has_tool_in_inventory_or_equipped(["pickaxe_basic", "pickaxe_bronze"]):
 			return false
 		var req := 0
 		if collider.has_method("get_required_mining_level"):
@@ -1117,7 +1157,7 @@ func _harvest_skill_met(collider: Object) -> bool:
 		if req <= 0:
 			return true
 		return state.mining_level >= req
-	if not _inventory_has_any(["hatchet_basic", "hatchet_bronze"]):
+	if not _has_tool_in_inventory_or_equipped(["hatchet_basic", "hatchet_bronze"]):
 		return false
 	var req_wc := 0
 	if collider.has_method("get_required_woodcutting_level"):
@@ -1132,6 +1172,13 @@ func _inventory_has_any(item_ids: Array[String]) -> bool:
 		if InventoryService.has_item(item_id):
 			return true
 	return false
+
+
+func _has_tool_in_inventory_or_equipped(item_ids: Array[String]) -> bool:
+	if _inventory_has_any(item_ids):
+		return true
+	var eq_main: String = _equipped_main_hand_id_str()
+	return item_ids.has(eq_main)
 
 
 func _bump_harvest_timer_generation() -> int:

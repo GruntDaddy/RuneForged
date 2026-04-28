@@ -24,7 +24,11 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 
 @export var idle_animation: StringName = &"Idle"
 @export var walk_animation: StringName = &"Walk"
+@export var hit_animation: StringName = &"Hit"
 @export var death_animation: StringName = &"Death"
+@export var flee_on_hit: bool = true
+@export var flee_duration_sec: float = 2.0
+@export var flee_speed_multiplier: float = 1.85
 
 ## Negative values move the mesh down so feet align with the ground when the FBX pivot sits high.
 @export var visual_mesh_vertical_offset: float = 0.0
@@ -37,6 +41,7 @@ var animation_player: AnimationPlayer
 
 var _idle_clip: String = ""
 var _walk_clip: String = ""
+var _hit_clip: String = ""
 var _death_clip: String = ""
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -46,6 +51,7 @@ var _dead: bool = false
 var _is_walking: bool = false
 var _phase_timeout: float = 0.0
 var _walk_target: Vector3 = Vector3.ZERO
+var _flee_timeout: float = 0.0
 
 
 func _ready() -> void:
@@ -54,6 +60,7 @@ func _ready() -> void:
 	if animation_player:
 		_idle_clip = _resolve_clip_name(idle_animation)
 		_walk_clip = _resolve_clip_name(walk_animation)
+		_hit_clip = _resolve_clip_name(hit_animation)
 		_death_clip = _resolve_clip_name(death_animation)
 	_apply_visual_vertical_offset()
 	_spawn_position = global_position
@@ -67,6 +74,7 @@ func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 	_phase_timeout -= delta
+	_flee_timeout = maxf(0.0, _flee_timeout - delta)
 	if _phase_timeout <= 0.0:
 		if _is_walking:
 			_set_idle_phase()
@@ -86,10 +94,11 @@ func _physics_process(delta: float) -> void:
 				# velocity makes the body slide sideways (strafe) while the walk clip plays forward.
 				var forward := -global_transform.basis.z
 				forward.y = 0.0
+				var speed := move_speed * (flee_speed_multiplier if _flee_timeout > 0.0 else 1.0)
 				if forward.length_squared() > 1e-8:
-					planar_velocity = forward.normalized() * move_speed
+					planar_velocity = forward.normalized() * speed
 				else:
-					planar_velocity = dir * move_speed
+					planar_velocity = dir * speed
 	velocity.x = planar_velocity.x
 	velocity.z = planar_velocity.z
 	if not is_on_floor():
@@ -119,7 +128,26 @@ func receive_hit(damage: float, _source: Node = null) -> bool:
 	_health -= dealt
 	if _health <= 0.0:
 		_die()
+	else:
+		_on_hit_react(_source)
 	return true
+
+
+func _on_hit_react(source: Node) -> void:
+	_play_clip(_hit_clip if not _hit_clip.is_empty() else _idle_clip)
+	if not flee_on_hit:
+		return
+	_is_walking = true
+	_phase_timeout = maxf(flee_duration_sec, 0.6)
+	_flee_timeout = _phase_timeout
+	var away := Vector3.ZERO
+	if source is Node3D:
+		away = global_position - (source as Node3D).global_position
+		away.y = 0.0
+	if away.length_squared() < 0.0001:
+		away = Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0))
+	away = away.normalized()
+	_walk_target = global_position + away * maxf(2.0, roam_radius)
 
 
 func _die() -> void:

@@ -621,15 +621,20 @@ func _tint_mesh_surfaces(mi: MeshInstance3D, tint: Color) -> void:
 
 
 func _pick_right_hand_tool(ids: Array[String], primary: Node3D, fallback: Node3D) -> void:
+	var selected: bool = false
 	for id in ids:
 		if _equipped_main_hand_item_id == id:
+			selected = true
 			if id.find("bronze") >= 0:
 				if primary != null:
 					primary.visible = true
 			else:
 				if fallback != null:
 					fallback.visible = true
-			return
+			break
+	if not selected and fallback != null:
+		# Allow harvest/tool actions to still show a default mesh even when the tool is not equipped.
+		fallback.visible = true
 
 
 func _set_right_hand_meshes_visible(enabled: bool) -> void:
