@@ -410,16 +410,25 @@ func _attack_input_tick() -> void:
 	if now_ms < _next_harvest_allowed_ms:
 		return
 
-	if Input.is_action_just_released("attack") and _equipped_weapon_is_bow():
-		if _try_bow_release_creature_hit():
-			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
+	if _equipped_weapon_is_bow():
+		var aiming_bow: bool = Input.is_action_pressed("block")
+		if not aiming_bow:
+			if base_character != null and base_character.has_method("try_cancel_bow_draw"):
+				base_character.try_cancel_bow_draw()
+			return
+		if Input.is_action_just_released("attack"):
+			if _try_bow_release_creature_hit():
+				_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
+			return
+		if Input.is_action_pressed("attack"):
+			var drawing: bool = false
+			if base_character != null and base_character.has_method("is_bow_drawn_or_drawing"):
+				drawing = bool(base_character.is_bow_drawn_or_drawing())
+			if not drawing and base_character != null and base_character.has_method("try_begin_bow_draw"):
+				base_character.try_begin_bow_draw()
 		return
 
 	if Input.is_action_just_pressed("attack"):
-		if _equipped_weapon_is_bow():
-			if base_character.has_method("try_begin_bow_draw"):
-				base_character.try_begin_bow_draw()
-			return
 		if _try_creature_melee_hit():
 			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
 			return
@@ -863,6 +872,8 @@ func _is_interaction_candidate(collider: Object) -> bool:
 	if collider.has_method("harvest_hit"):
 		return true
 	if _is_creature_candidate(collider):
+		return true
+	if not _resolve_world_item_id_from_collider(collider).is_empty():
 		return true
 	return _resolve_interactable_target(collider) != null
 
@@ -1526,6 +1537,16 @@ func _extract_world_item_id(node: Node) -> String:
 		"bow_short_common": "bow_short_common",
 		"bow_long_common": "bow_long_common",
 		"quiver_common": "quiver_common",
+		"copper_bar": "ingot_copper",
+		"iron_bar": "ingot_iron",
+		"silver_bar": "ingot_silver",
+		"gold_bar": "ingot_gold",
+		"tin_bar": "ore_tin",
+		"copper_nuggets": "ore_copper",
+		"iron_nuggets": "ore_iron",
+		"silver_nuggets": "ore_silver",
+		"gold_nuggets": "ore_gold",
+		"tin_nuggets": "ore_tin",
 	}
 	if by_name.has(raw_name):
 		return str(by_name[raw_name])

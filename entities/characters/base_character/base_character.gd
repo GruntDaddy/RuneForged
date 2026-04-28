@@ -35,6 +35,9 @@ enum ActionState {
 @onready var fishing_pole_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Fishing_Pole
 @onready var hammer_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hammer_Common
 @onready var equipped_weapon_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight
+@onready var equipped_weapon_left_root: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft"
+) as Node3D
 @onready var dagger_bronze_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Dagger_Bronze
 @onready var sword_wooden_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Sword_Wooden"
@@ -56,6 +59,12 @@ enum ActionState {
 ) as Node3D
 @onready var bow_long_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bow_Long_Common"
+) as Node3D
+@onready var bow_short_left_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Short_Common"
+) as Node3D
+@onready var bow_long_left_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Long_Common"
 ) as Node3D
 @onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tacklebox
 @onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
@@ -127,7 +136,7 @@ const _ANIM_WALK := "Walking_B"
 const _ANIM_RUN := "Running_A"
 const _ANIM_IDLE := "Idle_A"
 const _ANIM_AIR := "Jump_Idle"
-const _ANIM_CHOP := "Chop"
+const _ANIM_CHOP := "Chop 2"
 const _ANIM_PICKAXE := "Pickaxe"
 const _ANIM_INTERACT := "Interact"
 const _ANIM_PICKUP := "PickUp"
@@ -709,6 +718,8 @@ func _set_right_hand_meshes_visible(enabled: bool) -> void:
 func _set_weapon_meshes_visible(enabled: bool) -> void:
 	if equipped_weapon_root != null:
 		equipped_weapon_root.visible = enabled
+	if equipped_weapon_left_root != null:
+		equipped_weapon_left_root.visible = enabled
 	for n in [dagger_bronze_mesh, sword_wooden_mesh, sword_bronze_mesh]:
 		if n != null:
 			n.visible = enabled
@@ -719,6 +730,10 @@ func _set_weapon_meshes_visible(enabled: bool) -> void:
 		bow_short_mesh.visible = enabled
 	if bow_long_mesh != null:
 		bow_long_mesh.visible = enabled
+	if bow_short_left_mesh != null:
+		bow_short_left_mesh.visible = enabled
+	if bow_long_left_mesh != null:
+		bow_long_left_mesh.visible = enabled
 
 
 func _apply_off_hand_visibility() -> void:
@@ -807,9 +822,11 @@ func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
 
 
 func _show_equipped_weapon_mesh() -> void:
-	if equipped_weapon_root == null:
+	if equipped_weapon_root == null and equipped_weapon_left_root == null:
 		return
 	equipped_weapon_root.visible = true
+	if equipped_weapon_left_root != null:
+		equipped_weapon_left_root.visible = false
 	match _equipped_main_hand_item_id:
 		"dagger_bronze":
 			if dagger_bronze_mesh != null:
@@ -832,10 +849,22 @@ func _show_equipped_weapon_mesh() -> void:
 		"sword_1h_dragon":
 			_show_short_sword_variant(6)
 		"bow_short_common":
-			if bow_short_mesh != null:
+			if equipped_weapon_root != null:
+				equipped_weapon_root.visible = false
+			if equipped_weapon_left_root != null:
+				equipped_weapon_left_root.visible = true
+			if bow_short_left_mesh != null:
+				bow_short_left_mesh.visible = true
+			elif bow_short_mesh != null:
 				bow_short_mesh.visible = true
 		"bow_long_common":
-			if bow_long_mesh != null:
+			if equipped_weapon_root != null:
+				equipped_weapon_root.visible = false
+			if equipped_weapon_left_root != null:
+				equipped_weapon_left_root.visible = true
+			if bow_long_left_mesh != null:
+				bow_long_left_mesh.visible = true
+			elif bow_long_mesh != null:
 				bow_long_mesh.visible = true
 		_:
 			equipped_weapon_root.visible = false
