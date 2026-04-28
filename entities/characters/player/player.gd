@@ -1410,6 +1410,11 @@ func _update_interaction_prompt() -> void:
 		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
 		interaction_prompt.visible = not interaction_prompt.text.is_empty()
 		return
+	var world_item_id := _resolve_world_item_id_from_collider(collider)
+	if not world_item_id.is_empty():
+		interaction_prompt.text = "E: Pick up %s" % InventoryService.get_item_display_name(world_item_id)
+		interaction_prompt.visible = true
+		return
 	if _is_creature_candidate(collider):
 		interaction_prompt.text = "LMB: Attack"
 		interaction_prompt.visible = true
@@ -1476,26 +1481,44 @@ func _try_interact() -> void:
 
 
 func _try_pickup_item_from_world(collider: Object) -> bool:
+	var world_item := _resolve_world_item_target(collider)
+	if world_item.is_empty():
+		return false
+	var item_id := str(world_item["item_id"])
+	var item_node := world_item["node"] as Node
+	if item_node == null:
+		return false
+	if not ItemCatalog.has_method("get_item"):
+		return false
+	var item: ItemData = ItemCatalog.get_item(item_id)
+	if item == null:
+		return false
+	var left: int = InventoryService.add_item(item_id, 1)
+	if left > 0:
+		show_gameplay_message("Inventory full.")
+		return false
+	show_gameplay_message("Picked up %s." % InventoryService.get_item_display_name(item_id))
+	item_node.queue_free()
+	return true
+
+
+func _resolve_world_item_id_from_collider(collider: Object) -> String:
+	var world_item := _resolve_world_item_target(collider)
+	if world_item.is_empty():
+		return ""
+	return str(world_item.get("item_id", ""))
+
+
+func _resolve_world_item_target(collider: Object) -> Dictionary:
 	var cur: Node = collider as Node
 	var hops: int = 0
 	while cur != null and hops < 6:
 		var item_id := _extract_world_item_id(cur)
 		if not item_id.is_empty():
-			if not ItemCatalog.has_method("get_item"):
-				return false
-			var item: ItemData = ItemCatalog.get_item(item_id)
-			if item == null:
-				return false
-			var left: int = InventoryService.add_item(item_id, 1)
-			if left > 0:
-				show_gameplay_message("Inventory full.")
-				return false
-			show_gameplay_message("Picked up %s." % InventoryService.get_item_display_name(item_id))
-			cur.queue_free()
-			return true
+			return {"item_id": item_id, "node": cur}
 		cur = cur.get_parent()
 		hops += 1
-	return false
+	return {}
 
 
 func _extract_world_item_id(node: Node) -> String:
@@ -1509,12 +1532,19 @@ func _extract_world_item_id(node: Node) -> String:
 	var by_name := {
 		"1h_sword_wooden": "sword_1h_wooden",
 		"1h_katana_bronze": "sword_1h_bronze",
+		"katana_1h_bronze": "sword_1h_bronze",
 		"bow_short_common": "bow_short_common",
 		"bow_long_common": "bow_long_common",
 		"quiver_common": "quiver_common",
 	}
 	if by_name.has(raw_name):
 		return str(by_name[raw_name])
+	if raw_name.find("bronze") >= 0 and (raw_name.find("katana") >= 0 or raw_name.find("sword") >= 0):
+		return "sword_1h_bronze"
+	if raw_name.find("bow") >= 0:
+		return "bow_short_common"
+	if raw_name.find("quiver") >= 0:
+		return "quiver_common"
 	return ""
 
 

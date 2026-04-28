@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_id"]
+
+[resource]
+script = ExtResource("1_id")
+id = "quiver_common"
+display_name = "Common quiver"
+description = "A simple quiver used to carry arrows."
+category = 7
+max_stack = 1
+tags = PackedStringArray("quiver", "ranged", "offhand")

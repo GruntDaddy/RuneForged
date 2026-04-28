@@ -222,6 +222,10 @@ func deposit_to_tackle_first_empty(tackle_slot_idx: int, from_main_slot_idx: int
 
 
 func get_item_display_name(item_id: String) -> String:
+	var norm_id := _normalize_item_id(item_id)
+	var it: ItemData = ItemCatalog.get_item(norm_id)
+	if it != null and not it.display_name.is_empty():
+		return it.display_name
 	match item_id:
 		"logs", "wood":
 			return "Logs"
