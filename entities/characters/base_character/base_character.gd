@@ -14,6 +14,7 @@ enum ToolKind {
 enum ActionState {
 	LOCOMOTION,
 	TOOL_ACTION,
+	COMBAT_ACTION,
 }
 
 @onready var skeleton: Skeleton3D = $Rig_Medium/Skeleton3D
@@ -40,6 +41,21 @@ enum ActionState {
 ) as Node3D
 @onready var sword_bronze_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Katana_Bronze"
+) as Node3D
+@onready var sword_short_mesh_variants: Array[Node3D] = [
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Bronze") as Node3D,
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Iron") as Node3D,
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Steel") as Node3D,
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Mithril") as Node3D,
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Adamant") as Node3D,
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Rune") as Node3D,
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Dragon") as Node3D,
+]
+@onready var bow_short_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bow_Short_Common"
+) as Node3D
+@onready var bow_long_mesh: Node3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bow_Long_Common"
 ) as Node3D
 @onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tacklebox
 @onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
@@ -116,6 +132,11 @@ const _ANIM_PICKAXE := "Pickaxe"
 const _ANIM_INTERACT := "Interact"
 const _ANIM_PICKUP := "PickUp"
 const _ANIM_USE_ITEM := "Use_Item"
+## Combat clips are authored under `Base/` in AnimationLibrary (may alias survival poses until sword/block/bow slices ship).
+const _ANIM_MELEE_1H := "Melee_Attack_1H"
+const _ANIM_BLOCK_LOOP := "Shield_Block_Loop"
+const _ANIM_BOW_DRAW := "Bow_Draw"
+const _ANIM_BOW_RELEASE := "Bow_Release"
 
 var _action_state: ActionState = ActionState.LOCOMOTION
 ## Player-selected tool (keys 1–4). Swings temporarily show axe/pickaxe to match the clip, then this is restored.
@@ -125,6 +146,10 @@ var _equipped_off_hand_item_id: String = ""
 var _equipped_head_item_id: String = ""
 var _equipped_chest_item_id: String = ""
 var _equipped_legs_item_id: String = ""
+
+var _block_hold_active: bool = false
+## 0 idle, 1 draw playing, 2 fully drawn (held pose), 3 release playing.
+var _bow_phase: int = 0
 
 
 func _ready() -> void:
@@ -196,6 +221,11 @@ func _rebind_meshes_under(root: Node) -> void:
 func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
 	if anim_player == null:
 		return
+	if _block_hold_active:
+		_play_if_needed(_ANIM_BLOCK_LOOP, 0.12)
+		return
+	if _bow_phase > 0 and _bow_phase != 3:
+		return
 	if _action_state != ActionState.LOCOMOTION:
 		return
 	if not on_floor:
@@ -222,10 +252,27 @@ func _play_if_needed(clip: String, blend: float) -> void:
 
 
 func _on_animation_finished(anim_name: StringName) -> void:
-	if _action_state != ActionState.TOOL_ACTION:
-		return
 	var s := String(anim_name)
 	if not s.begins_with(_ANIM_LIB + "/"):
+		return
+	var clip_name := s.substr(_ANIM_LIB.length() + 1, s.length())
+
+	if _bow_phase == 1 and clip_name == _ANIM_BOW_DRAW:
+		_bow_phase = 2
+		return
+
+	if _action_state == ActionState.COMBAT_ACTION and _bow_phase == 3 and clip_name == _ANIM_BOW_RELEASE:
+		_bow_phase = 0
+		_action_state = ActionState.LOCOMOTION
+		_apply_tool_kind(_player_chosen_tool)
+		return
+
+	if _action_state == ActionState.COMBAT_ACTION and clip_name == _ANIM_MELEE_1H:
+		_action_state = ActionState.LOCOMOTION
+		_apply_tool_kind(_player_chosen_tool)
+		return
+
+	if _action_state != ActionState.TOOL_ACTION:
 		return
 	_action_state = ActionState.LOCOMOTION
 	_apply_tool_kind(_player_chosen_tool)
@@ -269,6 +316,8 @@ func set_tacklebox_back_display_enabled(enabled: bool) -> void:
 func set_equipped_hand_items(main_hand_item_id: String, off_hand_item_id: String) -> void:
 	_equipped_main_hand_item_id = main_hand_item_id
 	_equipped_off_hand_item_id = off_hand_item_id
+	if not _off_hand_has_shield():
+		_block_hold_active = false
 	if _action_state == ActionState.LOCOMOTION:
 		_apply_tool_kind(_player_chosen_tool)
 
@@ -295,8 +344,28 @@ func is_tool_action_active() -> bool:
 	return _action_state == ActionState.TOOL_ACTION
 
 
+func is_animation_locked() -> bool:
+	if _action_state == ActionState.TOOL_ACTION or _action_state == ActionState.COMBAT_ACTION:
+		return true
+	if _block_hold_active:
+		return true
+	if _bow_phase > 0:
+		return true
+	return false
+
+
+func is_blocking() -> bool:
+	return _block_hold_active
+
+
+func is_bow_drawn_or_drawing() -> bool:
+	return _bow_phase > 0
+
+
 ## Stops the current tool clip (e.g. target destroyed mid-swing) and returns to idle + chosen tool mesh.
 func cancel_tool_action() -> void:
+	_block_hold_active = false
+	_bow_phase = 0
 	_action_state = ActionState.LOCOMOTION
 	if anim_player != null:
 		anim_player.stop()
@@ -305,11 +374,108 @@ func cancel_tool_action() -> void:
 	_apply_tool_kind(_player_chosen_tool)
 
 
+## Shield hold (requires shield in off-hand). Blocks locomotion blends while active.
+func set_blocking(wanted: bool) -> void:
+	if wanted and not _off_hand_has_shield():
+		_block_hold_active = false
+		if _action_state == ActionState.LOCOMOTION:
+			_apply_tool_kind(_player_chosen_tool)
+		return
+	if wanted and (_action_state == ActionState.TOOL_ACTION or _action_state == ActionState.COMBAT_ACTION):
+		return
+	if wanted and _bow_phase > 0:
+		return
+	_block_hold_active = wanted
+	if not wanted:
+		if _action_state == ActionState.LOCOMOTION:
+			_apply_tool_kind(_player_chosen_tool)
+		return
+	if anim_player != null and anim_player.has_animation(_anim_path(_ANIM_BLOCK_LOOP)):
+		anim_player.speed_scale = 1.0
+		anim_player.play(_anim_path(_ANIM_BLOCK_LOOP), 0.12)
+
+
+func try_play_melee_attack_1h() -> bool:
+	if anim_player == null:
+		return false
+	if is_animation_locked():
+		return false
+	var path := _anim_path(_ANIM_MELEE_1H)
+	if not anim_player.has_animation(path):
+		return false
+	_action_state = ActionState.COMBAT_ACTION
+	_apply_weapon_visual_for_attack()
+	anim_player.speed_scale = 1.0
+	anim_player.play(path, 0.12)
+	return true
+
+
+func try_begin_bow_draw() -> bool:
+	if anim_player == null:
+		return false
+	if _bow_phase != 0:
+		return false
+	if _action_state != ActionState.LOCOMOTION:
+		return false
+	if _block_hold_active:
+		return false
+	var path := _anim_path(_ANIM_BOW_DRAW)
+	if not anim_player.has_animation(path):
+		return false
+	_action_state = ActionState.COMBAT_ACTION
+	_bow_phase = 1
+	_apply_weapon_visual_for_attack()
+	anim_player.speed_scale = 1.0
+	anim_player.play(path, 0.12)
+	return true
+
+
+func try_cancel_bow_draw() -> void:
+	if _bow_phase == 0:
+		return
+	_bow_phase = 0
+	_action_state = ActionState.LOCOMOTION
+	if anim_player != null:
+		anim_player.stop()
+		if anim_player.has_animation(_anim_path(_ANIM_IDLE)):
+			anim_player.play(_anim_path(_ANIM_IDLE), 0.12)
+	_apply_tool_kind(_player_chosen_tool)
+
+
+func try_play_bow_release() -> bool:
+	if anim_player == null:
+		return false
+	if _bow_phase != 2:
+		return false
+	var path := _anim_path(_ANIM_BOW_RELEASE)
+	if not anim_player.has_animation(path):
+		return false
+	_bow_phase = 3
+	_action_state = ActionState.COMBAT_ACTION
+	_apply_weapon_visual_for_attack()
+	anim_player.speed_scale = 1.0
+	anim_player.play(path, 0.12)
+	return true
+
+
+func _off_hand_has_shield() -> bool:
+	var off_id := _normalize_item_id(_equipped_off_hand_item_id)
+	return off_id.begins_with("shield_")
+
+
+func _apply_weapon_visual_for_attack() -> void:
+	_set_right_hand_meshes_visible(false)
+	if equipped_tool_root != null:
+		equipped_tool_root.visible = false
+	_set_weapon_meshes_visible(false)
+	_show_equipped_weapon_mesh()
+
+
 ## Plays a one-shot survival/tool clip. Returns false if a tool action is already playing.
 func try_play_action_for_harvest(harvest_action: String) -> bool:
 	if anim_player == null:
 		return false
-	if _action_state == ActionState.TOOL_ACTION:
+	if is_animation_locked():
 		return false
 	var clip: String = _ANIM_CHOP
 	var swing_tool := ToolKind.AXE
@@ -439,6 +605,13 @@ func _set_weapon_meshes_visible(enabled: bool) -> void:
 	for n in [dagger_bronze_mesh, sword_wooden_mesh, sword_bronze_mesh]:
 		if n != null:
 			n.visible = enabled
+	for n in sword_short_mesh_variants:
+		if n != null:
+			n.visible = enabled
+	if bow_short_mesh != null:
+		bow_short_mesh.visible = enabled
+	if bow_long_mesh != null:
+		bow_long_mesh.visible = enabled
 
 
 func _apply_off_hand_visibility() -> void:
@@ -540,8 +713,34 @@ func _show_equipped_weapon_mesh() -> void:
 		"sword_1h_bronze":
 			if sword_bronze_mesh != null:
 				sword_bronze_mesh.visible = true
+		"sword_1h_iron":
+			_show_short_sword_variant(1)
+		"sword_1h_steel":
+			_show_short_sword_variant(2)
+		"sword_1h_mithril":
+			_show_short_sword_variant(3)
+		"sword_1h_adamant":
+			_show_short_sword_variant(4)
+		"sword_1h_rune":
+			_show_short_sword_variant(5)
+		"sword_1h_dragon":
+			_show_short_sword_variant(6)
+		"bow_short_common":
+			if bow_short_mesh != null:
+				bow_short_mesh.visible = true
+		"bow_long_common":
+			if bow_long_mesh != null:
+				bow_long_mesh.visible = true
 		_:
 			equipped_weapon_root.visible = false
+
+
+func _show_short_sword_variant(idx: int) -> void:
+	if idx < 0 or idx >= sword_short_mesh_variants.size():
+		return
+	var n: Node3D = sword_short_mesh_variants[idx]
+	if n != null:
+		n.visible = true
 
 
 func _armor_tier_from_item_id(item_id: String, prefix: String) -> String:

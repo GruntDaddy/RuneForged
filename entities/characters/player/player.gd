@@ -3,6 +3,8 @@ extends CharacterBody3D
 const _GameState = preload("res://autoload/game_state.gd")
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd")
+const _WeaponData = preload("res://data/schemas/weapon_data.gd")
+const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
 const _AnimalChickenScene = preload("res://entities/characters/animals/chicken.tscn")
 const _AnimalRabbitScene = preload("res://entities/characters/animals/rabbit.tscn")
 const _AnimalRoosterScene = preload("res://entities/characters/animals/rooster.tscn")
@@ -48,6 +50,7 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 @export var creature_attack_damage: float = 8.0
 @export var creature_attack_cooldown_sec: float = 0.7
+@export var shield_block_damage_multiplier: float = 0.15
 
 @export_group("Water")
 @export var water_buoyancy_strength: float = 14.0
@@ -102,6 +105,12 @@ var _last_equipped_off_hand_id: String = ""
 var _last_equipped_head_id: String = ""
 var _last_equipped_chest_id: String = ""
 var _last_equipped_legs_id: String = ""
+
+func apply_damage(amount: float) -> void:
+	var amt: float = absf(amount)
+	if base_character != null and base_character.has_method("is_blocking") and base_character.is_blocking():
+		amt *= shield_block_damage_multiplier
+	health = maxf(health - amt, 0.0)
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -252,7 +261,9 @@ func _physics_process(delta: float) -> void:
 	if not _input_enabled:
 		return
 
-	var tool_busy: bool = base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active()
+	var anim_busy: bool = base_character.has_method("is_animation_locked") and base_character.is_animation_locked()
+	if base_character.has_method("set_blocking"):
+		base_character.set_blocking(Input.is_action_pressed("block") and _off_hand_has_shield_equipped())
 
 	var wl: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), global_position)
 	var in_water: bool = (
@@ -265,7 +276,7 @@ func _physics_process(delta: float) -> void:
 	if in_water:
 		# Seabed used to count as floor: velocity.y was zeroed and buoyancy never ran, so the
 		# player sank while walking but floated after jump (briefly not on_floor).
-		var diving: bool = not tool_busy and Input.is_action_pressed("swim_down")
+		var diving: bool = not anim_busy and Input.is_action_pressed("swim_down")
 		var gmul: float = gravity_multiplier * water_gravity_scale
 		velocity.y -= (_gravity * gmul) * delta
 		if depth_below_surface > 0.0:
@@ -276,10 +287,10 @@ func _physics_process(delta: float) -> void:
 		if diving:
 			velocity.y -= water_dive_accel * delta
 			velocity.y = maxf(velocity.y, -water_dive_max_down_speed)
-		if not tool_busy and Input.is_action_just_pressed("jump"):
+		if not anim_busy and Input.is_action_just_pressed("jump"):
 			velocity.y = maxf(velocity.y, jump_velocity * water_jump_multiplier)
 	elif is_on_floor():
-		if not tool_busy and Input.is_action_just_pressed("jump"):
+		if not anim_busy and Input.is_action_just_pressed("jump"):
 			velocity.y = jump_velocity
 		else:
 			velocity.y = 0.0
@@ -290,7 +301,7 @@ func _physics_process(delta: float) -> void:
 	if _harvest_auto_active and raw_move.length_squared() > 0.0001:
 		_stop_harvest_auto()
 	var input_vec := raw_move
-	if tool_busy:
+	if anim_busy:
 		input_vec = Vector2.ZERO
 	var cam_basis := camera_3d.global_transform.basis
 	var forward := -cam_basis.z
@@ -344,7 +355,7 @@ func _physics_process(delta: float) -> void:
 	_update_interaction_prompt()
 	_sync_equipped_hand_visuals()
 
-	if not tool_busy:
+	if not anim_busy:
 		if Input.is_action_just_pressed("tool_axe"):
 			_use_hotbar_slot(0)
 		if Input.is_action_just_pressed("tool_pickaxe"):
@@ -354,22 +365,37 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_just_pressed("tool_fishing"):
 			_use_hotbar_slot(3)
 
-	if Input.is_action_just_pressed("attack"):
-		if _pending_chop_hit:
-			return
-		var now_ms: int = Time.get_ticks_msec()
-		if now_ms >= _next_harvest_allowed_ms:
-			if _try_creature_hit_with_cooldown():
-				_next_harvest_allowed_ms = now_ms + int(creature_attack_cooldown_sec * 1000.0)
-				return
-			var harvest_res: Array = _try_harvest_hit_with_cooldown()
-			if harvest_res[0]:
-				_next_harvest_allowed_ms = now_ms + int(harvest_res[1] * 1000.0)
+	_attack_input_tick()
 
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var moving := horizontal_speed > 0.15
 	if base_character.has_method("set_locomotion_state"):
 		base_character.set_locomotion_state(moving, running, is_on_floor())
+
+
+func _attack_input_tick() -> void:
+	if _pending_chop_hit:
+		return
+	var now_ms: int = Time.get_ticks_msec()
+	if now_ms < _next_harvest_allowed_ms:
+		return
+
+	if Input.is_action_just_released("attack") and _equipped_weapon_is_bow():
+		if _try_bow_release_creature_hit():
+			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
+		return
+
+	if Input.is_action_just_pressed("attack"):
+		if _equipped_weapon_is_bow():
+			if base_character.has_method("try_begin_bow_draw"):
+				base_character.try_begin_bow_draw()
+			return
+		if _try_creature_melee_hit():
+			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
+			return
+		var harvest_res: Array = _try_harvest_hit_with_cooldown()
+		if harvest_res[0]:
+			_next_harvest_allowed_ms = now_ms + int(harvest_res[1] * 1000.0)
 
 
 func _apply_from_gamestate() -> void:
@@ -450,6 +476,95 @@ func _normalize_item_id(id: String) -> String:
 			return "tool_chisel"
 		_:
 			return id
+
+
+func _off_hand_has_shield_equipped() -> bool:
+	var o: Variant = GameState.equipment.get("off_hand", null)
+	if o == null:
+		return false
+	var id := _normalize_item_id(str(o.get("id", "")))
+	return id.begins_with("shield_")
+
+
+func _equipped_main_hand_id_str() -> String:
+	var m: Variant = GameState.equipment.get("main_hand", null)
+	if m == null:
+		return ""
+	return _normalize_item_id(str(m.get("id", "")))
+
+
+func _main_hand_weapon_family() -> _WeaponStats.WeaponFamily:
+	var id := _equipped_main_hand_id_str()
+	if id.is_empty():
+		return _WeaponStats.WeaponFamily.SWORD_1H
+	var it: ItemData = ItemCatalog.get_item(id)
+	if it == null:
+		return _WeaponStats.WeaponFamily.SWORD_1H
+	if it is _WeaponData:
+		var wd: WeaponData = it as WeaponData
+		if wd.weapon_stats != null:
+			return wd.weapon_stats.weapon_family
+	for tag in it.tags:
+		if str(tag) == "bow":
+			return _WeaponStats.WeaponFamily.BOW
+	return _WeaponStats.WeaponFamily.SWORD_1H
+
+
+func _equipped_weapon_is_bow() -> bool:
+	return _main_hand_weapon_family() == _WeaponStats.WeaponFamily.BOW
+
+
+func _creature_damage_amount() -> float:
+	var id := _equipped_main_hand_id_str()
+	var it: ItemData = ItemCatalog.get_item(id)
+	if it is _WeaponData:
+		var wd: WeaponData = it as WeaponData
+		if wd.weapon_stats != null:
+			return wd.weapon_stats.base_damage
+	return creature_attack_damage
+
+
+func _creature_attack_interval_sec() -> float:
+	var id := _equipped_main_hand_id_str()
+	var it: ItemData = ItemCatalog.get_item(id)
+	if it is _WeaponData:
+		var wd: WeaponData = it as WeaponData
+		if wd.weapon_stats != null:
+			return wd.weapon_stats.attack_interval_sec
+	return creature_attack_cooldown_sec
+
+
+func _try_creature_melee_hit() -> bool:
+	var collider: Object = _get_interaction_collider()
+	if not _is_creature_candidate(collider):
+		return false
+	var family := _main_hand_weapon_family()
+	var played := false
+	match family:
+		_WeaponStats.WeaponFamily.STAFF:
+			if base_character.has_method("try_play_action_for_harvest"):
+				played = base_character.try_play_action_for_harvest("interact")
+		_WeaponStats.WeaponFamily.BOW:
+			return false
+		_:
+			if base_character.has_method("try_play_melee_attack_1h"):
+				played = base_character.try_play_melee_attack_1h()
+	if not played:
+		return false
+	var dmg := _creature_damage_amount()
+	return bool(collider.call("receive_hit", dmg, self))
+
+
+func _try_bow_release_creature_hit() -> bool:
+	if base_character == null or not base_character.has_method("try_play_bow_release"):
+		return false
+	if not base_character.try_play_bow_release():
+		return false
+	var collider: Object = _get_interaction_collider()
+	var dmg := _creature_damage_amount()
+	if _is_creature_candidate(collider):
+		collider.call("receive_hit", dmg, self)
+	return true
 
 
 func _tool_kind_for_equipped_main(item_id: String) -> _BaseCharacter.ToolKind:
@@ -867,6 +982,8 @@ func _harvest_auto_continue_async(gen: int) -> void:
 
 
 func _begin_harvest_on_collider(collider: Object) -> Array:
+	if _equipped_weapon_is_bow():
+		return [false, harvest_click_cooldown_sec]
 	if collider == null or not collider.has_method("harvest_hit"):
 		return [false, harvest_click_cooldown_sec]
 	if not _harvest_skill_met(collider):
@@ -926,6 +1043,8 @@ func _abort_harvest_tool_animation() -> void:
 
 
 func _try_harvest_hit_with_cooldown() -> Array:
+	if _equipped_weapon_is_bow():
+		return [false, harvest_click_cooldown_sec]
 	var collider: Object = _get_interaction_collider()
 	if collider == null:
 		return [false, harvest_click_cooldown_sec]
@@ -1041,15 +1160,6 @@ func _try_interact() -> void:
 	if interactable == null or not interactable.has_method("interact"):
 		return
 	interactable.interact(self)
-
-
-func _try_creature_hit_with_cooldown() -> bool:
-	var collider: Object = _get_interaction_collider()
-	if not _is_creature_candidate(collider):
-		return false
-	if base_character.has_method("try_play_action_for_harvest"):
-		base_character.try_play_action_for_harvest("interact")
-	return bool(collider.call("receive_hit", creature_attack_damage, self))
 
 
 func _night_speed_factor() -> float:

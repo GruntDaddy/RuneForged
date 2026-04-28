@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/weapon_data.gd" id="1_wd"]
+[ext_resource type="Script" path="res://data/schemas/weapon_stats.gd" id="2_ws"]
+
+[sub_resource type="Resource" id="Resource_ws"]
+script = ExtResource("2_ws")
+weapon_family = 6
+base_damage = 6.0
+attack_interval_sec = 0.95
+
+[resource]
+script = ExtResource("1_wd")
+weapon_stats = SubResource("Resource_ws")
+id = "bow_short_common"
+display_name = "Short bow"
+description = "A compact hunting bow."
+category = 3
+max_stack = 1
+tags = PackedStringArray("weapon", "ranged", "bow")

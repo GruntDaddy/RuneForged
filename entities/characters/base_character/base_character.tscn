@@ -80,13 +80,17 @@
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_b0b0v"]
 _data = {
+&"Bow_Draw": ExtResource("19_useitem"),
+&"Bow_Release": ExtResource("17_interact"),
 &"Chop": ExtResource("14_0oxa4"),
 &"Idle_A": ExtResource("14_idle"),
 &"Interact": ExtResource("17_interact"),
 &"Jump_Idle": ExtResource("11_ey55c"),
+&"Melee_Attack_1H": ExtResource("14_0oxa4"),
 &"PickUp": ExtResource("18_pickup"),
 &"Pickaxe": ExtResource("19_nwtlr"),
 &"Running_A": ExtResource("13_run_a"),
+&"Shield_Block_Loop": ExtResource("14_idle"),
 &"T-Pose": ExtResource("12_upkct"),
 &"Use_Item": ExtResource("19_useitem"),
 &"Walking_B": ExtResource("13_jxcl3")
