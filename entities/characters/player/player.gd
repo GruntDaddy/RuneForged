@@ -50,6 +50,8 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
 @export var creature_attack_damage: float = 8.0
 @export var creature_attack_cooldown_sec: float = 0.7
+## Seconds from melee swing start until each creature hit registers. Empty = immediate on swing start after animation confirms.
+@export var melee_creature_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.42])
 @export var shield_block_damage_multiplier: float = 0.15
 
 @export_group("Water")
@@ -93,6 +95,8 @@ var _pending_chop_hit: bool = false
 var _pending_chop_ref: WeakRef
 var _pending_mine_ref: WeakRef
 var _harvest_timer_generation: int = 0
+var _creature_impact_generation: int = 0
+var _pending_creature_ref: WeakRef
 
 var _harvest_auto_active: bool = false
 var _harvest_auto_target: WeakRef
@@ -551,8 +555,47 @@ func _try_creature_melee_hit() -> bool:
 				played = base_character.try_play_melee_attack_1h()
 	if not played:
 		return false
+
+	_creature_impact_generation += 1
+	var seq: int = _creature_impact_generation
+	_pending_creature_ref = weakref(collider)
+
+	if melee_creature_impact_delays_sec.is_empty():
+		_apply_creature_melee_damage_at_impact(seq)
+		return true
+
+	for i in range(melee_creature_impact_delays_sec.size()):
+		var d: float = melee_creature_impact_delays_sec[i]
+		var tw := get_tree().create_timer(maxf(0.0, d))
+		tw.timeout.connect(_on_creature_melee_impact_timeout.bind(seq))
+	return true
+
+
+func _apply_creature_melee_damage_at_impact(seq: int) -> void:
+	if seq != _creature_impact_generation:
+		return
+	var c: Object = _pending_creature_ref.get_ref() if _pending_creature_ref != null else null
+	if c == null or not is_instance_valid(c):
+		return
+	if not _creature_target_still_valid_for_hit(c):
+		return
+	if not _is_creature_candidate(c):
+		return
 	var dmg := _creature_damage_amount()
-	return bool(collider.call("receive_hit", dmg, self))
+	c.call("receive_hit", dmg, self)
+
+
+func _creature_target_still_valid_for_hit(c: Object) -> bool:
+	return _harvest_target_still_valid(c)
+
+
+func _invalidate_pending_creature_impacts() -> void:
+	_creature_impact_generation += 1
+	_pending_creature_ref = null
+
+
+func _on_creature_melee_impact_timeout(seq: int) -> void:
+	_apply_creature_melee_damage_at_impact(seq)
 
 
 func _try_bow_release_creature_hit() -> bool:
@@ -1065,6 +1108,7 @@ func _try_harvest_hit_with_cooldown() -> Array:
 
 
 func _start_harvest_swing_on_collider(collider: Object, action: String) -> Array:
+	_invalidate_pending_creature_impacts()
 	if action == "chop":
 		_pending_chop_hit = true
 		_pending_chop_ref = weakref(collider)
