@@ -19,6 +19,7 @@ walk_time_min = 1.2
 walk_time_max = 3.1
 attack_damage = 9.0
 respawn_seconds = 26.0
+visual_mesh_vertical_offset = -0.12
 idle_animation = &"Idle"
 walk_animation = &"Walk"
 death_animation = &"Death"
@@ -29,6 +30,6 @@ collision_mask = 1
 shape = SubResource("CapsuleShape3D_body")
 
 [node name="VisualRoot" type="Node3D" parent="."]
-transform = Transform3D(0.48, 0, 0, 0, 0.48, 0, 0, 0, 0.48, 0, 0, 0)
+transform = Transform3D(0.82, 0, 0, 0, 0.82, 0, 0, 0, 0.82, 0, 0, 0)
 
 [node name="RoosterModel" parent="VisualRoot" instance=ExtResource("2_model")]

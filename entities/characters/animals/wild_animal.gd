@@ -20,9 +20,16 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var walk_animation: StringName = &"Walk"
 @export var death_animation: StringName = &"Death"
 
+## Negative values move the mesh down so feet align with the ground when the FBX pivot sits high.
+@export var visual_mesh_vertical_offset: float = 0.0
+
 @export var drops: Array[_AnimalDropEntry] = []
 
-@onready var animation_player: AnimationPlayer = get_node_or_null("VisualRoot/AnimationPlayer")
+var animation_player: AnimationPlayer
+
+var _idle_clip: String = ""
+var _walk_clip: String = ""
+var _death_clip: String = ""
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _spawn_position: Vector3 = Vector3.ZERO
@@ -35,6 +42,12 @@ var _walk_target: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	add_to_group("creature")
+	animation_player = _resolve_animation_player()
+	if animation_player:
+		_idle_clip = _resolve_clip_name(idle_animation)
+		_walk_clip = _resolve_clip_name(walk_animation)
+		_death_clip = _resolve_clip_name(death_animation)
+	_apply_visual_vertical_offset()
 	_spawn_position = global_position
 	_health = maxf(1.0, max_health)
 	if drops.is_empty():
@@ -99,7 +112,7 @@ func _die() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	velocity = Vector3.ZERO
-	_play_anim(death_animation)
+	_play_clip(_death_clip)
 	_spawn_drops()
 	_schedule_respawn()
 	get_tree().create_timer(maxf(0.0, death_remove_delay_sec)).timeout.connect(func() -> void:
@@ -182,19 +195,63 @@ func _update_anim() -> void:
 	if _dead:
 		return
 	if _is_walking and velocity.length_squared() > 0.05:
-		_play_anim(walk_animation)
+		_play_clip(_walk_clip)
 	else:
-		_play_anim(idle_animation)
+		_play_clip(_idle_clip)
 
 
-func _play_anim(anim_name: StringName) -> void:
-	if animation_player == null or anim_name == StringName():
+func _play_clip(clip: String) -> void:
+	if animation_player == null or clip.is_empty():
 		return
-	if not animation_player.has_animation(anim_name):
+	if not animation_player.has_animation(clip):
 		return
-	if animation_player.current_animation == anim_name and animation_player.is_playing():
+	if animation_player.current_animation == clip and animation_player.is_playing():
 		return
-	animation_player.play(anim_name, 0.15)
+	animation_player.play(clip, 0.15)
+
+
+func _resolve_animation_player() -> AnimationPlayer:
+	var vr: Node = get_node_or_null("VisualRoot")
+	if vr:
+		var found := _find_animation_player_deep(vr)
+		if found:
+			return found
+	var direct := get_node_or_null("VisualRoot/AnimationPlayer")
+	return direct as AnimationPlayer
+
+
+func _find_animation_player_deep(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n as AnimationPlayer
+	for child in n.get_children():
+		var nested := _find_animation_player_deep(child)
+		if nested:
+			return nested
+	return null
+
+
+func _resolve_clip_name(preferred: StringName) -> String:
+	if animation_player == null:
+		return ""
+	var pref := String(preferred)
+	if pref.is_empty():
+		return ""
+	if animation_player.has_animation(pref):
+		return pref
+	for clip in animation_player.get_animation_list():
+		if clip == pref or clip.ends_with("/" + pref):
+			return clip
+		if String(clip).get_file() == pref:
+			return clip
+	return ""
+
+
+func _apply_visual_vertical_offset() -> void:
+	if is_zero_approx(visual_mesh_vertical_offset):
+		return
+	var vr := get_node_or_null("VisualRoot")
+	if vr:
+		vr.position.y += visual_mesh_vertical_offset
 
 
 func _default_drops_for_species(species: String) -> Array[_AnimalDropEntry]:
