@@ -18,6 +18,10 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 ## Extra time after the death animation finishes before the body is freed.
 @export var death_cleanup_after_anim_sec: float = 0.5
 @export var respawn_seconds: float = 0.0
+@export var show_health_bar: bool = true
+@export var health_bar_height: float = 1.15
+@export var health_bar_width: float = 0.75
+@export var health_bar_thickness: float = 0.07
 
 ## Extra yaw (radians) after aligning facing to velocity. Uses atan2(-x,-z) so local −Z matches movement.
 @export var facing_yaw_offset: float = 0.0
@@ -55,6 +59,9 @@ var _is_walking: bool = false
 var _phase_timeout: float = 0.0
 var _walk_target: Vector3 = Vector3.ZERO
 var _flee_timeout: float = 0.0
+var _health_bar_root: Node3D
+var _health_bar_bg: MeshInstance3D
+var _health_bar_fill: MeshInstance3D
 
 
 func _ready() -> void:
@@ -68,6 +75,8 @@ func _ready() -> void:
 	_apply_visual_vertical_offset()
 	_spawn_position = global_position
 	_health = maxf(1.0, max_health)
+	_setup_health_bar()
+	_update_health_bar_visual()
 	if drops.is_empty():
 		drops = _default_drops_for_species(species_id)
 	_set_idle_phase()
@@ -111,6 +120,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 	move_and_slide()
 	_update_anim()
+	_update_health_bar_billboard()
 
 
 func _enforce_spawn_leash() -> void:
@@ -138,6 +148,18 @@ func can_receive_hit() -> bool:
 	return not _dead
 
 
+func get_current_health() -> float:
+	return _health
+
+
+func get_max_health() -> float:
+	return maxf(1.0, max_health)
+
+
+func get_health_ratio() -> float:
+	return clampf(_health / maxf(1.0, max_health), 0.0, 1.0)
+
+
 func get_interaction_prompt(_player: Node) -> String:
 	if _dead:
 		return ""
@@ -151,6 +173,7 @@ func receive_hit(damage: float, _source: Node = null) -> bool:
 	if dealt <= 0.0:
 		return false
 	_health -= dealt
+	_update_health_bar_visual()
 	if _health <= 0.0:
 		_die()
 	else:
@@ -179,6 +202,8 @@ func _die() -> void:
 	if _dead:
 		return
 	_dead = true
+	if _health_bar_root != null:
+		_health_bar_root.visible = false
 	collision_layer = 0
 	collision_mask = 0
 	velocity = Vector3.ZERO
@@ -383,3 +408,61 @@ func _make_drop(item_id: String, chance: float, min_count: int, max_count: int) 
 	d.min_count = min_count
 	d.max_count = max_count
 	return d
+
+
+func _setup_health_bar() -> void:
+	if not show_health_bar:
+		return
+	_health_bar_root = Node3D.new()
+	_health_bar_root.name = "HealthBarRoot"
+	_health_bar_root.position = Vector3(0.0, health_bar_height, 0.0)
+	add_child(_health_bar_root)
+
+	var bg_mesh := QuadMesh.new()
+	bg_mesh.size = Vector2(maxf(0.1, health_bar_width), maxf(0.02, health_bar_thickness))
+	_health_bar_bg = MeshInstance3D.new()
+	_health_bar_bg.mesh = bg_mesh
+	var bg_mat := StandardMaterial3D.new()
+	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bg_mat.albedo_color = Color(0.12, 0.12, 0.12, 0.85)
+	bg_mat.no_depth_test = false
+	_health_bar_bg.material_override = bg_mat
+	_health_bar_root.add_child(_health_bar_bg)
+
+	var fill_mesh := QuadMesh.new()
+	fill_mesh.size = Vector2(maxf(0.1, health_bar_width), maxf(0.02, health_bar_thickness) * 0.8)
+	_health_bar_fill = MeshInstance3D.new()
+	_health_bar_fill.mesh = fill_mesh
+	var fill_mat := StandardMaterial3D.new()
+	fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fill_mat.albedo_color = Color(0.2, 0.85, 0.3, 0.95)
+	fill_mat.no_depth_test = false
+	_health_bar_fill.material_override = fill_mat
+	_health_bar_fill.position = Vector3(0.0, 0.0, -0.001)
+	_health_bar_root.add_child(_health_bar_fill)
+
+
+func _update_health_bar_billboard() -> void:
+	if _health_bar_root == null or _dead:
+		return
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	_health_bar_root.look_at(cam.global_position, Vector3.UP, true)
+
+
+func _update_health_bar_visual() -> void:
+	if _health_bar_fill == null:
+		return
+	var ratio := clampf(_health / maxf(1.0, max_health), 0.0, 1.0)
+	_health_bar_fill.visible = ratio > 0.0
+	_health_bar_fill.scale.x = maxf(0.001, ratio)
+	_health_bar_fill.position.x = -(1.0 - ratio) * health_bar_width * 0.5
+	if _health_bar_fill.material_override is StandardMaterial3D:
+		var mat := _health_bar_fill.material_override as StandardMaterial3D
+		if ratio > 0.6:
+			mat.albedo_color = Color(0.2, 0.85, 0.3, 0.95)
+		elif ratio > 0.3:
+			mat.albedo_color = Color(0.95, 0.78, 0.2, 0.95)
+		else:
+			mat.albedo_color = Color(0.9, 0.2, 0.2, 0.95)
