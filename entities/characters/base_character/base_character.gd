@@ -42,9 +42,6 @@ enum ActionState {
 @onready var sword_wooden_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Sword_Wooden"
 ) as Node3D
-@onready var sword_bronze_mesh: Node3D = get_node_or_null(
-	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_Katana_Bronze"
-) as Node3D
 @onready var sword_short_mesh_variants: Array[Node3D] = [
 	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Bronze") as Node3D,
 	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Iron") as Node3D,
@@ -54,18 +51,18 @@ enum ActionState {
 	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Rune") as Node3D,
 	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/1h_ShortSword_Dragon") as Node3D,
 ]
-@onready var bow_short_mesh: Node3D = get_node_or_null(
-	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bow_Short_Common"
-) as Node3D
-@onready var bow_long_mesh: Node3D = get_node_or_null(
-	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight/Bow_Long_Common"
-) as Node3D
-@onready var bow_short_left_mesh: Node3D = get_node_or_null(
-	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Short_Common"
-) as Node3D
-@onready var bow_long_left_mesh: Node3D = get_node_or_null(
-	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Long_Common"
-) as Node3D
+@onready var bow_short_left_mesh: Node3D = (
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Hunting_Bow")
+	as Node3D
+	if get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Hunting_Bow") != null
+	else get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Short_Common") as Node3D
+)
+@onready var bow_long_left_mesh: Node3D = (
+	get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Common")
+	as Node3D
+	if get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Common") != null
+	else get_node_or_null("Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Long_Common") as Node3D
+)
 @onready var arrow_spawn: Marker3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/ArrowSpawn"
 ) as Marker3D
@@ -738,16 +735,12 @@ func _set_weapon_meshes_visible(enabled: bool) -> void:
 		equipped_weapon_root.visible = enabled
 	if equipped_weapon_left_root != null:
 		equipped_weapon_left_root.visible = enabled
-	for n in [dagger_bronze_mesh, sword_wooden_mesh, sword_bronze_mesh]:
+	for n in [dagger_bronze_mesh, sword_wooden_mesh]:
 		if n != null:
 			n.visible = enabled
 	for n in sword_short_mesh_variants:
 		if n != null:
 			n.visible = enabled
-	if bow_short_mesh != null:
-		bow_short_mesh.visible = enabled
-	if bow_long_mesh != null:
-		bow_long_mesh.visible = enabled
 	if bow_short_left_mesh != null:
 		bow_short_left_mesh.visible = enabled
 	if bow_long_left_mesh != null:
@@ -899,8 +892,6 @@ func _show_equipped_weapon_mesh() -> void:
 				equipped_weapon_left_root.visible = true
 			if bow_short_left_mesh != null:
 				bow_short_left_mesh.visible = true
-			elif bow_short_mesh != null:
-				bow_short_mesh.visible = true
 		"bow_long_common":
 			if equipped_weapon_root != null:
 				equipped_weapon_root.visible = false
@@ -908,10 +899,9 @@ func _show_equipped_weapon_mesh() -> void:
 				equipped_weapon_left_root.visible = true
 			if bow_long_left_mesh != null:
 				bow_long_left_mesh.visible = true
-			elif bow_long_mesh != null:
-				bow_long_mesh.visible = true
 		_:
-			equipped_weapon_root.visible = false
+			if equipped_weapon_root != null:
+				equipped_weapon_root.visible = false
 
 
 func _show_short_sword_variant(idx: int) -> void:

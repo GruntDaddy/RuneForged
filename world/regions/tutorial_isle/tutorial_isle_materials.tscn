@@ -2,7 +2,6 @@
 
 
 [ext_resource type="Texture2D" uid="uid://cia47qdwk3u7p" path="res://assets/terrain3d/textures/grass_3.png" id="1_0c8xa"]
-[ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://blb8ritn1ao38" path="res://assets/terrain3d/textures/sand_3.png" id="4_x6gk8"]
 [ext_resource type="Texture2D" uid="uid://6tiwemm5ui2v" path="res://assets/terrain3d/textures/cobblestone_2.png" id="5_gkm8o"]
 [ext_resource type="Texture2D" uid="uid://cnv8pg8276nq" path="res://assets/terrain3d/textures/dirty_2.png" id="6_x6gk8"]
@@ -1509,6 +1508,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Copper_Bar" parent="." unique_id=940789391 instance=ExtResource("20_3vu1e")]
 transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 201.73857, 10.551444, 375.62234)
+script = ExtResource("70_item_pickup")
+item_id = "ingot_copper"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Copper_Bar" unique_id=920001001]
 collision_layer = 2
@@ -1519,6 +1520,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Tin_Bar" type="Node3D" parent="." unique_id=1744695828]
 transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 204.07799, 10.453113, 373.96704)
+script = ExtResource("70_item_pickup")
+item_id = "ingot_tin"
 
 [node name="Tin_Bar" type="MeshInstance3D" parent="Tin_Bar" unique_id=790677900]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.60876465, 0.115709305, 0.20214844)
@@ -1534,6 +1537,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Copper_Nuggets" parent="." unique_id=1352546698 instance=ExtResource("23_fq2qr")]
 transform = Transform3D(0.8267415, 0.08816414, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.55780315, 0, 0.8299735, 199.64758, 10.886052, 375.0992)
+script = ExtResource("70_item_pickup")
+item_id = "ore_copper"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Copper_Nuggets" unique_id=920001005]
 collision_layer = 2
@@ -1544,6 +1549,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Tin_Nuggets" type="Node3D" parent="." unique_id=2076419323]
 transform = Transform3D(0.8267415, 0.08816414, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.55780315, 0, 0.8299735, 201.96109, 10.774248, 373.36627)
+script = ExtResource("70_item_pickup")
+item_id = "ore_tin"
 
 [node name="Tin_Nuggets" type="MeshInstance3D" parent="Tin_Nuggets" unique_id=888140074]
 transform = Transform3D(0.9963091, -0.0826081, 0.023344666, 0.08458624, 0.9910897, -0.10289217, -0.014636755, 0.10448684, 0.99441856, 0.833725, -0.008684158, 0.28042603)
@@ -1560,6 +1567,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Iron_Bar" parent="." unique_id=778829037 instance=ExtResource("27_rx877")]
 transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 199.87468, 10.5083685, 377.51666)
+script = ExtResource("70_item_pickup")
+item_id = "ingot_iron"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Iron_Bar" unique_id=920001009]
 collision_layer = 2
@@ -1570,6 +1579,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Iron_Nuggets" parent="." unique_id=1402091565 instance=ExtResource("28_my7f7")]
 transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 199.24548, 10.555809, 376.9228)
+script = ExtResource("70_item_pickup")
+item_id = "ore_iron"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Iron_Nuggets" unique_id=920001011]
 collision_layer = 2
@@ -1580,6 +1591,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Silver_Bar" parent="." unique_id=1703529473 instance=ExtResource("29_ts002")]
 transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 197.70198, 10.440975, 379.5944)
+script = ExtResource("70_item_pickup")
+item_id = "ingot_silver"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Silver_Bar" unique_id=920001013]
 collision_layer = 2
@@ -1590,6 +1603,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Silver_Nuggets" parent="." unique_id=1156454490 instance=ExtResource("30_dr1td")]
 transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 196.90857, 10.555809, 379.0154)
+script = ExtResource("70_item_pickup")
+item_id = "ore_silver"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Silver_Nuggets" unique_id=920001015]
 collision_layer = 2
@@ -1600,6 +1615,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Gold_Bar" type="Node3D" parent="." unique_id=1469548758]
 transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 195.7233, 10.349287, 382.2438)
+script = ExtResource("70_item_pickup")
+item_id = "ingot_gold"
 
 [node name="Iron_Bar" type="MeshInstance3D" parent="Gold_Bar" unique_id=1385761557]
 transform = Transform3D(0.9994168, 0.034131914, -0.0006104708, -0.034131914, 0.9987778, -0.035746973, -0.0006105006, 0.035746973, 0.9993603, -0.81036377, -0.07919216, 0.060195923)
@@ -1615,6 +1632,8 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Gold_Nuggets" type="Node3D" parent="." unique_id=967007471]
 transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 194.92989, 10.464121, 381.66483)
+script = ExtResource("70_item_pickup")
+item_id = "ore_gold"
 
 [node name="Iron_Nuggets" type="MeshInstance3D" parent="Gold_Nuggets" unique_id=1552953278]
 transform = Transform3D(0.99825203, -0.059051648, 0.0024814606, 0.059051648, 0.9947297, -0.08381968, 0.0024813712, 0.08381968, 0.996478, -0.21588135, -0.10295963, -0.78338623)

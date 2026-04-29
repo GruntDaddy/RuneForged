@@ -137,6 +137,8 @@ var _last_equipped_head_id: String = ""
 var _last_equipped_chest_id: String = ""
 var _last_equipped_legs_id: String = ""
 var _last_equipped_back_id: String = ""
+var _cached_interaction_collider: Object = null
+var _cached_interaction_frame: int = -1
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
@@ -166,6 +168,7 @@ func _ready() -> void:
 	if spring_arm != null:
 		spring_arm.spring_length = clampf(spring_arm.spring_length, zoom_min_distance, zoom_max_distance)
 		_zoom_target_distance = spring_arm.spring_length
+	_refresh_interaction_collider_cache(true)
 	_update_reticle_position()
 	_update_reticle_icon()
 	_resolve_day_night_controller()
@@ -399,7 +402,7 @@ func _physics_process(delta: float) -> void:
 	var wl_cam: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), camera_3d.global_position)
 	_update_underwater_fog(wl_cam)
 
-	_update_interaction_ray()
+	_refresh_interaction_collider_cache()
 	if spring_arm != null:
 		spring_arm.spring_length = lerpf(spring_arm.spring_length, _zoom_target_distance, clampf(zoom_lerp_speed * delta, 0.0, 1.0))
 	_update_reticle_position()
@@ -1088,6 +1091,19 @@ func _get_interaction_collider() -> Object:
 	return _fallback_interaction_collider()
 
 
+func _refresh_interaction_collider_cache(force_refresh: bool = false) -> void:
+	var frame_now: int = Engine.get_physics_frames()
+	if not force_refresh and _cached_interaction_frame == frame_now:
+		return
+	_cached_interaction_collider = _get_interaction_collider()
+	_cached_interaction_frame = frame_now
+
+
+func _get_interaction_collider_cached(force_refresh: bool = false) -> Object:
+	_refresh_interaction_collider_cache(force_refresh)
+	return _cached_interaction_collider
+
+
 func _resolve_harvest_target(collider: Object) -> Object:
 	if collider == null:
 		return null
@@ -1148,7 +1164,7 @@ func _update_reticle_icon() -> void:
 	if reticle == null:
 		return
 	var icon: Texture2D = reticle_icon_default
-	var collider: Object = _get_interaction_collider()
+	var collider: Object = _get_interaction_collider_cached()
 	if collider != null:
 		var interactable: Object = _resolve_interactable_target(collider)
 		if collider.has_method("harvest_hit"):
@@ -1490,7 +1506,7 @@ func _try_harvest_hit_with_cooldown() -> Array:
 		return [false, harvest_click_cooldown_sec]
 	if _equipped_weapon_is_bow():
 		return [false, harvest_click_cooldown_sec]
-	var collider: Object = _get_interaction_collider()
+	var collider: Object = _get_interaction_collider_cached(true)
 	if collider == null:
 		return [false, harvest_click_cooldown_sec]
 	if not collider.has_method("harvest_hit"):
@@ -1554,7 +1570,7 @@ func _harvest_swing_outcome(c: Object) -> int:
 func _update_interaction_prompt() -> void:
 	if interaction_prompt == null:
 		return
-	var collider: Object = _get_interaction_collider()
+	var collider: Object = _get_interaction_collider_cached()
 	if collider == null:
 		interaction_prompt.visible = false
 		return
@@ -1619,7 +1635,7 @@ func _gameplay_input_blocked() -> bool:
 func _try_interact() -> void:
 	if _gameplay_input_blocked():
 		return
-	var collider: Object = _get_interaction_collider()
+	var collider: Object = _get_interaction_collider_cached(true)
 	if collider == null:
 		return
 	var harvest_target: Object = _resolve_harvest_target(collider)

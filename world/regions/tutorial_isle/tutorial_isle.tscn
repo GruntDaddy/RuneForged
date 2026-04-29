@@ -751,11 +751,6 @@ height = 1.0602417
 
 [node name="TutorialIsleGear" parent="." unique_id=33315450 instance=ExtResource("tutorial_isle_gear_inst")]
 
-[node name="arrow_bundle_iron2" type="MeshInstance3D" parent="TutorialIsleGear" unique_id=835564125]
-transform = Transform3D(1, 0, 0, 0, 0.16981392, 0.98547626, 0, -0.98547626, 0.16981392, 418.04712, 20.508333, 766.81104)
-material_override = ExtResource("4_mfwor")
-mesh = SubResource("ArrayMesh_trcql")
-
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 221.39133, 9.956359, 385.6984)
 day_night_controller_path = NodePath("../Environment/DayNightCycle")

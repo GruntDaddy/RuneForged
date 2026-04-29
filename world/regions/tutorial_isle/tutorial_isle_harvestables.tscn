@@ -2,7 +2,6 @@
 
 
 [ext_resource type="Texture2D" uid="uid://cia47qdwk3u7p" path="res://assets/terrain3d/textures/grass_3.png" id="1_0c8xa"]
-[ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://blb8ritn1ao38" path="res://assets/terrain3d/textures/sand_3.png" id="4_x6gk8"]
 [ext_resource type="Texture2D" uid="uid://6tiwemm5ui2v" path="res://assets/terrain3d/textures/cobblestone_2.png" id="5_gkm8o"]
 [ext_resource type="Texture2D" uid="uid://cnv8pg8276nq" path="res://assets/terrain3d/textures/dirty_2.png" id="6_x6gk8"]

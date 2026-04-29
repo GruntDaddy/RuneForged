@@ -450,6 +450,18 @@ visible = false
 transform = Transform3D(-0.18770604, 0.9431421, 0.27431598, -0.95176554, -0.24365896, 0.18647435, 0.24271137, -0.22608215, 0.9433865, 0.027847439, 0.038146913, 0.10221282)
 visible = false
 
+[node name="Head_Slot" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D"]
+bone_name = "head"
+bone_idx = 14
+
+[node name="Chest_Slot" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D"]
+bone_name = "chest"
+bone_idx = 3
+
+[node name="Legs_Slot" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D"]
+bone_name = "hips"
+bone_idx = 1
+
 [node name="Back_Slot" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" unique_id=1073685197]
 transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
 bone_name = "root"
