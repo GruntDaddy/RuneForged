@@ -2,6 +2,6 @@
 
 [resource]
 disable_ambient_light = true
-albedo_color = Color(0.57829577, 0.57829577, 0.57829577, 1)
+albedo_color = Color(0.35031357, 0.35031378, 0.3503137, 1)
 metallic = 0.05
 roughness = 0.73

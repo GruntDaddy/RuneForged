@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://cxubyibcaek4m" path="res://assets/kaykit/characters/raw/Skeleton_Minion_skeleton_texture_A.png" id="67_62lce"]
 [ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="70_item_pickup"]
 [ext_resource type="Texture2D" uid="uid://l4vj8uh8h672" path="res://assets/kenney/Boat Pack/Textures/colormap.png" id="74_qkg84"]
-[ext_resource type="Script" path="res://world/regions/tutorial_isle/tutorial_isle.gd" id="75_tutorial_isle_script"]
+[ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/tutorial_isle/tutorial_isle.gd" id="75_tutorial_isle_script"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/chick.tscn" id="animal_chick"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/chicken.tscn" id="animal_chicken"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/rabbit.tscn" id="animal_rabbit"]
@@ -18,7 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://dlwlceuuy3mu7" path="res://world/regions/tutorial_isle/tutorial_isle_environment.tscn" id="tutorial_isle_env_inst"]
 [ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="tutorial_isle_gear_inst"]
 [ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/tutorial_isle/tutorial_isle_harvestables.tscn" id="tutorial_isle_harv_inst"]
-[ext_resource type="PackedScene" path="res://world/regions/tutorial_isle/tutorial_isle_materials.tscn" id="tutorial_isle_mat_inst"]
+[ext_resource type="PackedScene" uid="uid://bo7qoslxeh56" path="res://world/regions/tutorial_isle/tutorial_isle_materials.tscn" id="tutorial_isle_mat_inst"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_02qvn"]
 resource_name = "BrownDark"
@@ -1056,7 +1056,7 @@ shape = SubResource("ConcavePolygonShape3D_whsid")
 transform = Transform3D(0.99891615, -0.046548564, 5.9604645e-08, 0.046548557, 0.9989162, -1.8626451e-09, 0, 0, 1.0000001, -0.03302002, -0.1191473, 3.626915)
 
 [node name="Campfire_Logs" type="MeshInstance3D" parent="Props/Tent/Campfire/Campfire_Logs" unique_id=2046096905]
-transform = Transform3D(1, 0, 2.9802322e-08, 0, 0.9999999, 2.220446e-16, 0, 0, 1, 0.037139893, 0, -0.03315735)
+transform = Transform3D(0.9999999, -1.1175871e-08, 0, -1.1175871e-08, 0.9999995, -1.1175871e-08, 0, -7.450581e-09, 0.9999999, 0.023223877, 0.059817314, 0.012161255)
 mesh = SubResource("ArrayMesh_g0523")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Props/Tent/Campfire/Campfire_Logs/Campfire_Logs" unique_id=443705162]
