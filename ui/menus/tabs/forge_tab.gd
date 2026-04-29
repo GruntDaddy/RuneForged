@@ -16,6 +16,9 @@ var _page_crafting_craft: Button
 var _page_crafting_filter: OptionButton
 var _craft_selected: RecipeData = null
 var _station_filter_idx: int = -1
+var _build_rotate_step: float = 30.0
+var _build_selected_item_id: String = "campfire_kit"
+var _build_selected_label: Label
 
 
 func setup(menu: Node) -> void:
@@ -59,6 +62,7 @@ func open_crafting_basic() -> void:
 
 func open_building() -> void:
 	_set_subtab(SUBTAB_BUILDING)
+	_select_build_item(_build_selected_item_id)
 
 
 func set_subtab(tab_idx: int) -> void:
@@ -171,14 +175,72 @@ func _build_building_page(page: Control) -> void:
 	vb.add_child(t)
 
 	var body := RichTextLabel.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.bbcode_enabled = true
+	body.fit_content = true
 	body.add_theme_color_override("default_color", _COL_INK)
 	body.text = (
-		"Place structures and furniture from a build palette (planned).\n\n"
-		+ "For now, use placeable items such as [b]campfire kits[/b] and [b]torches[/b] from inventory."
+		"Place selected utility props in front of the player.\n\n"
+		+ "Controls:\n"
+		+ "- Rotate Left / Right to set yaw\n"
+		+ "- Select an item, then Place Selected\n"
+		+ "- Preview turns green when valid, red when blocked"
 	)
 	vb.add_child(body)
+	_build_selected_label = Label.new()
+	_apply_body_label(_build_selected_label, 13)
+	_build_selected_label.add_theme_color_override("font_color", _COL_INK)
+	vb.add_child(_build_selected_label)
+
+	var rot_row := HBoxContainer.new()
+	rot_row.add_theme_constant_override("separation", 8)
+	vb.add_child(rot_row)
+	var rot_l := Button.new()
+	rot_l.text = "Rotate Left"
+	rot_l.pressed.connect(func() -> void: _adjust_build_rotation(-_build_rotate_step))
+	_style_generic_journal_button(rot_l)
+	rot_row.add_child(rot_l)
+	var rot_r := Button.new()
+	rot_r.text = "Rotate Right"
+	rot_r.pressed.connect(func() -> void: _adjust_build_rotation(_build_rotate_step))
+	_style_generic_journal_button(rot_r)
+	rot_row.add_child(rot_r)
+
+	var place_row := HBoxContainer.new()
+	place_row.add_theme_constant_override("separation", 8)
+	vb.add_child(place_row)
+	var pick_camp := Button.new()
+	pick_camp.text = "Select Campfire Kit"
+	pick_camp.pressed.connect(func() -> void: _select_build_item("campfire_kit"))
+	_style_generic_journal_button(pick_camp)
+	place_row.add_child(pick_camp)
+	var pick_torch := Button.new()
+	pick_torch.text = "Select Torch"
+	pick_torch.pressed.connect(func() -> void: _select_build_item("tool_torch"))
+	_style_generic_journal_button(pick_torch)
+	place_row.add_child(pick_torch)
+	var place_sel := Button.new()
+	place_sel.text = "Place Selected"
+	place_sel.pressed.connect(_place_selected_build_item)
+	_style_generic_journal_button(place_sel)
+	place_row.add_child(place_sel)
+	_select_build_item(_build_selected_item_id)
+
+
+func _select_build_item(item_id: String) -> void:
+	_build_selected_item_id = item_id
+	if _build_selected_label != null:
+		_build_selected_label.text = "Selected: %s" % _pretty_item_name(item_id)
+	if _menu != null and _menu.has_method("_select_build_item_from_forge"):
+		_menu.call("_select_build_item_from_forge", item_id)
+
+
+func _place_selected_build_item() -> void:
+	_place_build_item(_build_selected_item_id)
+
+
+func _build_page_unused_keep() -> void:
+	# Keeps patch context stable for generated UI sections.
+	pass
 
 
 func _on_craft_filter_selected(idx: int) -> void:
@@ -333,3 +395,19 @@ func _refresh_inventory_ui() -> void:
 			_menu.call("_refresh_inv_grid")
 		if _menu.has_method("_refresh_equip_slots"):
 			_menu.call("_refresh_equip_slots")
+
+
+func _adjust_build_rotation(delta_deg: float) -> void:
+	if _menu == null or not _menu.has_method("_adjust_build_rotation"):
+		return
+	_menu.call("_adjust_build_rotation", delta_deg)
+
+
+func _place_build_item(item_id: String) -> void:
+	if _menu == null or not _menu.has_method("_place_build_item_from_forge"):
+		return
+	var ok := bool(_menu.call("_place_build_item_from_forge", item_id))
+	if ok:
+		_toast("Placed: %s" % _pretty_item_name(item_id))
+	else:
+		_toast("Cannot place %s right now." % _pretty_item_name(item_id))

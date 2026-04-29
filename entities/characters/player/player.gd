@@ -74,6 +74,7 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var shield_block_damage_multiplier: float = 0.15
 @export var shield_block_move_multiplier: float = 0.55
 @export var shield_block_turn_multiplier: float = 0.6
+@export var build_place_distance: float = 4.0
 
 @export_group("Water")
 @export var water_buoyancy_strength: float = 14.0
@@ -135,12 +136,20 @@ var _last_equipped_legs_id: String = ""
 var _last_equipped_back_id: String = ""
 var _cached_interaction_collider: Object = null
 var _cached_interaction_frame: int = -1
+var _rune_cooldown_until_ms: Dictionary = {}
+var _build_preview_item_id: String = ""
+var _build_preview_rotation_y: float = 0.0
+var _build_preview_node: Node3D = null
+var _build_preview_valid: bool = false
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
 	if base_character != null and base_character.has_method("is_blocking") and base_character.is_blocking():
 		amt *= shield_block_damage_multiplier
 	health = maxf(health - amt, 0.0)
+	# Taking a hit should break harvest automation immediately.
+	_stop_harvest_auto()
+	_clear_harvest_interact_approach()
 
 
 func set_input_enabled(enabled: bool) -> void:
@@ -197,6 +206,9 @@ func _refresh_tacklebox_back_visual() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _input_enabled:
 		return
+	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_forward") or event.is_action_pressed("move_back"):
+		_stop_harvest_auto()
+		_clear_harvest_interact_approach()
 	if event.is_action_pressed("character_menu") and game_menu:
 		game_menu.toggle(GameMenu.TAB_VITALS)
 		get_viewport().set_input_as_handled()
@@ -356,6 +368,7 @@ func _physics_process(delta: float) -> void:
 	_update_reticle_icon()
 	_update_interaction_prompt()
 	_sync_equipped_hand_visuals()
+	_update_build_preview()
 
 	if not anim_busy:
 		if Input.is_action_just_pressed("tool_axe"):
@@ -816,6 +829,10 @@ func _use_hotbar_item(item_id: String) -> void:
 	if not InventoryService.has_item(item_id):
 		show_gameplay_message("Missing: %s" % InventoryService.get_item_display_name(item_id))
 		return
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it != null and it.category == ItemData.Category.RUNE:
+		_try_cast_rune_item(item_id)
+		return
 	_quick_equip_hotbar_item(item_id)
 	var tool_kind: _BaseCharacter.ToolKind = _tool_kind_for_item(item_id)
 	if tool_kind != _BaseCharacter.ToolKind.NONE:
@@ -864,6 +881,28 @@ func _tool_kind_for_item(item_id: String) -> _BaseCharacter.ToolKind:
 		if t == "fishing_rod" or t == "fishing":
 			return _BaseCharacter.ToolKind.FISHING_ROD
 	return _BaseCharacter.ToolKind.NONE
+
+
+func _try_cast_rune_item(item_id: String) -> bool:
+	var now_ms: int = Time.get_ticks_msec()
+	var next_ready: int = int(_rune_cooldown_until_ms.get(item_id, 0))
+	if now_ms < next_ready:
+		var sec_left := ceili(float(next_ready - now_ms) / 1000.0)
+		show_gameplay_message("%s is on cooldown (%ds)." % [InventoryService.get_item_display_name(item_id), sec_left])
+		return false
+	match item_id:
+		"rune_spark":
+			var before_stamina := stamina
+			stamina = minf(max_stamina, stamina + 28.0)
+			if stamina <= before_stamina + 0.01:
+				show_gameplay_message("Stamina already full.")
+				return false
+			_rune_cooldown_until_ms[item_id] = now_ms + 12000
+			show_gameplay_message("Spark Rune surges. Stamina restored.")
+			return true
+		_:
+			show_gameplay_message("That rune has no effect yet.")
+			return false
 
 
 func _default_tool_for_slot(_slot_idx: int) -> _BaseCharacter.ToolKind:
@@ -931,6 +970,174 @@ func open_crafting_station(station_id: int) -> bool:
 	if game_menu.has_method("_set_craft_station_filter"):
 		game_menu.call("_set_craft_station_filter", station_id)
 	return true
+
+
+func try_place_build_item(item_id: String, rotation_y: float = 0.0) -> bool:
+	var norm_id := GameState.normalize_item_id(item_id)
+	if norm_id.is_empty():
+		return false
+	if not InventoryService.has_item(norm_id):
+		show_gameplay_message("Missing: %s" % InventoryService.get_item_display_name(norm_id))
+		return false
+	var p := _compute_build_placement(norm_id, rotation_y)
+	if not bool(p.get("valid", false)):
+		show_gameplay_message(str(p.get("reason", "Cannot place here.")))
+		return false
+	var scene: PackedScene = InventoryService.get_pickup_scene_for_item(norm_id)
+	if scene == null:
+		show_gameplay_message("Cannot place this item.")
+		return false
+	var inst := scene.instantiate()
+	if not (inst is Node3D):
+		show_gameplay_message("Invalid placeable scene.")
+		return false
+	var place_node := inst as Node3D
+	var parent: Node = get_tree().current_scene
+	if parent == null:
+		parent = get_parent()
+	if parent == null:
+		return false
+	parent.add_child(place_node)
+	place_node.global_position = p["position"] as Vector3
+	place_node.rotation.y = rotation_y
+	if norm_id == "tool_torch" or norm_id == "campfire_kit":
+		InventoryService._persist_placeable_fire_if_needed(norm_id, place_node)
+	InventoryService.remove_item(norm_id, 1)
+	return true
+
+
+func set_build_preview_item(item_id: String) -> void:
+	var norm := GameState.normalize_item_id(item_id)
+	if norm == _build_preview_item_id:
+		return
+	_build_preview_item_id = norm
+	_rebuild_build_preview_node()
+
+
+func set_build_preview_rotation(rotation_y: float) -> void:
+	_build_preview_rotation_y = rotation_y
+	if _build_preview_node != null:
+		_build_preview_node.rotation.y = _build_preview_rotation_y
+
+
+func clear_build_preview() -> void:
+	_build_preview_item_id = ""
+	if _build_preview_node != null and is_instance_valid(_build_preview_node):
+		_build_preview_node.queue_free()
+	_build_preview_node = null
+	_build_preview_valid = false
+
+
+func _rebuild_build_preview_node() -> void:
+	if _build_preview_node != null and is_instance_valid(_build_preview_node):
+		_build_preview_node.queue_free()
+	_build_preview_node = null
+	_build_preview_valid = false
+	if _build_preview_item_id.is_empty():
+		return
+	var scene: PackedScene = InventoryService.get_pickup_scene_for_item(_build_preview_item_id)
+	if scene == null:
+		return
+	var inst := scene.instantiate()
+	if not (inst is Node3D):
+		return
+	_build_preview_node = inst as Node3D
+	var parent: Node = get_tree().current_scene
+	if parent == null:
+		parent = get_parent()
+	if parent == null:
+		_build_preview_node = null
+		return
+	parent.add_child(_build_preview_node)
+	_set_collision_disabled_recursive(_build_preview_node)
+	_apply_build_preview_visual(false)
+	_build_preview_node.rotation.y = _build_preview_rotation_y
+
+
+func _set_collision_disabled_recursive(n: Node) -> void:
+	if n is CollisionObject3D:
+		var co := n as CollisionObject3D
+		co.collision_layer = 0
+		co.collision_mask = 0
+	if n is CollisionShape3D:
+		(n as CollisionShape3D).disabled = true
+	for c in n.get_children():
+		_set_collision_disabled_recursive(c)
+
+
+func _apply_build_preview_visual(valid: bool) -> void:
+	if _build_preview_node == null:
+		return
+	var tint := Color(0.2, 0.9, 0.35, 0.45) if valid else Color(0.95, 0.22, 0.22, 0.45)
+	var meshes: Array[Node] = _build_preview_node.find_children("*", "MeshInstance3D", true, false)
+	for n in meshes:
+		var mi := n as MeshInstance3D
+		if mi == null:
+			continue
+		var surf_count := mi.mesh.get_surface_count() if mi.mesh != null else 0
+		for s in range(surf_count):
+			var mat: Material = mi.get_active_material(s)
+			if mat == null and mi.mesh != null:
+				mat = mi.mesh.surface_get_material(s)
+			if mat == null or not (mat is BaseMaterial3D):
+				continue
+			var dup := (mat as BaseMaterial3D).duplicate() as BaseMaterial3D
+			dup.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			dup.albedo_color = tint
+			dup.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			dup.no_depth_test = true
+			mi.set_surface_override_material(s, dup)
+
+
+func _update_build_preview() -> void:
+	if _build_preview_item_id.is_empty():
+		if _build_preview_node != null:
+			clear_build_preview()
+		return
+	if _build_preview_node == null or not is_instance_valid(_build_preview_node):
+		_rebuild_build_preview_node()
+	if _build_preview_node == null:
+		return
+	var p := _compute_build_placement(_build_preview_item_id, _build_preview_rotation_y)
+	_build_preview_node.global_position = p.get("position", global_position) as Vector3
+	_build_preview_node.rotation.y = _build_preview_rotation_y
+	var valid := bool(p.get("valid", false))
+	if valid != _build_preview_valid:
+		_build_preview_valid = valid
+		_apply_build_preview_visual(valid)
+
+
+func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
+	var aim := _get_reticle_world_aim(build_place_distance)
+	var origin := global_position + Vector3.UP * 0.25
+	var target: Vector3 = aim.aim_point
+	if origin.distance_to(target) > build_place_distance:
+		target = origin + (target - origin).normalized() * build_place_distance
+	var from := target + Vector3.UP * 2.5
+	var to := target + Vector3.DOWN * 5.0
+	var q := PhysicsRayQueryParameters3D.create(from, to)
+	q.collide_with_areas = false
+	q.collide_with_bodies = true
+	q.exclude = _projectile_exclude_rids()
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		return {"valid": false, "position": target, "reason": "Need solid ground to place this."}
+	var place_pos := hit["position"] as Vector3
+	var check := SphereShape3D.new()
+	var radius := 0.35
+	if item_id == "campfire_kit":
+		radius = 0.75
+	check.radius = radius
+	var sq := PhysicsShapeQueryParameters3D.new()
+	sq.shape = check
+	sq.transform = Transform3D(Basis.IDENTITY, place_pos + Vector3.UP * 0.35)
+	sq.collide_with_areas = false
+	sq.collide_with_bodies = true
+	sq.exclude = _projectile_exclude_rids()
+	var blockers := get_world_3d().direct_space_state.intersect_shape(sq, 8)
+	if blockers.size() > 0:
+		return {"valid": false, "position": place_pos, "reason": "Not enough space to place here."}
+	return {"valid": true, "position": place_pos, "rotation_y": rotation_y}
 
 
 func _get_harvest_facing_direction() -> Vector3:
@@ -1587,6 +1794,13 @@ func _try_interact() -> void:
 	var harvest_target: Object = _resolve_harvest_target(collider)
 	if harvest_target != null:
 		if not _harvest_interact_ready(harvest_target):
+			# If target is nearby, allow one-tap interact to auto-step into harvest range.
+			if harvest_target is Node3D:
+				var t3d := harvest_target as Node3D
+				var max_approach_dist := interaction_range + 2.0
+				if global_position.distance_to(t3d.global_position) > max_approach_dist:
+					show_gameplay_message("Move closer and face the node to harvest.")
+					return
 			_start_harvest_interact_approach(harvest_target)
 			return
 		var now_ms: int = Time.get_ticks_msec()
@@ -1682,32 +1896,6 @@ func _parse_world_pickup_from_node(node: Node) -> Dictionary:
 			if "quantity" in node:
 				qty = maxi(1, int(node.get("quantity")))
 			return {"item_id": GameState.normalize_item_id(resource_id), "count": qty}
-	var raw_name := String(node.name).to_lower()
-	var by_name := {
-		"1h_sword_wooden": "sword_1h_wooden",
-		"1h_katana_bronze": "sword_1h_bronze",
-		"katana_1h_bronze": "sword_1h_bronze",
-		"bow_short_common": "bow_short_common",
-		"bow_long_common": "bow_long_common",
-		"quiver_common": "quiver_common",
-		"quiver_bronze": "quiver_bronze",
-		"quiver_iron": "quiver_iron",
-		"arrow_common": "ammo_arrow_common",
-		"arrow_bronze": "ammo_arrow_bronze",
-		"arrow_iron": "ammo_arrow_iron",
-		"copper_bar": "ingot_copper",
-		"iron_bar": "ingot_iron",
-		"silver_bar": "ingot_silver",
-		"gold_bar": "ingot_gold",
-		"tin_bar": "ingot_tin",
-		"copper_nuggets": "ore_copper",
-		"iron_nuggets": "ore_iron",
-		"silver_nuggets": "ore_silver",
-		"gold_nuggets": "ore_gold",
-		"tin_nuggets": "ore_tin",
-	}
-	if by_name.has(raw_name):
-		return {"item_id": GameState.normalize_item_id(str(by_name[raw_name])), "count": 1}
 	return {}
 
 

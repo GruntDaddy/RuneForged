@@ -53,3 +53,10 @@ func _item_display_name() -> String:
 func _notify_player(player: Node, msg: String) -> void:
 	if player != null and player.has_method("show_gameplay_message"):
 		player.show_gameplay_message(msg)
+
+
+func _ready() -> void:
+	item_id = GameState.normalize_item_id(item_id.strip_edges())
+	quantity = maxi(1, quantity)
+	if item_id.is_empty():
+		push_warning("item_pickup_interactable: missing item_id on %s" % get_path())

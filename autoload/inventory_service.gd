@@ -507,6 +507,22 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 		node.quantity = count
 
 
+func compute_drop_position(player: Node3D, camera: Camera3D, mouse_global_pos: Vector2) -> Vector3:
+	var drop_pos := player.global_position + player.global_basis.z * 0.8 + Vector3.UP * 0.25
+	if camera == null:
+		return drop_pos
+	var origin := camera.project_ray_origin(mouse_global_pos)
+	var normal := camera.project_ray_normal(mouse_global_pos)
+	var target := origin + normal * 6.0
+	var query := PhysicsRayQueryParameters3D.create(origin, target)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	var hit := camera.get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.size() > 0:
+		return (hit["position"] as Vector3) + Vector3.UP * 0.3
+	return drop_pos
+
+
 func _persist_placeable_fire_if_needed(item_id: String, node: Node3D) -> void:
 	if item_id != "tool_torch" and item_id != "campfire_kit":
 		return

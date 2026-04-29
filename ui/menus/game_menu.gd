@@ -145,6 +145,10 @@ var _vital_effects_body: RichTextLabel
 var _codex_filter: OptionButton
 var _codex_list: ItemList
 var _codex_detail: RichTextLabel
+var _build_preview_rotation_y: float = 0.0
+var _magic_rune_picker: OptionButton
+var _magic_slot_picker: OptionButton
+var _selected_build_item_id: String = "campfire_kit"
 
 
 func _ready() -> void:
@@ -182,6 +186,7 @@ func _on_inventory_changed() -> void:
 		_refresh_equip_slots()
 		_refresh_tackle_panel()
 		_refresh_skills_page()
+		_refresh_magic_rune_picker()
 		_forge_tab.on_inventory_changed()
 
 
@@ -208,6 +213,7 @@ func open_menu(tab_idx: int = 0) -> void:
 	_refresh_inv_grid()
 	_refresh_equip_slots()
 	_refresh_skills_page()
+	_refresh_magic_rune_picker()
 	_refresh_vitals_page()
 	_forge_tab.refresh_on_open()
 	if _current_tab == TAB_CODEX:
@@ -222,6 +228,7 @@ func open_forge_crafting_basic() -> void:
 func open_forge_building() -> void:
 	open_menu(TAB_FORGE)
 	_forge_tab.open_building()
+	_sync_build_preview()
 
 
 func _set_forge_subtab(tab_idx: int) -> void:
@@ -233,6 +240,7 @@ func _set_craft_station_filter(station_id: int) -> void:
 
 
 func close_menu() -> void:
+	_clear_build_preview()
 	_close_tackle_window()
 	_cancel_drag()
 	_kill_page_flip_tween()
@@ -968,15 +976,43 @@ func _build_magic_page(page: Control) -> void:
 	t.add_theme_font_size_override("font_size", 21)
 	vb.add_child(t)
 	var body := RichTextLabel.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.bbcode_enabled = true
+	body.fit_content = true
 	body.add_theme_color_override("default_color", _COL_INK)
 	body.text = (
-		"Known spells, costs, and attunements will live here.\n\n"
-		+ "[i]Binding runes to the hotbar is planned alongside the combat magic loop.[/i]\n\n"
-		+ "Until then, keep your [b]relics[/b] close and read item tooltips for arcane bonuses."
+		"Bind a rune from your inventory to hotbar slots [1]-[4].\n\n"
+		+ "Starter rune:\n"
+		+ "- [b]Spark Rune[/b] restores stamina and has a cooldown."
 	)
 	vb.add_child(body)
+	var picker_row := HBoxContainer.new()
+	picker_row.add_theme_constant_override("separation", 8)
+	vb.add_child(picker_row)
+	_magic_rune_picker = OptionButton.new()
+	_style_generic_journal_button(_magic_rune_picker)
+	picker_row.add_child(_magic_rune_picker)
+	_magic_slot_picker = OptionButton.new()
+	for i in 4:
+		_magic_slot_picker.add_item("Hotbar %d" % (i + 1), i)
+	_magic_slot_picker.select(0)
+	_style_generic_journal_button(_magic_slot_picker)
+	picker_row.add_child(_magic_slot_picker)
+	var bind_btn := Button.new()
+	bind_btn.text = "Bind Rune"
+	bind_btn.pressed.connect(_on_magic_bind_pressed)
+	_style_generic_journal_button(bind_btn)
+	picker_row.add_child(bind_btn)
+	var grant_btn := Button.new()
+	grant_btn.text = "Grant Spark Rune"
+	grant_btn.pressed.connect(_on_magic_grant_pressed)
+	_style_generic_journal_button(grant_btn)
+	picker_row.add_child(grant_btn)
+	var foot := Label.new()
+	foot.text = "Use hotbar keys to cast bound runes."
+	_apply_body_label(foot, 12)
+	foot.add_theme_color_override("font_color", _COL_INK_MUTED)
+	vb.add_child(foot)
+	_refresh_magic_rune_picker()
 
 
 func _build_forge_page(page: Control) -> void:
@@ -1434,6 +1470,23 @@ func _refresh_crafting_detail() -> void:
 	var lines: PackedStringArray = []
 	lines.append("[b]%s[/b]\n" % (r.display_name if r.display_name != "" else r.id))
 	lines.append("Station: [i]%s[/i]\n" % _station_name(r.station))
+	if not String(r.skill_id).is_empty() and int(r.required_skill_level) > 0:
+		var skill_key := "%s_level" % String(r.skill_id)
+		var have_level := 0
+		if skill_key in GameState:
+			have_level = int(GameState.get(skill_key))
+		var meets_skill := have_level >= int(r.required_skill_level)
+		var skill_mark := "[+] " if meets_skill else "[-] "
+		lines.append(
+			"%sSkill: %s Lv %d (%d / %d)\n"
+			% [
+				skill_mark,
+				String(r.skill_id).capitalize(),
+				int(r.required_skill_level),
+				have_level,
+				int(r.required_skill_level),
+			]
+		)
 	if r.inputs.size() > 0:
 		lines.append("\n[b]Requires:[/b]\n")
 		for ing in r.inputs:
@@ -1611,16 +1664,7 @@ func _drop_dragged_to_world(global_pos: Vector2) -> void:
 	var cam: Camera3D = player.get_node_or_null("CameraRig/SpringArm3D/Camera3D")
 	if cam == null:
 		return
-	var origin := cam.project_ray_origin(global_pos)
-	var normal := cam.project_ray_normal(global_pos)
-	var target := origin + normal * 6.0
-	var query := PhysicsRayQueryParameters3D.create(origin, target)
-	query.collide_with_bodies = true
-	query.collide_with_areas = false
-	var hit := cam.get_world_3d().direct_space_state.intersect_ray(query)
-	var drop_pos := player.global_position + player.global_basis.z * 0.8 + Vector3.UP * 0.25
-	if hit.size() > 0:
-		drop_pos = (hit["position"] as Vector3) + Vector3.UP * 0.3
+	var drop_pos: Vector3 = InventoryService.compute_drop_position(player, cam, global_pos)
 	InventoryService.drop_slot_to_world(idx, drop_pos, player.get_parent())
 
 
@@ -1634,16 +1678,7 @@ func _drop_equipped_to_world(global_pos: Vector2, equip_slot: String) -> void:
 	var cam: Camera3D = player.get_node_or_null("CameraRig/SpringArm3D/Camera3D")
 	if cam == null:
 		return
-	var origin := cam.project_ray_origin(global_pos)
-	var normal := cam.project_ray_normal(global_pos)
-	var target := origin + normal * 6.0
-	var query := PhysicsRayQueryParameters3D.create(origin, target)
-	query.collide_with_bodies = true
-	query.collide_with_areas = false
-	var hit := cam.get_world_3d().direct_space_state.intersect_ray(query)
-	var drop_pos := player.global_position + player.global_basis.z * 0.8 + Vector3.UP * 0.25
-	if hit.size() > 0:
-		drop_pos = (hit["position"] as Vector3) + Vector3.UP * 0.3
+	var drop_pos: Vector3 = InventoryService.compute_drop_position(player, cam, global_pos)
 	var id := str(s.get("id", ""))
 	var count := int(s.get("count", 1))
 	GameState.clear_equipment_slot(equip_slot)
@@ -1952,6 +1987,116 @@ func _toast(msg: String) -> void:
 	var p: Node = get_parent()
 	if p != null and p.has_method("show_gameplay_message"):
 		p.call("show_gameplay_message", msg)
+
+
+func _refresh_magic_rune_picker() -> void:
+	if _magic_rune_picker == null:
+		return
+	var prev_id := ""
+	if _magic_rune_picker.item_count > 0 and _magic_rune_picker.selected >= 0:
+		prev_id = str(_magic_rune_picker.get_item_metadata(_magic_rune_picker.selected))
+	_magic_rune_picker.clear()
+	for i in InventoryService.SLOT_COUNT:
+		var s: Variant = InventoryService.get_slot_data(i)
+		if s == null:
+			continue
+		var item_id := str(s.get("id", ""))
+		if item_id.is_empty():
+			continue
+		var it: ItemData = ItemCatalog.get_item(item_id)
+		if it == null or it.category != ItemData.Category.RUNE:
+			continue
+		var exists := false
+		for j in _magic_rune_picker.item_count:
+			if str(_magic_rune_picker.get_item_metadata(j)) == item_id:
+				exists = true
+				break
+		if exists:
+			continue
+		_magic_rune_picker.add_item(_pretty_item_name(item_id))
+		var idx := _magic_rune_picker.item_count - 1
+		_magic_rune_picker.set_item_metadata(idx, item_id)
+	_magic_rune_picker.add_separator()
+	_magic_rune_picker.add_item("(no rune)")
+	var none_idx := _magic_rune_picker.item_count - 1
+	_magic_rune_picker.set_item_metadata(none_idx, "")
+	var selected_idx := none_idx
+	if not prev_id.is_empty():
+		for i in _magic_rune_picker.item_count:
+			if str(_magic_rune_picker.get_item_metadata(i)) == prev_id:
+				selected_idx = i
+				break
+	_magic_rune_picker.select(selected_idx)
+
+
+func _on_magic_bind_pressed() -> void:
+	if _magic_rune_picker == null or _magic_slot_picker == null:
+		return
+	if _magic_slot_picker.item_count < 1:
+		return
+	var slot_idx := int(_magic_slot_picker.get_item_id(_magic_slot_picker.selected))
+	if slot_idx < 0 or slot_idx >= 4:
+		return
+	var rune_id := str(_magic_rune_picker.get_item_metadata(_magic_rune_picker.selected))
+	while GameState.hotbar_item_ids.size() < 4:
+		GameState.hotbar_item_ids.append("")
+	GameState.hotbar_item_ids[slot_idx] = rune_id
+	if rune_id.is_empty():
+		_toast("Cleared hotbar slot %d." % (slot_idx + 1))
+	else:
+		_toast("Bound %s to hotbar %d." % [_pretty_item_name(rune_id), slot_idx + 1])
+
+
+func _on_magic_grant_pressed() -> void:
+	var left := InventoryService.add_item("rune_spark", 1)
+	if left > 0:
+		_toast("Inventory full.")
+		return
+	_refresh_magic_rune_picker()
+	_toast("Spark Rune added.")
+
+
+func _adjust_build_rotation(delta_deg: float) -> void:
+	_build_preview_rotation_y = wrapf(
+		_build_preview_rotation_y + deg_to_rad(delta_deg),
+		-PI,
+		PI
+	)
+	_toast("Build rotation: %d deg" % int(round(rad_to_deg(_build_preview_rotation_y))))
+	_sync_build_preview()
+
+
+func _place_build_item_from_forge(item_id: String) -> bool:
+	_selected_build_item_id = GameState.normalize_item_id(item_id)
+	_sync_build_preview()
+	var p: Node = get_parent()
+	if p == null or not p.has_method("try_place_build_item"):
+		return false
+	var ok := bool(p.call("try_place_build_item", _selected_build_item_id, _build_preview_rotation_y))
+	if ok:
+		_sync_build_preview()
+	return ok
+
+
+func _select_build_item_from_forge(item_id: String) -> void:
+	_selected_build_item_id = GameState.normalize_item_id(item_id)
+	_sync_build_preview()
+
+
+func _sync_build_preview() -> void:
+	var p: Node = get_parent()
+	if p == null:
+		return
+	if p.has_method("set_build_preview_rotation"):
+		p.call("set_build_preview_rotation", _build_preview_rotation_y)
+	if p.has_method("set_build_preview_item"):
+		p.call("set_build_preview_item", _selected_build_item_id)
+
+
+func _clear_build_preview() -> void:
+	var p: Node = get_parent()
+	if p != null and p.has_method("clear_build_preview"):
+		p.call("clear_build_preview")
 
 
 func _apply_icon_to_texture_rect(tex_rect: TextureRect, fallback: Label, item_id: String) -> void:

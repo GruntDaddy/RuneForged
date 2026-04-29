@@ -4,6 +4,7 @@
 
 - Stackable materials, tools, weapons, and armor are defined as **`.tres` resources** built from scripts in [`data/schemas/`](../data/schemas/).
 - The stable key for saves, inventory slots, and cross-system references is **`ItemData.id`** (snake_case), e.g. `logs`, `logs_oak`, `stone`, `ore_tin`, `hatchet_basic`, `sword_1h_wooden`.
+- Tin ore canonical id is `ore_tin`; legacy `tin_ore` is normalized at runtime for backward compatibility.
 - **Bow ammunition (stackable materials):** world pickups and inventory use ids `ammo_arrow_wood`, `ammo_arrow_common`, `ammo_arrow_bronze`, `ammo_arrow_iron` (see `res://data/items/materials/ammo_arrow_*.tres`). Tutorial props use these ids directly on `item_pickup_interactable.gd` (bundles use `quantity` 20; single arrows use 1).
 - At runtime, [`ItemCatalog`](../autoload/item_catalog.gd) (autoload) indexes every `ItemData` under `res://data/items/` for lookup by id. **Do not serialize full `ItemData` blobs in save files**—only id + count (and optional container payloads such as tackle data on `tool_tacklebox`).
 
@@ -22,6 +23,7 @@
 - Items stored in the tacklebox sub-inventory use tags: **`fishing_hook`**, **`fishing_bobber`**, **`fishing_bait`** (see `InventoryService.tackle_category_for_item`).
 
 ## High-level item categories
+
 - Materials
 - Consumables
 - Weapons
@@ -30,7 +32,17 @@
 - Runes
 
 ## Rules
+
 - Materials and consumables may be stackable.
 - Unique gear, relics, and rolled items are not stackable unless explicitly designed otherwise.
 - Tooltip and comparison systems should consume item data without mutating it.
 - Equipment and inventory systems should share stable item identifiers and field names.
+
+## Pickup authoring contract
+
+- World pickups should provide explicit item identity fields, not rely on node names:
+  - `item_id` (preferred for `item_pickup_interactable.gd`)
+  - `quantity` (optional; defaults to 1)
+  - `resource_type` is supported for generic resource pickup scenes.
+- Item IDs should use canonical catalog IDs from `ItemCatalog` / `ItemData.id`; legacy aliases are normalized at runtime by `GameState.normalize_item_id(...)`.
+- Avoid name-based heuristics when placing pickup nodes in scenes; rename-safe behavior depends on explicit fields above.

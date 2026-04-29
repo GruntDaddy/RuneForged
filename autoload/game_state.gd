@@ -25,6 +25,7 @@ const SCENE_OPTIONS_MENU := "res://ui/menus/options_menu.tscn"
 const LEGACY_ITEM_ID_ALIASES := {
 	"wood": "logs",
 	"oak_logs": "logs_oak",
+	"tin_ore": "ore_tin",
 	"torch": "tool_torch",
 	"hammer": "tool_hammer",
 	"chisel": "tool_chisel",
@@ -34,6 +35,8 @@ var region: String = ""
 var woodcutting_level: int = 10
 var mining_level: int = 10
 var survival_level: int = 10
+var smithing_level: int = 10
+var crafting_level: int = 10
 ## Day/night persistence used by world sky controller.
 var time_of_day: float = 0.32
 var moon_phase: float = 0.18
@@ -66,6 +69,8 @@ func reset() -> void:
 	woodcutting_level = 10
 	mining_level = 10
 	survival_level = 10
+	smithing_level = 10
+	crafting_level = 10
 	time_of_day = 0.32
 	moon_phase = 0.18
 	world_fire_states = {}
@@ -92,6 +97,8 @@ func to_dict() -> Dictionary:
 		"woodcutting_level": woodcutting_level,
 		"mining_level": mining_level,
 		"survival_level": survival_level,
+		"smithing_level": smithing_level,
+		"crafting_level": crafting_level,
 		"time_of_day": time_of_day,
 		"moon_phase": moon_phase,
 		"world_fire_states": world_fire_states.duplicate(true),
@@ -123,6 +130,8 @@ func from_dict(data: Variant) -> void:
 	woodcutting_level = int(d.get("woodcutting_level", 10))
 	mining_level = int(d.get("mining_level", 10))
 	survival_level = int(d.get("survival_level", 10))
+	smithing_level = int(d.get("smithing_level", 10))
+	crafting_level = int(d.get("crafting_level", 10))
 	time_of_day = clampf(float(d.get("time_of_day", 0.32)), 0.0, 0.999999)
 	moon_phase = clampf(float(d.get("moon_phase", 0.18)), 0.0, 0.999999)
 	if typeof(d.get("world_fire_states", null)) == TYPE_DICTIONARY:

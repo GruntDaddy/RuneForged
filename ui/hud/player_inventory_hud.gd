@@ -381,16 +381,7 @@ func _drop_dragged_item_to_world(mouse_pos: Vector2) -> void:
 	var cam: Camera3D = player.get_node_or_null("CameraRig/SpringArm3D/Camera3D")
 	if cam == null:
 		return
-	var origin := cam.project_ray_origin(mouse_pos)
-	var normal := cam.project_ray_normal(mouse_pos)
-	var target := origin + normal * 6.0
-	var query := PhysicsRayQueryParameters3D.create(origin, target)
-	query.collide_with_bodies = true
-	query.collide_with_areas = false
-	var hit := cam.get_world_3d().direct_space_state.intersect_ray(query)
-	var drop_pos := player.global_position + player.global_basis.z * 0.8 + Vector3.UP * 0.25
-	if hit.size() > 0:
-		drop_pos = (hit["position"] as Vector3) + Vector3.UP * 0.3
+	var drop_pos: Vector3 = InventoryService.compute_drop_position(player, cam, mouse_pos)
 	InventoryService.drop_slot_to_world(_drag_from_idx, drop_pos, player.get_parent())
 
 

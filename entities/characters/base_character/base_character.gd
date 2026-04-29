@@ -154,6 +154,19 @@ const _ANIM_BOW_DRAW := "Bow_Draw"
 const _ANIM_BOW_RELEASE := "Bow_Release"
 const _ANIM_UNARMED_PUNCH := "Melee_Unarmed_Attack_Punch_A"
 const _ANIM_UNARMED_KICK := "Melee_Unarmed_Attack_Kick"
+const _REQUIRED_RIG_PATHS: Array[String] = [
+	"Rig_Medium",
+	"Rig_Medium/Skeleton3D",
+	"Rig_Medium/Skeleton3D/HandAttach_R",
+	"Rig_Medium/Skeleton3D/HandAttach_L",
+	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight",
+	"Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight",
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft",
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft",
+	"Rig_Medium/Skeleton3D/Helmets",
+	"Rig_Medium/Skeleton3D/Armor",
+	"AnimationPlayer",
+]
 
 @export var melee_combo_reset_seconds: float = 1.25
 
@@ -177,6 +190,7 @@ var _last_melee_attack_ms: int = -1
 
 
 func _ready() -> void:
+	_validate_runtime_contract()
 	if skeleton == null:
 		push_warning("BaseCharacter: Skeleton3D not found at Rig_Medium/Skeleton3D.")
 
@@ -204,6 +218,47 @@ func _ready() -> void:
 	_rebind_equipment_mesh_skeleton_paths()
 	_apply_armor_visibility()
 	_apply_tool_kind(_player_chosen_tool)
+
+
+func _validate_runtime_contract() -> void:
+	var missing_nodes: Array[String] = []
+	for p in _REQUIRED_RIG_PATHS:
+		if get_node_or_null(p) == null:
+			missing_nodes.append(p)
+	if not missing_nodes.is_empty():
+		push_error(
+			"BaseCharacter: required scene nodes missing: %s"
+			% ", ".join(missing_nodes)
+		)
+	if anim_player == null:
+		push_error("BaseCharacter: AnimationPlayer missing; locomotion/combat clips will fail.")
+		return
+	var required_clips: Array[String] = [
+		_ANIM_IDLE,
+		_ANIM_WALK,
+		_ANIM_RUN,
+		_ANIM_AIR,
+		_ANIM_CHOP,
+		_ANIM_PICKAXE,
+		_ANIM_INTERACT,
+		_ANIM_PICKUP,
+		_ANIM_USE_ITEM,
+		_ANIM_MELEE_1H,
+		_ANIM_BLOCK_LOOP,
+		_ANIM_BOW_DRAW,
+		_ANIM_BOW_RELEASE,
+		_ANIM_UNARMED_PUNCH,
+		_ANIM_UNARMED_KICK,
+	]
+	var missing_clips: Array[String] = []
+	for clip in required_clips:
+		if not anim_player.has_animation(_anim_path(clip)):
+			missing_clips.append("%s/%s" % [_ANIM_LIB, clip])
+	if not missing_clips.is_empty():
+		push_error(
+			"BaseCharacter: required animations missing: %s"
+			% ", ".join(missing_clips)
+		)
 
 
 func _anim_path(clip: String) -> StringName:
