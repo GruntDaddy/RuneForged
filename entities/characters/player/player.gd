@@ -10,8 +10,11 @@ const _AnimalRabbitScene = preload("res://entities/characters/animals/rabbit.tsc
 const _AnimalRoosterScene = preload("res://entities/characters/animals/rooster.tscn")
 const _AnimalChickScene = preload("res://entities/characters/animals/chick.tscn")
 
-const _AMMO_ARROW_WOOD := "ammo_arrow_wood"
 const _ArrowProjectileScene = preload("res://entities/projectiles/arrow_projectile.tscn")
+## Consume cheaper ammo first so higher-tier arrows stay in the bag.
+const _ARROW_AMMO_IDS_CONSUME_ORDER: Array[String] = [
+	"ammo_arrow_wood", "ammo_arrow_common", "ammo_arrow_bronze", "ammo_arrow_iron",
+]
 
 const _H_INVALID := 0
 const _H_WHIFF := 1
@@ -446,7 +449,7 @@ func _attack_input_tick() -> void:
 				if Input.is_action_just_pressed("attack"):
 					show_gameplay_message("Equip a quiver on your back to fire arrows.")
 				return
-			if InventoryService.get_item_count(_AMMO_ARROW_WOOD) < 1:
+			if _total_arrow_ammo_count() < 1:
 				if Input.is_action_just_pressed("attack"):
 					show_gameplay_message("You have no arrows.")
 				return
@@ -816,6 +819,21 @@ func _spawn_arrow_projectile() -> void:
 		)
 
 
+func _total_arrow_ammo_count() -> int:
+	var n := 0
+	for id in _ARROW_AMMO_IDS_CONSUME_ORDER:
+		n += InventoryService.get_item_count(id)
+	return n
+
+
+func _take_one_arrow_for_fire() -> bool:
+	for id in _ARROW_AMMO_IDS_CONSUME_ORDER:
+		if InventoryService.get_item_count(id) >= 1:
+			InventoryService.remove_item(id, 1)
+			return true
+	return false
+
+
 func _try_bow_release_fire() -> bool:
 	if base_character == null or not base_character.has_method("try_play_bow_release"):
 		return false
@@ -824,14 +842,15 @@ func _try_bow_release_fire() -> bool:
 		if base_character.has_method("try_cancel_bow_draw"):
 			base_character.try_cancel_bow_draw()
 		return false
-	if InventoryService.get_item_count(_AMMO_ARROW_WOOD) < 1:
+	if _total_arrow_ammo_count() < 1:
 		show_gameplay_message("You have no arrows.")
 		if base_character.has_method("try_cancel_bow_draw"):
 			base_character.try_cancel_bow_draw()
 		return false
 	if not base_character.try_play_bow_release():
 		return false
-	InventoryService.remove_item(_AMMO_ARROW_WOOD, 1)
+	if not _take_one_arrow_for_fire():
+		return false
 	_spawn_arrow_projectile()
 	return true
 
@@ -1539,11 +1558,18 @@ func _update_interaction_prompt() -> void:
 	if collider == null:
 		interaction_prompt.visible = false
 		return
-	var world_item_id := _resolve_world_item_id_from_collider(collider)
-	if not world_item_id.is_empty():
-		interaction_prompt.text = "E: Pick up %s" % InventoryService.get_item_display_name(world_item_id)
-		interaction_prompt.visible = true
-		return
+	var world_item := _resolve_world_item_target(collider)
+	if not world_item.is_empty():
+		var wi_id := str(world_item.get("item_id", ""))
+		var wi_count: int = maxi(1, int(world_item.get("count", 1)))
+		if not wi_id.is_empty():
+			var label := InventoryService.get_item_display_name(wi_id)
+			if wi_count > 1:
+				interaction_prompt.text = "E: Pick up %d × %s" % [wi_count, label]
+			else:
+				interaction_prompt.text = "E: Pick up %s" % label
+			interaction_prompt.visible = true
+			return
 	var interactable: Object = _resolve_interactable_target(collider)
 	if interactable != null and interactable.has_method("get_interaction_prompt"):
 		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
@@ -1626,6 +1652,7 @@ func _try_pickup_item_from_world(collider: Object) -> bool:
 	if world_item.is_empty():
 		return false
 	var item_id := str(world_item["item_id"])
+	var count: int = maxi(1, int(world_item.get("count", 1)))
 	var item_node := world_item["node"] as Node
 	if item_node == null:
 		return false
@@ -1634,11 +1661,15 @@ func _try_pickup_item_from_world(collider: Object) -> bool:
 	var item: ItemData = ItemCatalog.get_item(item_id)
 	if item == null:
 		return false
-	var left: int = InventoryService.add_item(item_id, 1)
+	var left: int = InventoryService.add_item(item_id, count)
 	if left > 0:
 		show_gameplay_message("Inventory full.")
 		return false
-	show_gameplay_message("Picked up %s." % InventoryService.get_item_display_name(item_id))
+	var dname := InventoryService.get_item_display_name(item_id)
+	if count > 1:
+		show_gameplay_message("Picked up %d × %s." % [count, dname])
+	else:
+		show_gameplay_message("Picked up %s." % dname)
 	item_node.queue_free()
 	return true
 
@@ -1653,22 +1684,30 @@ func _resolve_world_item_id_from_collider(collider: Object) -> String:
 func _resolve_world_item_target(collider: Object) -> Dictionary:
 	var cur: Node = collider as Node
 	var hops: int = 0
-	while cur != null and hops < 6:
-		var item_id := _extract_world_item_id(cur)
-		if not item_id.is_empty():
-			return {"item_id": item_id, "node": cur}
+	while cur != null and hops < 8:
+		var pick := _parse_world_pickup_from_node(cur)
+		var iid := str(pick.get("item_id", ""))
+		if not iid.is_empty():
+			return {
+				"item_id": iid,
+				"count": maxi(1, int(pick.get("count", 1))),
+				"node": cur,
+			}
 		cur = cur.get_parent()
 		hops += 1
 	return {}
 
 
-func _extract_world_item_id(node: Node) -> String:
+func _parse_world_pickup_from_node(node: Node) -> Dictionary:
 	if node == null:
-		return ""
+		return {}
 	if "item_id" in node:
 		var explicit := str(node.get("item_id"))
 		if not explicit.is_empty():
-			return explicit
+			var count: int = 1
+			if "quantity" in node:
+				count = maxi(1, int(node.get("quantity")))
+			return {"item_id": explicit, "count": count}
 	var raw_name := String(node.name).to_lower()
 	var by_name := {
 		"1h_sword_wooden": "sword_1h_wooden",
@@ -1677,6 +1716,11 @@ func _extract_world_item_id(node: Node) -> String:
 		"bow_short_common": "bow_short_common",
 		"bow_long_common": "bow_long_common",
 		"quiver_common": "quiver_common",
+		"quiver_bronze": "quiver_bronze",
+		"quiver_iron": "quiver_iron",
+		"arrow_common": "ammo_arrow_common",
+		"arrow_bronze": "ammo_arrow_bronze",
+		"arrow_iron": "ammo_arrow_iron",
 		"copper_bar": "ingot_copper",
 		"iron_bar": "ingot_iron",
 		"silver_bar": "ingot_silver",
@@ -1689,14 +1733,23 @@ func _extract_world_item_id(node: Node) -> String:
 		"tin_nuggets": "ore_tin",
 	}
 	if by_name.has(raw_name):
-		return str(by_name[raw_name])
+		return {"item_id": str(by_name[raw_name]), "count": 1}
 	if raw_name.find("bronze") >= 0 and (raw_name.find("katana") >= 0 or raw_name.find("sword") >= 0):
-		return "sword_1h_bronze"
+		return {"item_id": "sword_1h_bronze", "count": 1}
 	if raw_name.find("bow") >= 0:
-		return "bow_short_common"
+		return {"item_id": "bow_short_common", "count": 1}
+	if raw_name.find("quiver_iron") >= 0:
+		return {"item_id": "quiver_iron", "count": 1}
+	if raw_name.find("quiver_bronze") >= 0:
+		return {"item_id": "quiver_bronze", "count": 1}
 	if raw_name.find("quiver") >= 0:
-		return "quiver_common"
-	return ""
+		return {"item_id": "quiver_common", "count": 1}
+	return {}
+
+
+func _extract_world_item_id(node: Node) -> String:
+	var p := _parse_world_pickup_from_node(node)
+	return str(p.get("item_id", ""))
 
 
 func _night_speed_factor() -> float:

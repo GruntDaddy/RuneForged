@@ -417,12 +417,12 @@ visible = false
 
 [node name="EquippedWeaponLeft" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" unique_id=1750386448]
 
-[node name="Bow_Short_Common" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft" unique_id=989506472 instance=ExtResource("22_soir5")]
-transform = Transform3D(0.123073965, 0.045413014, -0.48248369, -0.3929947, 0.30062988, -0.07195037, 0.28356317, 0.39693764, 0.1096937, 0.001628086, 0.09320086, -0.019131422)
+[node name="Bow_Hunting_Bow" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft" unique_id=989506472 instance=ExtResource("22_soir5")]
+transform = Transform3D(0.15468523, 0.07404643, -0.7301299, -0.14015771, 0.7354184, 0.044888917, 0.7203669, 0.12718624, 0.16551548, 0.011660993, 0.10169399, -0.019244254)
 visible = false
 
-[node name="Bow_Long_Common" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft" unique_id=2142615430 instance=ExtResource("23_iieiw")]
-transform = Transform3D(0.47613657, -0.11362775, 0.10189534, -0.0063707707, 0.31872588, 0.38519272, -0.15249033, -0.36810717, 0.30206603, 0.0016281754, 0.12262499, -0.019131422)
+[node name="Bow_Common" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft" unique_id=2142615430 instance=ExtResource("23_iieiw")]
+transform = Transform3D(0.7307301, -0.1606314, 0.052259117, -0.017094528, 0.16051775, 0.73242146, -0.16805124, -0.71479475, 0.15273237, -0.011460282, 0.091935575, -0.001113534)
 visible = false
 
 [node name="ArrowSpawn" type="Marker3D" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft" unique_id=1238958089]

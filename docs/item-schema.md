@@ -4,6 +4,7 @@
 
 - Stackable materials, tools, weapons, and armor are defined as **`.tres` resources** built from scripts in [`data/schemas/`](../data/schemas/).
 - The stable key for saves, inventory slots, and cross-system references is **`ItemData.id`** (snake_case), e.g. `logs`, `logs_oak`, `stone`, `ore_tin`, `hatchet_basic`, `sword_1h_wooden`.
+- **Bow ammunition (stackable materials):** world pickups and inventory use ids `ammo_arrow_wood`, `ammo_arrow_common`, `ammo_arrow_bronze`, `ammo_arrow_iron` (see `res://data/items/materials/ammo_arrow_*.tres`). Tutorial props use these ids directly on `item_pickup_interactable.gd` (bundles use `quantity` 20; single arrows use 1).
 - At runtime, [`ItemCatalog`](../autoload/item_catalog.gd) (autoload) indexes every `ItemData` under `res://data/items/` for lookup by id. **Do not serialize full `ItemData` blobs in save files**—only id + count (and optional container payloads such as tackle data on `tool_tacklebox`).
 
 ## Stacking (`ItemData.max_stack`)

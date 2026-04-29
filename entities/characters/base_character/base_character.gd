@@ -91,6 +91,8 @@ enum ActionState {
 @onready var cape_blue_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Capes/Cape_Blue") as Node3D
 @onready var backpack_large_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Backpacks/Backpack_Large") as Node3D
 @onready var quiver_common_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Common") as Node3D
+@onready var quiver_bronze_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Bronze") as Node3D
+@onready var quiver_iron_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Iron") as Node3D
 @onready var outfit_green: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green") as Node3D
 @onready var outfit_yellow: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow") as Node3D
 @onready var shirt_green_mesh: Node3D = get_node_or_null(
@@ -817,12 +819,26 @@ func _apply_armor_visibility() -> void:
 
 func _apply_back_slot_visibility() -> void:
 	var back_id := _normalize_item_id(_equipped_back_item_id)
+	for q in [quiver_common_mesh, quiver_bronze_mesh, quiver_iron_mesh]:
+		if q != null:
+			q.visible = false
 	if cape_blue_mesh != null:
 		cape_blue_mesh.visible = back_id.begins_with("cape_")
 	if backpack_large_mesh != null:
 		backpack_large_mesh.visible = back_id.begins_with("backpack_")
-	if quiver_common_mesh != null:
-		quiver_common_mesh.visible = back_id.begins_with("quiver_")
+	match back_id:
+		"quiver_common":
+			if quiver_common_mesh != null:
+				quiver_common_mesh.visible = true
+		"quiver_bronze":
+			if quiver_bronze_mesh != null:
+				quiver_bronze_mesh.visible = true
+		"quiver_iron":
+			if quiver_iron_mesh != null:
+				quiver_iron_mesh.visible = true
+		_:
+			if back_id.begins_with("quiver_") and quiver_common_mesh != null:
+				quiver_common_mesh.visible = true
 
 
 func _set_base_outfit_visibility(show_chest: bool, show_legs: bool) -> void:
