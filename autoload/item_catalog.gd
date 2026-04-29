@@ -23,6 +23,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 	"ingot_silver": "I_SilverBar.png",
 	"ingot_gold": "I_GoldBar.png",
 	"ingot_bronze": "I_BronzeBar.png",
+	"charcoal": "I_Rock01.png",
 	"dagger_bronze": "S_Dagger02.png",
 	"sword_1h_wooden": "S_Dagger04.png",
 	"sword_1h_bronze": "S_Dagger03.png",

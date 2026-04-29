@@ -240,7 +240,6 @@ func _set_craft_station_filter(station_id: int) -> void:
 
 
 func close_menu() -> void:
-	_clear_build_preview()
 	_close_tackle_window()
 	_cancel_drag()
 	_kill_page_flip_tween()
@@ -2066,6 +2065,10 @@ func _adjust_build_rotation(delta_deg: float) -> void:
 	_sync_build_preview()
 
 
+func _set_build_rotation_from_player(rotation_y: float) -> void:
+	_build_preview_rotation_y = rotation_y
+
+
 func _place_build_item_from_forge(item_id: String) -> bool:
 	_selected_build_item_id = GameState.normalize_item_id(item_id)
 	_sync_build_preview()
@@ -2081,6 +2084,14 @@ func _place_build_item_from_forge(item_id: String) -> bool:
 func _select_build_item_from_forge(item_id: String) -> void:
 	_selected_build_item_id = GameState.normalize_item_id(item_id)
 	_sync_build_preview()
+
+
+func _begin_build_placement_from_forge(item_id: String) -> void:
+	_selected_build_item_id = GameState.normalize_item_id(item_id)
+	var p: Node = get_parent()
+	if p != null and p.has_method("begin_build_placement"):
+		p.call("begin_build_placement", _selected_build_item_id, _build_preview_rotation_y)
+	close_menu()
 
 
 func _sync_build_preview() -> void:

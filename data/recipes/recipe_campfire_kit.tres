@@ -6,12 +6,12 @@
 [sub_resource type="Resource" id="Resource_ing_logs"]
 script = ExtResource("1_ing")
 item_id = "logs"
-count = 3
+count = 5
 
 [sub_resource type="Resource" id="Resource_ing_stone"]
 script = ExtResource("1_ing")
 item_id = "stone"
-count = 2
+count = 5
 
 [resource]
 script = ExtResource("2_rec")
@@ -20,4 +20,4 @@ display_name = "Campfire kit"
 inputs = Array[ExtResource("1_ing")]([SubResource("Resource_ing_logs"), SubResource("Resource_ing_stone")])
 output_item_id = "campfire_kit"
 skill_id = "survival"
-station = 3
+station = 0

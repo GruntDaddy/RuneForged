@@ -7,6 +7,10 @@ const SUBTAB_BUILDING := 1
 const _COL_INK := Color(0.82, 0.9, 0.95, 1.0)
 const _COL_INK_MUTED := Color(0.55, 0.64, 0.72, 1.0)
 const _COL_TITLE := Color(0.98, 0.86, 0.48, 1.0)
+const _COL_RUNE_GOLD := Color(0.78, 0.63, 0.34, 1.0)
+const _COL_IRON := Color(0.18, 0.17, 0.16, 0.96)
+const _COL_SOOT := Color(0.08, 0.075, 0.07, 0.95)
+const _COL_BLOOD := Color(0.42, 0.12, 0.11, 0.9)
 
 var _menu: Node
 var _forge_tabs: TabContainer
@@ -62,7 +66,7 @@ func open_crafting_basic() -> void:
 
 func open_building() -> void:
 	_set_subtab(SUBTAB_BUILDING)
-	_select_build_item(_build_selected_item_id)
+	_refresh_build_selected_label()
 
 
 func set_subtab(tab_idx: int) -> void:
@@ -169,9 +173,10 @@ func _build_building_page(page: Control) -> void:
 	card.add_child(vb)
 
 	var t := Label.new()
-	t.text = "Building"
+	t.text = "Building Hall"
 	_apply_section_title(t)
 	t.add_theme_font_size_override("font_size", 21)
+	t.add_theme_color_override("font_color", _COL_RUNE_GOLD)
 	vb.add_child(t)
 
 	var body := RichTextLabel.new()
@@ -179,16 +184,20 @@ func _build_building_page(page: Control) -> void:
 	body.fit_content = true
 	body.add_theme_color_override("default_color", _COL_INK)
 	body.text = (
-		"Place selected utility props in front of the player.\n\n"
-		+ "Controls:\n"
-		+ "- Rotate Left / Right to set yaw\n"
-		+ "- Select an item, then Place Selected\n"
-		+ "- Preview turns green when valid, red when blocked"
+		"[b]Norse Build Rite[/b]\n"
+		+ "Choose a placeable, the menu closes, and placement mode begins.\n\n"
+		+ "[i]Field controls[/i]\n"
+		+ "- [b]E[/b]: place\n"
+		+ "- [b]RMB[/b]: cancel\n"
+		+ "- [b]Mouse wheel[/b]: rotate\n"
+		+ "- Ghost [color=#74B87A]green[/color] = valid, [color=#C65A5A]red[/color] = blocked"
 	)
+	body.add_theme_font_size_override("normal_font_size", 13)
 	vb.add_child(body)
 	_build_selected_label = Label.new()
 	_apply_body_label(_build_selected_label, 13)
-	_build_selected_label.add_theme_color_override("font_color", _COL_INK)
+	_build_selected_label.add_theme_color_override("font_color", Color(0.92, 0.93, 0.88, 1.0))
+	_build_selected_label.add_theme_color_override("font_shadow_color", Color(0.02, 0.02, 0.02, 0.9))
 	vb.add_child(_build_selected_label)
 
 	var rot_row := HBoxContainer.new()
@@ -198,11 +207,13 @@ func _build_building_page(page: Control) -> void:
 	rot_l.text = "Rotate Left"
 	rot_l.pressed.connect(func() -> void: _adjust_build_rotation(-_build_rotate_step))
 	_style_generic_journal_button(rot_l)
+	_apply_norse_button_style(rot_l, false)
 	rot_row.add_child(rot_l)
 	var rot_r := Button.new()
 	rot_r.text = "Rotate Right"
 	rot_r.pressed.connect(func() -> void: _adjust_build_rotation(_build_rotate_step))
 	_style_generic_journal_button(rot_r)
+	_apply_norse_button_style(rot_r, false)
 	rot_row.add_child(rot_r)
 
 	var place_row := HBoxContainer.new()
@@ -212,26 +223,34 @@ func _build_building_page(page: Control) -> void:
 	pick_camp.text = "Select Campfire Kit"
 	pick_camp.pressed.connect(func() -> void: _select_build_item("campfire_kit"))
 	_style_generic_journal_button(pick_camp)
+	_apply_norse_button_style(pick_camp, true)
 	place_row.add_child(pick_camp)
 	var pick_torch := Button.new()
 	pick_torch.text = "Select Torch"
 	pick_torch.pressed.connect(func() -> void: _select_build_item("tool_torch"))
 	_style_generic_journal_button(pick_torch)
+	_apply_norse_button_style(pick_torch, false)
 	place_row.add_child(pick_torch)
 	var place_sel := Button.new()
 	place_sel.text = "Place Selected"
 	place_sel.pressed.connect(_place_selected_build_item)
 	_style_generic_journal_button(place_sel)
+	_apply_norse_button_style(place_sel, false)
 	place_row.add_child(place_sel)
-	_select_build_item(_build_selected_item_id)
+	_refresh_build_selected_label()
 
 
 func _select_build_item(item_id: String) -> void:
 	_build_selected_item_id = item_id
+	_refresh_build_selected_label()
+	if _menu != null and _menu.has_method("_begin_build_placement_from_forge"):
+		_menu.call("_begin_build_placement_from_forge", item_id)
+
+
+func _refresh_build_selected_label() -> void:
 	if _build_selected_label != null:
-		_build_selected_label.text = "Selected: %s" % _pretty_item_name(item_id)
-	if _menu != null and _menu.has_method("_select_build_item_from_forge"):
-		_menu.call("_select_build_item_from_forge", item_id)
+		var adorn := "CAMPFIRE" if _build_selected_item_id == "campfire_kit" else "TORCH"
+		_build_selected_label.text = "Active Sigil [%s]: %s" % [adorn, _pretty_item_name(_build_selected_item_id)]
 
 
 func _place_selected_build_item() -> void:
@@ -241,6 +260,28 @@ func _place_selected_build_item() -> void:
 func _build_page_unused_keep() -> void:
 	# Keeps patch context stable for generated UI sections.
 	pass
+
+
+func _apply_norse_button_style(btn: Button, is_primary: bool) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = _COL_BLOOD if is_primary else _COL_IRON
+	sb.border_color = _COL_RUNE_GOLD
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 7
+	sb.content_margin_bottom = 7
+	btn.add_theme_stylebox_override("normal", sb)
+	var hov := sb.duplicate() as StyleBoxFlat
+	hov.bg_color = Color(sb.bg_color.r + 0.08, sb.bg_color.g + 0.08, sb.bg_color.b + 0.08, sb.bg_color.a)
+	btn.add_theme_stylebox_override("hover", hov)
+	var prs := sb.duplicate() as StyleBoxFlat
+	prs.bg_color = _COL_SOOT
+	btn.add_theme_stylebox_override("pressed", prs)
+	btn.add_theme_color_override("font_color", Color(0.93, 0.92, 0.88, 1.0))
+	btn.add_theme_color_override("font_focus_color", Color(1.0, 0.92, 0.7, 1.0))
+	btn.add_theme_font_size_override("font_size", 13)
 
 
 func _on_craft_filter_selected(idx: int) -> void:

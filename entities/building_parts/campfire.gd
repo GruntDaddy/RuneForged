@@ -2,9 +2,12 @@ extends Node3D
 
 @export var fire_state_id: String = ""
 @export var start_lit: bool = true
-@export var fuel_seconds_max: float = 420.0
+@export var seconds_per_log: float = 120.0
+@export var initial_logs_on_ignite: int = 2
 @export var auto_extinguish_when_empty: bool = true
-@export var ignite_log_cost: int = 2
+@export var ignite_log_cost: int = 1
+@export var fuel_add_log_cost: int = 1
+@export var charcoal_per_logs_burned: int = 2
 @export var rest_warmth_minutes: float = 10.0
 @export var warmth_night_run_bonus: float = 0.2
 @export var warmth_night_penalty: float = 0.15
@@ -18,6 +21,7 @@ extends Node3D
 var _is_lit: bool = false
 var _fuel_seconds: float = 0.0
 var _flicker_t: float = 0.0
+var _logs_burned_counter: int = 0
 
 
 func _ready() -> void:
@@ -40,26 +44,32 @@ func _process(delta: float) -> void:
 
 func get_interaction_prompt(_player: Node) -> String:
 	if _is_lit:
-		return "E: Rest and save at campfire"
-	return "E: Light campfire (%d logs)" % ignite_log_cost
+		return "E: Tend fire (+%d log) / Rest / Save" % fuel_add_log_cost
+	return "E: Light campfire (%d log)" % ignite_log_cost
 
 
 func interact(player: Node) -> bool:
 	if not _is_lit:
 		if not _consume_logs(ignite_log_cost):
-			_notify_player(player, "Need %d logs to light the campfire." % ignite_log_cost)
+			_notify_player(player, "Need %d log to light the campfire." % ignite_log_cost)
 			return false
-		light_fire()
+		light_fire(initial_logs_on_ignite)
 		_notify_player(player, "Campfire lit.")
 		return true
+	if _consume_logs(fuel_add_log_cost):
+		_add_fuel_logs(fuel_add_log_cost)
+		_notify_player(player, "Campfire fueled (+%ds)." % int(seconds_per_log * float(fuel_add_log_cost)))
 	_try_campfire_crafting(player)
 	_apply_rest_and_save(player)
 	return true
 
 
-func light_fire() -> void:
+func light_fire(logs_to_add: int = 0) -> void:
 	_is_lit = true
-	_fuel_seconds = fuel_seconds_max
+	if logs_to_add > 0:
+		_add_fuel_logs(logs_to_add)
+	elif _fuel_seconds <= 0.0:
+		_fuel_seconds = seconds_per_log
 	_save_state()
 	_apply_visuals()
 
@@ -118,6 +128,24 @@ func _consume_logs(amount: int) -> bool:
 	return true
 
 
+func _add_fuel_logs(log_count: int) -> void:
+	if log_count <= 0:
+		return
+	_fuel_seconds += seconds_per_log * float(log_count)
+	_logs_burned_counter += log_count
+	_mint_charcoal_from_logs()
+
+
+func _mint_charcoal_from_logs() -> void:
+	if charcoal_per_logs_burned <= 0:
+		return
+	var grants := int(floor(float(_logs_burned_counter) / float(charcoal_per_logs_burned)))
+	if grants <= 0:
+		return
+	_logs_burned_counter -= grants * charcoal_per_logs_burned
+	InventoryService.add_item("charcoal", grants)
+
+
 func _notify_player(player: Node, msg: String) -> void:
 	if player != null and player.has_method("show_gameplay_message"):
 		player.show_gameplay_message(msg)
@@ -128,6 +156,8 @@ func _apply_visuals() -> void:
 	_flame.emitting = _is_lit
 	_embers.emitting = _is_lit
 	if _is_lit:
+		_light.light_energy = 2.35
+		_light.omni_range = 11.0
 		if not _audio.playing:
 			_audio.play()
 	else:
@@ -144,17 +174,19 @@ func _load_state() -> void:
 	var gs: Node = get_node_or_null("/root/GameState")
 	if gs == null:
 		_is_lit = start_lit
-		_fuel_seconds = fuel_seconds_max if start_lit else 0.0
+		_fuel_seconds = seconds_per_log if start_lit else 0.0
 		return
 	var key: String = _state_key()
 	if "world_fire_states" in gs and gs.world_fire_states.has(key):
 		var d: Variant = gs.world_fire_states.get(key, {})
 		if typeof(d) == TYPE_DICTIONARY:
 			_is_lit = bool(d.get("lit", start_lit))
-			_fuel_seconds = maxf(0.0, float(d.get("fuel_seconds", fuel_seconds_max if _is_lit else 0.0)))
+			_fuel_seconds = maxf(0.0, float(d.get("fuel_seconds", seconds_per_log if _is_lit else 0.0)))
+			_logs_burned_counter = maxi(0, int(d.get("logs_burned_counter", 0)))
 			return
 	_is_lit = start_lit
-	_fuel_seconds = fuel_seconds_max if start_lit else 0.0
+	_fuel_seconds = seconds_per_log if start_lit else 0.0
+	_logs_burned_counter = 0
 
 
 func _save_state() -> void:
@@ -164,4 +196,5 @@ func _save_state() -> void:
 	gs.world_fire_states[_state_key()] = {
 		"lit": _is_lit,
 		"fuel_seconds": _fuel_seconds,
+		"logs_burned_counter": _logs_burned_counter,
 	}

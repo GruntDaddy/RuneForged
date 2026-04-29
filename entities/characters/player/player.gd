@@ -75,6 +75,7 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var shield_block_move_multiplier: float = 0.55
 @export var shield_block_turn_multiplier: float = 0.6
 @export var build_place_distance: float = 4.0
+@export var build_rotate_step_deg: float = 15.0
 
 @export_group("Water")
 @export var water_buoyancy_strength: float = 14.0
@@ -141,6 +142,7 @@ var _build_preview_item_id: String = ""
 var _build_preview_rotation_y: float = 0.0
 var _build_preview_node: Node3D = null
 var _build_preview_valid: bool = false
+var _build_mode_active: bool = false
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
@@ -240,6 +242,29 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				return
 		return
+	if _build_mode_active:
+		if event.is_action_pressed("interact"):
+			if try_place_build_item(_build_preview_item_id, _build_preview_rotation_y):
+				show_gameplay_message("Placed: %s" % InventoryService.get_item_display_name(_build_preview_item_id))
+			get_viewport().set_input_as_handled()
+			return
+		if event is InputEventMouseButton and event.pressed:
+			if event.button_index == MOUSE_BUTTON_RIGHT:
+				cancel_build_placement()
+				get_viewport().set_input_as_handled()
+				return
+			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				_build_preview_rotation_y = wrapf(_build_preview_rotation_y - deg_to_rad(build_rotate_step_deg), -PI, PI)
+				if game_menu != null and game_menu.has_method("_set_build_rotation_from_player"):
+					game_menu.call("_set_build_rotation_from_player", _build_preview_rotation_y)
+				get_viewport().set_input_as_handled()
+				return
+			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				_build_preview_rotation_y = wrapf(_build_preview_rotation_y + deg_to_rad(build_rotate_step_deg), -PI, PI)
+				if game_menu != null and game_menu.has_method("_set_build_rotation_from_player"):
+					game_menu.call("_set_build_rotation_from_player", _build_preview_rotation_y)
+				get_viewport().set_input_as_handled()
+				return
 	if event.is_action_pressed("interact"):
 		_try_interact()
 		get_viewport().set_input_as_handled()
@@ -999,7 +1024,11 @@ func try_place_build_item(item_id: String, rotation_y: float = 0.0) -> bool:
 		return false
 	parent.add_child(place_node)
 	place_node.global_position = p["position"] as Vector3
-	place_node.rotation.y = rotation_y
+	var normal := p.get("normal", Vector3.UP) as Vector3
+	if norm_id == "campfire_kit":
+		place_node.global_basis = _basis_from_up_and_yaw(normal, rotation_y)
+	else:
+		place_node.rotation.y = rotation_y
 	if norm_id == "tool_torch" or norm_id == "campfire_kit":
 		InventoryService._persist_placeable_fire_if_needed(norm_id, place_node)
 	InventoryService.remove_item(norm_id, 1)
@@ -1012,6 +1041,7 @@ func set_build_preview_item(item_id: String) -> void:
 		return
 	_build_preview_item_id = norm
 	_rebuild_build_preview_node()
+	_build_mode_active = not _build_preview_item_id.is_empty()
 
 
 func set_build_preview_rotation(rotation_y: float) -> void:
@@ -1026,6 +1056,18 @@ func clear_build_preview() -> void:
 		_build_preview_node.queue_free()
 	_build_preview_node = null
 	_build_preview_valid = false
+	_build_mode_active = false
+
+
+func begin_build_placement(item_id: String, rotation_y: float = 0.0) -> void:
+	_build_mode_active = true
+	set_build_preview_rotation(rotation_y)
+	set_build_preview_item(item_id)
+
+
+func cancel_build_placement() -> void:
+	clear_build_preview()
+	show_gameplay_message("Build placement canceled.")
 
 
 func _rebuild_build_preview_node() -> void:
@@ -1099,12 +1141,18 @@ func _update_build_preview() -> void:
 	if _build_preview_node == null:
 		return
 	var p := _compute_build_placement(_build_preview_item_id, _build_preview_rotation_y)
-	_build_preview_node.global_position = p.get("position", global_position) as Vector3
-	_build_preview_node.rotation.y = _build_preview_rotation_y
+	var pos := p.get("position", global_position) as Vector3
+	var normal := p.get("normal", Vector3.UP) as Vector3
+	_build_preview_node.global_position = pos
+	if _build_preview_item_id == "campfire_kit":
+		_build_preview_node.global_basis = _basis_from_up_and_yaw(normal, _build_preview_rotation_y)
+	else:
+		_build_preview_node.rotation.y = _build_preview_rotation_y
 	var valid := bool(p.get("valid", false))
 	if valid != _build_preview_valid:
 		_build_preview_valid = valid
 		_apply_build_preview_visual(valid)
+	_update_build_mode_prompt()
 
 
 func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
@@ -1121,8 +1169,9 @@ func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
 	q.exclude = _projectile_exclude_rids()
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
 	if hit.is_empty():
-		return {"valid": false, "position": target, "reason": "Need solid ground to place this."}
+		return {"valid": false, "position": target, "normal": Vector3.UP, "reason": "Need solid ground to place this."}
 	var place_pos := hit["position"] as Vector3
+	var nrm := (hit.get("normal", Vector3.UP) as Vector3).normalized()
 	var check := SphereShape3D.new()
 	var radius := 0.35
 	if item_id == "campfire_kit":
@@ -1136,8 +1185,40 @@ func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
 	sq.exclude = _projectile_exclude_rids()
 	var blockers := get_world_3d().direct_space_state.intersect_shape(sq, 8)
 	if blockers.size() > 0:
-		return {"valid": false, "position": place_pos, "reason": "Not enough space to place here."}
-	return {"valid": true, "position": place_pos, "rotation_y": rotation_y}
+		return {"valid": false, "position": place_pos, "normal": nrm, "reason": "Not enough space to place here."}
+	return {"valid": true, "position": place_pos, "normal": nrm, "rotation_y": rotation_y}
+
+
+func _basis_from_up_and_yaw(up: Vector3, yaw: float) -> Basis:
+	var n := up.normalized()
+	if n.length_squared() < 0.0001:
+		n = Vector3.UP
+	var yaw_fwd := Vector3(sin(yaw), 0.0, cos(yaw))
+	var tangent := yaw_fwd.slide(n)
+	if tangent.length_squared() < 0.0001:
+		tangent = Vector3.FORWARD.slide(n)
+	if tangent.length_squared() < 0.0001:
+		tangent = Vector3.RIGHT
+	tangent = tangent.normalized()
+	var binormal := n.cross(tangent).normalized()
+	var fwd := binormal.cross(n).normalized()
+	return Basis(binormal, n, fwd)
+
+
+func _update_build_mode_prompt() -> void:
+	if interaction_prompt == null:
+		return
+	if not _build_mode_active:
+		return
+	var status := "PLACEMENT VALID" if _build_preview_valid else "PLACEMENT BLOCKED"
+	var label := InventoryService.get_item_display_name(_build_preview_item_id)
+	interaction_prompt.text = "[%s]  %s\nE: Set  RMB: Cancel  Wheel: Turn" % [status, label]
+	interaction_prompt.add_theme_color_override(
+		"font_color",
+		Color(0.78, 0.91, 0.78, 1.0) if _build_preview_valid else Color(0.9, 0.47, 0.47, 1.0)
+	)
+	interaction_prompt.add_theme_color_override("font_shadow_color", Color(0.03, 0.03, 0.03, 0.95))
+	interaction_prompt.visible = true
 
 
 func _get_harvest_facing_direction() -> Vector3:
@@ -1722,6 +1803,9 @@ func _harvest_swing_outcome(c: Object) -> int:
 
 func _update_interaction_prompt() -> void:
 	if interaction_prompt == null:
+		return
+	if _build_mode_active:
+		_update_build_mode_prompt()
 		return
 	var collider: Object = _get_interaction_collider_cached()
 	if collider == null:
