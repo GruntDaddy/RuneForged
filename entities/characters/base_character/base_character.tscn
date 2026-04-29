@@ -72,6 +72,8 @@
 [ext_resource type="PackedScene" uid="uid://b5bbh3t3ymbex" path="res://entities/equipment/armor/platelegs/platelegs_dragon.tscn" id="39_c54of"]
 [ext_resource type="PackedScene" uid="uid://8vlnrllju51e" path="res://entities/equipment/accessories/quivers/quiver_common.tscn" id="41_3ldw4"]
 [ext_resource type="PackedScene" uid="uid://wdpos66nlb5l" path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="41_g1qwb"]
+[ext_resource type="PackedScene" uid="uid://b07l25mddi72a" path="res://entities/equipment/accessories/quivers/quiver_bronze.tscn" id="43_k1esd"]
+[ext_resource type="PackedScene" uid="uid://bptdgv7tfrl07" path="res://entities/equipment/accessories/quivers/quiver_iron.tscn" id="44_f4yw7"]
 [ext_resource type="PackedScene" uid="uid://ds7javssuhxjh" path="res://entities/equipment/clothing/shirts/shirt_green.tscn" id="52_g1qwb"]
 [ext_resource type="PackedScene" uid="uid://bcul3po0f5uyt" path="res://entities/equipment/clothing/pants/pants_green.tscn" id="53_iieiw"]
 [ext_resource type="PackedScene" uid="uid://dfs8h7xsrog7i" path="res://entities/equipment/clothing/shirts/shirt_yellow.tscn" id="54_csl7y"]
@@ -423,6 +425,9 @@ visible = false
 transform = Transform3D(0.47613657, -0.11362775, 0.10189534, -0.0063707707, 0.31872588, 0.38519272, -0.15249033, -0.36810717, 0.30206603, 0.0016281754, 0.12262499, -0.019131422)
 visible = false
 
+[node name="ArrowSpawn" type="Marker3D" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft" unique_id=1238958089]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0.02)
+
 [node name="EquippedShield" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" unique_id=111536571]
 
 [node name="Shield_Kite_Bronze" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield" unique_id=1100757994 instance=ExtResource("26_pxmg8")]
@@ -463,6 +468,12 @@ visible = false
 [node name="Quivers" type="Node3D" parent="Rig_Medium/Skeleton3D/Back_Slot" unique_id=1668550599]
 
 [node name="Quiver_Common" parent="Rig_Medium/Skeleton3D/Back_Slot/Quivers" unique_id=1965624251 instance=ExtResource("41_3ldw4")]
+visible = false
+
+[node name="Quiver_Bronze" parent="Rig_Medium/Skeleton3D/Back_Slot/Quivers" unique_id=523486968 instance=ExtResource("43_k1esd")]
+visible = false
+
+[node name="Quiver_Iron" parent="Rig_Medium/Skeleton3D/Back_Slot/Quivers" unique_id=720076930 instance=ExtResource("44_f4yw7")]
 visible = false
 
 [node name="Hats" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=835577238]

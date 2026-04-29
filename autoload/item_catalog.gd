@@ -28,6 +28,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 	"sword_1h_bronze": "S_Dagger03.png",
 	"bow_short_common": "S_Bow04.png",
 	"bow_long_common": "S_Bow04.png",
+	"ammo_arrow_wood": "S_Bow04.png",
 	"hatchet_basic": "S_Axe01.png",
 	"hatchet_bronze": "S_Axe02.png",
 	"pickaxe_basic": "S_Axe03.png",

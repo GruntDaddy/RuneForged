@@ -10,6 +10,9 @@ const _AnimalRabbitScene = preload("res://entities/characters/animals/rabbit.tsc
 const _AnimalRoosterScene = preload("res://entities/characters/animals/rooster.tscn")
 const _AnimalChickScene = preload("res://entities/characters/animals/chick.tscn")
 
+const _AMMO_ARROW_WOOD := "ammo_arrow_wood"
+const _ArrowProjectileScene = preload("res://entities/projectiles/arrow_projectile.tscn")
+
 const _H_INVALID := 0
 const _H_WHIFF := 1
 const _H_SUCCESS := 2
@@ -41,6 +44,12 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var reticle_icon_door_locked: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/lock.png")
 @export var reticle_icon_door_unlocked: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/lock_unlocked.png")
 @export var reticle_icon_watering: Texture2D = preload("res://assets/ui/UI assets/Cursor Pack/PNG/Outline/Default/tool_watering_can.png")
+@export_group("Ranged")
+@export var arrow_aim_max_distance: float = 140.0
+@export var arrow_projectile_speed: float = 42.0
+@export var arrow_projectile_gravity_scale: float = 0.85
+@export var arrow_projectile_lifetime: float = 10.0
+@export var arrow_physics_collision_mask: int = 7
 ## Harvest/interaction ray uses character facing (not camera look). Slight downward bias helps short ground nodes.
 @export var harvest_ray_downward_blend: float = 0.22
 @export var harvest_click_cooldown_sec: float = 1.5
@@ -235,10 +244,6 @@ func _refresh_tacklebox_back_visual() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _input_enabled:
 		return
-	if event.is_action_pressed("interact"):
-		_try_interact()
-		get_viewport().set_input_as_handled()
-		return
 	if event.is_action_pressed("character_menu") and game_menu:
 		game_menu.toggle(GameMenu.TAB_VITALS)
 		get_viewport().set_input_as_handled()
@@ -259,6 +264,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			game_menu.open_forge_building()
 		else:
 			game_menu.toggle(GameMenu.TAB_FORGE)
+		get_viewport().set_input_as_handled()
+		return
+	if _gameplay_input_blocked():
+		if event.is_action_pressed("interact"):
+			get_viewport().set_input_as_handled()
+			return
+		if event is InputEventMouseButton and event.pressed:
+			if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				get_viewport().set_input_as_handled()
+				return
+		return
+	if event.is_action_pressed("interact"):
+		_try_interact()
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventMouseButton and event.pressed:
@@ -405,6 +423,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _attack_input_tick() -> void:
+	if _gameplay_input_blocked():
+		if _equipped_weapon_is_bow() and base_character != null and base_character.has_method("try_cancel_bow_draw"):
+			base_character.try_cancel_bow_draw()
+		return
 	if _pending_chop_hit:
 		return
 	var now_ms: int = Time.get_ticks_msec()
@@ -416,10 +438,18 @@ func _attack_input_tick() -> void:
 				base_character.try_cancel_bow_draw()
 			return
 		if Input.is_action_just_released("attack"):
-			if _try_bow_release_creature_hit():
+			if _try_bow_release_fire():
 				_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
 			return
 		if Input.is_action_pressed("attack"):
+			if not _equipped_back_has_quiver():
+				if Input.is_action_just_pressed("attack"):
+					show_gameplay_message("Equip a quiver on your back to fire arrows.")
+				return
+			if InventoryService.get_item_count(_AMMO_ARROW_WOOD) < 1:
+				if Input.is_action_just_pressed("attack"):
+					show_gameplay_message("You have no arrows.")
+				return
 			var drawing: bool = false
 			if base_character != null and base_character.has_method("is_bow_drawn_or_drawing"):
 				drawing = bool(base_character.is_bow_drawn_or_drawing())
@@ -703,15 +733,106 @@ func _try_play_attack_air_whiff() -> bool:
 			return false
 
 
-func _try_bow_release_creature_hit() -> bool:
+func _equipped_back_has_quiver() -> bool:
+	var b: Variant = GameState.equipment.get("back", null)
+	if b == null:
+		return false
+	var id := _normalize_item_id(str(b.get("id", "")))
+	if id.begins_with("quiver_"):
+		return true
+	var it: ItemData = ItemCatalog.get_item(id)
+	if it == null:
+		return false
+	for tag in it.tags:
+		if str(tag) == "quiver":
+			return true
+	return false
+
+
+func _gather_collision_rids_recursive(n: Node, out: Array) -> void:
+	if n is CollisionObject3D:
+		out.append((n as CollisionObject3D).get_rid())
+	for c in n.get_children():
+		_gather_collision_rids_recursive(c, out)
+
+
+func _projectile_exclude_rids() -> Array:
+	var rids: Array = []
+	_gather_collision_rids_recursive(self, rids)
+	return rids
+
+
+func _get_reticle_world_aim(max_dist: float) -> Dictionary:
+	var vp := get_viewport()
+	if vp == null or camera_3d == null:
+		var fwd := -global_transform.basis.z
+		var ap := global_position + fwd * minf(4.0, max_dist)
+		return {"origin": global_position, "direction": fwd, "aim_point": ap}
+	var center := _get_crosshair_screen_point()
+	var cam_orig := camera_3d.project_ray_origin(center)
+	var cast_dir := camera_3d.project_ray_normal(center).normalized()
+	var cam_fwd := (-camera_3d.global_transform.basis.z).normalized()
+	if cast_dir.dot(cam_fwd) < 0.0:
+		cast_dir = -cast_dir
+	var to := cam_orig + cast_dir * max_dist
+	var space := get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(cam_orig, to)
+	q.collision_mask = arrow_physics_collision_mask
+	q.exclude = _projectile_exclude_rids()
+	var hit := space.intersect_ray(q)
+	var aim_point: Vector3 = to
+	if not hit.is_empty():
+		aim_point = hit.position
+	return {"origin": cam_orig, "direction": cast_dir, "aim_point": aim_point}
+
+
+func _spawn_arrow_projectile() -> void:
+	var parent: Node = get_tree().current_scene
+	if parent == null:
+		parent = get_parent()
+	if parent == null:
+		parent = self
+	var proj_variant: Variant = _ArrowProjectileScene.instantiate()
+	if not (proj_variant is Node):
+		return
+	var proj: Node = proj_variant as Node
+	parent.add_child(proj)
+	var aim := _get_reticle_world_aim(arrow_aim_max_distance)
+	var spawn_pos: Vector3 = base_character.get_arrow_spawn_global_position()
+	var dir: Vector3 = aim.aim_point - spawn_pos
+	var excl := _projectile_exclude_rids()
+	if proj.has_method("fire"):
+		proj.call(
+			"fire",
+			self,
+			_creature_damage_amount(),
+			spawn_pos,
+			dir,
+			arrow_projectile_speed,
+			arrow_physics_collision_mask,
+			arrow_projectile_gravity_scale,
+			arrow_projectile_lifetime,
+			excl
+		)
+
+
+func _try_bow_release_fire() -> bool:
 	if base_character == null or not base_character.has_method("try_play_bow_release"):
+		return false
+	if not _equipped_back_has_quiver():
+		show_gameplay_message("Equip a quiver on your back to fire arrows.")
+		if base_character.has_method("try_cancel_bow_draw"):
+			base_character.try_cancel_bow_draw()
+		return false
+	if InventoryService.get_item_count(_AMMO_ARROW_WOOD) < 1:
+		show_gameplay_message("You have no arrows.")
+		if base_character.has_method("try_cancel_bow_draw"):
+			base_character.try_cancel_bow_draw()
 		return false
 	if not base_character.try_play_bow_release():
 		return false
-	var collider: Object = _get_interaction_collider()
-	var dmg := _creature_damage_amount()
-	if _is_creature_candidate(collider):
-		collider.call("receive_hit", dmg, self)
+	InventoryService.remove_item(_AMMO_ARROW_WOOD, 1)
+	_spawn_arrow_projectile()
 	return true
 
 
@@ -1346,6 +1467,8 @@ func _abort_harvest_tool_animation() -> void:
 
 
 func _try_harvest_hit_with_cooldown() -> Array:
+	if _gameplay_input_blocked():
+		return [false, harvest_click_cooldown_sec]
 	if _equipped_weapon_is_bow():
 		return [false, harvest_click_cooldown_sec]
 	var collider: Object = _get_interaction_collider()
@@ -1463,7 +1586,13 @@ func _resolve_interactable_target(collider: Object) -> Object:
 	return null
 
 
+func _gameplay_input_blocked() -> bool:
+	return game_menu != null and game_menu.visible
+
+
 func _try_interact() -> void:
+	if _gameplay_input_blocked():
+		return
 	var collider: Object = _get_interaction_collider()
 	if collider == null:
 		return

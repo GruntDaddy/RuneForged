@@ -66,6 +66,9 @@ enum ActionState {
 @onready var bow_long_left_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/Bow_Long_Common"
 ) as Node3D
+@onready var arrow_spawn: Marker3D = get_node_or_null(
+	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedWeaponLeft/ArrowSpawn"
+) as Marker3D
 @onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tacklebox
 @onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
 @onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Chisel
@@ -495,6 +498,14 @@ func _reset_combo_if_timed_out() -> void:
 	var elapsed := Time.get_ticks_msec() - _last_melee_attack_ms
 	if elapsed > timeout_ms:
 		_melee_combo_step = 0
+
+
+func get_arrow_spawn_global_position() -> Vector3:
+	if arrow_spawn != null:
+		return arrow_spawn.global_position
+	if hand_l_slot != null:
+		return hand_l_slot.global_position
+	return global_position
 
 
 func try_begin_bow_draw() -> bool:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/icon_target.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = "ammo_arrow_wood"
+display_name = "Wood arrow"
+description = "Simple arrows for a bow. Kept in your inventory; a quiver on your back is required to nock and fire."
+max_stack = 99
+tags = PackedStringArray("resource", "ammo", "arrow", "wood")
+icon = ExtResource("2_icon")
