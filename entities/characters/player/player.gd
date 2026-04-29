@@ -5,10 +5,6 @@ const _BaseCharacter = preload("res://entities/characters/base_character/base_ch
 const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd")
 const _WeaponData = preload("res://data/schemas/weapon_data.gd")
 const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
-const _AnimalChickenScene = preload("res://entities/characters/animals/chicken.tscn")
-const _AnimalRabbitScene = preload("res://entities/characters/animals/rabbit.tscn")
-const _AnimalRoosterScene = preload("res://entities/characters/animals/rooster.tscn")
-const _AnimalChickScene = preload("res://entities/characters/animals/chick.tscn")
 
 const _ArrowProjectileScene = preload("res://entities/projectiles/arrow_projectile.tscn")
 ## Consume cheaper ammo first so higher-tier arrows stay in the bag.
@@ -173,7 +169,6 @@ func _ready() -> void:
 	_update_reticle_icon()
 	_resolve_day_night_controller()
 	_apply_from_gamestate()
-	_setup_tutorial_animals_if_needed()
 	if _input_enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if interaction_prompt:
@@ -183,54 +178,6 @@ func _ready() -> void:
 		inv.inventory_changed.connect(_on_inventory_changed)
 	_refresh_tacklebox_back_visual()
 	_sync_equipped_hand_visuals()
-
-
-func _setup_tutorial_animals_if_needed() -> void:
-	var scene := get_tree().current_scene
-	if scene == null or not _scene_is_tutorial_isle(scene):
-		return
-	if scene.get_node_or_null("AnimalsGameplay") != null:
-		return
-	var wildlife := scene.get_node_or_null("Wildlife") as Node3D
-	if wildlife != null and wildlife.get_child_count() > 0:
-		return
-	var src_root := scene.get_node_or_null("Animals") as Node3D
-	if src_root == null:
-		return
-	var spawned := Node3D.new()
-	spawned.name = "AnimalsGameplay"
-	spawned.transform = src_root.transform
-	scene.add_child(spawned)
-	var scene_by_name := {
-		"Chicken": _AnimalChickenScene,
-		"Rabbit": _AnimalRabbitScene,
-		"Rooster": _AnimalRoosterScene,
-		"Chick": _AnimalChickScene,
-	}
-	var spawned_count := 0
-	for k in scene_by_name.keys():
-		var src := src_root.get_node_or_null(String(k)) as Node3D
-		if src == null:
-			continue
-		var animal_scene: PackedScene = scene_by_name[k]
-		if animal_scene == null:
-			continue
-		var inst := animal_scene.instantiate()
-		spawned.add_child(inst)
-		if inst is Node3D:
-			(inst as Node3D).transform = src.transform
-		spawned_count += 1
-	if spawned_count > 0:
-		src_root.visible = false
-	else:
-		spawned.queue_free()
-
-
-func _scene_is_tutorial_isle(scene: Node) -> bool:
-	if String(scene.name) == "TutorialIsle":
-		return true
-	var p := String(scene.scene_file_path)
-	return p.ends_with("tutorial_isle/tutorial_isle.tscn") or p.ends_with("tutorial_isle.tscn")
 
 
 func _on_inventory_changed() -> void:
@@ -500,14 +447,10 @@ func _sync_equipped_hand_visuals() -> void:
 	var back_id := ""
 	var m: Variant = GameState.equipment.get("main_hand", null)
 	if m != null:
-		main_id = _normalize_item_id(str(m.get("id", "")))
-		m["id"] = main_id
-		GameState.equipment["main_hand"] = m
+		main_id = GameState.normalize_item_id(str(m.get("id", "")))
 	var o: Variant = GameState.equipment.get("off_hand", null)
 	if o != null:
-		off_id = _normalize_item_id(str(o.get("id", "")))
-		o["id"] = off_id
-		GameState.equipment["off_hand"] = o
+		off_id = GameState.normalize_item_id(str(o.get("id", "")))
 	var h: Variant = GameState.equipment.get("head", null)
 	if h != null:
 		head_id = str(h.get("id", ""))
@@ -519,9 +462,7 @@ func _sync_equipped_hand_visuals() -> void:
 		legs_id = str(l.get("id", ""))
 	var b: Variant = GameState.equipment.get("back", null)
 	if b != null:
-		back_id = _normalize_item_id(str(b.get("id", "")))
-		b["id"] = back_id
-		GameState.equipment["back"] = b
+		back_id = GameState.normalize_item_id(str(b.get("id", "")))
 	if (
 		main_id == _last_equipped_main_hand_id
 		and off_id == _last_equipped_off_hand_id
@@ -557,27 +498,11 @@ func _sync_equipped_hand_visuals() -> void:
 		base_character.set_active_tool(desired_tool)
 
 
-func _normalize_item_id(id: String) -> String:
-	match id:
-		"wood":
-			return "logs"
-		"oak_logs":
-			return "logs_oak"
-		"torch":
-			return "tool_torch"
-		"hammer":
-			return "tool_hammer"
-		"chisel":
-			return "tool_chisel"
-		_:
-			return id
-
-
 func _off_hand_has_shield_equipped() -> bool:
 	var o: Variant = GameState.equipment.get("off_hand", null)
 	if o == null:
 		return false
-	var id := _normalize_item_id(str(o.get("id", "")))
+	var id := GameState.normalize_item_id(str(o.get("id", "")))
 	return id.begins_with("shield_")
 
 
@@ -585,7 +510,7 @@ func _equipped_main_hand_id_str() -> String:
 	var m: Variant = GameState.equipment.get("main_hand", null)
 	if m == null:
 		return ""
-	return _normalize_item_id(str(m.get("id", "")))
+	return GameState.normalize_item_id(str(m.get("id", "")))
 
 
 func _main_hand_weapon_family() -> _WeaponStats.WeaponFamily:
@@ -671,9 +596,7 @@ func _apply_creature_melee_damage_at_impact(seq: int) -> void:
 		return
 	var c: Object = _pending_creature_ref.get_ref() if _pending_creature_ref != null else null
 	if c == null or not is_instance_valid(c) or not _creature_target_still_valid_for_hit(c) or not _is_creature_candidate(c):
-		c = _find_creature_melee_target()
-		if c == null or not _is_creature_candidate(c):
-			return
+		return
 	var dmg := _creature_damage_amount()
 	c.call("receive_hit", dmg, self)
 
@@ -710,6 +633,16 @@ func _find_creature_melee_target() -> Object:
 		var t := n as Node3D
 		var to_t := t.global_position - origin
 		to_t.y = 0.0
+		if to_t.length_squared() < 0.0001:
+			continue
+		var fwd := base_character.global_transform.basis.z
+		fwd.y = 0.0
+		if fwd.length_squared() < 0.0001:
+			fwd = Vector3(0.0, 0.0, 1.0)
+		else:
+			fwd = fwd.normalized()
+		if fwd.dot(to_t.normalized()) < melee_forward_dot_min:
+			continue
 		var d2 := to_t.length_squared()
 		if d2 > pow(melee_reach_distance + melee_hit_radius, 2.0):
 			continue
@@ -743,7 +676,7 @@ func _equipped_back_has_quiver() -> bool:
 	var b: Variant = GameState.equipment.get("back", null)
 	if b == null:
 		return false
-	var id := _normalize_item_id(str(b.get("id", "")))
+	var id := GameState.normalize_item_id(str(b.get("id", "")))
 	if id.begins_with("quiver_"):
 		return true
 	var it: ItemData = ItemCatalog.get_item(id)
@@ -914,7 +847,7 @@ func _quick_equip_hotbar_item(item_id: String) -> void:
 		equip_slot = "off_hand"
 	if item_id.begins_with("quiver_") or item_id.begins_with("backpack_"):
 		equip_slot = "back"
-	GameState.equipment[equip_slot] = {"id": item_id, "count": 1}
+	GameState.set_equipment_slot(equip_slot, item_id, 1)
 	_sync_equipped_hand_visuals()
 
 
@@ -985,6 +918,19 @@ func _tool_display_name(kind: _BaseCharacter.ToolKind) -> String:
 func show_gameplay_message(msg: String) -> void:
 	if gameplay_toast != null and gameplay_toast.has_method("show_message"):
 		gameplay_toast.show_message(msg)
+
+
+func open_crafting_station(station_id: int) -> bool:
+	if game_menu == null:
+		show_gameplay_message("Cannot open forge right now.")
+		return false
+	if game_menu.has_method("open_forge_crafting_basic"):
+		game_menu.call("open_forge_crafting_basic")
+	elif game_menu.has_method("toggle"):
+		game_menu.call("toggle", GameMenu.TAB_FORGE)
+	if game_menu.has_method("_set_craft_station_filter"):
+		game_menu.call("_set_craft_station_filter", station_id)
+	return true
 
 
 func _get_harvest_facing_direction() -> Vector3:
@@ -1717,13 +1663,25 @@ func _resolve_world_item_target(collider: Object) -> Dictionary:
 func _parse_world_pickup_from_node(node: Node) -> Dictionary:
 	if node == null:
 		return {}
+	if node.has_meta("item_id"):
+		var meta_item := str(node.get_meta("item_id", ""))
+		if not meta_item.is_empty():
+			var meta_count: int = maxi(1, int(node.get_meta("quantity", 1)))
+			return {"item_id": GameState.normalize_item_id(meta_item), "count": meta_count}
 	if "item_id" in node:
 		var explicit := str(node.get("item_id"))
 		if not explicit.is_empty():
 			var count: int = 1
 			if "quantity" in node:
 				count = maxi(1, int(node.get("quantity")))
-			return {"item_id": explicit, "count": count}
+			return {"item_id": GameState.normalize_item_id(explicit), "count": count}
+	if "resource_type" in node:
+		var resource_id := str(node.get("resource_type"))
+		if not resource_id.is_empty():
+			var qty: int = 1
+			if "quantity" in node:
+				qty = maxi(1, int(node.get("quantity")))
+			return {"item_id": GameState.normalize_item_id(resource_id), "count": qty}
 	var raw_name := String(node.name).to_lower()
 	var by_name := {
 		"1h_sword_wooden": "sword_1h_wooden",
@@ -1749,17 +1707,7 @@ func _parse_world_pickup_from_node(node: Node) -> Dictionary:
 		"tin_nuggets": "ore_tin",
 	}
 	if by_name.has(raw_name):
-		return {"item_id": str(by_name[raw_name]), "count": 1}
-	if raw_name.find("bronze") >= 0 and (raw_name.find("katana") >= 0 or raw_name.find("sword") >= 0):
-		return {"item_id": "sword_1h_bronze", "count": 1}
-	if raw_name.find("bow") >= 0:
-		return {"item_id": "bow_short_common", "count": 1}
-	if raw_name.find("quiver_iron") >= 0:
-		return {"item_id": "quiver_iron", "count": 1}
-	if raw_name.find("quiver_bronze") >= 0:
-		return {"item_id": "quiver_bronze", "count": 1}
-	if raw_name.find("quiver") >= 0:
-		return {"item_id": "quiver_common", "count": 1}
+		return {"item_id": GameState.normalize_item_id(str(by_name[raw_name])), "count": 1}
 	return {}
 
 

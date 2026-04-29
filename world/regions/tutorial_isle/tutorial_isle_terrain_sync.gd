@@ -27,18 +27,24 @@ func _ready() -> void:
 func _apply_sea_level() -> void:
 	if _terrain == null:
 		return
+	var terrain_mat: Variant = _get_terrain_shader_material()
+	if terrain_mat == null:
+		return
 	var y: float = 0.0
 	if _water != null and _water.get("water_level") != null:
 		y = float(_water.water_level)
-	_terrain.material.set_shader_param(&"sea_level_y", y)
+	terrain_mat.set_shader_param(&"sea_level_y", y)
 
 
 func _push_tree_dirt_patches() -> void:
 	if _terrain == null:
 		return
-	var root := get_node_or_null(trees_scan_root)
+	var terrain_mat: Variant = _get_terrain_shader_material()
+	if terrain_mat == null:
+		return
+	var root := _resolve_trees_scan_root()
 	if root == null:
-		_terrain.material.set_shader_param(&"tree_dirt_patch_count", 0)
+		terrain_mat.set_shader_param(&"tree_dirt_patch_count", 0)
 		return
 	var patches := PackedVector4Array()
 	_collect_tree_patches(root, patches)
@@ -47,8 +53,31 @@ func _push_tree_dirt_patches() -> void:
 	padded.resize(_MAX_TREE_PATCHES)
 	for i: int in range(_MAX_TREE_PATCHES):
 		padded[i] = patches[i] if i < n_src else Vector4.ZERO
-	_terrain.material.set_shader_param(&"tree_dirt_patches", padded)
-	_terrain.material.set_shader_param(&"tree_dirt_patch_count", n_src)
+	terrain_mat.set_shader_param(&"tree_dirt_patches", padded)
+	terrain_mat.set_shader_param(&"tree_dirt_patch_count", n_src)
+
+
+func _resolve_trees_scan_root() -> Node:
+	var root := get_node_or_null(trees_scan_root)
+	if root != null:
+		return root
+	# Tutorial isle split-scene layout keeps harvestables under the main scene.
+	var current_scene := get_tree().current_scene
+	if current_scene != null:
+		return current_scene.get_node_or_null(^"Props/Harvestables/Trees")
+	return null
+
+
+func _get_terrain_shader_material() -> Variant:
+	if _terrain == null:
+		return null
+	if _terrain.material == null:
+		push_warning("tutorial_isle_terrain_sync: Terrain3D has no material; skipping shader sync.")
+		return null
+	if not _terrain.material.has_method("set_shader_param"):
+		push_warning("tutorial_isle_terrain_sync: Terrain3D material has no shader param API; skipping shader sync.")
+		return null
+	return _terrain.material
 
 
 func _collect_tree_patches(n: Node, out: PackedVector4Array) -> void:

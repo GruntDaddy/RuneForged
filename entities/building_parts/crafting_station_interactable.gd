@@ -14,17 +14,10 @@ func get_interaction_prompt(_player: Node) -> String:
 func interact(player: Node) -> bool:
 	if player == null:
 		return false
-	var menu: Node = player.get_node_or_null("GameMenu")
-	if menu == null:
-		_notify_player(player, "Cannot open forge right now.")
-		return false
-	if menu.has_method("open_forge_crafting_basic"):
-		menu.call("open_forge_crafting_basic")
-	elif menu.has_method("toggle"):
-		menu.call("toggle", 4)
-	if menu.has_method("_set_craft_station_filter"):
-		menu.call("_set_craft_station_filter", int(station))
-	return true
+	if player.has_method("open_crafting_station"):
+		return bool(player.call("open_crafting_station", int(station)))
+	_notify_player(player, "Cannot open forge right now.")
+	return false
 
 
 func _station_name(st: RecipeData.CraftStation) -> String:

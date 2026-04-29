@@ -22,6 +22,13 @@ const SCENE_BOOT_SPLASH := "res://ui/boot_splash/splash_boot.tscn"
 const SCENE_MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const SCENE_CHARACTER_CREATOR := "res://ui/character_creator/character_creator.tscn"
 const SCENE_OPTIONS_MENU := "res://ui/menus/options_menu.tscn"
+const LEGACY_ITEM_ID_ALIASES := {
+	"wood": "logs",
+	"oak_logs": "logs_oak",
+	"torch": "tool_torch",
+	"hammer": "tool_hammer",
+	"chisel": "tool_chisel",
+}
 var region: String = ""
 ## Survival skills (harvest gates). Tune when XP/progression exists.
 var woodcutting_level: int = 10
@@ -133,12 +140,50 @@ func from_dict(data: Variant) -> void:
 		equipment = (d.get("equipment", {}) as Dictionary).duplicate(true)
 	else:
 		equipment = {}
+	_normalize_equipment_map()
 	hotbar_item_ids = ["", "", "", ""]
 	var hb: Variant = d.get("hotbar_item_ids", null)
 	if typeof(hb) == TYPE_ARRAY:
 		var arr: Array = hb
 		for i in mini(4, arr.size()):
 			hotbar_item_ids[i] = str(arr[i])
+
+
+func normalize_item_id(id: String) -> String:
+	return str(LEGACY_ITEM_ID_ALIASES.get(id, id))
+
+
+func get_equipment_slot(slot: String) -> Variant:
+	return equipment.get(slot, null)
+
+
+func set_equipment_slot(slot: String, item_id: String, count: int = 1) -> void:
+	if slot.is_empty():
+		return
+	var norm_id := normalize_item_id(item_id)
+	if norm_id.is_empty():
+		equipment.erase(slot)
+		return
+	equipment[slot] = {"id": norm_id, "count": maxi(1, count)}
+
+
+func clear_equipment_slot(slot: String) -> void:
+	equipment.erase(slot)
+
+
+func _normalize_equipment_map() -> void:
+	for slot in equipment.keys():
+		var key := str(slot)
+		var val: Variant = equipment.get(slot, null)
+		if typeof(val) != TYPE_DICTIONARY:
+			equipment.erase(slot)
+			continue
+		var d: Dictionary = val
+		var norm_id := normalize_item_id(str(d.get("id", "")))
+		if norm_id.is_empty():
+			equipment.erase(slot)
+			continue
+		equipment[key] = {"id": norm_id, "count": maxi(1, int(d.get("count", 1)))}
 
 
 func scene_path_for_saved_region(saved_region: String) -> String:

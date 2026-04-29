@@ -1646,16 +1646,16 @@ func _drop_equipped_to_world(global_pos: Vector2, equip_slot: String) -> void:
 		drop_pos = (hit["position"] as Vector3) + Vector3.UP * 0.3
 	var id := str(s.get("id", ""))
 	var count := int(s.get("count", 1))
-	GameState.equipment.erase(equip_slot)
+	GameState.clear_equipment_slot(equip_slot)
 	var scene: PackedScene = InventoryService.get_pickup_scene_for_item(id)
 	if scene == null:
 		_toast("Cannot drop that item.")
-		GameState.equipment[equip_slot] = s
+		GameState.set_equipment_slot(equip_slot, id, count)
 		_refresh_equip_slots()
 		return
 	var node := scene.instantiate()
 	if node == null:
-		GameState.equipment[equip_slot] = s
+		GameState.set_equipment_slot(equip_slot, id, count)
 		return
 	var wp := player.get_parent()
 	if wp != null:
@@ -1734,14 +1734,14 @@ func _try_swap_equip_slots(a: String, b: String) -> void:
 			_toast("Cannot move that to the other slot.")
 			return
 	if ea == null:
-		GameState.equipment[a] = eb
-		GameState.equipment.erase(b)
+		GameState.set_equipment_slot(a, str(eb.get("id", "")), int(eb.get("count", 1)))
+		GameState.clear_equipment_slot(b)
 	elif eb == null:
-		GameState.equipment[b] = ea
-		GameState.equipment.erase(a)
+		GameState.set_equipment_slot(b, str(ea.get("id", "")), int(ea.get("count", 1)))
+		GameState.clear_equipment_slot(a)
 	else:
-		GameState.equipment[a] = eb
-		GameState.equipment[b] = ea
+		GameState.set_equipment_slot(a, str(eb.get("id", "")), int(eb.get("count", 1)))
+		GameState.set_equipment_slot(b, str(ea.get("id", "")), int(ea.get("count", 1)))
 	_refresh_equip_slots()
 
 
@@ -1756,7 +1756,7 @@ func _equip_one_from_inv(inv_idx: int, equip_slot: String) -> bool:
 		return false
 	if not InventoryService.remove_amount_from_slot(inv_idx, 1):
 		return false
-	GameState.equipment[equip_slot] = {"id": new_id, "count": 1}
+	GameState.set_equipment_slot(equip_slot, new_id, 1)
 	return true
 
 
@@ -1777,10 +1777,10 @@ func _equip_replace_from_inv(inv_idx: int, equip_slot: String) -> bool:
 	var left := InventoryService.add_item(str(old.get("id", "")), int(old.get("count", 1)))
 	if left > 0:
 		InventoryService.add_item(new_id, 1)
-		GameState.equipment[equip_slot] = old
+		GameState.set_equipment_slot(equip_slot, str(old.get("id", "")), int(old.get("count", 1)))
 		_toast("Inventory full.")
 		return false
-	GameState.equipment[equip_slot] = {"id": new_id, "count": 1}
+	GameState.set_equipment_slot(equip_slot, new_id, 1)
 	return true
 
 
@@ -1794,7 +1794,7 @@ func _unequip_to_inv(equip_slot: String, inv_idx: int) -> bool:
 	InventoryService.set_slot_data(
 		inv_idx, {"id": str(eq.get("id", "")), "count": int(eq.get("count", 1))}
 	)
-	GameState.equipment.erase(equip_slot)
+	GameState.clear_equipment_slot(equip_slot)
 	return true
 
 
@@ -1813,7 +1813,7 @@ func _swap_inv_equip(inv_idx: int, equip_slot: String) -> bool:
 	var eq_d := {"id": str(eq.get("id", "")), "count": int(eq.get("count", 1))}
 	var inv_d := {"id": str(inv_s.get("id", "")), "count": 1}
 	InventoryService.set_slot_data(inv_idx, eq_d)
-	GameState.equipment[equip_slot] = inv_d
+	GameState.set_equipment_slot(equip_slot, str(inv_d.get("id", "")), int(inv_d.get("count", 1)))
 	return true
 
 

@@ -768,17 +768,7 @@ func _apply_off_hand_visibility() -> void:
 
 
 func _normalize_item_id(id: String) -> String:
-	match id:
-		"torch":
-			return "tool_torch"
-		"hammer":
-			return "tool_hammer"
-		"chisel":
-			return "tool_chisel"
-		"oak_logs":
-			return "logs_oak"
-		_:
-			return id
+	return GameState.normalize_item_id(id)
 
 
 func _apply_armor_visibility() -> void:

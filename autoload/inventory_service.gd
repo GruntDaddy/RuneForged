@@ -586,19 +586,7 @@ func apply_save_dict(d: Variant) -> void:
 
 
 func _normalize_item_id(id: String) -> String:
-	match id:
-		"wood":
-			return "logs"
-		"oak_logs":
-			return "logs_oak"
-		"torch":
-			return "tool_torch"
-		"hammer":
-			return "tool_hammer"
-		"chisel":
-			return "tool_chisel"
-		_:
-			return id
+	return GameState.normalize_item_id(id)
 
 
 func clear_all_slots() -> void:
