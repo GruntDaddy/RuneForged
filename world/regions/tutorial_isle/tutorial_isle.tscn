@@ -751,25 +751,10 @@ height = 1.0602417
 
 [node name="TutorialIsleGear" parent="." unique_id=33315450 instance=ExtResource("tutorial_isle_gear_inst")]
 
-[node name="Bow_Short_Common" parent="TutorialIsleGear" index="7" unique_id=989506472]
-transform = Transform3D(-0.15180294, 0.6694, 0.3022577, 0.72485405, 0.08674211, 0.17193876, 0.118503116, 0.32692435, -0.66451305, 210.89342, 10.046294, 383.2311)
-
-[node name="CollisionShape3D" parent="TutorialIsleGear/Arrow_Bundle_Bronze/StaticBody3D" parent_id_path=PackedInt32Array(33315450, 910000001) index="0" unique_id=910000002]
-transform = Transform3D(0.883333, 0, 0, 0, 0.883333, 0, 0, 0, 0.883333, 4.0029297, -0.53240967, -5.0716553)
-
-[node name="CollisionShape3D" parent="TutorialIsleGear/Arrow_Bronze/StaticBody3D" parent_id_path=PackedInt32Array(33315450, 910000003) index="0" unique_id=910000004]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.886078, 0.039681435, -4.370453)
-
-[node name="arrow_bundle_iron" type="MeshInstance3D" parent="TutorialIsleGear/Arrow_Bundle_Iron" parent_id_path=PackedInt32Array(33315450, 153205002) index="0" unique_id=835564125]
-transform = Transform3D(1, 0, 0, 0, 0.16981392, 0.98547626, 0, -0.98547626, 0.16981392, 210.95052, 10.082659, 380.6701)
+[node name="arrow_bundle_iron2" type="MeshInstance3D" parent="TutorialIsleGear" unique_id=835564125]
+transform = Transform3D(1, 0, 0, 0, 0.16981392, 0.98547626, 0, -0.98547626, 0.16981392, 418.04712, 20.508333, 766.81104)
 material_override = ExtResource("4_mfwor")
 mesh = SubResource("ArrayMesh_trcql")
-
-[node name="CollisionShape3D" parent="TutorialIsleGear/Arrow_Bundle_Iron/StaticBody3D" parent_id_path=PackedInt32Array(33315450, 910000005) index="0" unique_id=910000006]
-transform = Transform3D(0.883333, 0, 0, 0, 0.883333, 0, 0, 0, 0.883333, 210.97832, 9.945032, 380.537)
-
-[node name="CollisionShape3D" parent="TutorialIsleGear/Arrow_Iron/StaticBody3D" parent_id_path=PackedInt32Array(33315450, 910000007) index="0" unique_id=910000008]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.867157, 0.22000027, -4.2375793)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 221.39133, 9.956359, 385.6984)
@@ -1171,6 +1156,3 @@ collision_layer = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Props/Tent/torch_burnt2/StaticBody3D" unique_id=1402231576]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.48, 0)
 shape = SubResource("CapsuleShape3D_pickup_torch")
-
-[editable path="TutorialIsleGear"]
-[editable path="TutorialIsleGear/Arrow_Bundle_Bronze"]
