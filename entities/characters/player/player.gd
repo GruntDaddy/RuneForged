@@ -370,6 +370,14 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, speed)
 		velocity.z = move_toward(velocity.z, 0.0, speed)
 
+	# Walk-to-harvest stops horizontal input once in range, but rotation was only driven by move dir — so
+	# side approaches never satisfy facing dot. Nudge body toward the node while E-approach is pending.
+	if _harvest_interact_pending and not anim_busy and not actively_blocking:
+		var ht: Object = _harvest_interact_target.get_ref() if _harvest_interact_target != null else null
+		if ht is Node3D and is_instance_valid(ht):
+			if _harvest_interact_within_start_distance(ht) and not _harvest_interact_ready(ht):
+				_harvest_face_toward_node3d(ht as Node3D, delta)
+
 	if in_water:
 		velocity.x *= water_horizontal_drag
 		velocity.z *= water_horizontal_drag
@@ -1488,6 +1496,29 @@ func _harvest_interact_move_input() -> Vector2:
 	var x := world_dir.dot(right)
 	var y := -world_dir.dot(forward)
 	return Vector2(x, y).limit_length(1.0)
+
+
+func _harvest_interact_within_start_distance(t: Node3D) -> bool:
+	var c: Object = t
+	var start_dist := _harvest_interact_distance_for(c)
+	var to_t := t.global_position - global_position
+	to_t.y = 0.0
+	# Small slack so float error / collider vs pivot offset does not strand the player at the threshold.
+	return to_t.length() <= start_dist + 0.18
+
+
+func _harvest_face_toward_node3d(t: Node3D, delta: float) -> void:
+	if base_character == null:
+		return
+	var blocking: bool = base_character.has_method("is_blocking") and base_character.is_blocking()
+	var to_t := t.global_position - global_position
+	to_t.y = 0.0
+	if to_t.length_squared() < 0.0001:
+		return
+	to_t = to_t.normalized()
+	var target_rot := atan2(to_t.x, to_t.z)
+	var mult := shield_block_turn_multiplier if blocking else 1.0
+	base_character.rotation.y = lerp_angle(base_character.rotation.y, target_rot, turn_speed * mult * delta)
 
 
 func _harvest_interact_ready(collider: Object) -> bool:
