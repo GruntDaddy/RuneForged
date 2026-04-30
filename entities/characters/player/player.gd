@@ -53,7 +53,8 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 ## Harvest/interaction ray uses character facing (not camera look). Slight downward bias helps short ground nodes.
 @export var harvest_ray_downward_blend: float = 0.22
 @export var harvest_click_cooldown_sec: float = 1.5
-@export var harvest_auto_cancel_move_deadzone: float = 0.35
+## Movement above this (Input.get_vector) immediately cancels harvest + tool clip.
+@export var harvest_move_cancel_deadzone: float = 0.08
 @export var chop_animation_duration_sec: float = 4.3333
 ## Chop clip has 3 impact beats.
 @export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.8, 2.2, 3.5])
@@ -214,8 +215,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not _input_enabled:
 		return
 	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_forward") or event.is_action_pressed("move_back"):
-		_stop_harvest_auto()
-		_clear_harvest_interact_approach()
+		_cancel_harvest_on_movement_press()
 	if event.is_action_pressed("character_menu") and game_menu:
 		game_menu.toggle(GameMenu.TAB_VITALS)
 		get_viewport().set_input_as_handled()
@@ -333,10 +333,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= (_gravity * gravity_multiplier) * delta
 
 	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	if _harvest_auto_active and _is_harvest_cancel_movement_input(raw_move):
-		_stop_harvest_auto()
-	if _harvest_interact_pending and _is_harvest_cancel_movement_input(raw_move):
-		_clear_harvest_interact_approach()
+	_cancel_harvest_on_movement_input(raw_move)
 	var input_vec := raw_move
 	var approach_input := _harvest_interact_move_input()
 	if approach_input.length_squared() > 0.0001:
@@ -1589,20 +1586,20 @@ func _harvest_auto_continue_async(gen: int) -> void:
 		return
 	var c: Object = _harvest_auto_target.get_ref() if _harvest_auto_target != null else null
 	if c == null or not is_instance_valid(c):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	if c.has_method("can_harvest") and not c.can_harvest():
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	var move_check := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	if _is_harvest_cancel_movement_input(move_check):
-		_stop_harvest_auto()
+	if _movement_cancels_harvest(move_check):
+		_abort_harvest_tool_animation()
 		return
 	if not _harvest_auto_target_still_valid(c):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	if not _harvest_skill_met(c):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	# Timer uses exported clip length; animation may end slightly later. try_play_action_for_harvest rejects while TOOL_ACTION.
 	var safety := 0
@@ -1613,26 +1610,26 @@ func _harvest_auto_continue_async(gen: int) -> void:
 		safety += 1
 		if safety > 360:
 			push_warning("player: harvest auto waited too long for tool idle; stopping chain.")
-			_stop_harvest_auto()
+			_abort_harvest_tool_animation()
 			return
 	if gen != _harvest_auto_gen or not _harvest_auto_active:
 		return
 	c = _harvest_auto_target.get_ref() if _harvest_auto_target != null else null
 	if c == null or not is_instance_valid(c):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	if c.has_method("can_harvest") and not c.can_harvest():
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	if not _harvest_auto_target_still_valid(c):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	if not _harvest_skill_met(c):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	var res: Array = _begin_harvest_on_collider(c)
 	if not bool(res[0]):
-		_stop_harvest_auto()
+		_abort_harvest_tool_animation()
 		return
 	_schedule_harvest_auto_followup(float(res[1]), gen)
 
@@ -1651,9 +1648,41 @@ func _harvest_auto_target_still_valid(c: Object) -> bool:
 	return true
 
 
-func _is_harvest_cancel_movement_input(move_vec: Vector2) -> bool:
-	var dz := clampf(harvest_auto_cancel_move_deadzone, 0.0, 0.95)
+func _movement_cancels_harvest(move_vec: Vector2) -> bool:
+	var dz := clampf(harvest_move_cancel_deadzone, 0.0, 0.95)
 	return move_vec.length() > dz
+
+
+func _is_mid_harvest_tool_or_chain() -> bool:
+	if _harvest_auto_active or _pending_chop_hit:
+		return true
+	return _is_harvest_tool_action_active()
+
+
+func _is_harvest_tool_action_active() -> bool:
+	return base_character != null and base_character.has_method("is_tool_action_active") and base_character.is_tool_action_active()
+
+
+func _cancel_harvest_on_movement_input(move_vec: Vector2) -> void:
+	if not _movement_cancels_harvest(move_vec):
+		return
+	_clear_harvest_interact_approach()
+	if _is_mid_harvest_tool_or_chain():
+		_abort_harvest_tool_animation()
+
+
+func _cancel_harvest_on_movement_press() -> void:
+	_clear_harvest_interact_approach()
+	if _is_mid_harvest_tool_or_chain():
+		_abort_harvest_tool_animation()
+
+
+func _harvest_target_exhausted_after_hit(c: Object) -> bool:
+	if c == null or not is_instance_valid(c):
+		return true
+	if c.has_method("can_harvest"):
+		return not bool(c.call("can_harvest"))
+	return false
 
 
 func _begin_harvest_on_collider(collider: Object) -> Array:
@@ -1721,6 +1750,7 @@ func _bump_harvest_timer_generation() -> int:
 
 
 func _abort_harvest_tool_animation() -> void:
+	_clear_harvest_interact_approach()
 	_harvest_timer_generation += 1
 	_pending_chop_hit = false
 	_stop_harvest_auto()
@@ -2011,6 +2041,9 @@ func _on_chop_impact_timeout(impact_idx: int, seq: int) -> void:
 		return
 	if outcome == _H_INV_FULL:
 		_stop_harvest_auto()
+	if _harvest_target_exhausted_after_hit(c):
+		_abort_harvest_tool_animation()
+		return
 	if impact_idx >= chop_impact_delays_sec.size():
 		_pending_chop_hit = false
 
@@ -2028,6 +2061,9 @@ func _on_mine_impact_timeout(_impact_idx: int, seq: int) -> void:
 		return
 	if outcome == _H_INV_FULL:
 		_stop_harvest_auto()
+	if _harvest_target_exhausted_after_hit(c):
+		_abort_harvest_tool_animation()
+		return
 
 
 func _resolve_day_night_controller() -> void:
