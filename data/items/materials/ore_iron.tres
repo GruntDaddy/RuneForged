@@ -9,4 +9,5 @@ display_name = "Iron ore"
 description = "Dense iron-rich ore chunks used for smithing."
 max_stack = 99
 tags = PackedStringArray("resource", "ore", "iron")
+pickup_scene_path = "res://entities/resource/resource_pickup_ore_iron.tscn"
 icon = null

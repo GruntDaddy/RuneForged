@@ -30,6 +30,13 @@ const LEGACY_ITEM_ID_ALIASES := {
 	"hammer": "tool_hammer",
 	"chisel": "tool_chisel",
 }
+const SKILL_ID_TO_FIELD := {
+	"woodcutting": "woodcutting_level",
+	"mining": "mining_level",
+	"survival": "survival_level",
+	"smithing": "smithing_level",
+	"crafting": "crafting_level",
+}
 var region: String = ""
 ## Survival skills (harvest gates). Tune when XP/progression exists.
 var woodcutting_level: int = 10
@@ -37,6 +44,8 @@ var mining_level: int = 10
 var survival_level: int = 10
 var smithing_level: int = 10
 var crafting_level: int = 10
+## Canonical skill registry persisted as skill_id -> level.
+var skill_levels: Dictionary = {}
 ## Day/night persistence used by world sky controller.
 var time_of_day: float = 0.32
 var moon_phase: float = 0.18
@@ -55,6 +64,10 @@ var equipment: Dictionary = {}
 var hotbar_item_ids: Array[String] = ["", "", "", ""]
 
 
+func _ready() -> void:
+	_sync_skill_registry_from_legacy_fields()
+
+
 func reset() -> void:
 	player_name = ""
 	gender = "Male"
@@ -71,6 +84,7 @@ func reset() -> void:
 	survival_level = 10
 	smithing_level = 10
 	crafting_level = 10
+	_sync_skill_registry_from_legacy_fields()
 	time_of_day = 0.32
 	moon_phase = 0.18
 	world_fire_states = {}
@@ -99,6 +113,7 @@ func to_dict() -> Dictionary:
 		"survival_level": survival_level,
 		"smithing_level": smithing_level,
 		"crafting_level": crafting_level,
+		"skill_levels": skill_levels.duplicate(true),
 		"time_of_day": time_of_day,
 		"moon_phase": moon_phase,
 		"world_fire_states": world_fire_states.duplicate(true),
@@ -132,6 +147,9 @@ func from_dict(data: Variant) -> void:
 	survival_level = int(d.get("survival_level", 10))
 	smithing_level = int(d.get("smithing_level", 10))
 	crafting_level = int(d.get("crafting_level", 10))
+	_sync_skill_registry_from_legacy_fields()
+	if typeof(d.get("skill_levels", null)) == TYPE_DICTIONARY:
+		_apply_skill_registry_dict(d.get("skill_levels", {}))
 	time_of_day = clampf(float(d.get("time_of_day", 0.32)), 0.0, 0.999999)
 	moon_phase = clampf(float(d.get("moon_phase", 0.18)), 0.0, 0.999999)
 	if typeof(d.get("world_fire_states", null)) == TYPE_DICTIONARY:
@@ -160,6 +178,31 @@ func from_dict(data: Variant) -> void:
 
 func normalize_item_id(id: String) -> String:
 	return str(LEGACY_ITEM_ID_ALIASES.get(id, id))
+
+
+func get_skill_level(skill_id: String, fallback: int = 1) -> int:
+	var sid := str(skill_id).strip_edges().to_lower()
+	if sid.is_empty():
+		return fallback
+	if skill_levels.has(sid):
+		return int(skill_levels[sid])
+	if SKILL_ID_TO_FIELD.has(sid):
+		return int(get(str(SKILL_ID_TO_FIELD[sid])))
+	return fallback
+
+
+func set_skill_level(skill_id: String, level: int) -> void:
+	var sid := str(skill_id).strip_edges().to_lower()
+	if sid.is_empty():
+		return
+	var clamped := maxi(1, level)
+	skill_levels[sid] = clamped
+	if SKILL_ID_TO_FIELD.has(sid):
+		set(str(SKILL_ID_TO_FIELD[sid]), clamped)
+
+
+func get_skill_levels_copy() -> Dictionary:
+	return skill_levels.duplicate(true)
 
 
 func get_equipment_slot(slot: String) -> Variant:
@@ -193,6 +236,26 @@ func _normalize_equipment_map() -> void:
 			equipment.erase(slot)
 			continue
 		equipment[key] = {"id": norm_id, "count": maxi(1, int(d.get("count", 1)))}
+
+
+func _sync_skill_registry_from_legacy_fields() -> void:
+	for sid in SKILL_ID_TO_FIELD.keys():
+		var field_name := str(SKILL_ID_TO_FIELD[sid])
+		skill_levels[str(sid)] = maxi(1, int(get(field_name)))
+
+
+func _apply_skill_registry_dict(v: Variant) -> void:
+	if typeof(v) != TYPE_DICTIONARY:
+		return
+	var d: Dictionary = v
+	for sid in d.keys():
+		var key := str(sid).strip_edges().to_lower()
+		if key.is_empty():
+			continue
+		var lvl := maxi(1, int(d[sid]))
+		skill_levels[key] = lvl
+		if SKILL_ID_TO_FIELD.has(key):
+			set(str(SKILL_ID_TO_FIELD[key]), lvl)
 
 
 func scene_path_for_saved_region(saved_region: String) -> String:

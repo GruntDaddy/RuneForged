@@ -10,3 +10,5 @@ description = "A basic rune that restores stamina when cast."
 category = 8
 max_stack = 1
 tags = PackedStringArray("rune", "magic", "spark")
+use_effect_id = "stamina_restore_small"
+use_cooldown_ms = 12000

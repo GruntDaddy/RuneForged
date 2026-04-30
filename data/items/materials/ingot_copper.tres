@@ -10,4 +10,5 @@ display_name = "Copper ingot"
 description = "A smelted copper ingot used in low-tier smithing recipes."
 max_stack = 99
 tags = PackedStringArray("resource", "ingot", "copper")
+pickup_scene_path = "res://entities/resource/resource_pickup_ingot_copper.tscn"
 icon = ExtResource("2_icon")

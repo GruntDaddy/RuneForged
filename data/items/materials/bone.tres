@@ -10,4 +10,5 @@ display_name = "Bone"
 description = "A sturdy bone, useful for crafting."
 max_stack = 99
 tags = PackedStringArray("resource", "bone")
+pickup_scene_path = "res://entities/resource/resource_pickup_bone.tscn"
 icon = ExtResource("2_icon")

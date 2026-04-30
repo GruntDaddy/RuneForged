@@ -56,8 +56,8 @@ func _style_panel() -> void:
 func _refresh() -> void:
 	var p: Node = get_parent()
 	_name_val.text = GameState.player_name if GameState.player_name != "" else "—"
-	_wood_val.text = str(GameState.woodcutting_level)
-	_mine_val.text = str(GameState.mining_level)
+	_wood_val.text = str(GameState.get_skill_level("woodcutting", GameState.woodcutting_level))
+	_mine_val.text = str(GameState.get_skill_level("mining", GameState.mining_level))
 
 	if p != null and p.has_method("get_equipment_sheet_snapshot"):
 		var e: Dictionary = p.get_equipment_sheet_snapshot()

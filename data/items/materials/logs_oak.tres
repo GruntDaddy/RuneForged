@@ -9,3 +9,4 @@ display_name = "Oak logs"
 description = "Sturdy oak timber."
 max_stack = 99
 tags = PackedStringArray("resource", "wood", "oak")
+pickup_scene_path = "res://entities/resource/resource_pickup_logs_oak.tscn"

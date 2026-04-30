@@ -25,6 +25,7 @@
 - **`survival_level`**: int survival skill level used by crafting requirements such as torch crafting/repair.
 - **`smithing_level`**: int smithing skill level used by smithing recipes (`skill_id = "smithing"`).
 - **`crafting_level`**: int crafting skill level used by utility/building recipes (`skill_id = "crafting"`).
+- **`skill_levels`**: dictionary (`skill_id -> int`) canonical skill registry. Legacy flat fields above remain supported and are synchronized for backward compatibility.
 - **`time_of_day`**: float in `[0, 1)`, used by `DayNightController` to resume cycle position.
 - **`moon_phase`**: float in `[0, 1)`, moon phase offset used by sky shader/controller.
 - **`world_fire_states`**: dictionary keyed by node path (string), values are dictionaries with fire runtime state (e.g. `lit`, `fuel_seconds`).

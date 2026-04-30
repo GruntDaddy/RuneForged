@@ -47,6 +47,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 
 func _ready() -> void:
 	_index_items_under("res://data/items")
+	_run_pickup_scene_audit()
 
 
 func _index_items_under(dir_path: String) -> void:
@@ -71,6 +72,7 @@ func _index_items_under(dir_path: String) -> void:
 						if _items.has(it.id):
 							push_warning("ItemCatalog: duplicate id '%s' (%s)" % [it.id, p])
 						_items[it.id] = it
+					_validate_item_resource(it, p)
 		entry_name = d.get_next()
 
 
@@ -138,3 +140,63 @@ func get_all_ids() -> PackedStringArray:
 	for k in _items.keys():
 		out.append(str(k))
 	return out
+
+
+func _validate_item_resource(it: ItemData, source_path: String) -> void:
+	if it == null:
+		return
+	if it.display_name.strip_edges().is_empty():
+		push_warning("ItemCatalog: item '%s' has empty display_name (%s)" % [it.id, source_path])
+	if it.category in [
+		ItemData.Category.TOOL,
+		ItemData.Category.WEAPON,
+		ItemData.Category.ARMOR,
+		ItemData.Category.CLOTHING,
+		ItemData.Category.JEWERLY,
+		ItemData.Category.RELIC,
+		ItemData.Category.RUNE,
+	]:
+		if it.max_stack != 1:
+			push_warning(
+				"ItemCatalog: equipment-like item '%s' should use max_stack=1 (found %d) (%s)" % [
+					it.id,
+					it.max_stack,
+					source_path,
+				]
+			)
+	if not it.pickup_scene_path.is_empty() and not ResourceLoader.exists(it.pickup_scene_path):
+		push_warning(
+			"ItemCatalog: item '%s' pickup_scene_path does not exist: %s (%s)" % [
+				it.id,
+				it.pickup_scene_path,
+				source_path,
+			]
+		)
+
+
+func _run_pickup_scene_audit() -> void:
+	for item_id in _items.keys():
+		var id := str(item_id)
+		var it: ItemData = _items.get(id, null) as ItemData
+		if it == null:
+			continue
+		if not _should_expect_pickup_scene(it):
+			continue
+		if not it.pickup_scene_path.is_empty():
+			continue
+		push_warning(
+			"ItemCatalog: item '%s' is likely world-droppable but has no pickup_scene_path. Add one in its .tres, or keep legacy fallback mapping intentionally." % id
+		)
+
+
+func _should_expect_pickup_scene(it: ItemData) -> bool:
+	if it == null:
+		return false
+	# World resources/material-like loot and explicit placeables should carry drop scenes in data.
+	if it.category == ItemData.Category.MATERIAL:
+		return true
+	for tag in it.tags:
+		var t := str(tag)
+		if t in ["resource", "ore", "ingot", "wood", "stone", "meat", "hide", "feather", "bone", "torch", "campfire"]:
+			return true
+	return false

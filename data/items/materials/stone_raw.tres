@@ -10,4 +10,5 @@ display_name = "Stone"
 description = "A chunks of raw stone."
 max_stack = 99
 tags = PackedStringArray("resource", "stone")
+pickup_scene_path = "res://entities/resource/resource_pickup_stone.tscn"
 icon = ExtResource("2_icon")

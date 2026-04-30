@@ -3,8 +3,9 @@ extends CharacterBody3D
 const _GameState = preload("res://autoload/game_state.gd")
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
 const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd")
-const _WeaponData = preload("res://data/schemas/weapon_data.gd")
 const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
+const _CombatFormulaService = preload("res://systems/combat/combat_formula_service.gd")
+const _RuneEffectService = preload("res://systems/magic/rune_effect_service.gd")
 
 const _ArrowProjectileScene = preload("res://entities/projectiles/arrow_projectile.tscn")
 ## Consume cheaper ammo first so higher-tier arrows stay in the bag.
@@ -553,19 +554,7 @@ func _equipped_main_hand_id_str() -> String:
 
 func _main_hand_weapon_family() -> _WeaponStats.WeaponFamily:
 	var id := _equipped_main_hand_id_str()
-	if id.is_empty():
-		return _WeaponStats.WeaponFamily.SWORD_1H
-	var it: ItemData = ItemCatalog.get_item(id)
-	if it == null:
-		return _WeaponStats.WeaponFamily.SWORD_1H
-	if it is _WeaponData:
-		var wd: WeaponData = it as WeaponData
-		if wd.weapon_stats != null:
-			return wd.weapon_stats.weapon_family
-	for tag in it.tags:
-		if str(tag) == "bow":
-			return _WeaponStats.WeaponFamily.BOW
-	return _WeaponStats.WeaponFamily.SWORD_1H
+	return _CombatFormulaService.equipped_weapon_family(id)
 
 
 func _equipped_weapon_is_bow() -> bool:
@@ -574,26 +563,17 @@ func _equipped_weapon_is_bow() -> bool:
 
 func _creature_damage_amount() -> float:
 	var id := _equipped_main_hand_id_str()
-	if id.is_empty():
-		return unarmed_melee_damage
-	if id in ["hatchet_basic", "hatchet_bronze", "pickaxe_basic", "pickaxe_bronze"]:
-		return tool_melee_damage
-	var it: ItemData = ItemCatalog.get_item(id)
-	if it is _WeaponData:
-		var wd: WeaponData = it as WeaponData
-		if wd.weapon_stats != null:
-			return wd.weapon_stats.base_damage
-	return creature_attack_damage
+	return _CombatFormulaService.creature_damage_amount(
+		id,
+		unarmed_melee_damage,
+		tool_melee_damage,
+		creature_attack_damage
+	)
 
 
 func _creature_attack_interval_sec() -> float:
 	var id := _equipped_main_hand_id_str()
-	var it: ItemData = ItemCatalog.get_item(id)
-	if it is _WeaponData:
-		var wd: WeaponData = it as WeaponData
-		if wd.weapon_stats != null:
-			return wd.weapon_stats.attack_interval_sec
-	return creature_attack_cooldown_sec
+	return _CombatFormulaService.creature_attack_interval_sec(id, creature_attack_cooldown_sec)
 
 
 func _try_creature_melee_hit() -> bool:
@@ -909,25 +889,29 @@ func _tool_kind_for_item(item_id: String) -> _BaseCharacter.ToolKind:
 
 
 func _try_cast_rune_item(item_id: String) -> bool:
+	var item: ItemData = ItemCatalog.get_item(item_id)
+	if item == null:
+		show_gameplay_message("That rune has no effect yet.")
+		return false
+	var effect_id := _RuneEffectService.resolve_effect_id(item_id, item)
+	var cooldown_ms: int = item.use_cooldown_ms
+	if cooldown_ms <= 0:
+		cooldown_ms = _RuneEffectService.default_cooldown_ms(effect_id)
 	var now_ms: int = Time.get_ticks_msec()
-	var next_ready: int = int(_rune_cooldown_until_ms.get(item_id, 0))
+	var cooldown_key := effect_id if not effect_id.is_empty() else item_id
+	var next_ready: int = int(_rune_cooldown_until_ms.get(cooldown_key, 0))
 	if now_ms < next_ready:
 		var sec_left := ceili(float(next_ready - now_ms) / 1000.0)
 		show_gameplay_message("%s is on cooldown (%ds)." % [InventoryService.get_item_display_name(item_id), sec_left])
 		return false
-	match item_id:
-		"rune_spark":
-			var before_stamina := stamina
-			stamina = minf(max_stamina, stamina + 28.0)
-			if stamina <= before_stamina + 0.01:
-				show_gameplay_message("Stamina already full.")
-				return false
-			_rune_cooldown_until_ms[item_id] = now_ms + 12000
-			show_gameplay_message("Spark Rune surges. Stamina restored.")
-			return true
-		_:
-			show_gameplay_message("That rune has no effect yet.")
-			return false
+	var result: Dictionary = _RuneEffectService.cast(effect_id, self)
+	if not bool(result.get("success", false)):
+		show_gameplay_message(str(result.get("message", "That rune has no effect yet.")))
+		return false
+	if cooldown_ms > 0:
+		_rune_cooldown_until_ms[cooldown_key] = now_ms + cooldown_ms
+	show_gameplay_message(str(result.get("message", "Rune effect triggered.")))
+	return true
 
 
 func _default_tool_for_slot(_slot_idx: int) -> _BaseCharacter.ToolKind:
@@ -1697,7 +1681,7 @@ func _harvest_skill_met(collider: Object) -> bool:
 			req = int(collider.get_required_mining_level())
 		if req <= 0:
 			return true
-		return state.mining_level >= req
+		return state.get_skill_level("mining", state.mining_level) >= req
 	if not _has_tool_in_inventory_or_equipped(["hatchet_basic", "hatchet_bronze"]):
 		return false
 	var req_wc := 0
@@ -1705,7 +1689,7 @@ func _harvest_skill_met(collider: Object) -> bool:
 		req_wc = int(collider.get_required_woodcutting_level())
 	if req_wc <= 0:
 		return true
-	return state.woodcutting_level >= req_wc
+	return state.get_skill_level("woodcutting", state.woodcutting_level) >= req_wc
 
 
 func _inventory_has_any(item_ids: Array[String]) -> bool:

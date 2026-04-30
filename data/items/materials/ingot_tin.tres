@@ -10,4 +10,5 @@ display_name = "Tin ingot"
 description = "A smelted tin ingot used in low-tier smithing recipes."
 max_stack = 99
 tags = PackedStringArray("resource", "ingot", "tin")
+pickup_scene_path = "res://entities/resource/resource_pickup_ingot_bronze.tscn"
 icon = ExtResource("2_icon")

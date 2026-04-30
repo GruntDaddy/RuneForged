@@ -10,4 +10,5 @@ display_name = "Bronze ingot"
 description = "A bronze ingot; Smelted from tin and copper ores."
 max_stack = 1
 tags = PackedStringArray("resource", "ingot", "bronze")
+pickup_scene_path = "res://entities/resource/resource_pickup_ingot_bronze.tscn"
 icon = ExtResource("1_ld83o")

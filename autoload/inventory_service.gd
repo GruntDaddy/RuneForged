@@ -18,28 +18,9 @@ const TAG_FISHING_BOBBER := "fishing_bobber"
 const TAG_FISHING_BAIT := "fishing_bait"
 
 const PICKUP_SCENES := {
-	"logs": preload("res://entities/resource/resource_pickup_logs.tscn"),
-	"logs_oak": preload("res://entities/resource/resource_pickup_logs_oak.tscn"),
+	# Legacy aliases retained as a compatibility fallback.
 	"oak_logs": preload("res://entities/resource/resource_pickup_logs_oak.tscn"),
-	"stone": preload("res://entities/resource/resource_pickup_stone.tscn"),
 	"tin_ore": preload("res://entities/resource/resource_pickup_stone.tscn"),
-	"ore_tin": preload("res://entities/resource/resource_pickup_stone.tscn"),
-	"ore_copper": preload("res://entities/resource/resource_pickup_ore_copper.tscn"),
-	"ore_iron": preload("res://entities/resource/resource_pickup_ore_iron.tscn"),
-	"ore_silver": preload("res://entities/resource/resource_pickup_ore_silver.tscn"),
-	"ore_gold": preload("res://entities/resource/resource_pickup_ore_gold.tscn"),
-	"ingot_copper": preload("res://entities/resource/resource_pickup_ingot_copper.tscn"),
-	"ingot_tin": preload("res://entities/resource/resource_pickup_ingot_bronze.tscn"),
-	"ingot_iron": preload("res://entities/resource/resource_pickup_ingot_iron.tscn"),
-	"ingot_silver": preload("res://entities/resource/resource_pickup_ingot_silver.tscn"),
-	"ingot_gold": preload("res://entities/resource/resource_pickup_ingot_gold.tscn"),
-	"ingot_bronze": preload("res://entities/resource/resource_pickup_ingot_bronze.tscn"),
-	"meat_raw": preload("res://entities/resource/resource_pickup_meat.tscn"),
-	"hide_raw": preload("res://entities/resource/resource_pickup_hide.tscn"),
-	"feather": preload("res://entities/resource/resource_pickup_feather.tscn"),
-	"bone": preload("res://entities/resource/resource_pickup_bone.tscn"),
-	"tool_torch": preload("res://world/torch_light.tscn"),
-	"campfire_kit": preload("res://entities/building_parts/campfire.tscn"),
 }
 
 ## Each entry: null or Dictionary with "id", "count", optional "tackle"
@@ -285,6 +266,11 @@ func get_item_display_name(item_id: String) -> String:
 
 
 func get_pickup_scene_for_item(item_id: String) -> PackedScene:
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it != null and not it.pickup_scene_path.is_empty():
+		var res: Resource = load(it.pickup_scene_path)
+		if res is PackedScene:
+			return res as PackedScene
 	return PICKUP_SCENES.get(item_id, null) as PackedScene
 
 
@@ -486,7 +472,7 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 	var count: int = int(s.get("count", 0))
 	slots[slot_idx] = null
 	inventory_changed.emit()
-	var scene: PackedScene = PICKUP_SCENES.get(id, null)
+	var scene: PackedScene = get_pickup_scene_for_item(id)
 	if scene == null:
 		push_warning("inventory_service: no pickup scene for '%s'" % id)
 		return

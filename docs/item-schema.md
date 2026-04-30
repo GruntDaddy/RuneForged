@@ -7,6 +7,9 @@
 - Tin ore canonical id is `ore_tin`; legacy `tin_ore` is normalized at runtime for backward compatibility.
 - **Bow ammunition (stackable materials):** world pickups and inventory use ids `ammo_arrow_wood`, `ammo_arrow_common`, `ammo_arrow_bronze`, `ammo_arrow_iron` (see `res://data/items/materials/ammo_arrow_*.tres`). Tutorial props use these ids directly on `item_pickup_interactable.gd` (bundles use `quantity` 20; single arrows use 1).
 - At runtime, [`ItemCatalog`](../autoload/item_catalog.gd) (autoload) indexes every `ItemData` under `res://data/items/` for lookup by id. **Do not serialize full `ItemData` blobs in save files**—only id + count (and optional container payloads such as tackle data on `tool_tacklebox`).
+- Optional authoring fields on `ItemData`:
+  - `pickup_scene_path`: explicit world scene for drop/place behavior (preferred over hardcoded lookup when present).
+  - `use_effect_id` and `use_cooldown_ms`: data-driven item-use effect hooks (currently used by runes).
 
 ## Stacking (`ItemData.max_stack`)
 

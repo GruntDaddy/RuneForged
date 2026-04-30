@@ -10,4 +10,5 @@ display_name = "Gold ingot"
 description = "A refined gold ingot suited for high-value smithing components."
 max_stack = 99
 tags = PackedStringArray("resource", "ingot", "gold")
+pickup_scene_path = "res://entities/resource/resource_pickup_ingot_gold.tscn"
 icon = ExtResource("2_icon")
