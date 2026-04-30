@@ -53,16 +53,20 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 ## Harvest/interaction ray uses character facing (not camera look). Slight downward bias helps short ground nodes.
 @export var harvest_ray_downward_blend: float = 0.22
 @export var harvest_click_cooldown_sec: float = 1.5
-@export var chop_animation_duration_sec: float = 1.3
-@export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.5])
-@export var mine_animation_duration_sec: float = 1.7
-@export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3])
+@export var harvest_auto_cancel_move_deadzone: float = 0.35
+@export var chop_animation_duration_sec: float = 4.3333
+## Chop clip has 3 impact beats.
+@export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.8, 2.2, 3.5])
+@export var mine_animation_duration_sec: float = 3.7333
+## Pickaxe clip has 2 impact beats.
+@export var mine_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.3, 2.15])
 @export var harvest_interact_start_distance: float = 1.95
 @export var harvest_interact_start_distance_chop: float = 2.05
-@export var harvest_interact_start_distance_mine: float = 1.65
+## Mine uses a larger radius because many rocks have a center pivot deeper than the reachable collision face.
+@export var harvest_interact_start_distance_mine: float = 2.6
 @export var harvest_interact_face_dot_min: float = 0.62
 @export var harvest_interact_face_dot_min_chop: float = 0.55
-@export var harvest_interact_face_dot_min_mine: float = 0.72
+@export var harvest_interact_face_dot_min_mine: float = 0.55
 @export var creature_attack_damage: float = 8.0
 @export var unarmed_melee_damage: float = 1.0
 @export var tool_melee_damage: float = 2.0
@@ -329,9 +333,9 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= (_gravity * gravity_multiplier) * delta
 
 	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	if _harvest_auto_active and raw_move.length_squared() > 0.0001:
+	if _harvest_auto_active and _is_harvest_cancel_movement_input(raw_move):
 		_stop_harvest_auto()
-	if _harvest_interact_pending and raw_move.length_squared() > 0.0001:
+	if _harvest_interact_pending and _is_harvest_cancel_movement_input(raw_move):
 		_clear_harvest_interact_approach()
 	var input_vec := raw_move
 	var approach_input := _harvest_interact_move_input()
@@ -1591,7 +1595,7 @@ func _harvest_auto_continue_async(gen: int) -> void:
 		_stop_harvest_auto()
 		return
 	var move_check := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	if move_check.length_squared() > 0.0001:
+	if _is_harvest_cancel_movement_input(move_check):
 		_stop_harvest_auto()
 		return
 	if not _harvest_auto_target_still_valid(c):
@@ -1645,6 +1649,11 @@ func _harvest_auto_target_still_valid(c: Object) -> bool:
 	if c.has_method("can_harvest") and not c.can_harvest():
 		return false
 	return true
+
+
+func _is_harvest_cancel_movement_input(move_vec: Vector2) -> bool:
+	var dz := clampf(harvest_auto_cancel_move_deadzone, 0.0, 0.95)
+	return move_vec.length() > dz
 
 
 func _begin_harvest_on_collider(collider: Object) -> Array:
