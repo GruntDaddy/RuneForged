@@ -110,6 +110,61 @@ float cloud_fbm_soft(vec2 p) {
 	return clamp(n, 0.0, 1.0);
 }
 
+float hash31(vec3 p) {
+	return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453123);
+}
+
+float noise3(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	float n000 = hash31(i + vec3(0.0, 0.0, 0.0));
+	float n100 = hash31(i + vec3(1.0, 0.0, 0.0));
+	float n010 = hash31(i + vec3(0.0, 1.0, 0.0));
+	float n110 = hash31(i + vec3(1.0, 1.0, 0.0));
+	float n001 = hash31(i + vec3(0.0, 0.0, 1.0));
+	float n101 = hash31(i + vec3(1.0, 0.0, 1.0));
+	float n011 = hash31(i + vec3(0.0, 1.0, 1.0));
+	float n111 = hash31(i + vec3(1.0, 1.0, 1.0));
+	vec3 u = f * f * (3.0 - 2.0 * f);
+	float nx00 = mix(n000, n100, u.x);
+	float nx10 = mix(n010, n110, u.x);
+	float nx01 = mix(n001, n101, u.x);
+	float nx11 = mix(n011, n111, u.x);
+	float nxy0 = mix(nx00, nx10, u.y);
+	float nxy1 = mix(nx01, nx11, u.y);
+	return mix(nxy0, nxy1, u.z);
+}
+
+float fbm3(vec3 p) {
+	float v = 0.0;
+	float a = 0.5;
+	mat3 rot = mat3(
+		vec3(0.00, 0.80, 0.60),
+		vec3(-0.80, 0.36, -0.48),
+		vec3(-0.60, -0.48, 0.64)
+	);
+	for (int i = 0; i < 5; i++) {
+		v += a * noise3(p);
+		p = rot * p * 2.03 + vec3(17.0, 11.0, 7.0);
+		a *= 0.5;
+	}
+	return v;
+}
+
+float cloud_fbm_soft3(vec3 p) {
+	vec3 warp = vec3(
+		fbm3(p * 0.55 + vec3(3.1, 1.7, 0.9)),
+		fbm3(p * 0.55 + vec3(9.7, 2.3, 6.4)),
+		fbm3(p * 0.55 + vec3(4.9, 8.8, 2.6))
+	) * cloud_warp * 0.5;
+	p += warp;
+	float n = fbm3(p * 1.05) * 0.5;
+	n += fbm3(p * 2.15 + vec3(13.7, 8.2, -6.0)) * 0.28;
+	n += fbm3(p * 4.2 + vec3(-6.0, 2.5, 9.0)) * 0.14;
+	n += fbm3(p * 8.5 + vec3(1.0, 19.0, -4.0)) * 0.08;
+	return clamp(n, 0.0, 1.0);
+}
+
 vec3 sky_gradient(vec3 eyedir, float day_f, float sunset_f) {
 	float v = clamp(eyedir.y * 0.5 + 0.5, 0.0, 1.0);
 	float vp = mix(pow(v, 1.14), pow(v, 0.9), day_f);
@@ -284,15 +339,13 @@ void sky() {
 	col += aurora(dir, moon_dir, night_amt);
 
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
-	// Use spherical (lat/long) cloud mapping so clouds stay anchored on the sky dome
-	// when pitching camera up/down (no horizon dip/pop from perspective projection).
-	float az = atan(dir.z, dir.x) / 6.2831853 + 0.5;
-	float el = asin(clamp(dir.y, -1.0, 1.0)) / 3.14159265 + 0.5;
-	vec2 cu = vec2(az * (cloud_domain * 10.0), el * (cloud_domain * 5.0)) + wind * 1.2;
-	float n = cloud_fbm_soft(cu + vec2(TIME * cloud_wind_speed * 6.0, 0.0));
+	// 3D directional cloud noise avoids horizon pop and pole spiraling.
+	vec3 cloud_p = normalize(dir) * (cloud_domain * 3.2);
+	cloud_p += vec3(wind * 1.2, TIME * cloud_wind_speed * 0.35);
+	float n = cloud_fbm_soft3(cloud_p + vec3(TIME * cloud_wind_speed * 6.0, 0.0, 0.0));
 	float edge = smoothstep(cloud_coverage, cloud_coverage + cloud_softness, n);
 	float puff = edge * edge * (3.0 - 2.0 * edge);
-	float dens = puff * smoothstep(0.08, 0.95, n + 0.05 * fbm(cu * 1.3 + wind));
+	float dens = puff * smoothstep(0.08, 0.95, n + 0.05 * fbm3(cloud_p * 1.3 + vec3(wind, 0.0)));
 	vec3 ccol = mix(cloud_color_night * night_cloud_brightness, cloud_color_day, day_factor);
 	ccol = mix(ccol, cloud_color_sunset, sunset_factor * 0.85);
 	float cloud_alpha = dens * (0.1 + 0.38 * day_factor + 0.07 * night_amt);
