@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes for packaged milestones are summarized here. Internal refactors may be omitted; see `git log` for full history.
+
+## [Unreleased]
+
+- *(nothing yet)*
+
+## [1.1.0] — stable audit tag
+
+**Baseline:** `v1.0.0`. Full audit notes: [docs/release-v1.1.0.md](docs/release-v1.1.0.md).
+
+### Highlights
+
+- Inventory expansion: backpack-gated slots, tacklebox payloads, stacking and catalog-driven ids ([save-format.md](docs/save-format.md), [item-schema.md](docs/item-schema.md)).
+- Crafting and building menus; skill checks for crafting; item/recipe catalogs as autoloads.
+- Game state: skill registry, day/night + moon, campfire/torch and placed-fire persistence, warmth buffs, legacy item id normalization.
+- Tutorial isle and environment updates; sky/day-night tuning.
+- Combat iteration: melee combos (1H sequence), ranged bow with tiered `ammo_arrow_*` consumption order, wildlife behaviors and loot.
+- UI: inventory layout, hotbar, equipment and tooltip flows.
+
+### Documentation
+
+- [docs/combat-spec.md](docs/combat-spec.md) expanded to match implemented combat systems.
+- Reusable [release playtest checklist](docs/release-playtest-checklist.md) and [exports](docs/exports.md) guidance.
+
+### Compatibility
+
+- Saves: additive keys preferred; legacy fields and aliases documented in [save-format.md](docs/save-format.md). Validate critical paths before publishing builds.
+
+[1.1.0]: https://github.com/GruntDaddy/RuneForged/compare/v1.0.0...v1.1.0

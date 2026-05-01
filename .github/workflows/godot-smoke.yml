@@ -1,0 +1,38 @@
+# Short headless run: imports resources and runs the main loop for a few frames.
+# Does not export builds or replace manual playtesting (see docs/release-playtest-checklist.md).
+name: Godot smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: godot-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  headless:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.6 (Linux)
+        env:
+          GODOT_URL: https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip
+        run: |
+          wget -q "$GODOT_URL" -O godot.zip
+          unzip -q godot.zip
+          chmod +x Godot_v4.6-stable_linux.x86_64
+          echo "GODOT_BIN=$PWD/Godot_v4.6-stable_linux.x86_64" >> "$GITHUB_ENV"
+
+      - name: Run project (headless)
+        run: |
+          set -e
+          $GODOT_BIN --version
+          $GODOT_BIN --path . --headless --display-driver headless --audio-driver Dummy --quit-after 120 2>&1 | tee godot_smoke.log
+          echo "---- tail log ----"
+          tail -n 50 godot_smoke.log

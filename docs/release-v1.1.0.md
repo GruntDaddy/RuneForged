@@ -21,9 +21,9 @@ Ship-blocking if observed on a **clean** checkout of the tagged commit:
 
 ### Known debt (acceptable for v1.1.0; re-triage next milestone)
 
-- **`docs/combat-spec.md`** has **no file changes** since v1.0.0 while combat code changed substantially — **spec drift**; follow-up: align doc with melee combos, ranged ammo, and creature combat or mark sections as non-normative.
-- **Export presets** are not tracked in this repository; reproducible builds depend on local **`export_presets.cfg`** — document preset name(s) used for any published zip.
-- **Godot CLI** was not available on the audit machine PATH; automated headless smoke was **not** run here — perform manual smoke (section 4) in the Godot editor before publishing builds.
+- **Combat spec** is now expanded in [combat-spec.md](combat-spec.md) (melee combo, ranged ammo order, touchpoints). Keep it updated when combat contracts change.
+- **Export presets** are still local (see [exports.md](exports.md)) — fill the v1.1.0 row when you publish a binary.
+- **CI:** [`.github/workflows/godot-smoke.yml`](../.github/workflows/godot-smoke.yml) provides headless smoke on `main` / PRs; it is **not** a substitute for [release-playtest-checklist.md](release-playtest-checklist.md) in the editor.
 
 ---
 
@@ -70,13 +70,15 @@ git diff v1.0.0..main --stat -- autoload/ docs/save-format.md docs/item-schema.m
 
 ### Combat spec ([combat-spec.md](combat-spec.md))
 
-- **Unchanged file vs v1.0.0** while code gained melee combos, ranged arrows, animal combat — **contract gap**: gameplay acceptance only; doc refresh recommended post-release.
+- **Aligned** with current implementation: melee combo stepping on `BaseCharacter`, ranged ammo consumption order and projectile spawn on player, creature combat touchpoints, formula/rune services — **verify** in-game using the combat rows in [release-playtest-checklist.md](release-playtest-checklist.md).
 
 ---
 
 ## 4. Godot smoke checklist (manual)
 
-Perform on the **exact tagged commit** before distributing builds:
+Use the full reusable checklist: [release-playtest-checklist.md](release-playtest-checklist.md).
+
+Abbreviated sequence before distributing builds:
 
 1. Fresh clone or `git clean -fdx` (only if safe) / confirm no uncommitted deps.
 2. Open project in **Godot 4.6** (match `config/features`).
@@ -84,9 +86,9 @@ Perform on the **exact tagged commit** before distributing builds:
 4. Run main scene: boot → main menu → **new game** (or load test save).
 5. **Save loop:** change inventory/equipment → save → quit → relaunch → load → confirm state.
 6. **Backpack:** equip/unequip back slot; confirm slots 28–41 lock/unlock per spec.
-7. **Exports:** run **Export** using your **release** preset(s); confirm binary starts and matches editor smoke.
+7. **Exports:** run **Export** using your **release** preset(s); document names in [exports.md](exports.md); confirm binary starts and matches editor smoke.
 
-*CLI alternative when `godot` is on PATH:* from repo root, `godot --path . --headless --quit-after 2` (adjust flags per installed Godot version) as a quick sanity check — does not replace editor smoke.
+*CI:* pushes to `main` run headless smoke via `.github/workflows/godot-smoke.yml`. *Local CLI:* when `godot` is on PATH, `godot --path . --headless --quit-after 2` is a quick check — does not replace editor QA.
 
 ---
 

@@ -16,6 +16,14 @@ RuneForged is a Godot 4 action RPG with itemization, runes, combat systems, UI-d
 - docs/item-schema.md
 - docs/save-format.md
 
+## Stable releases and versioning
+- **Tagged releases:** git tags `v*.*.*` (annotated) mark stable checkpoints on `main`.
+- **Per-release audit notes:** `docs/release-vX.Y.Z.md` (example: [docs/release-v1.1.0.md](docs/release-v1.1.0.md)).
+- **Human QA checklist (reuse each milestone):** [docs/release-playtest-checklist.md](docs/release-playtest-checklist.md).
+- **Exports / build presets:** [docs/exports.md](docs/exports.md).
+- **Player-facing history:** [CHANGELOG.md](CHANGELOG.md).
+- **Automated sanity:** `.github/workflows/godot-smoke.yml` runs a short headless Godot pass on push/PR (not a substitute for editor QA).
+
 ## High-priority constraints
 - Godot 4.x only
 - Preserve save compatibility
