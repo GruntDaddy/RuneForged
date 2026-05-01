@@ -38,6 +38,7 @@ General/default_terrain_physics_layer=3
 config/name="RuneForged"
 run/main_scene="res://ui/boot_splash/splash_boot.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
+config/version="1.1.0"
 
 [audio]
 
