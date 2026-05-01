@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 ## Drives sun/moon sky shader, DirectionalLight3D, and ambient for a full day-night cycle.
 ## Expects a sibling DirectionalLight3D and WorldEnvironment (paths configurable).
@@ -5,6 +6,16 @@ extends Node3D
 ## Full cycle duration in seconds (default 90 for fast iteration).
 @export var day_length_seconds: float = 90.0
 @export_range(0.0, 1.0) var start_time_of_day: float = 0.32
+
+@export_group("Editor preview")
+## When on, the 3D editor uses this value for sky/light/fog instead of advancing `day_length_seconds`.
+@export var freeze_automatic_time_in_editor: bool = true
+@export_range(0.0, 1.0, 0.001) var editor_preview_time_of_day: float = 0.32:
+	set(v):
+		editor_preview_time_of_day = clampf(v, 0.0, 0.999999)
+		if Engine.is_editor_hint() and is_inside_tree():
+			_time_of_day = editor_preview_time_of_day
+			_apply_time()
 
 @export_group("Light")
 @export var sun_energy_max: float = 0.85
@@ -41,7 +52,8 @@ extends Node3D
 ## When true, boosts moon rim strength toward night so the moon reads better against the dark sky.
 @export var drive_sky_night_visuals: bool = false
 @export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.25
-@export var drive_sky_aurora: bool = true
+## When true, overwrites `aurora_intensity` on the sky material from day/night lerps.
+@export var drive_sky_aurora: bool = false
 @export_range(0.0, 1.0, 0.01) var aurora_intensity_day: float = 0.0
 @export_range(0.0, 2.0, 0.01) var aurora_intensity_night: float = 0.32
 @export_group("Moon phase")
@@ -51,7 +63,9 @@ extends Node3D
 @export_range(1.0, 60.0, 0.1) var moon_phase_days: float = 12.0
 @export_range(0.0, 1.0, 0.001) var start_moon_phase: float = 0.18
 @export_group("Sky tuning")
-@export var apply_stylized_sky_preset: bool = true
+## When true, overwrites many sky ShaderMaterial parameters every frame from the exports below.
+## Turn off to keep colors/clouds/stars/etc. from the WorldEnvironment sky material resource.
+@export var apply_stylized_sky_preset: bool = false
 ## ~60% of sun angular width when sun_disk_size ≈ 0.00225 (see `rune_sky.gdshader`).
 @export_range(0.0005, 0.06, 0.0001) var moon_disk_size_target: float = 0.00285
 @export var moon_disk_color_target: Color = Color(0.81, 0.85, 0.93)
@@ -91,19 +105,31 @@ func set_underwater_fog_override(active: bool, depth_t: float) -> void:
 
 
 func _ready() -> void:
-	_time_of_day = start_time_of_day
 	_moon_phase = start_moon_phase
 	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment
 	if we != null and we.environment != null:
 		var sky: Sky = we.environment.sky
 		if sky != null and sky.sky_material is ShaderMaterial:
 			_sky_material = sky.sky_material
-	_spawn_saved_fire_props()
-	_load_persisted_cycle_state()
+	if Engine.is_editor_hint():
+		_time_of_day = editor_preview_time_of_day
+	else:
+		_time_of_day = start_time_of_day
+		_spawn_saved_fire_props()
+		_load_persisted_cycle_state()
 	_apply_time()
 
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		if freeze_automatic_time_in_editor:
+			_time_of_day = editor_preview_time_of_day
+		elif day_length_seconds > 0.001:
+			_time_of_day = fmod(_time_of_day + delta / day_length_seconds, 1.0)
+			var phase_len_ed: float = maxf(1.0, moon_phase_days) * day_length_seconds
+			_moon_phase = fmod(_moon_phase + delta / phase_len_ed, 1.0)
+		_apply_time()
+		return
 	if day_length_seconds <= 0.001:
 		return
 	_time_of_day = fmod(_time_of_day + delta / day_length_seconds, 1.0)
@@ -138,6 +164,8 @@ func _moon_direction(sun_dir: Vector3) -> Vector3:
 
 
 func _load_persisted_cycle_state() -> void:
+	if Engine.is_editor_hint():
+		return
 	if not persist_time_to_game_state and not persist_moon_phase_to_game_state:
 		return
 	var gs: Node = get_node_or_null("/root/GameState")
@@ -150,6 +178,8 @@ func _load_persisted_cycle_state() -> void:
 
 
 func _store_cycle_state() -> void:
+	if Engine.is_editor_hint():
+		return
 	if not persist_time_to_game_state and not persist_moon_phase_to_game_state:
 		return
 	var gs: Node = get_node_or_null("/root/GameState")
