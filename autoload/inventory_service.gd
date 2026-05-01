@@ -4,7 +4,9 @@ extends Node
 
 signal inventory_changed
 
-const SLOT_COUNT := 16
+const BASE_SLOT_COUNT := 28
+const BACKPACK_SLOT_COUNT := 14
+const SLOT_COUNT := BASE_SLOT_COUNT + BACKPACK_SLOT_COUNT
 ## Fallback when an item id is missing from ItemCatalog.
 const MAX_STACK := 99
 
@@ -31,6 +33,34 @@ func _ready() -> void:
 	slots.resize(SLOT_COUNT)
 	for i in SLOT_COUNT:
 		slots[i] = null
+
+
+func has_backpack_equipped() -> bool:
+	var back_slot: Variant = GameState.equipment.get("back", null)
+	if back_slot == null:
+		return false
+	var item_id := _normalize_item_id(str(back_slot.get("id", "")))
+	if item_id.begins_with("backpack_"):
+		return true
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it == null:
+		return false
+	for tag in it.tags:
+		if str(tag) == "backpack":
+			return true
+	return false
+
+
+func get_unlocked_slot_count() -> int:
+	if has_backpack_equipped():
+		return SLOT_COUNT
+	return BASE_SLOT_COUNT
+
+
+func is_slot_unlocked(slot_idx: int) -> bool:
+	if slot_idx < 0 or slot_idx >= SLOT_COUNT:
+		return false
+	return slot_idx < get_unlocked_slot_count()
 
 
 func _stack_cap_for(item_id: String) -> int:
@@ -282,7 +312,8 @@ func add_item(item_name: String, quantity: int = 1) -> int:
 	var left: int = quantity
 	var cap: int = _stack_cap_for(item_name)
 	# Stack into existing piles first
-	for i in SLOT_COUNT:
+	var unlocked_count := get_unlocked_slot_count()
+	for i in unlocked_count:
 		if left <= 0:
 			break
 		var s: Variant = slots[i]
@@ -301,7 +332,7 @@ func add_item(item_name: String, quantity: int = 1) -> int:
 		slots[i] = merged
 		left -= add
 	if left > 0:
-		for i in SLOT_COUNT:
+		for i in unlocked_count:
 			if left <= 0:
 				break
 			if slots[i] != null:
@@ -326,7 +357,8 @@ func _copy_slot_extras(from: Variant, to: Dictionary) -> void:
 
 func remove_item(item_name: String, quantity: int = 1) -> void:
 	var left: int = quantity
-	for i in SLOT_COUNT:
+	var unlocked_count := get_unlocked_slot_count()
+	for i in unlocked_count:
 		if left <= 0:
 			break
 		var s: Variant = slots[i]
@@ -347,7 +379,8 @@ func remove_item(item_name: String, quantity: int = 1) -> void:
 
 func get_items_copy() -> Dictionary:
 	var out := {}
-	for i in SLOT_COUNT:
+	var unlocked_count := get_unlocked_slot_count()
+	for i in unlocked_count:
 		var s: Variant = slots[i]
 		if s == null:
 			continue
@@ -366,7 +399,8 @@ func has_item(item_name: String) -> bool:
 
 func get_item_count(item_name: String) -> int:
 	var n := 0
-	for i in SLOT_COUNT:
+	var unlocked_count := get_unlocked_slot_count()
+	for i in unlocked_count:
 		var s: Variant = slots[i]
 		if s != null and str(s.get("id", "")) == item_name:
 			n += int(s.get("count", 0))
@@ -376,11 +410,15 @@ func get_item_count(item_name: String) -> int:
 func get_slot_data(index: int) -> Variant:
 	if index < 0 or index >= SLOT_COUNT:
 		return null
+	if not is_slot_unlocked(index):
+		return null
 	return slots[index]
 
 
 func remove_amount_from_slot(slot_idx: int, amount: int) -> bool:
 	if amount < 1 or slot_idx < 0 or slot_idx >= SLOT_COUNT:
+		return false
+	if not is_slot_unlocked(slot_idx):
 		return false
 	var s: Variant = slots[slot_idx]
 	if s == null:
@@ -400,6 +438,8 @@ func remove_amount_from_slot(slot_idx: int, amount: int) -> bool:
 func set_slot_data(slot_idx: int, data: Variant) -> void:
 	if slot_idx < 0 or slot_idx >= SLOT_COUNT:
 		return
+	if not is_slot_unlocked(slot_idx):
+		return
 	if data == null:
 		slots[slot_idx] = null
 	else:
@@ -413,6 +453,8 @@ func move_or_merge(from_idx: int, to_idx: int) -> void:
 	if from_idx < 0 or from_idx >= SLOT_COUNT:
 		return
 	if to_idx < 0 or to_idx >= SLOT_COUNT:
+		return
+	if not is_slot_unlocked(from_idx) or not is_slot_unlocked(to_idx):
 		return
 	var a: Variant = slots[from_idx]
 	if a == null:
@@ -464,6 +506,8 @@ func _duplicate_slot(s: Variant) -> Dictionary:
 
 func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_parent: Node) -> void:
 	if slot_idx < 0 or slot_idx >= SLOT_COUNT:
+		return
+	if not is_slot_unlocked(slot_idx):
 		return
 	var s: Variant = slots[slot_idx]
 	if s == null:

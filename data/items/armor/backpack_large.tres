@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_id"]
+[ext_resource type="Texture2D" path="res://assets/Fantasy RPG UI/Individual files/2x/Icon's and items/I_Mirror.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_id")
+id = "backpack_large"
+display_name = "Large backpack"
+description = "A rugged backpack that unlocks extra inventory space when equipped in the back slot."
+category = 5
+max_stack = 1
+tags = PackedStringArray("back", "backpack", "storage")
+icon = ExtResource("2_icon")
+pickup_scene_path = "res://world/pickups/backpack_large_pickup.tscn"

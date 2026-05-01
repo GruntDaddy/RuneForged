@@ -15,6 +15,7 @@ var _slots: Array[Panel] = []
 var _was_mouse_captured: bool = false
 var _drag_from_idx: int = -1
 var _default_slot_icon: Texture2D = null
+var _built_slot_count: int = -1
 
 var _tackle_window: Window = null
 var _tackle_inventory_slot: int = -1
@@ -64,6 +65,7 @@ func _ready() -> void:
 
 
 func _on_inventory_service_changed() -> void:
+	_rebuild_slots_if_needed()
 	_refresh_grid()
 	_refresh_tackle_panel()
 
@@ -83,6 +85,7 @@ func toggle_inventory() -> void:
 	if visible:
 		_was_mouse_captured = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_rebuild_slots_if_needed()
 		_refresh_grid()
 	else:
 		_hide_hover_tooltip()
@@ -96,8 +99,9 @@ func _build_slots() -> void:
 	for c in _grid.get_children():
 		c.queue_free()
 	_slots.clear()
+	_built_slot_count = InventoryService.get_unlocked_slot_count()
 	_grid.columns = SLOT_COLS
-	for i in InventoryService.SLOT_COUNT:
+	for i in _built_slot_count:
 		var slot := Panel.new()
 		slot.custom_minimum_size = SLOT_SIZE
 		slot.name = "Slot_%d" % i
@@ -147,6 +151,13 @@ func _build_slots() -> void:
 		vb.add_child(count_l)
 		_grid.add_child(slot)
 		_slots.append(slot)
+
+
+func _rebuild_slots_if_needed() -> void:
+	var unlocked_count := InventoryService.get_unlocked_slot_count()
+	if unlocked_count == _built_slot_count:
+		return
+	_build_slots()
 
 
 func _unhandled_input(event: InputEvent) -> void:

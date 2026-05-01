@@ -15,10 +15,11 @@
 
 ## Inventory (`SaveManager` v2+)
 
-- **`inventory.slots`**: array length matches `InventoryService.SLOT_COUNT`. Each entry is `null` or a dictionary:
+- **`inventory.slots`**: array length matches `InventoryService.SLOT_COUNT` (currently 42 = 28 base + 14 backpack). Each entry is `null` or a dictionary:
   - **`id`**: string, item id.
   - **`count`**: int, clamped on load by `ItemData.max_stack` from ItemCatalog.
   - **`tackle`** (optional, only when `id` is `tool_tacklebox`): dictionary with **`hooks`**, **`bobbers`**, **`bait`** — each is an array of `null` or `{ "id": String, "count": int }`. Missing `tackle` on load defaults to empty grids.
+- Runtime lock rule: slots `0-27` are always available; slots `28-41` are only usable while a backpack is equipped in the `back` equipment slot.
 
 ## Game State Additions (`SaveManager` v2 payload.game_state)
 

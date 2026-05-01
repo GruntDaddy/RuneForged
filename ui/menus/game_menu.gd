@@ -14,6 +14,7 @@ const TAB_CODEX := 6
 const _SLOT_COLS := 4
 const _INV_SLOT_SIZE := Vector2(70, 82)
 const _EQUIP_SLOT_SIZE := _INV_SLOT_SIZE
+const _BASE_INV_SLOTS := 28
 
 const _TAB_NAMES: PackedStringArray = [
 	"Vitals",
@@ -113,8 +114,11 @@ var _pending_tab: int = -1
 const _FLIP_OUT_SEC := 0.14
 const _FLIP_IN_SEC := 0.17
 
-var _inv_grid: GridContainer
-var _inv_slots: Array[Panel] = []
+var _inv_base_grid: GridContainer
+var _inv_backpack_grid: GridContainer
+var _inv_backpack_section: PanelContainer
+var _inv_backpack_locked_hint: Label
+var _inv_slots: Array[Dictionary] = []  ## { "idx": int, "panel": Panel, "is_backpack": bool }
 var _equip_panels: Dictionary = {}  ## slot_id -> Panel
 
 var _page_crafting_list: ItemList
@@ -681,12 +685,40 @@ func _build_inventory_page(page: Control) -> void:
 	sc.clip_contents = true
 	_style_scroll_transparent(sc)
 	right_inner.add_child(sc)
-	_inv_grid = GridContainer.new()
-	_inv_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_inv_grid.columns = _SLOT_COLS
-	_inv_grid.add_theme_constant_override("h_separation", 6)
-	_inv_grid.add_theme_constant_override("v_separation", 6)
-	sc.add_child(_inv_grid)
+	var inv_v := VBoxContainer.new()
+	inv_v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inv_v.add_theme_constant_override("separation", 10)
+	sc.add_child(inv_v)
+	_inv_base_grid = GridContainer.new()
+	_inv_base_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_inv_base_grid.columns = _SLOT_COLS
+	_inv_base_grid.add_theme_constant_override("h_separation", 6)
+	_inv_base_grid.add_theme_constant_override("v_separation", 6)
+	inv_v.add_child(_inv_base_grid)
+	_inv_backpack_section = PanelContainer.new()
+	_inv_backpack_section.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_apply_inner_card_style(_inv_backpack_section)
+	inv_v.add_child(_inv_backpack_section)
+	var backpack_inner := VBoxContainer.new()
+	backpack_inner.add_theme_constant_override("separation", 6)
+	_inv_backpack_section.add_child(backpack_inner)
+	var backpack_title := Label.new()
+	backpack_title.text = "Backpack"
+	_apply_section_title(backpack_title)
+	backpack_title.add_theme_font_size_override("font_size", 16)
+	backpack_inner.add_child(backpack_title)
+	_inv_backpack_locked_hint = Label.new()
+	_inv_backpack_locked_hint.text = "Equip a backpack in the Back slot to unlock 14 extra slots."
+	_inv_backpack_locked_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_apply_body_label(_inv_backpack_locked_hint, 11)
+	_inv_backpack_locked_hint.add_theme_color_override("font_color", _COL_INK_MUTED)
+	backpack_inner.add_child(_inv_backpack_locked_hint)
+	_inv_backpack_grid = GridContainer.new()
+	_inv_backpack_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_inv_backpack_grid.columns = _SLOT_COLS
+	_inv_backpack_grid.add_theme_constant_override("h_separation", 6)
+	_inv_backpack_grid.add_theme_constant_override("v_separation", 6)
+	backpack_inner.add_child(_inv_backpack_grid)
 	_build_inv_slots()
 	var help := Label.new()
 	help.text = "Drag between slots and equipment. Drop outside to place. Right-click a tackle box to manage lures."
@@ -782,14 +814,31 @@ func _make_slot_panel(sz: Vector2) -> Panel:
 
 
 func _build_inv_slots() -> void:
-	for c in _inv_grid.get_children():
+	for c in _inv_base_grid.get_children():
+		c.queue_free()
+	for c in _inv_backpack_grid.get_children():
 		c.queue_free()
 	_inv_slots.clear()
 	for i in InventoryService.SLOT_COUNT:
 		var slot := _make_slot_panel(_INV_SLOT_SIZE)
 		slot.name = "InvSlot_%d" % i
-		_inv_grid.add_child(slot)
-		_inv_slots.append(slot)
+		if i < _BASE_INV_SLOTS:
+			_inv_base_grid.add_child(slot)
+			_inv_slots.append({"idx": i, "panel": slot, "is_backpack": false})
+		else:
+			_inv_backpack_grid.add_child(slot)
+			_inv_slots.append({"idx": i, "panel": slot, "is_backpack": true})
+
+
+func _refresh_backpack_visibility() -> void:
+	if _inv_backpack_section == null:
+		return
+	var backpack_unlocked := InventoryService.has_backpack_equipped()
+	_inv_backpack_section.visible = backpack_unlocked
+	if _inv_backpack_grid != null:
+		_inv_backpack_grid.visible = backpack_unlocked
+	if _inv_backpack_locked_hint != null:
+		_inv_backpack_locked_hint.visible = not backpack_unlocked
 
 
 func _build_skills_page(page: Control) -> void:
@@ -1328,13 +1377,17 @@ func _begin_page_flip_to(new_idx: int) -> void:
 func _refresh_inv_grid() -> void:
 	if _inv_slots.is_empty():
 		return
-	for i in _inv_slots.size():
-		var slot: Panel = _inv_slots[i]
+	_refresh_backpack_visibility()
+	for entry in _inv_slots:
+		var idx := int(entry.get("idx", -1))
+		var slot: Panel = entry.get("panel", null) as Panel
+		if slot == null or idx < 0:
+			continue
 		var icon_tex: TextureRect = slot.find_child("IconTexture", true, false)
 		var icon_fb: Label = slot.find_child("IconFallback", true, false)
 		var name_l: Label = slot.find_child("NameLabel", true, false)
 		var count_l: Label = slot.find_child("CountLabel", true, false)
-		var s: Variant = InventoryService.get_slot_data(i)
+		var s: Variant = InventoryService.get_slot_data(idx)
 		if s != null:
 			var item_id: String = str(s.get("id", ""))
 			_apply_icon_to_texture_rect(icon_tex, icon_fb, item_id)
@@ -1551,9 +1604,15 @@ func _on_craft_pressed() -> void:
 func _inv_slot_from_mouse(global_pos: Vector2) -> int:
 	if _current_tab != TAB_INVENTORY:
 		return -1
-	for i in _inv_slots.size():
-		if _inv_slots[i].get_global_rect().has_point(global_pos):
-			return i
+	for entry in _inv_slots:
+		var idx := int(entry.get("idx", -1))
+		var slot: Panel = entry.get("panel", null) as Panel
+		if slot == null or idx < 0:
+			continue
+		if not slot.is_visible_in_tree():
+			continue
+		if slot.get_global_rect().has_point(global_pos):
+			return idx
 	return -1
 
 
