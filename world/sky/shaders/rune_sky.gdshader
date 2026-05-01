@@ -284,7 +284,11 @@ void sky() {
 	col += aurora(dir, moon_dir, night_amt);
 
 	vec2 wind = vec2(TIME * cloud_wind_speed, TIME * cloud_wind_speed * 0.73);
-	vec2 cu = dir.xz / max(dir.y + 0.22, 0.08) * cloud_domain + wind * 1.2;
+	// Use spherical (lat/long) cloud mapping so clouds stay anchored on the sky dome
+	// when pitching camera up/down (no horizon dip/pop from perspective projection).
+	float az = atan(dir.z, dir.x) / 6.2831853 + 0.5;
+	float el = asin(clamp(dir.y, -1.0, 1.0)) / 3.14159265 + 0.5;
+	vec2 cu = vec2(az * (cloud_domain * 10.0), el * (cloud_domain * 5.0)) + wind * 1.2;
 	float n = cloud_fbm_soft(cu + vec2(TIME * cloud_wind_speed * 6.0, 0.0));
 	float edge = smoothstep(cloud_coverage, cloud_coverage + cloud_softness, n);
 	float puff = edge * edge * (3.0 - 2.0 * edge);
