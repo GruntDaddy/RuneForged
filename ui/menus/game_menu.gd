@@ -689,19 +689,22 @@ func _build_inventory_page(page: Control) -> void:
 	rt.text = "Inventory"
 	_apply_section_title(rt)
 	right_inner.add_child(rt)
-	var inv_v := VBoxContainer.new()
+	var inv_v := HBoxContainer.new()
 	inv_v.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	inv_v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inv_v.add_theme_constant_override("separation", 10)
 	right_inner.add_child(inv_v)
 	_inv_base_grid = GridContainer.new()
 	_inv_base_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_inv_base_grid.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_inv_base_grid.columns = _SLOT_COLS
 	_inv_base_grid.add_theme_constant_override("h_separation", 6)
 	_inv_base_grid.add_theme_constant_override("v_separation", 6)
 	inv_v.add_child(_inv_base_grid)
 	_inv_backpack_section = PanelContainer.new()
+	_inv_backpack_section.custom_minimum_size = Vector2(270, 0)
 	_inv_backpack_section.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_inv_backpack_section.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_apply_inner_card_style(_inv_backpack_section)
 	inv_v.add_child(_inv_backpack_section)
 	var backpack_inner := VBoxContainer.new()
