@@ -8,14 +8,29 @@ extends Node3D
 @export_range(0.0, 1.0) var start_time_of_day: float = 0.32
 
 @export_group("Editor preview")
-## When on, the 3D editor uses this value for sky/light/fog instead of advancing `day_length_seconds`.
-@export var freeze_automatic_time_in_editor: bool = true
-@export_range(0.0, 1.0, 0.001) var editor_preview_time_of_day: float = 0.32:
+## Preview-only controls for editor scene view.
+## 0 = midnight, 6 = dawn, 12 = noon, 18 = dusk. Editor does not auto-cycle time.
+@export var editor_preview_enabled: bool = true:
 	set(v):
-		editor_preview_time_of_day = clampf(v, 0.0, 0.999999)
-		if Engine.is_editor_hint() and is_inside_tree():
-			_time_of_day = editor_preview_time_of_day
-			_apply_time()
+		editor_preview_enabled = v
+		if Engine.is_editor_hint() and is_inside_tree() and editor_preview_enabled:
+			_editor_apply_preview()
+@export_range(0.0, 24.0, 0.25) var editor_preview_hours: float = 12.0:
+	set(v):
+		editor_preview_hours = clampf(v, 0.0, 24.0)
+		if not Engine.is_editor_hint():
+			return
+		if not is_inside_tree():
+			return
+		_editor_apply_preview()
+@export_range(0.0, 1.0, 0.001) var editor_preview_moon_phase: float = 0.18:
+	set(v):
+		editor_preview_moon_phase = clampf(v, 0.0, 0.999999)
+		if not Engine.is_editor_hint():
+			return
+		if not is_inside_tree():
+			return
+		_editor_apply_preview()
 
 @export_group("Light")
 @export var sun_energy_max: float = 0.85
@@ -49,7 +64,7 @@ extends Node3D
 @export_range(0.0, 1.0, 0.01) var underwater_fog_sky_affect: float = 0.55
 
 @export_group("Sky shader (optional)")
-## When true, boosts moon rim strength toward night so the moon reads better against the dark sky.
+## When true, overwrites `moon_rim_strength` on the sky material from day/night. Turn off to keep the material value.
 @export var drive_sky_night_visuals: bool = false
 @export_range(0.0, 1.0, 0.01) var sky_moon_rim_night_max: float = 0.25
 ## When true, overwrites `aurora_intensity` on the sky material from day/night lerps.
@@ -99,22 +114,49 @@ var _underwater_fog_depth_t: float = 0.0
 var _last_lit_dir: Vector3 = Vector3(0.0, -1.0, 0.0)
 
 
+func _ensure_sky_material() -> void:
+	if _sky_material != null:
+		return
+	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment
+	if we == null or we.environment == null:
+		return
+	var sky: Sky = we.environment.sky
+	if sky != null and sky.sky_material is ShaderMaterial:
+		_sky_material = sky.sky_material
+
+
+func _editor_hours_to_cycle_t(hours: float) -> float:
+	return fmod(hours / 24.0, 1.0)
+
+
+func _editor_apply_preview() -> void:
+	if not Engine.is_editor_hint() or not is_inside_tree() or not editor_preview_enabled:
+		return
+	_time_of_day = _editor_hours_to_cycle_t(editor_preview_hours)
+	_moon_phase = editor_preview_moon_phase
+	_ensure_sky_material()
+	_apply_time()
+
+
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		call_deferred("_editor_apply_preview")
+
+
 func set_underwater_fog_override(active: bool, depth_t: float) -> void:
 	_underwater_fog_active = active
 	_underwater_fog_depth_t = clampf(depth_t, 0.0, 1.0)
 
 
 func _ready() -> void:
-	_moon_phase = start_moon_phase
-	var we: WorldEnvironment = get_node_or_null(world_environment_path) as WorldEnvironment
-	if we != null and we.environment != null:
-		var sky: Sky = we.environment.sky
-		if sky != null and sky.sky_material is ShaderMaterial:
-			_sky_material = sky.sky_material
 	if Engine.is_editor_hint():
-		_time_of_day = editor_preview_time_of_day
+		_time_of_day = _editor_hours_to_cycle_t(editor_preview_hours)
+		_moon_phase = editor_preview_moon_phase
 	else:
 		_time_of_day = start_time_of_day
+		_moon_phase = start_moon_phase
+	_ensure_sky_material()
+	if not Engine.is_editor_hint():
 		_spawn_saved_fire_props()
 		_load_persisted_cycle_state()
 	_apply_time()
@@ -122,13 +164,6 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
-		if freeze_automatic_time_in_editor:
-			_time_of_day = editor_preview_time_of_day
-		elif day_length_seconds > 0.001:
-			_time_of_day = fmod(_time_of_day + delta / day_length_seconds, 1.0)
-			var phase_len_ed: float = maxf(1.0, moon_phase_days) * day_length_seconds
-			_moon_phase = fmod(_moon_phase + delta / phase_len_ed, 1.0)
-		_apply_time()
 		return
 	if day_length_seconds <= 0.001:
 		return
@@ -242,6 +277,7 @@ func _scene_has_fire_id(scene: Node, fire_id: String) -> bool:
 
 
 func _apply_time() -> void:
+	_ensure_sky_material()
 	var sun_dir: Vector3 = _sun_direction()
 	var moon_dir: Vector3 = _moon_direction(sun_dir)
 	var height: float = sun_dir.y
