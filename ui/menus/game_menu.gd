@@ -12,7 +12,7 @@ const TAB_QUESTS := 5
 const TAB_CODEX := 6
 
 const _SLOT_COLS := 4
-const _INV_SLOT_SIZE := Vector2(70, 82)
+const _INV_SLOT_SIZE := Vector2(64, 74)
 const _EQUIP_SLOT_SIZE := _INV_SLOT_SIZE
 const _BASE_INV_SLOTS := 28
 
@@ -119,6 +119,8 @@ var _inv_backpack_grid: GridContainer
 var _inv_backpack_section: PanelContainer
 var _inv_backpack_locked_hint: Label
 var _inv_slots: Array[Dictionary] = []  ## { "idx": int, "panel": Panel, "is_backpack": bool }
+var _menu_hotbar_panels: Array[Panel] = []
+var _menu_hotbar_labels: Array[Label] = []
 var _equip_panels: Dictionary = {}  ## slot_id -> Panel
 
 var _page_crafting_list: ItemList
@@ -188,6 +190,7 @@ func _on_inventory_changed() -> void:
 	if visible:
 		_refresh_inv_grid()
 		_refresh_equip_slots()
+		_refresh_menu_hotbar()
 		_refresh_tackle_panel()
 		_refresh_skills_page()
 		_refresh_magic_rune_picker()
@@ -198,7 +201,9 @@ func _on_backdrop_gui_input(event: InputEvent) -> void:
 	if not visible:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		close_menu()
+		var book_rect := _book.get_global_rect()
+		if not book_rect.has_point(event.global_position):
+			close_menu()
 
 
 func toggle(default_tab: int = 0) -> void:
@@ -216,6 +221,7 @@ func open_menu(tab_idx: int = 0) -> void:
 	_play_open_anim()
 	_refresh_inv_grid()
 	_refresh_equip_slots()
+	_refresh_menu_hotbar()
 	_refresh_skills_page()
 	_refresh_magic_rune_picker()
 	_refresh_vitals_page()
@@ -276,6 +282,14 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		var hb_idx := _menu_hotbar_slot_from_mouse(event.global_position)
+		if hb_idx >= 0:
+			while GameState.hotbar_item_ids.size() < 4:
+				GameState.hotbar_item_ids.append("")
+			GameState.hotbar_item_ids[hb_idx] = ""
+			_refresh_menu_hotbar()
+			get_viewport().set_input_as_handled()
+			return
 		var inv_idx := _inv_slot_from_mouse(event.global_position)
 		if inv_idx >= 0:
 			var s: Variant = InventoryService.get_slot_data(inv_idx)
@@ -292,6 +306,11 @@ func _input(event: InputEvent) -> void:
 		_drag_preview.global_position = event.global_position + Vector2(16, 16)
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			var hb_left_idx := _menu_hotbar_slot_from_mouse(event.global_position)
+			if hb_left_idx >= 0:
+				if _begin_drag_hotbar(hb_left_idx):
+					get_viewport().set_input_as_handled()
+					return
 			if event.double_click:
 				var dbl_inv_idx := _inv_slot_from_mouse(event.global_position)
 				if dbl_inv_idx >= 0 and _try_quick_equip_inventory_slot(dbl_inv_idx):
@@ -619,17 +638,10 @@ func _build_inventory_page(page: Control) -> void:
 	lt.text = "Equipment"
 	_apply_section_title(lt)
 	left_inner.add_child(lt)
-	var eq_sc := ScrollContainer.new()
-	eq_sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	eq_sc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	eq_sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	eq_sc.clip_contents = true
-	eq_sc.custom_minimum_size = Vector2(0, 180)
-	_style_scroll_transparent(eq_sc)
-	left_inner.add_child(eq_sc)
 	var eg := VBoxContainer.new()
+	eg.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	eg.add_theme_constant_override("separation", 8)
-	eq_sc.add_child(eg)
+	left_inner.add_child(eg)
 	_equip_panels.clear()
 	var equip_rows: Array[Array] = [
 		["", "head", ""],
@@ -643,7 +655,7 @@ func _build_inventory_page(page: Control) -> void:
 		eg.add_child(row_box)
 		for slot_id in row:
 			var cell := VBoxContainer.new()
-			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			cell.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			row_box.add_child(cell)
 			if slot_id == "":
 				var spacer := Control.new()
@@ -677,18 +689,11 @@ func _build_inventory_page(page: Control) -> void:
 	rt.text = "Inventory"
 	_apply_section_title(rt)
 	right_inner.add_child(rt)
-	var sc := ScrollContainer.new()
-	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	sc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	sc.custom_minimum_size = Vector2(120, 160)
-	sc.clip_contents = true
-	_style_scroll_transparent(sc)
-	right_inner.add_child(sc)
 	var inv_v := VBoxContainer.new()
+	inv_v.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	inv_v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inv_v.add_theme_constant_override("separation", 10)
-	sc.add_child(inv_v)
+	right_inner.add_child(inv_v)
 	_inv_base_grid = GridContainer.new()
 	_inv_base_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_inv_base_grid.columns = _SLOT_COLS
@@ -720,8 +725,9 @@ func _build_inventory_page(page: Control) -> void:
 	_inv_backpack_grid.add_theme_constant_override("v_separation", 6)
 	backpack_inner.add_child(_inv_backpack_grid)
 	_build_inv_slots()
+	_build_menu_hotbar(right_inner)
 	var help := Label.new()
-	help.text = "Drag between slots and equipment. Drop outside to place. Right-click a tackle box to manage lures."
+	help.text = "Drag between slots and equipment. Drag to hotbar below. Right-click tackle box. Right-click hotbar to clear."
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_apply_body_label(help, 11)
 	help.add_theme_color_override("font_color", _COL_INK_MUTED)
@@ -749,7 +755,7 @@ func _equip_label(slot_id: String) -> String:
 		"feet":
 			return "Feet"
 		"back":
-			return "Back Slot: Quiver/Backpack/etc"
+			return "Back"
 		"ring_1":
 			return "Ring"
 		"ring_2":
@@ -828,6 +834,82 @@ func _build_inv_slots() -> void:
 		else:
 			_inv_backpack_grid.add_child(slot)
 			_inv_slots.append({"idx": i, "panel": slot, "is_backpack": true})
+
+
+func _build_menu_hotbar(parent: VBoxContainer) -> void:
+	_menu_hotbar_panels.clear()
+	_menu_hotbar_labels.clear()
+	var hotbar_box := VBoxContainer.new()
+	hotbar_box.add_theme_constant_override("separation", 4)
+	parent.add_child(hotbar_box)
+	var title := Label.new()
+	title.text = "Hotbar"
+	_apply_body_label(title, 12)
+	title.add_theme_color_override("font_color", _COL_INK_MUTED)
+	hotbar_box.add_child(title)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	hotbar_box.add_child(row)
+	for i in 4:
+		var slot := Panel.new()
+		slot.custom_minimum_size = Vector2(112, 48)
+		slot.mouse_filter = Control.MOUSE_FILTER_STOP
+		row.add_child(slot)
+		var vb := VBoxContainer.new()
+		vb.set_anchors_preset(Control.PRESET_FULL_RECT)
+		vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vb.add_theme_constant_override("separation", 1)
+		slot.add_child(vb)
+		var key := Label.new()
+		key.text = "[%d]" % (i + 1)
+		key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_apply_body_label(key, 10)
+		vb.add_child(key)
+		var name_label := Label.new()
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.clip_text = true
+		_apply_body_label(name_label, 11)
+		name_label.name = "HotbarName_%d" % i
+		vb.add_child(name_label)
+		_menu_hotbar_panels.append(slot)
+		_menu_hotbar_labels.append(name_label)
+	_refresh_menu_hotbar()
+
+
+func _menu_hotbar_slot_from_mouse(global_pos: Vector2) -> int:
+	if _current_tab != TAB_INVENTORY:
+		return -1
+	for i in _menu_hotbar_panels.size():
+		if _menu_hotbar_panels[i].get_global_rect().has_point(global_pos):
+			return i
+	return -1
+
+
+func _refresh_menu_hotbar() -> void:
+	for i in _menu_hotbar_panels.size():
+		var item_id := ""
+		if GameState.hotbar_item_ids.size() > i:
+			item_id = str(GameState.hotbar_item_ids[i])
+		if i < _menu_hotbar_labels.size():
+			_menu_hotbar_labels[i].text = _pretty_item_name(item_id) if not item_id.is_empty() else "(empty)"
+		_apply_menu_hotbar_style(_menu_hotbar_panels[i], false, not item_id.is_empty())
+
+
+func _apply_menu_hotbar_style(panel: Panel, selected: bool, filled: bool) -> void:
+	var sb := StyleBoxFlat.new()
+	if selected:
+		sb.bg_color = Color(0.14, 0.17, 0.22, 0.98)
+		sb.border_color = Color(0.98, 0.93, 0.72, 1.0)
+	elif filled:
+		sb.bg_color = Color(0.08, 0.12, 0.17, 0.95)
+		sb.border_color = Color(0.56, 0.73, 0.9, 1.0)
+	else:
+		sb.bg_color = Color(0.05, 0.08, 0.12, 0.85)
+		sb.border_color = Color(0.38, 0.46, 0.58, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(4)
+	sb.set_content_margin_all(4)
+	panel.add_theme_stylebox_override("panel", sb)
 
 
 func _refresh_backpack_visibility() -> void:
@@ -1672,6 +1754,7 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 		return
 	var to_inv := _inv_slot_from_mouse(global_pos)
 	var to_eq := _equip_slot_from_mouse(global_pos)
+	var to_hb := _menu_hotbar_slot_from_mouse(global_pos)
 	if _drag["k"] == "inv":
 		var from_i: int = int(_drag["i"])
 		if to_inv >= 0:
@@ -1681,6 +1764,16 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 		else:
 			if not _try_drop_inv_on_hotbar(from_i, global_pos):
 				_drop_dragged_to_world(global_pos)
+	elif _drag["k"] == "hb":
+		var from_hb: int = int(_drag["i"])
+		if to_hb >= 0 and to_hb != from_hb:
+			while GameState.hotbar_item_ids.size() < 4:
+				GameState.hotbar_item_ids.append("")
+			var a := str(GameState.hotbar_item_ids[from_hb])
+			var b := str(GameState.hotbar_item_ids[to_hb])
+			GameState.hotbar_item_ids[from_hb] = b
+			GameState.hotbar_item_ids[to_hb] = a
+		_refresh_menu_hotbar()
 	elif _drag["k"] == "eq":
 		var from_s: String = str(_drag["s"])
 		if to_inv >= 0:
@@ -1692,7 +1785,33 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 	_cancel_drag()
 
 
+func _begin_drag_hotbar(slot_idx: int) -> bool:
+	if slot_idx < 0 or slot_idx >= 4:
+		return false
+	while GameState.hotbar_item_ids.size() < 4:
+		GameState.hotbar_item_ids.append("")
+	var item_id := str(GameState.hotbar_item_ids[slot_idx])
+	if item_id.is_empty():
+		return false
+	_drag = {"k": "hb", "i": slot_idx}
+	_show_drag_preview(item_id, 1)
+	return true
+
+
 func _try_drop_inv_on_hotbar(from_i: int, global_pos: Vector2) -> bool:
+	var menu_slot_idx := _menu_hotbar_slot_from_mouse(global_pos)
+	if menu_slot_idx >= 0:
+		var s: Variant = InventoryService.get_slot_data(from_i)
+		if s == null:
+			return false
+		var item_id := str(s.get("id", ""))
+		if item_id.is_empty():
+			return false
+		while GameState.hotbar_item_ids.size() < 4:
+			GameState.hotbar_item_ids.append("")
+		GameState.hotbar_item_ids[menu_slot_idx] = item_id
+		_refresh_menu_hotbar()
+		return true
 	var p := get_parent()
 	if p == null:
 		return false
@@ -1867,12 +1986,10 @@ func _equip_replace_from_inv(inv_idx: int, equip_slot: String) -> bool:
 		return _equip_one_from_inv(inv_idx, equip_slot)
 	if not InventoryService.remove_amount_from_slot(inv_idx, 1):
 		return false
-	var left := InventoryService.add_item(str(old.get("id", "")), int(old.get("count", 1)))
-	if left > 0:
-		InventoryService.add_item(new_id, 1)
-		GameState.set_equipment_slot(equip_slot, str(old.get("id", "")), int(old.get("count", 1)))
-		_toast("Inventory full.")
-		return false
+	# Place replaced item back into source slot so swapping works even when inventory is full.
+	InventoryService.set_slot_data(
+		inv_idx, {"id": str(old.get("id", "")), "count": int(old.get("count", 1))}
+	)
 	GameState.set_equipment_slot(equip_slot, new_id, 1)
 	return true
 
@@ -1990,6 +2107,8 @@ func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
 		ItemData.Category.ARMOR, ItemData.Category.CLOTHING:
 			if id.begins_with("cape_"):
 				return "cape"
+			if id.begins_with("backpack_") or id.find("backpack") >= 0:
+				return "back"
 			if id.begins_with("armor_head_"):
 				return "head"
 			if id.begins_with("armor_chest_"):

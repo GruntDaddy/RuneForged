@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://c8ogr0g76r2up" path="res://assets/kaykit/Medieval Builder Pack [Hex]/buildings/red/building_church_red.gltf" id="20_mfwor"]
+[ext_resource type="PackedScene" uid="uid://wdpos66nlb5l" path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="21_avtbp"]
 [ext_resource type="Texture2D" uid="uid://bl7e3ql2g5ysu" path="res://assets/kaykit/items/caveman_texture.png" id="27_t7t3p"]
 [ext_resource type="PackedScene" uid="uid://d1jvbnjkgslji" path="res://assets/kaykit/items/Caveman_Spear.gltf" id="31_dr1td"]
 [ext_resource type="PackedScene" uid="uid://bxwqnpy2nj26j" path="res://entities/equipment/tools/hatchet_basic.tscn" id="32_hatchet_basic"]
@@ -1115,3 +1116,15 @@ shape = SubResource("CapsuleShape3D_pickup_torch")
 
 [node name="building_church_red2" parent="." unique_id=41964623 instance=ExtResource("20_mfwor")]
 transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747, 123.12158, 19.78211, 339.85956)
+
+[node name="Backpack_Large" parent="." unique_id=281491880 instance=ExtResource("21_avtbp")]
+transform = Transform3D(1, 0, 0, 0, 0.13282728, -0.9911392, 0, 0.9911392, 0.13282728, 215.59897, 9.6259775, 387.83807)
+script = ExtResource("70_item_pickup")
+item_id = "backpack_large"
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Backpack_Large" unique_id=1301185338]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Backpack_Large/StaticBody3D" unique_id=755830881]
+transform = Transform3D(0.99985796, 0, -0.01685479, 0, 1, 0, 0.01685479, 0, 0.99985796, 0, 0.75, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")

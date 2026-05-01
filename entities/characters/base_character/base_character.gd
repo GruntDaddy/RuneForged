@@ -863,7 +863,7 @@ func _apply_back_slot_visibility() -> void:
 	if cape_blue_mesh != null:
 		cape_blue_mesh.visible = back_id.begins_with("cape_")
 	if backpack_large_mesh != null:
-		backpack_large_mesh.visible = back_id.begins_with("backpack_")
+		backpack_large_mesh.visible = back_id.begins_with("backpack_") or back_id.find("backpack") >= 0
 	match back_id:
 		"quiver_common":
 			if quiver_common_mesh != null:

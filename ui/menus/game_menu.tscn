@@ -38,7 +38,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="BookPanel" type="PanelContainer" parent="ScreenFill/Center" unique_id=114862870]
-custom_minimum_size = Vector2(1120, 700)
+custom_minimum_size = Vector2(1360, 920)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ud3gl")
 
