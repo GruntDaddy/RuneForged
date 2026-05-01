@@ -83,4 +83,9 @@ func _apply_hit(collider: Object) -> void:
 	if _shooter != null and collider == _shooter:
 		return
 	if collider.has_method("receive_hit"):
-		collider.call("receive_hit", _damage, _shooter)
+		var ok: Variant = collider.call("receive_hit", _damage, _shooter)
+		if bool(ok) and _shooter != null and _shooter.has_method("notify_weapon_hit_landed"):
+			var hp := Vector3.ZERO
+			if collider is Node3D:
+				hp = (collider as Node3D).global_position
+			_shooter.call("notify_weapon_hit_landed", hp)

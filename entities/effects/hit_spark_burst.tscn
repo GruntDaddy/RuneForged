@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://hitsparkburst001"]
+
+[ext_resource type="Script" path="res://entities/effects/hit_spark_burst.gd" id="1_script"]
+
+[node name="HitSparkBurst" type="Node3D"]
+script = ExtResource("1_script")

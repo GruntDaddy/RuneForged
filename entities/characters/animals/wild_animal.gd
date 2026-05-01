@@ -34,6 +34,9 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 @export var flee_on_hit: bool = true
 @export var flee_duration_sec: float = 2.0
 @export var flee_speed_multiplier: float = 1.85
+## Extra planar velocity impulse when hit (0 disables). Decays each physics frame.
+@export var hit_receive_knockback_impulse: float = 0.85
+@export var hit_knockback_decay_per_sec: float = 16.0
 ## Safety leash: keep wildlife near its spawn and recover from terrain falls.
 @export var max_spawn_wander_multiplier: float = 3.0
 @export var fall_reset_depth: float = 15.0
@@ -64,6 +67,7 @@ var _health_bar_root: Node3D
 var _health_bar_bg: MeshInstance3D
 var _health_bar_fill: MeshInstance3D
 var _health_bar_visible_until_ms: int = 0
+var _hit_knockback_planar: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
@@ -114,8 +118,9 @@ func _physics_process(delta: float) -> void:
 					planar_velocity = forward.normalized() * speed
 				else:
 					planar_velocity = dir * speed
-	velocity.x = planar_velocity.x
-	velocity.z = planar_velocity.z
+	_hit_knockback_planar *= exp(-hit_knockback_decay_per_sec * delta)
+	velocity.x = planar_velocity.x + _hit_knockback_planar.x
+	velocity.z = planar_velocity.z + _hit_knockback_planar.z
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
 	else:
@@ -169,7 +174,7 @@ func get_interaction_prompt(_player: Node) -> String:
 	return "LMB: Attack"
 
 
-func receive_hit(damage: float, _source: Node = null) -> bool:
+func receive_hit(damage: float, source: Node = null) -> bool:
 	if _dead:
 		return false
 	var dealt := maxf(0.0, damage)
@@ -178,10 +183,15 @@ func receive_hit(damage: float, _source: Node = null) -> bool:
 	_health -= dealt
 	_show_health_bar_temporarily()
 	_update_health_bar_visual()
+	if hit_receive_knockback_impulse > 0.0 and source is Node3D:
+		var away := global_position - (source as Node3D).global_position
+		away.y = 0.0
+		if away.length_squared() > 1e-6:
+			_hit_knockback_planar += away.normalized() * hit_receive_knockback_impulse
 	if _health <= 0.0:
 		_die()
 	else:
-		_on_hit_react(_source)
+		_on_hit_react(source)
 	return true
 
 

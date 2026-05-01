@@ -20,3 +20,11 @@ enum WeaponFamily {
 @export var attack_interval_sec: float = 1.0
 @export var crit_chance: float = 0.05
 @export var crit_multiplier: float = 1.5
+
+## Impact juice: values < 0 keep the player node's defaults for that channel.
+@export var hit_feedback_hitstop_duration_sec: float = -1.0
+@export var hit_feedback_hitstop_time_scale: float = -1.0
+@export var hit_feedback_camera_shake_duration_sec: float = -1.0
+@export var hit_feedback_camera_shake_amplitude: float = -1.0
+@export var hit_feedback_impact_sound: AudioStream
+@export var hit_feedback_impact_vfx_scene: PackedScene

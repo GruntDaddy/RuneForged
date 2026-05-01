@@ -19,6 +19,7 @@ const _H_SUCCESS := 2
 const _H_INV_FULL := 3
 
 const _UNDERWATER_FOG_DEPTH_MAX := 22.0
+const _DefaultHitVfxScene: PackedScene = preload("res://entities/effects/hit_spark_burst.tscn")
 
 @export var move_speed: float = 3.15
 @export var run_multiplier: float = 2.6
@@ -72,11 +73,60 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 @export var unarmed_melee_damage: float = 1.0
 @export var tool_melee_damage: float = 2.0
 @export var creature_attack_cooldown_sec: float = 0.7
+## When enabled, scales weapon/fallback attack interval differently for cone-target swings vs air swings.
+@export var creature_attack_use_split_melee_cooldown: bool = false
+## Applied to resolved interval when a creature was in melee cone (includes staff interact on target).
+@export var creature_attack_melee_targeted_interval_mult: float = 1.0
+## Applied to resolved interval for air / no-melee-target swings.
+@export var creature_attack_melee_whiff_interval_mult: float = 1.0
+## Optional floor/cap in seconds for melee GCD (0 = no limit on that bound).
+@export var creature_attack_melee_interval_min_sec: float = 0.0
+@export var creature_attack_melee_interval_max_sec: float = 0.0
+
+@export_group("Melee hit feedback")
+@export var melee_hitstop_enabled: bool = true
+## Real-time duration of slow-motion (wall clock). Restore uses `Time.get_ticks_msec()`.
+@export var melee_hitstop_duration_sec: float = 0.055
+## `Engine.time_scale` while hitstop is active (lower = snappier freeze).
+@export var melee_hitstop_time_scale: float = 0.14
+@export var melee_hit_camera_shake_enabled: bool = true
+@export var melee_hit_camera_shake_duration_sec: float = 0.12
+## Max camera offset in meters (decays over shake duration).
+@export var melee_hit_camera_shake_amplitude: float = 0.032
+@export var hit_feedback_default_impact_sound: AudioStream
+## Null uses built-in `entities/effects/hit_spark_burst.tscn` when `hit_feedback_enable_impact_vfx` is on.
+@export var hit_feedback_default_impact_vfx_scene: PackedScene
+@export var hit_feedback_enable_impact_vfx: bool = true
 ## Seconds from melee swing start until each creature hit registers. Empty = immediate on swing start after animation confirms.
+## Used when no entry exists in `melee_creature_impact_delays_by_clip` for the active clip (and for staff interact swings).
 @export var melee_creature_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.42])
+## Keys = AnimationPlayer clip names for melee (same as BaseCharacter.get_active_melee_clip_name()). Values = PackedFloat32Array or Array of delay seconds per hit window.
+@export var melee_creature_impact_delays_by_clip: Dictionary = {
+	"Melee_1H_Attack_Slice_Diagonal": PackedFloat32Array([0.42]),
+	"Melee_Attack_1H_Diagonal": PackedFloat32Array([0.42]),
+	"Melee_Attack_Diagonal": PackedFloat32Array([0.42]),
+	"Melee_1H_Attack_Stab": PackedFloat32Array([0.42]),
+	"Melee_Attack_1H_Stab": PackedFloat32Array([0.42]),
+	"Melee_Attack_Stab": PackedFloat32Array([0.42]),
+	"Melee_Attack_1H": PackedFloat32Array([0.42]),
+	"Melee_1H_Attack_Jump_Chop": PackedFloat32Array([0.42]),
+	"Melee_Attack_1H_Jump_Chop": PackedFloat32Array([0.42]),
+	"Melee_Attack_Jump_Chop": PackedFloat32Array([0.42]),
+	"Chop": PackedFloat32Array([0.42]),
+	"Melee_Unarmed_Attack_Punch_A": PackedFloat32Array([0.42]),
+	"Melee_Unarmed_Attack_Kick": PackedFloat32Array([0.42]),
+}
 @export var melee_reach_distance: float = 2.15
 @export var melee_hit_radius: float = 0.65
 @export var melee_forward_dot_min: float = 0.1
+## Attack presses during an active melee swing are remembered this long for the next swing after recovery.
+@export var melee_input_buffer_sec: float = 0.16
+## Horizontal move speed while in a melee swing (tool chop / bow still root). 1.0 = full speed.
+@export var melee_swing_move_speed_multiplier: float = 0.38
+## Rotate rig toward attack direction when a swing starts (applied after movement this frame).
+@export var melee_face_on_attack: bool = true
+## `lerp_angle` blend toward target/camera (1.0 = fully align this frame).
+@export var melee_face_lerp_weight: float = 1.0
 @export var shield_block_damage_multiplier: float = 0.15
 @export var shield_block_move_multiplier: float = 0.55
 @export var shield_block_turn_multiplier: float = 0.6
@@ -120,12 +170,25 @@ var stamina: float = 100.0
 var _input_enabled: bool = true
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _next_harvest_allowed_ms: int = 0
+var _melee_attack_buffer_deadline_ms: int = 0
+var _prev_melee_combat_active: bool = false
+var _pending_melee_face_yaw_valid: bool = false
+var _pending_melee_face_yaw: float = 0.0
 var _pending_chop_hit: bool = false
 var _pending_chop_ref: WeakRef
 var _pending_mine_ref: WeakRef
 var _harvest_timer_generation: int = 0
 var _creature_impact_generation: int = 0
 var _pending_creature_ref: WeakRef
+
+var _melee_hitstop_active: bool = false
+var _melee_hitstop_prev_time_scale: float = 1.0
+var _melee_hitstop_end_ticks_ms: int = 0
+var _melee_cam_shake_time_left_sec: float = 0.0
+var _melee_cam_shake_rest_pos: Vector3 = Vector3.ZERO
+var _melee_cam_shake_dur_effective: float = 0.12
+var _melee_cam_shake_amp_effective: float = 0.032
+var _hit_feedback_audio: AudioStreamPlayer3D
 
 var _harvest_auto_active: bool = false
 var _harvest_auto_target: WeakRef
@@ -178,6 +241,7 @@ func _ready() -> void:
 		interaction_ray.collide_with_bodies = true
 	if camera_3d != null:
 		camera_3d.h_offset = camera_shoulder_h_offset
+		_melee_cam_shake_rest_pos = camera_3d.position
 	if spring_arm != null:
 		spring_arm.spring_length = clampf(spring_arm.spring_length, zoom_min_distance, zoom_max_distance)
 		_zoom_target_distance = spring_arm.spring_length
@@ -294,6 +358,20 @@ func _physics_process(delta: float) -> void:
 	if not _input_enabled:
 		return
 
+	if _melee_hitstop_active and Time.get_ticks_msec() >= _melee_hitstop_end_ticks_ms:
+		Engine.time_scale = _melee_hitstop_prev_time_scale
+		_melee_hitstop_active = false
+
+	var melee_combat_active: bool = (
+		base_character != null
+		and base_character.has_method("is_melee_combat_active")
+		and bool(base_character.is_melee_combat_active())
+	)
+	if _prev_melee_combat_active and not melee_combat_active:
+		var consumed: bool = _try_consume_melee_attack_buffer()
+		if consumed:
+			melee_combat_active = true
+
 	var anim_busy: bool = base_character.has_method("is_movement_locked") and base_character.is_movement_locked()
 	var wants_block: bool = Input.is_action_pressed("block") and _off_hand_has_shield_equipped()
 	if base_character.has_method("set_blocking"):
@@ -338,7 +416,8 @@ func _physics_process(delta: float) -> void:
 	var approach_input := _harvest_interact_move_input()
 	if approach_input.length_squared() > 0.0001:
 		input_vec = approach_input
-	if anim_busy:
+	# Root during tool actions, bow, etc.; allow reduced strafe during one-handed / unarmed melee.
+	if anim_busy and not melee_combat_active:
 		input_vec = Vector2.ZERO
 	var cam_basis := camera_3d.global_transform.basis
 	var forward := -cam_basis.z
@@ -353,10 +432,14 @@ func _physics_process(delta: float) -> void:
 
 	var want_run := Input.is_action_pressed("run")
 	var running := want_run and stamina > 0.05 and not actively_blocking
+	if melee_combat_active:
+		running = false
 	var speed_factor: float = _night_speed_factor()
 	var speed := move_speed * speed_factor * (run_multiplier if running else 1.0)
 	if actively_blocking:
 		speed *= shield_block_move_multiplier
+	if anim_busy and melee_combat_active:
+		speed *= clampf(melee_swing_move_speed_multiplier, 0.0, 1.0)
 
 	if dir.length_squared() > 0.0001:
 		dir = dir.normalized()
@@ -415,12 +498,44 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_just_pressed("tool_fishing"):
 			_use_hotbar_slot(3)
 
-	_attack_input_tick()
+		_attack_input_tick()
+
+	_apply_pending_melee_facing(delta)
+
+	_update_melee_hit_camera_shake(delta)
 
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var moving := horizontal_speed > 0.15
 	if base_character.has_method("set_locomotion_state"):
 		base_character.set_locomotion_state(moving, running, is_on_floor())
+
+	_prev_melee_combat_active = (
+		base_character != null
+		and base_character.has_method("is_melee_combat_active")
+		and bool(base_character.is_melee_combat_active())
+	)
+
+
+func _try_consume_melee_attack_buffer() -> bool:
+	var now_ms: int = Time.get_ticks_msec()
+	if _melee_attack_buffer_deadline_ms <= 0 or now_ms > _melee_attack_buffer_deadline_ms:
+		return false
+	if _gameplay_input_blocked() or _pending_chop_hit:
+		return false
+	if _equipped_weapon_is_bow():
+		return false
+	if now_ms < _next_harvest_allowed_ms:
+		return false
+	if _try_creature_melee_hit():
+		_next_harvest_allowed_ms = now_ms + int(_resolve_melee_attack_gcd_sec(true) * 1000.0)
+		_melee_attack_buffer_deadline_ms = 0
+		return true
+	if _try_play_attack_air_whiff():
+		_next_harvest_allowed_ms = now_ms + int(_resolve_melee_attack_gcd_sec(false) * 1000.0)
+		_melee_attack_buffer_deadline_ms = 0
+		return true
+	_melee_attack_buffer_deadline_ms = 0
+	return false
 
 
 func _attack_input_tick() -> void:
@@ -431,6 +546,11 @@ func _attack_input_tick() -> void:
 	if _pending_chop_hit:
 		return
 	var now_ms: int = Time.get_ticks_msec()
+
+	if not _equipped_weapon_is_bow() and Input.is_action_just_pressed("attack"):
+		if base_character != null and base_character.has_method("is_melee_combat_active"):
+			if base_character.is_melee_combat_active():
+				_melee_attack_buffer_deadline_ms = now_ms + int(maxf(0.05, melee_input_buffer_sec) * 1000.0)
 
 	if _equipped_weapon_is_bow():
 		var aiming_bow: bool = Input.is_action_pressed("block")
@@ -462,10 +582,10 @@ func _attack_input_tick() -> void:
 
 	if Input.is_action_just_pressed("attack"):
 		if _try_creature_melee_hit():
-			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
+			_next_harvest_allowed_ms = now_ms + int(_resolve_melee_attack_gcd_sec(true) * 1000.0)
 			return
 		if _try_play_attack_air_whiff():
-			_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
+			_next_harvest_allowed_ms = now_ms + int(_resolve_melee_attack_gcd_sec(false) * 1000.0)
 
 
 func _apply_from_gamestate() -> void:
@@ -585,12 +705,28 @@ func _creature_attack_interval_sec() -> float:
 	return _CombatFormulaService.creature_attack_interval_sec(id, creature_attack_cooldown_sec)
 
 
+func _resolve_melee_attack_gcd_sec(is_targeted_swing: bool) -> float:
+	var sec := _creature_attack_interval_sec()
+	if creature_attack_use_split_melee_cooldown:
+		sec *= (
+			creature_attack_melee_targeted_interval_mult
+			if is_targeted_swing
+			else creature_attack_melee_whiff_interval_mult
+		)
+	if creature_attack_melee_interval_min_sec > 0.0:
+		sec = maxf(sec, creature_attack_melee_interval_min_sec)
+	if creature_attack_melee_interval_max_sec > 0.0:
+		sec = minf(sec, creature_attack_melee_interval_max_sec)
+	return maxf(0.05, sec)
+
+
 func _try_creature_melee_hit() -> bool:
 	var collider: Object = _find_creature_melee_target()
 	if not _is_creature_candidate(collider):
 		return false
 	var family := _main_hand_weapon_family()
 	var played := false
+	var use_melee_clip_delays: bool = false
 	match family:
 		_WeaponStats.WeaponFamily.STAFF:
 			if base_character.has_method("try_play_action_for_harvest"):
@@ -600,22 +736,87 @@ func _try_creature_melee_hit() -> bool:
 		_:
 			if base_character.has_method("try_play_melee_attack_1h"):
 				played = base_character.try_play_melee_attack_1h()
+				use_melee_clip_delays = true
 	if not played:
 		return false
+
+	if collider is Node3D:
+		_queue_melee_face_toward_world_xz((collider as Node3D).global_position)
 
 	_creature_impact_generation += 1
 	var seq: int = _creature_impact_generation
 	_pending_creature_ref = weakref(collider)
 
-	if melee_creature_impact_delays_sec.is_empty():
+	var delays: PackedFloat32Array = _resolve_creature_melee_impact_delays_sec(use_melee_clip_delays)
+	if delays.is_empty():
 		_apply_creature_melee_damage_at_impact(seq)
 		return true
 
-	for i in range(melee_creature_impact_delays_sec.size()):
-		var d: float = melee_creature_impact_delays_sec[i]
+	for i in range(delays.size()):
+		var d: float = delays[i]
 		var tw := get_tree().create_timer(maxf(0.0, d))
 		tw.timeout.connect(_on_creature_melee_impact_timeout.bind(seq))
 	return true
+
+
+func _resolve_creature_melee_impact_delays_sec(use_melee_clip_lookup: bool) -> PackedFloat32Array:
+	if not use_melee_clip_lookup:
+		return melee_creature_impact_delays_sec
+	var clip := ""
+	if base_character != null and base_character.has_method("get_active_melee_clip_name"):
+		clip = str(base_character.get_active_melee_clip_name())
+	if clip.is_empty():
+		return melee_creature_impact_delays_sec
+	if melee_creature_impact_delays_by_clip.has(clip):
+		var packed := _coerce_impact_delays_array(melee_creature_impact_delays_by_clip[clip])
+		if not packed.is_empty():
+			return packed
+	return melee_creature_impact_delays_sec
+
+
+func _coerce_impact_delays_array(v: Variant) -> PackedFloat32Array:
+	if v == null:
+		return PackedFloat32Array()
+	if v is PackedFloat32Array:
+		return v
+	if v is Array:
+		var out := PackedFloat32Array()
+		for x in v:
+			out.append(float(x))
+		return out
+	return PackedFloat32Array()
+
+
+func _queue_melee_face_toward_world_xz(world_pos: Vector3) -> void:
+	if not melee_face_on_attack or base_character == null:
+		return
+	var to_t := world_pos - base_character.global_position
+	to_t.y = 0.0
+	if to_t.length_squared() < 0.0001:
+		return
+	_pending_melee_face_yaw = atan2(to_t.x, to_t.z)
+	_pending_melee_face_yaw_valid = true
+
+
+func _queue_melee_face_camera_forward_xz() -> void:
+	if not melee_face_on_attack or base_character == null or camera_3d == null:
+		return
+	var cam_basis := camera_3d.global_transform.basis
+	var forward := -cam_basis.z
+	forward.y = 0.0
+	if forward.length_squared() < 0.0001:
+		return
+	forward = forward.normalized()
+	_pending_melee_face_yaw = atan2(forward.x, forward.z)
+	_pending_melee_face_yaw_valid = true
+
+
+func _apply_pending_melee_facing(_delta: float) -> void:
+	if not _pending_melee_face_yaw_valid or base_character == null:
+		return
+	var w := clampf(melee_face_lerp_weight, 0.0, 1.0)
+	base_character.rotation.y = lerp_angle(base_character.rotation.y, _pending_melee_face_yaw, w)
+	_pending_melee_face_yaw_valid = false
 
 
 func _apply_creature_melee_damage_at_impact(seq: int) -> void:
@@ -625,7 +826,146 @@ func _apply_creature_melee_damage_at_impact(seq: int) -> void:
 	if c == null or not is_instance_valid(c) or not _creature_target_still_valid_for_hit(c) or not _is_creature_candidate(c):
 		return
 	var dmg := _creature_damage_amount()
-	c.call("receive_hit", dmg, self)
+	var landed: Variant = c.call("receive_hit", dmg, self)
+	if bool(landed):
+		var hit_pos := global_position
+		if c is Node3D:
+			hit_pos = (c as Node3D).global_position
+		_trigger_hit_feedback(_equipped_main_hand_id_str(), hit_pos)
+
+
+func notify_weapon_hit_landed(world_position: Vector3) -> void:
+	if not is_instance_valid(self):
+		return
+	_trigger_hit_feedback(_equipped_main_hand_id_str(), world_position)
+
+
+func _get_resolved_hit_feedback(weapon_item_id: String) -> Dictionary:
+	var hitstop_dur := melee_hitstop_duration_sec
+	var hitstop_ts := melee_hitstop_time_scale
+	var shake_dur := melee_hit_camera_shake_duration_sec
+	var shake_amp := melee_hit_camera_shake_amplitude
+	var snd: AudioStream = hit_feedback_default_impact_sound
+	var vfx: PackedScene = hit_feedback_default_impact_vfx_scene
+	if vfx == null:
+		vfx = _DefaultHitVfxScene
+	if not weapon_item_id.is_empty():
+		var it: ItemData = ItemCatalog.get_item(weapon_item_id)
+		if it is WeaponData:
+			var wd: WeaponData = it as WeaponData
+			if wd.weapon_stats != null:
+				var ws: WeaponStats = wd.weapon_stats
+				if ws.hit_feedback_hitstop_duration_sec >= 0.0:
+					hitstop_dur = ws.hit_feedback_hitstop_duration_sec
+				if ws.hit_feedback_hitstop_time_scale >= 0.0:
+					hitstop_ts = ws.hit_feedback_hitstop_time_scale
+				if ws.hit_feedback_camera_shake_duration_sec >= 0.0:
+					shake_dur = ws.hit_feedback_camera_shake_duration_sec
+				if ws.hit_feedback_camera_shake_amplitude >= 0.0:
+					shake_amp = ws.hit_feedback_camera_shake_amplitude
+				if ws.hit_feedback_impact_sound != null:
+					snd = ws.hit_feedback_impact_sound
+				if ws.hit_feedback_impact_vfx_scene != null:
+					vfx = ws.hit_feedback_impact_vfx_scene
+	return {
+		"hitstop_dur": hitstop_dur,
+		"hitstop_ts": hitstop_ts,
+		"shake_dur": shake_dur,
+		"shake_amp": shake_amp,
+		"sound": snd,
+		"vfx": vfx,
+	}
+
+
+func _trigger_hit_feedback(weapon_item_id: String, impact_world_position: Vector3) -> void:
+	var cfg := _get_resolved_hit_feedback(weapon_item_id)
+	if melee_hitstop_enabled:
+		_begin_melee_hitstop(cfg["hitstop_dur"], cfg["hitstop_ts"])
+	if melee_hit_camera_shake_enabled:
+		_begin_melee_camera_shake(cfg["shake_amp"], cfg["shake_dur"])
+	_play_hit_impact_sound(cfg["sound"], impact_world_position)
+	if hit_feedback_enable_impact_vfx:
+		_spawn_hit_impact_vfx(cfg["vfx"], impact_world_position)
+
+
+func _ensure_hit_feedback_audio() -> AudioStreamPlayer3D:
+	if _hit_feedback_audio != null and is_instance_valid(_hit_feedback_audio):
+		return _hit_feedback_audio
+	_hit_feedback_audio = AudioStreamPlayer3D.new()
+	_hit_feedback_audio.max_distance = 28.0
+	add_child(_hit_feedback_audio)
+	return _hit_feedback_audio
+
+
+func _play_hit_impact_sound(stream: AudioStream, world_position: Vector3) -> void:
+	if stream == null:
+		return
+	var p := _ensure_hit_feedback_audio()
+	p.global_position = world_position
+	p.stream = stream
+	p.play()
+
+
+func _spawn_hit_impact_vfx(scene: PackedScene, world_position: Vector3) -> void:
+	if scene == null:
+		return
+	var inst := scene.instantiate()
+	var parent: Node = get_tree().current_scene
+	if parent == null:
+		parent = get_parent()
+	if parent == null:
+		parent = self
+	parent.add_child(inst)
+	if inst is Node3D:
+		(inst as Node3D).global_position = world_position + Vector3(0, 0.45, 0)
+
+
+func _begin_melee_hitstop(duration_sec: float = -1.0, time_scale_value: float = -1.0) -> void:
+	if not melee_hitstop_enabled:
+		return
+	if duration_sec < 0.0:
+		duration_sec = melee_hitstop_duration_sec
+	if time_scale_value < 0.0:
+		time_scale_value = melee_hitstop_time_scale
+	if not _melee_hitstop_active:
+		_melee_hitstop_prev_time_scale = Engine.time_scale
+		_melee_hitstop_active = true
+	Engine.time_scale = clampf(time_scale_value, 0.02, 1.0)
+	var extend_to := Time.get_ticks_msec() + int(maxf(1.0, duration_sec * 1000.0))
+	if extend_to > _melee_hitstop_end_ticks_ms:
+		_melee_hitstop_end_ticks_ms = extend_to
+
+
+func _begin_melee_camera_shake(shake_amp: float = -1.0, duration_sec: float = -1.0) -> void:
+	if not melee_hit_camera_shake_enabled or camera_3d == null:
+		return
+	if shake_amp < 0.0:
+		shake_amp = melee_hit_camera_shake_amplitude
+	if duration_sec < 0.0:
+		duration_sec = melee_hit_camera_shake_duration_sec
+	duration_sec = maxf(0.02, duration_sec)
+	_melee_cam_shake_amp_effective = shake_amp
+	_melee_cam_shake_dur_effective = duration_sec
+	_melee_cam_shake_time_left_sec = maxf(_melee_cam_shake_time_left_sec, duration_sec)
+
+
+func _update_melee_hit_camera_shake(delta: float) -> void:
+	if camera_3d == null:
+		return
+	if _melee_cam_shake_time_left_sec <= 0.0:
+		camera_3d.position = _melee_cam_shake_rest_pos
+		return
+	var dt := delta / maxf(Engine.time_scale, 0.001)
+	_melee_cam_shake_time_left_sec -= dt
+	var dur := maxf(0.0001, _melee_cam_shake_dur_effective)
+	var t := clampf(_melee_cam_shake_time_left_sec / dur, 0.0, 1.0)
+	var amp := _melee_cam_shake_amp_effective * t
+	var shake := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-1.0, 1.0))
+	if shake.length_squared() > 1e-8:
+		shake = shake.normalized()
+	camera_3d.position = _melee_cam_shake_rest_pos + shake * amp
+	if _melee_cam_shake_time_left_sec <= 0.0:
+		camera_3d.position = _melee_cam_shake_rest_pos
 
 
 func _creature_target_still_valid_for_hit(c: Object) -> bool:
@@ -686,17 +1026,19 @@ func _try_play_attack_air_whiff() -> bool:
 	if base_character.has_method("is_animation_locked") and base_character.is_animation_locked():
 		return false
 	var family := _main_hand_weapon_family()
+	var played: bool = false
 	match family:
 		_WeaponStats.WeaponFamily.BOW:
 			return false
 		_WeaponStats.WeaponFamily.STAFF:
 			if base_character.has_method("try_play_action_for_harvest"):
-				return base_character.try_play_action_for_harvest("interact")
-			return false
+				played = base_character.try_play_action_for_harvest("interact")
 		_:
 			if base_character.has_method("try_play_melee_attack_1h"):
-				return base_character.try_play_melee_attack_1h()
-			return false
+				played = base_character.try_play_melee_attack_1h()
+	if played:
+		_queue_melee_face_camera_forward_xz()
+	return played
 
 
 func _equipped_back_has_quiver() -> bool:

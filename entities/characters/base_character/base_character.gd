@@ -456,6 +456,16 @@ func is_bow_drawn_or_drawing() -> bool:
 	return _bow_phase > 0
 
 
+## True during one-handed melee / unarmed swing (not bow draw or release).
+func is_melee_combat_active() -> bool:
+	return _action_state == ActionState.COMBAT_ACTION and _bow_phase == 0
+
+
+## Clip basename (library-relative) for the current melee swing; empty if not in a melee attack.
+func get_active_melee_clip_name() -> String:
+	return _active_melee_clip
+
+
 ## Stops the current tool clip (e.g. target destroyed mid-swing) and returns to idle + chosen tool mesh.
 func cancel_tool_action() -> void:
 	_block_hold_active = false
