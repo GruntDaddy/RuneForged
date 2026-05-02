@@ -20,6 +20,9 @@ func _ready() -> void:
 	quit_button.pressed.connect(_on_quit_pressed)
 	for b in [load_game_button, new_game_button, options_button, quit_button]:
 		b.mouse_entered.connect(_on_button_hover)
+	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga != null and ga.has_method("apply_music_for_scene_path") and not String(scene_file_path).is_empty():
+		ga.call("apply_music_for_scene_path", scene_file_path)
 
 
 func _on_animation_finished(anim_name: StringName) -> void:
