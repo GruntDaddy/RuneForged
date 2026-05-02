@@ -14,8 +14,8 @@
 [ext_resource type="PackedScene" uid="uid://bowouj2mkapt8" path="res://entities/equipment/weapons/melee/dagger_bronze.tscn" id="8_5l5lm"]
 [ext_resource type="PackedScene" uid="uid://b7pnqddunrelb" path="res://entities/equipment/off_hand/torch.tscn" id="10_lfxo5"]
 [ext_resource type="Animation" uid="uid://shplmx2jg2pf" path="res://assets/animations/rig_medium/movement/Jump_Idle.res" id="11_ey55c"]
-[ext_resource type="PackedScene" uid="uid://3sstdn37s5ct" path="res://entities/characters/base_character/tool_chisel.tscn" id="11_udusj"]
-[ext_resource type="PackedScene" uid="uid://b01fur407hh45" path="res://entities/characters/base_character/tool_tacklebox.tscn" id="12_2wxdn"]
+[ext_resource type="PackedScene" uid="uid://3sstdn37s5ct" path="res://entities/equipment/off_hand/tool_chisel.tscn" id="11_udusj"]
+[ext_resource type="PackedScene" uid="uid://b01fur407hh45" path="res://entities/equipment/off_hand/tool_tacklebox.tscn" id="12_2wxdn"]
 [ext_resource type="Animation" uid="uid://c1ppoxn7spxqu" path="res://assets/animations/rig_medium/movement/T-Pose.res" id="12_upkct"]
 [ext_resource type="Animation" uid="uid://cflhjeqn0pbxu" path="res://assets/animations/rig_medium/movement/Walking_B.res" id="13_jxcl3"]
 [ext_resource type="Animation" uid="uid://d3o4ksbp01vk4" path="res://assets/animations/rig_medium/movement/Running_A.res" id="13_run_a"]
@@ -297,6 +297,40 @@ transform = Transform3D(0.99999994, 7.0873885e-29, -4.9873063e-15, 0, 0.99999994
 [node name="Head_M-W_01_R" parent="Rig_Medium/Skeleton3D" unique_id=1354610020 instance=ExtResource("5_lfxo5")]
 transform = Transform3D(0.99999994, 7.0873885e-29, -4.9873063e-15, 0, 0.99999994, 1.4210856e-14, 4.987306e-15, -1.4210855e-14, 1, 0, 1.1920929e-07, 5.684342e-14)
 
+[node name="Hats" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=835577238]
+transform = Transform3D(0.9997204, -1.3969839e-09, 0.02364657, 7.039006e-05, 0.99999547, -0.0029758648, -0.023646463, 0.0029766955, 0.99971604, -4.296505e-09, 1.2278123, 0.0027031973)
+
+[node name="Clothing" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=621826234]
+
+[node name="Outfit_2_Green" type="Node3D" parent="Rig_Medium/Skeleton3D/Clothing" unique_id=2111641211]
+visible = false
+
+[node name="Shirt_Green" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green" unique_id=1501840408 instance=ExtResource("52_g1qwb")]
+transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
+
+[node name="Pants_Green" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green" unique_id=430226138 instance=ExtResource("53_iieiw")]
+transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
+
+[node name="Outfit_1_Yellow" type="Node3D" parent="Rig_Medium/Skeleton3D/Clothing" unique_id=218017763]
+
+[node name="Shirt_Yellow" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow" unique_id=83882374 instance=ExtResource("54_csl7y")]
+transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
+
+[node name="Pants_Yellow" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow" unique_id=436448979 instance=ExtResource("55_ae42p")]
+transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
+
+[node name="Capes" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=791032821]
+transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
+
+[node name="Cape_Blue" parent="Rig_Medium/Skeleton3D/Capes" unique_id=1287997523 instance=ExtResource("32_rqdgg")]
+visible = false
+
+[node name="Backpacks" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=671294743]
+transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
+
+[node name="Backpack_Large" parent="Rig_Medium/Skeleton3D/Backpacks" unique_id=25352315 instance=ExtResource("44_24hmn")]
+visible = false
+
 [node name="HandAttach_R" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" unique_id=230755064]
 transform = Transform3D(0.14989454, 4.7683716e-07, -0.98870134, 2.9802322e-08, -0.99999917, -1.4901161e-07, -0.98870134, -4.3213367e-07, -0.14989462, -0.5479113, 0.73715466, 0.097976476)
 bone_name = "hand.r"
@@ -470,12 +504,6 @@ transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0
 bone_name = "root"
 bone_idx = 0
 
-[node name="Capes" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=791032821]
-transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
-
-[node name="Cape_Blue" parent="Rig_Medium/Skeleton3D/Capes" unique_id=1287997523 instance=ExtResource("32_rqdgg")]
-visible = false
-
 [node name="Quivers" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=1668550599]
 transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
 
@@ -490,15 +518,6 @@ visible = false
 [node name="Quiver_Iron" parent="Rig_Medium/Skeleton3D/Quivers" unique_id=720076930 instance=ExtResource("44_f4yw7")]
 transform = Transform3D(1, -1.2831065e-08, 3.4552272e-10, 1.2831065e-08, 0.9985508, -0.053817395, 3.4552272e-10, 0.053817395, 0.9985508, 0, 0, 0)
 visible = false
-
-[node name="Backpacks" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=671294743]
-transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
-
-[node name="Backpack_Large" parent="Rig_Medium/Skeleton3D/Backpacks" unique_id=25352315 instance=ExtResource("44_24hmn")]
-visible = false
-
-[node name="Hats" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=835577238]
-transform = Transform3D(0.9997204, -1.3969839e-09, 0.02364657, 7.039006e-05, 0.99999547, -0.0029758648, -0.023646463, 0.0029766955, 0.99971604, -4.296505e-09, 1.2278123, 0.0027031973)
 
 [node name="Helmets" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=1565207411]
 
@@ -574,25 +593,6 @@ visible = false
 [node name="Platebody_Dragon" parent="Rig_Medium/Skeleton3D/Armor/Dragon" unique_id=594237765 instance=ExtResource("38_3xh3x")]
 
 [node name="Platelegs_Dragon" parent="Rig_Medium/Skeleton3D/Armor/Dragon" unique_id=1441167587 instance=ExtResource("39_c54of")]
-
-[node name="Clothing" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=621826234]
-
-[node name="Outfit_2_Green" type="Node3D" parent="Rig_Medium/Skeleton3D/Clothing" unique_id=2111641211]
-visible = false
-
-[node name="Shirt_Green" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green" unique_id=1501840408 instance=ExtResource("52_g1qwb")]
-transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
-
-[node name="Pants_Green" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green" unique_id=430226138 instance=ExtResource("53_iieiw")]
-transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
-
-[node name="Outfit_1_Yellow" type="Node3D" parent="Rig_Medium/Skeleton3D/Clothing" unique_id=218017763]
-
-[node name="Shirt_Yellow" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow" unique_id=83882374 instance=ExtResource("54_csl7y")]
-transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
-
-[node name="Pants_Yellow" parent="Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow" unique_id=436448979 instance=ExtResource("55_ae42p")]
-transform = Transform3D(0.99999994, 2.0159746e-10, -2.2352047e-08, -2.3283064e-10, 0.99999887, -0.001397338, 2.2351742e-08, 0.0013973378, 0.99999905, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=357986785]
 libraries/Base = SubResource("AnimationLibrary_b0b0v")

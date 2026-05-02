@@ -23,10 +23,6 @@ enum ActionState {
 
 @onready var hand_r_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_R
 @onready var hand_l_slot: BoneAttachment3D = $Rig_Medium/Skeleton3D/HandAttach_L
-@onready var head_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Head_Slot") as BoneAttachment3D
-@onready var chest_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Chest_Slot") as BoneAttachment3D
-@onready var legs_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Legs_Slot") as BoneAttachment3D
-@onready var back_slot: BoneAttachment3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot") as BoneAttachment3D
 
 @onready var equipped_tool_root: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight
 @onready var axe_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_R/EquippedToolRight/Hatchet_Basic
@@ -86,11 +82,11 @@ enum ActionState {
 	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Wooden"
 ) as Node3D
 @onready var clothing_root: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing") as Node3D
-@onready var cape_blue_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Capes/Cape_Blue") as Node3D
-@onready var backpack_large_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Backpacks/Backpack_Large") as Node3D
-@onready var quiver_common_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Common") as Node3D
-@onready var quiver_bronze_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Bronze") as Node3D
-@onready var quiver_iron_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Back_Slot/Quivers/Quiver_Iron") as Node3D
+@onready var cape_blue_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Capes/Cape_Blue") as Node3D
+@onready var backpack_large_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Backpacks/Backpack_Large") as Node3D
+@onready var quiver_common_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Quivers/Quiver_Common") as Node3D
+@onready var quiver_bronze_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Quivers/Quiver_Bronze") as Node3D
+@onready var quiver_iron_mesh: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Quivers/Quiver_Iron") as Node3D
 @onready var outfit_green: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_2_Green") as Node3D
 @onready var outfit_yellow: Node3D = get_node_or_null("Rig_Medium/Skeleton3D/Clothing/Outfit_1_Yellow") as Node3D
 @onready var shirt_green_mesh: Node3D = get_node_or_null(
@@ -200,14 +196,6 @@ func _ready() -> void:
 		push_warning("BaseCharacter: HandAttach_R not found.")
 	if hand_l_slot == null:
 		push_warning("BaseCharacter: HandAttach_L not found.")
-	if head_slot == null:
-		push_warning("BaseCharacter: Head_Slot not found.")
-	if chest_slot == null:
-		push_warning("BaseCharacter: Chest_Slot not found.")
-	if legs_slot == null:
-		push_warning("BaseCharacter: Legs_Slot not found.")
-	if back_slot == null:
-		push_warning("BaseCharacter: Back_Slot not found.")
 
 	if anim_player:
 		if not anim_player.animation_finished.is_connected(_on_animation_finished):
@@ -746,19 +734,19 @@ func get_hand_slot(is_right: bool = true) -> BoneAttachment3D:
 
 
 func get_head_slot() -> BoneAttachment3D:
-	return head_slot
+	return null
 
 
 func get_chest_slot() -> BoneAttachment3D:
-	return chest_slot
+	return null
 
 
 func get_legs_slot() -> BoneAttachment3D:
-	return legs_slot
+	return null
 
 
 func get_back_slot() -> BoneAttachment3D:
-	return back_slot
+	return null
 
 
 func apply_customization(head_idx: int, shirt_idx: int, pants_idx: int) -> void:
