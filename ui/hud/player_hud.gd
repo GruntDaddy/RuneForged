@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 const _BaseCharacter = preload("res://entities/characters/base_character/base_character.gd")
+const _SpellCatalog = preload("res://systems/magic/spell_catalog.gd")
 
 @onready var _health_bar: ProgressBar = $Root/TopLeft/Margin/VBox/HealthRow/ProgressBar
 @onready var _stamina_bar: ProgressBar = $Root/TopLeft/Margin/VBox/StaminaRow/ProgressBar
@@ -58,12 +59,13 @@ func _physics_process(_delta: float) -> void:
 	for i in _hotbar_panels.size():
 		_hotbar_keys[i].text = "[%d]" % (i + 1)
 		var item_id := _hotbar_item_id(i)
+		var spell_id := _hotbar_spell_id(i)
 		var kind: int = _tool_kind_for_item(item_id)
 		if item_id.is_empty():
 			kind = _default_tool_kind_for_slot(i)
 		var active: bool = tool_i == kind
 		_apply_hotbar_style(_hotbar_panels[i], active)
-		_hotbar_labels[i].text = _hot_item_caption(i, item_id)
+		_hotbar_labels[i].text = _hot_item_caption(spell_id, item_id)
 
 
 func _apply_hotbar_style(panel: Panel, active: bool) -> void:
@@ -104,9 +106,9 @@ func assign_hotbar_from_inventory(slot_idx: int, inv_idx: int) -> bool:
 
 
 func _set_hotbar_item(slot_idx: int, item_id: String) -> void:
-	while GameState.hotbar_item_ids.size() < 4:
-		GameState.hotbar_item_ids.append("")
+	GameState.ensure_hotbar_arrays()
 	GameState.hotbar_item_ids[slot_idx] = item_id
+	GameState.hotbar_spell_ids[slot_idx] = ""
 
 
 func _hotbar_item_id(slot_idx: int) -> String:
@@ -117,7 +119,16 @@ func _hotbar_item_id(slot_idx: int) -> String:
 	return str(GameState.hotbar_item_ids[slot_idx])
 
 
-func _hot_item_caption(_slot_idx: int, item_id: String) -> String:
+func _hotbar_spell_id(slot_idx: int) -> String:
+	GameState.ensure_hotbar_arrays()
+	if slot_idx < 0 or GameState.hotbar_spell_ids.size() <= slot_idx:
+		return ""
+	return str(GameState.hotbar_spell_ids[slot_idx])
+
+
+func _hot_item_caption(spell_id: String, item_id: String) -> String:
+	if not spell_id.is_empty():
+		return _SpellCatalog.get_display_name(spell_id)
 	if item_id.is_empty():
 		return ""
 	var n := InventoryService.get_item_display_name(item_id)

@@ -11,7 +11,7 @@ High-level design rules and **where combat lives in code**. Exact numbers are tu
 - **Player controller (combat + ranged + harvest overlap):** [`entities/characters/player/player.gd`](../entities/characters/player/player.gd) — creature melee sweeps, arrow firing, reticle/aim exports, unarmed damage vs tool damage.
 - **Rig / animation + melee combo stepping:** [`entities/characters/base_character/base_character.gd`](../entities/characters/base_character/base_character.gd) — one-handed melee combo sequence, combo timeout, bow meshes, `try_play_melee_attack_1h()`.
 - **Damage and mitigation math:** [`systems/combat/combat_formula_service.gd`](../systems/combat/combat_formula_service.gd) (and call sites in the player / creatures). Keep formula changes centralized here when possible.
-- **Rune combat effects:** [`systems/magic/rune_effect_service.gd`](../systems/magic/rune_effect_service.gd) — do not fold rune logic into UI nodes.
+- **Rune / magic spells:** [`systems/magic/rune_effect_service.gd`](../systems/magic/rune_effect_service.gd) — elemental rune items use `ItemData.use_effect_id` (e.g. `spell_air_push` for Air **Push**). Do not fold spell logic into UI nodes.
 
 ## Player melee (one-handed)
 - Melee against creatures uses a **forward cone / reach** check on the player (see `melee_reach_distance`, `melee_hit_radius`, `melee_forward_dot_min` on the player). Hits align with **animation impact timing** when `melee_creature_impact_delays_sec` is set; otherwise damage applies on the confirmed swing path.

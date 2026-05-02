@@ -29,6 +29,7 @@ const LEGACY_ITEM_ID_ALIASES := {
 	"torch": "tool_torch",
 	"hammer": "tool_hammer",
 	"chisel": "tool_chisel",
+	"rune_spark": "rune_air",
 }
 const SKILL_ID_TO_FIELD := {
 	"woodcutting": "woodcutting_level",
@@ -62,6 +63,8 @@ var campfire_night_penalty: float = 0.15
 var equipment: Dictionary = {}
 ## Hotbar quick-use item ids for keys [1]-[4].
 var hotbar_item_ids: Array[String] = ["", "", "", ""]
+## If set, hotbar key casts this spell id instead of using `hotbar_item_ids` for that slot (parallel index).
+var hotbar_spell_ids: Array[String] = ["", "", "", ""]
 
 
 func _ready() -> void:
@@ -94,6 +97,7 @@ func reset() -> void:
 	campfire_night_penalty = 0.15
 	equipment = {}
 	hotbar_item_ids = ["", "", "", ""]
+	hotbar_spell_ids = ["", "", "", ""]
 
 
 func to_dict() -> Dictionary:
@@ -123,6 +127,7 @@ func to_dict() -> Dictionary:
 		"campfire_night_penalty": campfire_night_penalty,
 		"equipment": equipment.duplicate(true),
 		"hotbar_item_ids": hotbar_item_ids.duplicate(),
+		"hotbar_spell_ids": hotbar_spell_ids.duplicate(),
 	}
 
 
@@ -174,6 +179,27 @@ func from_dict(data: Variant) -> void:
 		var arr: Array = hb
 		for i in mini(4, arr.size()):
 			hotbar_item_ids[i] = str(arr[i])
+	hotbar_spell_ids = ["", "", "", ""]
+	var hs: Variant = d.get("hotbar_spell_ids", null)
+	if typeof(hs) == TYPE_ARRAY:
+		var sa: Array = hs
+		for i in mini(4, sa.size()):
+			hotbar_spell_ids[i] = str(sa[i])
+
+
+func ensure_hotbar_arrays() -> void:
+	while hotbar_item_ids.size() < 4:
+		hotbar_item_ids.append("")
+	while hotbar_spell_ids.size() < 4:
+		hotbar_spell_ids.append("")
+
+
+func clear_hotbar_slot(idx: int) -> void:
+	ensure_hotbar_arrays()
+	if idx < 0 or idx >= 4:
+		return
+	hotbar_item_ids[idx] = ""
+	hotbar_spell_ids[idx] = ""
 
 
 func normalize_item_id(id: String) -> String:

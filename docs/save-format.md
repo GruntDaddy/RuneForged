@@ -52,4 +52,5 @@ Legacy saves missing these keys default safely in `GameState.from_dict()`.
 ## Hotbar persistence
 
 - `game_state.hotbar_item_ids` remains an array of four item ids.
-- Hotbar slots may now include rune ids (for example `rune_spark`) in addition to tools/gear ids.
+- `game_state.hotbar_spell_ids` (optional on legacy saves): parallel array of four spell effect ids (for example `spell_air_push`). When a slot has a non-empty spell id, that slot casts the spell instead of using `hotbar_item_ids` for that index. Missing key defaults to four empty strings on load.
+- Hotbar slots may include rune ids (for example `rune_air`, `rune_earth`) in addition to tools/gear ids when no spell is bound. Legacy `rune_spark` is normalized to `rune_air` at load.

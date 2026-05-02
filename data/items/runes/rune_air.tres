@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "rune_air"
+display_name = "Air Rune"
+description = "A basic air rune. Casts Push (level 1): a gust of wind that shoves a creature back without harming it."
+category = 8
+max_stack = 1
+tags = PackedStringArray("rune", "magic", "air", "element")
+use_effect_id = "spell_air_push"
+use_cooldown_ms = 0

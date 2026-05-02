@@ -15,6 +15,7 @@ enum ActionState {
 	LOCOMOTION,
 	TOOL_ACTION,
 	COMBAT_ACTION,
+	RUNE_CAST_ACTION,
 }
 
 @onready var skeleton: Skeleton3D = $Rig_Medium/Skeleton3D
@@ -186,6 +187,7 @@ var _bow_phase: int = 0
 var _next_unarmed_kick: bool = false
 var _melee_combo_step: int = 0
 var _active_melee_clip: String = ""
+var _active_rune_cast_clip: String = ""
 var _last_melee_attack_ms: int = -1
 
 
@@ -305,6 +307,8 @@ func set_locomotion_state(moving: bool, running: bool, on_floor: bool) -> void:
 		return
 	if _bow_phase > 0 and _bow_phase != 3:
 		return
+	if _action_state == ActionState.RUNE_CAST_ACTION:
+		return
 	if _action_state != ActionState.LOCOMOTION:
 		return
 	if not on_floor:
@@ -342,6 +346,12 @@ func _on_animation_finished(anim_name: StringName) -> void:
 
 	if _action_state == ActionState.COMBAT_ACTION and _bow_phase == 3 and clip_name == _ANIM_BOW_RELEASE:
 		_bow_phase = 0
+		_action_state = ActionState.LOCOMOTION
+		_apply_tool_kind(_player_chosen_tool)
+		return
+
+	if _action_state == ActionState.RUNE_CAST_ACTION and clip_name == _active_rune_cast_clip:
+		_active_rune_cast_clip = ""
 		_action_state = ActionState.LOCOMOTION
 		_apply_tool_kind(_player_chosen_tool)
 		return
@@ -430,7 +440,11 @@ func is_tool_action_active() -> bool:
 
 
 func is_animation_locked() -> bool:
-	if _action_state == ActionState.TOOL_ACTION or _action_state == ActionState.COMBAT_ACTION:
+	if (
+		_action_state == ActionState.TOOL_ACTION
+		or _action_state == ActionState.COMBAT_ACTION
+		or _action_state == ActionState.RUNE_CAST_ACTION
+	):
 		return true
 	if _block_hold_active:
 		return true
@@ -441,7 +455,11 @@ func is_animation_locked() -> bool:
 
 ## Movement can continue while shield blocking; this excludes block-hold from hard lock checks.
 func is_movement_locked() -> bool:
-	if _action_state == ActionState.TOOL_ACTION or _action_state == ActionState.COMBAT_ACTION:
+	if (
+		_action_state == ActionState.TOOL_ACTION
+		or _action_state == ActionState.COMBAT_ACTION
+		or _action_state == ActionState.RUNE_CAST_ACTION
+	):
 		return true
 	if _bow_phase > 0:
 		return true
@@ -470,6 +488,7 @@ func get_active_melee_clip_name() -> String:
 func cancel_tool_action() -> void:
 	_block_hold_active = false
 	_bow_phase = 0
+	_active_rune_cast_clip = ""
 	_action_state = ActionState.LOCOMOTION
 	if anim_player != null:
 		anim_player.stop()
@@ -485,7 +504,11 @@ func set_blocking(wanted: bool) -> void:
 		if _action_state == ActionState.LOCOMOTION:
 			_apply_tool_kind(_player_chosen_tool)
 		return
-	if wanted and (_action_state == ActionState.TOOL_ACTION or _action_state == ActionState.COMBAT_ACTION):
+	if wanted and (
+		_action_state == ActionState.TOOL_ACTION
+		or _action_state == ActionState.COMBAT_ACTION
+		or _action_state == ActionState.RUNE_CAST_ACTION
+	):
 		return
 	if wanted and _bow_phase > 0:
 		return
@@ -529,6 +552,37 @@ func try_play_melee_attack_1h() -> bool:
 	anim_player.play(path, 0.12)
 	_last_melee_attack_ms = Time.get_ticks_msec()
 	return true
+
+
+func try_play_rune_air_push() -> bool:
+	if anim_player == null:
+		return false
+	if is_animation_locked():
+		return false
+	var clip := _first_available_clip_named(
+		["Magic_Air_Push", "Spell_Cast_Air", _ANIM_INTERACT]
+	)
+	if clip.is_empty():
+		return false
+	var path := _anim_path(clip)
+	if not anim_player.has_animation(path):
+		return false
+	_action_state = ActionState.RUNE_CAST_ACTION
+	_active_rune_cast_clip = clip
+	_apply_weapon_visual_for_attack()
+	anim_player.speed_scale = 1.0
+	anim_player.play(path, 0.12)
+	return true
+
+
+func _first_available_clip_named(candidates: Array) -> String:
+	for c in candidates:
+		var clip := str(c)
+		if clip.is_empty():
+			continue
+		if anim_player != null and anim_player.has_animation(_anim_path(clip)):
+			return clip
+	return ""
 
 
 func _resolve_weapon_combo_clip() -> String:

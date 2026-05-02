@@ -6,6 +6,7 @@ const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd
 const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
 const _CombatFormulaService = preload("res://systems/combat/combat_formula_service.gd")
 const _RuneEffectService = preload("res://systems/magic/rune_effect_service.gd")
+const _SpellCatalog = preload("res://systems/magic/spell_catalog.gd")
 
 const _ArrowProjectileScene = preload("res://entities/projectiles/arrow_projectile.tscn")
 ## Consume cheaper ammo first so higher-tier arrows stay in the bag.
@@ -834,6 +835,20 @@ func _apply_creature_melee_damage_at_impact(seq: int) -> void:
 		_trigger_hit_feedback(_equipped_main_hand_id_str(), hit_pos)
 
 
+func get_magic_cast_forward_xz() -> Vector3:
+	if camera_3d != null:
+		var cf := -camera_3d.global_transform.basis.z
+		cf.y = 0.0
+		if cf.length_squared() > 1e-6:
+			return cf.normalized()
+	var b := global_transform.basis
+	var f := -b.z
+	f.y = 0.0
+	if f.length_squared() > 1e-6:
+		return f.normalized()
+	return Vector3(0.0, 0.0, -1.0)
+
+
 func notify_weapon_hit_landed(world_position: Vector3) -> void:
 	if not is_instance_valid(self):
 		return
@@ -1173,6 +1188,12 @@ func _tool_kind_for_equipped_main(item_id: String) -> _BaseCharacter.ToolKind:
 
 
 func _use_hotbar_slot(slot_idx: int) -> void:
+	GameState.ensure_hotbar_arrays()
+	if GameState.hotbar_spell_ids.size() > slot_idx:
+		var spell_id := str(GameState.hotbar_spell_ids[slot_idx])
+		if not spell_id.is_empty():
+			_try_cast_bound_spell(spell_id)
+			return
 	if GameState.hotbar_item_ids.size() > slot_idx:
 		var item_id := str(GameState.hotbar_item_ids[slot_idx])
 		if not item_id.is_empty():
@@ -1255,6 +1276,14 @@ func _try_cast_rune_item(item_id: String) -> bool:
 		var sec_left := ceili(float(next_ready - now_ms) / 1000.0)
 		show_gameplay_message("%s is on cooldown (%ds)." % [InventoryService.get_item_display_name(item_id), sec_left])
 		return false
+	if effect_id == "spell_air_push":
+		if not _RuneEffectService.has_air_push_target(self):
+			show_gameplay_message("No creature in front of you.")
+			return false
+		if base_character != null and base_character.has_method("try_play_rune_air_push"):
+			if not base_character.try_play_rune_air_push():
+				show_gameplay_message("You can't cast that right now.")
+				return false
 	var result: Dictionary = _RuneEffectService.cast(effect_id, self)
 	if not bool(result.get("success", false)):
 		show_gameplay_message(str(result.get("message", "That rune has no effect yet.")))
@@ -1262,6 +1291,38 @@ func _try_cast_rune_item(item_id: String) -> bool:
 	if cooldown_ms > 0:
 		_rune_cooldown_until_ms[cooldown_key] = now_ms + cooldown_ms
 	show_gameplay_message(str(result.get("message", "Rune effect triggered.")))
+	return true
+
+
+func _try_cast_bound_spell(spell_id: String) -> bool:
+	if spell_id.is_empty():
+		return false
+	var effect_id := spell_id
+	var cooldown_ms: int = _RuneEffectService.default_cooldown_ms(effect_id)
+	var now_ms: int = Time.get_ticks_msec()
+	var cooldown_key := effect_id
+	var next_ready: int = int(_rune_cooldown_until_ms.get(cooldown_key, 0))
+	if now_ms < next_ready:
+		var sec_left := ceili(float(next_ready - now_ms) / 1000.0)
+		show_gameplay_message(
+			"%s is on cooldown (%ds)." % [_SpellCatalog.get_display_name(spell_id), sec_left]
+		)
+		return false
+	if effect_id == "spell_air_push":
+		if not _RuneEffectService.has_air_push_target(self):
+			show_gameplay_message("No creature in front of you.")
+			return false
+		if base_character != null and base_character.has_method("try_play_rune_air_push"):
+			if not base_character.try_play_rune_air_push():
+				show_gameplay_message("You can't cast that right now.")
+				return false
+	var result: Dictionary = _RuneEffectService.cast(effect_id, self)
+	if not bool(result.get("success", false)):
+		show_gameplay_message(str(result.get("message", "That spell failed.")))
+		return false
+	if cooldown_ms > 0:
+		_rune_cooldown_until_ms[cooldown_key] = now_ms + cooldown_ms
+	show_gameplay_message(str(result.get("message", "Spell cast.")))
 	return true
 
 

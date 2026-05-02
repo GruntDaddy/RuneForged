@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "rune_earth"
+display_name = "Earth Rune"
+description = "An earth-aligned rune. No spell is bound to it yet."
+category = 8
+max_stack = 1
+tags = PackedStringArray("rune", "magic", "earth", "element")
+use_cooldown_ms = 0

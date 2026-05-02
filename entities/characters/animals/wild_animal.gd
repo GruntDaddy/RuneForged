@@ -68,6 +68,9 @@ var _health_bar_bg: MeshInstance3D
 var _health_bar_fill: MeshInstance3D
 var _health_bar_visible_until_ms: int = 0
 var _hit_knockback_planar: Vector3 = Vector3.ZERO
+var _wind_push_time_left: float = 0.0
+var _wind_push_dir: Vector3 = Vector3.ZERO
+var _wind_push_speed: float = 0.0
 
 
 func _ready() -> void:
@@ -90,6 +93,20 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if _dead:
+		return
+	if _wind_push_time_left > 0.0:
+		_wind_push_time_left -= delta
+		var pv := _wind_push_dir * _wind_push_speed
+		velocity.x = pv.x
+		velocity.z = pv.z
+		if not is_on_floor():
+			velocity.y -= _gravity * delta
+		else:
+			velocity.y = 0.0
+		move_and_slide()
+		_update_anim()
+		_update_health_bar_billboard()
+		_update_health_bar_visibility()
 		return
 	_enforce_spawn_leash()
 	_phase_timeout -= delta
@@ -150,6 +167,21 @@ func _reset_to_spawn() -> void:
 	velocity = Vector3.ZERO
 	_flee_timeout = 0.0
 	_set_idle_phase()
+
+
+func apply_wind_push(source: Node3D, duration_sec: float, speed: float) -> void:
+	if _dead:
+		return
+	if source == null or not is_instance_valid(source):
+		return
+	var away := global_position - source.global_position
+	away.y = 0.0
+	if away.length_squared() < 1e-6:
+		away = Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0))
+	_wind_push_dir = away.normalized()
+	_wind_push_speed = maxf(0.1, speed)
+	_wind_push_time_left = maxf(_wind_push_time_left, maxf(0.05, duration_sec))
+	_hit_knockback_planar = Vector3.ZERO
 
 
 func can_receive_hit() -> bool:

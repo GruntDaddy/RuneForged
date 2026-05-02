@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://airpushgust001"]
+
+[ext_resource type="Script" path="res://entities/effects/air_push_gust.gd" id="1_script"]
+
+[node name="AirPushGust" type="Node3D"]
+script = ExtResource("1_script")

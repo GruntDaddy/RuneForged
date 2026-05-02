@@ -1,6 +1,7 @@
 extends CanvasLayer
 class_name GameMenu
 const ForgeTabScript = preload("res://ui/menus/tabs/forge_tab.gd")
+const _SpellCatalog = preload("res://systems/magic/spell_catalog.gd")
 
 ## Spine tab indices (7 tabs + Codex uses World / People / Items filters inside).
 const TAB_VITALS := 0
@@ -152,7 +153,7 @@ var _codex_filter: OptionButton
 var _codex_list: ItemList
 var _codex_detail: RichTextLabel
 var _build_preview_rotation_y: float = 0.0
-var _magic_rune_picker: OptionButton
+var _magic_spell_picker: OptionButton
 var _magic_slot_picker: OptionButton
 var _selected_build_item_id: String = "campfire_kit"
 
@@ -193,7 +194,7 @@ func _on_inventory_changed() -> void:
 		_refresh_menu_hotbar()
 		_refresh_tackle_panel()
 		_refresh_skills_page()
-		_refresh_magic_rune_picker()
+		_refresh_magic_spell_picker()
 		_forge_tab.on_inventory_changed()
 
 
@@ -223,7 +224,7 @@ func open_menu(tab_idx: int = 0) -> void:
 	_refresh_equip_slots()
 	_refresh_menu_hotbar()
 	_refresh_skills_page()
-	_refresh_magic_rune_picker()
+	_refresh_magic_spell_picker()
 	_refresh_vitals_page()
 	_forge_tab.refresh_on_open()
 	if _current_tab == TAB_CODEX:
@@ -284,9 +285,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		var hb_idx := _menu_hotbar_slot_from_mouse(event.global_position)
 		if hb_idx >= 0:
-			while GameState.hotbar_item_ids.size() < 4:
-				GameState.hotbar_item_ids.append("")
-			GameState.hotbar_item_ids[hb_idx] = ""
+			GameState.clear_hotbar_slot(hb_idx)
 			_refresh_menu_hotbar()
 			get_viewport().set_input_as_handled()
 			return
@@ -889,13 +888,23 @@ func _menu_hotbar_slot_from_mouse(global_pos: Vector2) -> int:
 
 
 func _refresh_menu_hotbar() -> void:
+	GameState.ensure_hotbar_arrays()
 	for i in _menu_hotbar_panels.size():
+		var spell_id := ""
 		var item_id := ""
+		if GameState.hotbar_spell_ids.size() > i:
+			spell_id = str(GameState.hotbar_spell_ids[i])
 		if GameState.hotbar_item_ids.size() > i:
 			item_id = str(GameState.hotbar_item_ids[i])
+		var filled := not spell_id.is_empty() or not item_id.is_empty()
 		if i < _menu_hotbar_labels.size():
-			_menu_hotbar_labels[i].text = _pretty_item_name(item_id) if not item_id.is_empty() else "(empty)"
-		_apply_menu_hotbar_style(_menu_hotbar_panels[i], false, not item_id.is_empty())
+			var cap := "(empty)"
+			if not spell_id.is_empty():
+				cap = _SpellCatalog.get_display_name(spell_id)
+			elif not item_id.is_empty():
+				cap = _pretty_item_name(item_id)
+			_menu_hotbar_labels[i].text = cap
+		_apply_menu_hotbar_style(_menu_hotbar_panels[i], false, filled)
 
 
 func _apply_menu_hotbar_style(panel: Panel, selected: bool, filled: bool) -> void:
@@ -1104,7 +1113,7 @@ func _build_magic_page(page: Control) -> void:
 	vb.add_theme_constant_override("separation", 10)
 	card.add_child(vb)
 	var t := Label.new()
-	t.text = "Magic & spells"
+	t.text = "Spell book"
 	_apply_section_title(t)
 	t.add_theme_font_size_override("font_size", 21)
 	vb.add_child(t)
@@ -1113,17 +1122,17 @@ func _build_magic_page(page: Control) -> void:
 	body.fit_content = true
 	body.add_theme_color_override("default_color", _COL_INK)
 	body.text = (
-		"Bind a rune from your inventory to hotbar slots [1]-[4].\n\n"
-		+ "Starter rune:\n"
-		+ "- [b]Spark Rune[/b] restores stamina and has a cooldown."
+		"Bind spells to hotbar slots [1]-[4]. Each slot can hold either a spell or a normal item (tools, gear).\n\n"
+		+ "Spell book — [b]Push[/b] (Air · level 1): a gust of wind that shoves a creature back. No damage.\n"
+		+ "Future spells may require multiple rune types in inventory; binding the spell keeps one hotbar slot."
 	)
 	vb.add_child(body)
 	var picker_row := HBoxContainer.new()
 	picker_row.add_theme_constant_override("separation", 8)
 	vb.add_child(picker_row)
-	_magic_rune_picker = OptionButton.new()
-	_style_generic_journal_button(_magic_rune_picker)
-	picker_row.add_child(_magic_rune_picker)
+	_magic_spell_picker = OptionButton.new()
+	_style_generic_journal_button(_magic_spell_picker)
+	picker_row.add_child(_magic_spell_picker)
 	_magic_slot_picker = OptionButton.new()
 	for i in 4:
 		_magic_slot_picker.add_item("Hotbar %d" % (i + 1), i)
@@ -1131,7 +1140,7 @@ func _build_magic_page(page: Control) -> void:
 	_style_generic_journal_button(_magic_slot_picker)
 	picker_row.add_child(_magic_slot_picker)
 	var bind_btn := Button.new()
-	bind_btn.text = "Bind Rune"
+	bind_btn.text = "Bind spell"
 	bind_btn.pressed.connect(_on_magic_bind_pressed)
 	_style_generic_journal_button(bind_btn)
 	picker_row.add_child(bind_btn)
@@ -1141,11 +1150,11 @@ func _build_magic_page(page: Control) -> void:
 	_style_generic_journal_button(grant_btn)
 	picker_row.add_child(grant_btn)
 	var foot := Label.new()
-	foot.text = "Use hotbar keys to cast bound runes."
+	foot.text = "Use hotbar keys [1]-[4] to cast bound spells or use items."
 	_apply_body_label(foot, 12)
 	foot.add_theme_color_override("font_color", _COL_INK_MUTED)
 	vb.add_child(foot)
-	_refresh_magic_rune_picker()
+	_refresh_magic_spell_picker()
 
 
 func _build_forge_page(page: Control) -> void:
@@ -1767,15 +1776,18 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 		else:
 			if not _try_drop_inv_on_hotbar(from_i, global_pos):
 				_drop_dragged_to_world(global_pos)
-	elif _drag["k"] == "hb":
+	elif _drag["k"] == "hb" or _drag["k"] == "hbs":
 		var from_hb: int = int(_drag["i"])
 		if to_hb >= 0 and to_hb != from_hb:
-			while GameState.hotbar_item_ids.size() < 4:
-				GameState.hotbar_item_ids.append("")
+			GameState.ensure_hotbar_arrays()
 			var a := str(GameState.hotbar_item_ids[from_hb])
 			var b := str(GameState.hotbar_item_ids[to_hb])
+			var sa := str(GameState.hotbar_spell_ids[from_hb])
+			var sb := str(GameState.hotbar_spell_ids[to_hb])
 			GameState.hotbar_item_ids[from_hb] = b
 			GameState.hotbar_item_ids[to_hb] = a
+			GameState.hotbar_spell_ids[from_hb] = sb
+			GameState.hotbar_spell_ids[to_hb] = sa
 		_refresh_menu_hotbar()
 	elif _drag["k"] == "eq":
 		var from_s: String = str(_drag["s"])
@@ -1791,14 +1803,28 @@ func _finish_drag_at(global_pos: Vector2) -> void:
 func _begin_drag_hotbar(slot_idx: int) -> bool:
 	if slot_idx < 0 or slot_idx >= 4:
 		return false
-	while GameState.hotbar_item_ids.size() < 4:
-		GameState.hotbar_item_ids.append("")
+	GameState.ensure_hotbar_arrays()
 	var item_id := str(GameState.hotbar_item_ids[slot_idx])
-	if item_id.is_empty():
-		return false
-	_drag = {"k": "hb", "i": slot_idx}
-	_show_drag_preview(item_id, 1)
-	return true
+	var spell_id := str(GameState.hotbar_spell_ids[slot_idx])
+	if not item_id.is_empty():
+		_drag = {"k": "hb", "i": slot_idx}
+		_show_drag_preview(item_id, 1)
+		return true
+	if not spell_id.is_empty():
+		_drag = {"k": "hbs", "i": slot_idx}
+		_show_drag_preview_spell(spell_id)
+		return true
+	return false
+
+
+func _show_drag_preview_spell(spell_id: String) -> void:
+	_apply_icon_to_texture_rect(_drag_icon, _drag_fallback, "")
+	_drag_name.text = _SpellCatalog.get_display_name(spell_id)
+	_drag_fallback.text = "◇"
+	_drag_count.text = "1"
+	_drag_preview.visible = true
+	var mp := get_viewport().get_mouse_position()
+	_drag_preview.global_position = mp + Vector2(16, 16)
 
 
 func _try_drop_inv_on_hotbar(from_i: int, global_pos: Vector2) -> bool:
@@ -1810,9 +1836,9 @@ func _try_drop_inv_on_hotbar(from_i: int, global_pos: Vector2) -> bool:
 		var item_id := str(s.get("id", ""))
 		if item_id.is_empty():
 			return false
-		while GameState.hotbar_item_ids.size() < 4:
-			GameState.hotbar_item_ids.append("")
+		GameState.ensure_hotbar_arrays()
 		GameState.hotbar_item_ids[menu_slot_idx] = item_id
+		GameState.hotbar_spell_ids[menu_slot_idx] = ""
 		_refresh_menu_hotbar()
 		return true
 	var p := get_parent()
@@ -2169,70 +2195,61 @@ func _toast(msg: String) -> void:
 		p.call("show_gameplay_message", msg)
 
 
-func _refresh_magic_rune_picker() -> void:
-	if _magic_rune_picker == null:
+func _refresh_magic_spell_picker() -> void:
+	if _magic_spell_picker == null:
 		return
 	var prev_id := ""
-	if _magic_rune_picker.item_count > 0 and _magic_rune_picker.selected >= 0:
-		prev_id = str(_magic_rune_picker.get_item_metadata(_magic_rune_picker.selected))
-	_magic_rune_picker.clear()
-	for i in InventoryService.SLOT_COUNT:
-		var s: Variant = InventoryService.get_slot_data(i)
-		if s == null:
+	if _magic_spell_picker.item_count > 0 and _magic_spell_picker.selected >= 0:
+		prev_id = str(_magic_spell_picker.get_item_metadata(_magic_spell_picker.selected))
+	_magic_spell_picker.clear()
+	for spell_id in _SpellCatalog.get_known_spell_ids():
+		var sid := str(spell_id)
+		if sid.is_empty():
 			continue
-		var item_id := str(s.get("id", ""))
-		if item_id.is_empty():
-			continue
-		var it: ItemData = ItemCatalog.get_item(item_id)
-		if it == null or it.category != ItemData.Category.RUNE:
-			continue
-		var exists := false
-		for j in _magic_rune_picker.item_count:
-			if str(_magic_rune_picker.get_item_metadata(j)) == item_id:
-				exists = true
-				break
-		if exists:
-			continue
-		_magic_rune_picker.add_item(_pretty_item_name(item_id))
-		var idx := _magic_rune_picker.item_count - 1
-		_magic_rune_picker.set_item_metadata(idx, item_id)
-	_magic_rune_picker.add_separator()
-	_magic_rune_picker.add_item("(no rune)")
-	var none_idx := _magic_rune_picker.item_count - 1
-	_magic_rune_picker.set_item_metadata(none_idx, "")
+		_magic_spell_picker.add_item(_SpellCatalog.get_display_name(sid))
+		var idx := _magic_spell_picker.item_count - 1
+		_magic_spell_picker.set_item_metadata(idx, sid)
+	_magic_spell_picker.add_separator()
+	_magic_spell_picker.add_item("(none)")
+	var none_idx := _magic_spell_picker.item_count - 1
+	_magic_spell_picker.set_item_metadata(none_idx, "")
 	var selected_idx := none_idx
 	if not prev_id.is_empty():
-		for i in _magic_rune_picker.item_count:
-			if str(_magic_rune_picker.get_item_metadata(i)) == prev_id:
+		for i in _magic_spell_picker.item_count:
+			if str(_magic_spell_picker.get_item_metadata(i)) == prev_id:
 				selected_idx = i
 				break
-	_magic_rune_picker.select(selected_idx)
+	_magic_spell_picker.select(selected_idx)
 
 
 func _on_magic_bind_pressed() -> void:
-	if _magic_rune_picker == null or _magic_slot_picker == null:
+	if _magic_spell_picker == null or _magic_slot_picker == null:
 		return
 	if _magic_slot_picker.item_count < 1:
 		return
 	var slot_idx := int(_magic_slot_picker.get_item_id(_magic_slot_picker.selected))
 	if slot_idx < 0 or slot_idx >= 4:
 		return
-	var rune_id := str(_magic_rune_picker.get_item_metadata(_magic_rune_picker.selected))
-	while GameState.hotbar_item_ids.size() < 4:
-		GameState.hotbar_item_ids.append("")
-	GameState.hotbar_item_ids[slot_idx] = rune_id
-	if rune_id.is_empty():
-		_toast("Cleared hotbar slot %d." % (slot_idx + 1))
+	var spell_id := str(_magic_spell_picker.get_item_metadata(_magic_spell_picker.selected))
+	GameState.ensure_hotbar_arrays()
+	GameState.hotbar_spell_ids[slot_idx] = spell_id
+	if not spell_id.is_empty():
+		GameState.hotbar_item_ids[slot_idx] = ""
+	if spell_id.is_empty():
+		_toast("Cleared spell from hotbar slot %d." % (slot_idx + 1))
 	else:
-		_toast("Bound %s to hotbar %d." % [_pretty_item_name(rune_id), slot_idx + 1])
+		_toast(
+			"Bound %s to hotbar %d."
+			% [_SpellCatalog.get_display_name(spell_id), slot_idx + 1]
+		)
 
 
 func _on_magic_grant_pressed() -> void:
-	var left := InventoryService.add_item("rune_spark", 1)
+	var left := InventoryService.add_item("rune_air", 1)
 	if left > 0:
 		_toast("Inventory full.")
 		return
-	_refresh_magic_rune_picker()
+	_refresh_magic_spell_picker()
 	_toast("Spark Rune added.")
 
 
