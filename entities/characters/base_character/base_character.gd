@@ -335,17 +335,39 @@ func _finished_animation_clip_name(anim_name: StringName) -> String:
 
 
 func _process(_delta: float) -> void:
-	# Fallback if `animation_finished` never fires (wrong signal name, or clip loop / importer quirks).
-	if _bow_phase != 1 or anim_player == null:
+	# Fallback when `animation_finished` is missing/mismatched or clip names differ by library prefix.
+	if anim_player == null or _bow_phase == 0:
 		return
-	var want := _anim_path(_ANIM_BOW_DRAW)
-	if String(anim_player.current_animation) != want:
+	var cur_full := String(anim_player.current_animation)
+	if cur_full.is_empty():
 		return
+	var cur_base := _finished_animation_clip_name(StringName(cur_full))
 	var length := anim_player.current_animation_length
-	if length <= 0.0:
+	var pos := anim_player.current_animation_position
+	var playing := anim_player.is_playing()
+
+	if _bow_phase == 1 and cur_base == _ANIM_BOW_DRAW and length > 0.0:
+		var near_end: bool = pos >= length - minf(0.08, maxf(0.02, length * 0.02))
+		var ratio: float = pos / length if length > 0.0 else 0.0
+		if near_end or ratio >= 0.995 or (not playing and pos >= length * 0.95):
+			_bow_phase = 2
 		return
-	if anim_player.current_animation_position >= length - 0.04:
-		_bow_phase = 2
+
+	if _bow_phase == 3 and cur_base == _ANIM_BOW_RELEASE:
+		var release_thresh := length - minf(0.08, maxf(0.02, length * 0.02)) if length > 0.0 else 0.0
+		var release_ratio: float = pos / length if length > 0.0 else 0.0
+		if not playing:
+			_bow_release_finished_cleanup()
+		elif length > 0.0 and (pos >= release_thresh or release_ratio >= 0.995):
+			_bow_release_finished_cleanup()
+
+
+func _bow_release_finished_cleanup() -> void:
+	if _bow_phase != 3:
+		return
+	_bow_phase = 0
+	_action_state = ActionState.LOCOMOTION
+	_apply_tool_kind(_player_chosen_tool)
 
 
 func _on_animation_finished(anim_name: StringName) -> void:
@@ -356,9 +378,7 @@ func _on_animation_finished(anim_name: StringName) -> void:
 		return
 
 	if _action_state == ActionState.COMBAT_ACTION and _bow_phase == 3 and clip_name == _ANIM_BOW_RELEASE:
-		_bow_phase = 0
-		_action_state = ActionState.LOCOMOTION
-		_apply_tool_kind(_player_chosen_tool)
+		_bow_release_finished_cleanup()
 		return
 
 	if _action_state == ActionState.RUNE_CAST_ACTION and clip_name == _active_rune_cast_clip:

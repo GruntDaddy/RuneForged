@@ -499,7 +499,8 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_just_pressed("tool_fishing"):
 			_use_hotbar_slot(3)
 
-		_attack_input_tick()
+	# Bow phases mark movement locked (`anim_busy`), but aim/fire/cancel must still run every frame.
+	_attack_input_tick()
 
 	_apply_pending_melee_facing(delta)
 
