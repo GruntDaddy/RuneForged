@@ -18,6 +18,8 @@ func _ready() -> void:
 	new_game_button.pressed.connect(_on_new_pressed)
 	options_button.pressed.connect(_on_options_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
+	for b in [load_game_button, new_game_button, options_button, quit_button]:
+		b.mouse_entered.connect(_on_button_hover)
 
 
 func _on_animation_finished(anim_name: StringName) -> void:
@@ -27,7 +29,20 @@ func _on_animation_finished(anim_name: StringName) -> void:
 			_pending_scene = ""
 
 
+func _on_button_hover() -> void:
+	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga != null and ga.has_method("play_ui_hover"):
+		ga.call("play_ui_hover")
+
+
+func _on_confirm_click() -> void:
+	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga != null and ga.has_method("play_ui_confirm"):
+		ga.call("play_ui_confirm")
+
+
 func _on_new_pressed() -> void:
+	_on_confirm_click()
 	GameState.reset()
 	InventoryService.clear_all_slots()
 	_pending_scene = GameState.SCENE_CHARACTER_CREATOR
@@ -35,6 +50,7 @@ func _on_new_pressed() -> void:
 
 
 func _on_load_pressed() -> void:
+	_on_confirm_click()
 	var ok := SaveManager.load_game()
 	if ok:
 		_pending_scene = GameState.scene_path_for_saved_region(GameState.region)
@@ -48,11 +64,13 @@ func _on_load_pressed() -> void:
 
 
 func _on_options_pressed() -> void:
+	_on_confirm_click()
 	_pending_scene = GameState.SCENE_OPTIONS_MENU
 	anim_player.play("fade_out")
 
 
 func _on_quit_pressed() -> void:
+	_on_confirm_click()
 	_pending_scene = ""
 	anim_player.play("fade_out")
 	await anim_player.animation_finished

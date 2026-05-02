@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://mof7b2sjntn0"
+path="res://.godot/imported/doorClose_2.ogg-e731eb672a0f4d8dc8388d94a0dfcc3c.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/RPG Audio/Audio/doorClose_2.ogg"
+dest_files=["res://.godot/imported/doorClose_2.ogg-e731eb672a0f4d8dc8388d94a0dfcc3c.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

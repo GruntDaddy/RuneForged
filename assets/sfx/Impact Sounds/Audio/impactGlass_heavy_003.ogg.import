@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bbj7oyjdoo1n4"
+path="res://.godot/imported/impactGlass_heavy_003.ogg-a71fb6dd807c5bd7349ccc0d6011d93a.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Impact Sounds/Audio/impactGlass_heavy_003.ogg"
+dest_files=["res://.godot/imported/impactGlass_heavy_003.ogg-a71fb6dd807c5bd7349ccc0d6011d93a.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

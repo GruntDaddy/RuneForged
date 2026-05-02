@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cbhko63cknrii"
+path="res://.godot/imported/sinkDrain2.ogg-16311703014a6ee724b0ffb081ebcbbf.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Foley Sounds/Audio/Water/sinkDrain2.ogg"
+dest_files=["res://.godot/imported/sinkDrain2.ogg-16311703014a6ee724b0ffb081ebcbbf.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

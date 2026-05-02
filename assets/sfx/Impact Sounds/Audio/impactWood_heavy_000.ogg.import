@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cnff23u71xn1i"
+path="res://.godot/imported/impactWood_heavy_000.ogg-f83056344ee07c678f54c8d2d2fad2e0.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Impact Sounds/Audio/impactWood_heavy_000.ogg"
+dest_files=["res://.godot/imported/impactWood_heavy_000.ogg-f83056344ee07c678f54c8d2d2fad2e0.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

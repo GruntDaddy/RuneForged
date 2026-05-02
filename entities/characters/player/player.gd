@@ -912,6 +912,12 @@ func _get_resolved_hit_feedback(weapon_item_id: String) -> Dictionary:
 					snd = ws.hit_feedback_impact_sound
 				if ws.hit_feedback_impact_vfx_scene != null:
 					vfx = ws.hit_feedback_impact_vfx_scene
+	if snd == null:
+		var ga: Node = _game_audio()
+		if ga != null and ga.has_method("default_melee_impact_sound"):
+			var s: Variant = ga.call("default_melee_impact_sound")
+			if s is AudioStream:
+				snd = s as AudioStream
 	return {
 		"hitstop_dur": hitstop_dur,
 		"hitstop_ts": hitstop_ts,
@@ -937,6 +943,7 @@ func _ensure_hit_feedback_audio() -> AudioStreamPlayer3D:
 	if _hit_feedback_audio != null and is_instance_valid(_hit_feedback_audio):
 		return _hit_feedback_audio
 	_hit_feedback_audio = AudioStreamPlayer3D.new()
+	_hit_feedback_audio.bus = "SFX"
 	_hit_feedback_audio.max_distance = 28.0
 	add_child(_hit_feedback_audio)
 	return _hit_feedback_audio
@@ -1167,6 +1174,9 @@ func _spawn_arrow_projectile() -> void:
 			arrow_projectile_lifetime,
 			excl
 		)
+	var ga_bow: Node = _game_audio()
+	if ga_bow != null and ga_bow.has_method("play_bow_release"):
+		ga_bow.call("play_bow_release", spawn_pos)
 
 
 func _total_arrow_ammo_count() -> int:
@@ -1323,6 +1333,7 @@ func _try_cast_rune_item(item_id: String) -> bool:
 	if cooldown_ms > 0:
 		_rune_cooldown_until_ms[cooldown_key] = now_ms + cooldown_ms
 	show_gameplay_message(str(result.get("message", "Rune effect triggered.")))
+	_play_spell_cast_feedback()
 	return true
 
 
@@ -1355,7 +1366,22 @@ func _try_cast_bound_spell(spell_id: String) -> bool:
 	if cooldown_ms > 0:
 		_rune_cooldown_until_ms[cooldown_key] = now_ms + cooldown_ms
 	show_gameplay_message(str(result.get("message", "Spell cast.")))
+	_play_spell_cast_feedback()
 	return true
+
+
+func _play_spell_cast_feedback() -> void:
+	var ga: Node = _game_audio()
+	if ga == null or not ga.has_method("play_spell_cast"):
+		return
+	var o: Vector3 = global_position + Vector3(0.0, 1.25, 0.0)
+	ga.call("play_spell_cast", o)
+
+
+func _game_audio() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.get_node_or_null("GameAudio")
 
 
 func _default_tool_for_slot(_slot_idx: int) -> _BaseCharacter.ToolKind:

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="GerstnerWave" load_steps=2 format=3 uid="uid://c5j78g2giv011"]
+[gd_resource type="Resource" script_class="GerstnerWave" load_steps=2 format=3 uid="uid://n7o8p9q0r1s2t"]
 
 [ext_resource type="Script" path="res://addons/boujie_water_shader/types/gerstner_wave.gd" id="1_c7k22"]
 

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cm66t4s5m61yu"
+path="res://.godot/imported/mouserelease1.ogg-0e7f6d431baa2300ca7ea4141fadabbf.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/UI Audio/Audio/mouserelease1.ogg"
+dest_files=["res://.godot/imported/mouserelease1.ogg-0e7f6d431baa2300ca7ea4141fadabbf.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

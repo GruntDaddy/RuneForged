@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://5aaei2urdih3"
+path="res://.godot/imported/impactSoft_heavy_003.ogg-02b1615e6db3a90b7ca0bf2f90c4a0ea.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Impact Sounds/Audio/impactSoft_heavy_003.ogg"
+dest_files=["res://.godot/imported/impactSoft_heavy_003.ogg-02b1615e6db3a90b7ca0bf2f90c4a0ea.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

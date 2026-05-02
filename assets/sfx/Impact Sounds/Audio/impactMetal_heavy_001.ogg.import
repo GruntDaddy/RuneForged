@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cg5eauddtg1j0"
+path="res://.godot/imported/impactMetal_heavy_001.ogg-110d30dbff391804682c4412d17c0898.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Impact Sounds/Audio/impactMetal_heavy_001.ogg"
+dest_files=["res://.godot/imported/impactMetal_heavy_001.ogg-110d30dbff391804682c4412d17c0898.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

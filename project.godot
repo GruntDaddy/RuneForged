@@ -42,13 +42,14 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [audio]
 
-buses/default_bus_layout=""
+buses/default_bus_layout="res://default_bus_layout.tres"
 
 [autoload]
 
 GameState="*res://autoload/game_state.gd"
 SaveManager="*res://autoload/save_manager.gd"
 SceneManager="*res://autoload/scene_manager.gd"
+GameAudio="*res://autoload/game_audio.gd"
 InventoryService="*res://autoload/inventory_service.gd"
 ItemCatalog="*res://autoload/item_catalog.gd"
 RecipeCatalog="*res://autoload/recipe_catalog.gd"

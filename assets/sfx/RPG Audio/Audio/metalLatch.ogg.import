@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cojftf1f7h80f"
+path="res://.godot/imported/metalLatch.ogg-6f2a8f2be9644d6fd59b06c8183fd9bf.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/RPG Audio/Audio/metalLatch.ogg"
+dest_files=["res://.godot/imported/metalLatch.ogg-6f2a8f2be9644d6fd59b06c8183fd9bf.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

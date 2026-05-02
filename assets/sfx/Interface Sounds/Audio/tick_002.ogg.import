@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://xl6iqf13f0r"
+path="res://.godot/imported/tick_002.ogg-1fcddf991bc8898639241aef8405dd5f.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Interface Sounds/Audio/tick_002.ogg"
+dest_files=["res://.godot/imported/tick_002.ogg-1fcddf991bc8898639241aef8405dd5f.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

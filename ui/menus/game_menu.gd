@@ -217,6 +217,9 @@ func toggle(default_tab: int = 0) -> void:
 
 
 func open_menu(tab_idx: int = 0) -> void:
+	var ga_open: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga_open != null and ga_open.has_method("play_book_open"):
+		ga_open.call("play_book_open")
 	_was_mouse_captured = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	visible = true
@@ -253,6 +256,9 @@ func _set_craft_station_filter(station_id: int) -> void:
 
 
 func close_menu() -> void:
+	var ga_close: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga_close != null and ga_close.has_method("play_book_close"):
+		ga_close.call("play_book_close")
 	_close_tackle_window()
 	_cancel_drag()
 	_kill_page_flip_tween()
@@ -1442,6 +1448,9 @@ func _begin_page_flip_to(new_idx: int) -> void:
 		_page_flipping = false
 		return
 	_page_flipping = true
+	var ga_flip: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga_flip != null and ga_flip.has_method("play_book_page_flip"):
+		ga_flip.call("play_book_page_flip")
 	_kill_page_flip_tween()
 	var out_page: Control = _pages[old_idx]
 	var in_page: Control = _pages[new_idx]

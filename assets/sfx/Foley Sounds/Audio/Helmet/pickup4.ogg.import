@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bq3yr304y030g"
+path="res://.godot/imported/pickup4.ogg-b2203a0d3e46268c2cec871e75e38bbe.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sfx/Foley Sounds/Audio/Helmet/pickup4.ogg"
+dest_files=["res://.godot/imported/pickup4.ogg-b2203a0d3e46268c2cec871e75e38bbe.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

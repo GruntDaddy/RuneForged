@@ -129,6 +129,17 @@ func _select_without_signal(ob: OptionButton, index: int) -> void:
 
 
 func _connect_signals() -> void:
+	for b in [
+		head_left_button,
+		head_right_button,
+		shirt_left_button,
+		shirt_right_button,
+		pants_left_button,
+		pants_right_button,
+		rotate_left_button,
+		rotate_right_button,
+	]:
+		b.pressed.connect(_on_customize_click_sound)
 	head_left_button.pressed.connect(_on_head_left)
 	head_right_button.pressed.connect(_on_head_right)
 
@@ -154,6 +165,12 @@ func _refresh_all() -> void:
 
 
 # --- UI callbacks ---
+
+func _on_customize_click_sound() -> void:
+	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga != null and ga.has_method("play_ui_hover"):
+		ga.call("play_ui_hover")
+
 
 func _on_origin_selected(index: int) -> void:
 	origin_id = index
@@ -207,10 +224,16 @@ func _on_rotate_right() -> void:
 
 
 func _on_back_pressed() -> void:
+	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga != null and ga.has_method("play_ui_confirm"):
+		ga.call("play_ui_confirm")
 	SceneManager.fade_to_scene(GameState.SCENE_MAIN_MENU)
 
 
 func _on_confirm_pressed() -> void:
+	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
+	if ga != null and ga.has_method("play_ui_confirm"):
+		ga.call("play_ui_confirm")
 	GameState.player_name = name_input.text.strip_edges()
 
 	GameState.head_index = head_index
