@@ -9,14 +9,14 @@ const BUS_UI := "UI"
 
 const _SFX_3D_POOL_SIZE := 12
 
-const _PATH_BGM_MENU_WAV := "res://assets/audio/Tranquil Hamlet (LOOP) 24bit.wav"
-const _PATH_BGM_CREATOR_WAV := "res://assets/audio/Noble Quest (LOOP) 24bit.wav"
-const _PATH_BGM_WORLD_WAV := "res://assets/audio/Wayfarer (LOOP) 24bit.wav"
+const _PATH_BGM_MENU_WAV := "res://assets/audio/Rise of the Dark Lord (LOOP) 24bit.wav"
+const _PATH_BGM_CREATOR_WAV := "res://assets/audio/Tranquil Hamlet (LOOP) 24bit.wav"
+const _PATH_BGM_WORLD_WAV := "res://assets/audio/The New Kingdom (LOOP) 24bit.wav"
 
-## Optional overrides (same titles as WAV); used only if WAV fails to load.
-const _PATH_BGM_MENU_MP3 := "res://assets/audio/Tranquil Hamlet.mp3"
-const _PATH_BGM_CREATOR_MP3 := "res://assets/audio/Noble Quest.mp3"
-const _PATH_BGM_WORLD_MP3 := "res://assets/audio/Wayfarer.mp3"
+## Optional overrides; used only if WAV fails to load.
+const _PATH_BGM_MENU_MP3 := "res://assets/audio/Rise of the Dark Lord.mp3"
+const _PATH_BGM_CREATOR_MP3 := "res://assets/audio/Tranquil Hamlet.mp3"
+const _PATH_BGM_WORLD_MP3 := "res://assets/audio/The New Kingdom.mp3"
 
 const _PATH_BGM_FALLBACK_MP3 := "res://assets/audio/Campfire Loop.mp3"
 
