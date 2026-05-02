@@ -325,11 +325,31 @@ func _play_if_needed(clip: String, blend: float) -> void:
 	anim_player.play(path, blend)
 
 
-func _on_animation_finished(anim_name: StringName) -> void:
+## AnimationPlayer may emit `animation_finished` as `Library/Clip` or as `Clip` only — normalize for comparisons.
+func _finished_animation_clip_name(anim_name: StringName) -> String:
 	var s := String(anim_name)
-	if not s.begins_with(_ANIM_LIB + "/"):
+	var prefix := _ANIM_LIB + "/"
+	if s.begins_with(prefix):
+		return s.substr(prefix.length())
+	return s
+
+
+func _process(_delta: float) -> void:
+	# Fallback if `animation_finished` never fires (wrong signal name, or clip loop / importer quirks).
+	if _bow_phase != 1 or anim_player == null:
 		return
-	var clip_name := s.substr(_ANIM_LIB.length() + 1, s.length())
+	var want := _anim_path(_ANIM_BOW_DRAW)
+	if String(anim_player.current_animation) != want:
+		return
+	var length := anim_player.current_animation_length
+	if length <= 0.0:
+		return
+	if anim_player.current_animation_position >= length - 0.04:
+		_bow_phase = 2
+
+
+func _on_animation_finished(anim_name: StringName) -> void:
+	var clip_name := _finished_animation_clip_name(anim_name)
 
 	if _bow_phase == 1 and clip_name == _ANIM_BOW_DRAW:
 		_bow_phase = 2
