@@ -84,9 +84,6 @@ func _ready() -> void:
 	_connect_signals()
 	_sync_detail_option_buttons()
 	_refresh_all()
-	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
-	if ga != null and ga.has_method("apply_music_for_scene_path") and not String(scene_file_path).is_empty():
-		ga.call("apply_music_for_scene_path", scene_file_path)
 
 
 func _load_from_gamestate() -> void:

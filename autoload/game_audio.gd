@@ -1,7 +1,7 @@
 extends Node
 
 ## Central one-shots, menu/world music, and shared combat streams.
-## BGM: primary loops are WAV under `assets/audio/`. Optional MP3 overrides if present; Campfire MP3 last resort.
+## BGM uses the same AudioStreamPlayer path as the splash roar: duplicate stream → assign → play().
 
 const BUS_MUSIC := "Music"
 const BUS_SFX := "SFX"
@@ -13,7 +13,6 @@ const _PATH_BGM_MENU_WAV := "res://assets/audio/Rise of the Dark Lord (LOOP) 24b
 const _PATH_BGM_CREATOR_WAV := "res://assets/audio/Tranquil Hamlet (LOOP) 24bit.wav"
 const _PATH_BGM_WORLD_WAV := "res://assets/audio/The New Kingdom (LOOP) 24bit.wav"
 
-## Optional overrides; used only if WAV fails to load.
 const _PATH_BGM_MENU_MP3 := "res://assets/audio/Rise of the Dark Lord.mp3"
 const _PATH_BGM_CREATOR_MP3 := "res://assets/audio/Tranquil Hamlet.mp3"
 const _PATH_BGM_WORLD_MP3 := "res://assets/audio/The New Kingdom.mp3"
@@ -40,10 +39,9 @@ var _sfx_3d_anchor: Node3D
 var _sfx_3d_pool: Array[AudioStreamPlayer3D] = []
 var _sfx_3d_i: int = 0
 
-var _music_menu: AudioStream
-var _music_creator: AudioStream
-var _music_world: AudioStream
 var _music_track_key: String = ""
+var _last_scene_path_seen: String = ""
+var _last_applied_music_scene: String = ""
 
 var _snd_ui_switch: AudioStream
 var _snd_ui_confirm: AudioStream
@@ -55,13 +53,15 @@ var _snd_bow: AudioStream
 var _snd_spell: AudioStream
 var _snd_melee_default: AudioStream
 var _snd_beast_roar: AudioStream
+## Preloaded like splash roar so loop BGM uses the same resource path/cache as one-shots.
+var _snd_bgm_menu: AudioStream
+var _snd_bgm_creator: AudioStream
+var _snd_bgm_world: AudioStream
+var _snd_bgm_fallback: AudioStream
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_music_menu = _resolve_bgm_stream(_PATH_BGM_MENU_WAV, _PATH_BGM_MENU_MP3)
-	_music_creator = _resolve_bgm_stream(_PATH_BGM_CREATOR_WAV, _PATH_BGM_CREATOR_MP3)
-	_music_world = _resolve_bgm_stream(_PATH_BGM_WORLD_WAV, _PATH_BGM_WORLD_MP3)
 	_snd_ui_switch = load(_PATH_UI_SWITCH) as AudioStream
 	_snd_ui_confirm = load(_PATH_UI_CONFIRM) as AudioStream
 	_snd_ui_tab = load(_PATH_UI_TAB) as AudioStream
@@ -72,8 +72,13 @@ func _ready() -> void:
 	_snd_spell = load(_PATH_SPELL_CAST) as AudioStream
 	_snd_melee_default = load(_PATH_MELEE_DEFAULT_HIT) as AudioStream
 	_snd_beast_roar = load(_PATH_BEAST_ROAR) as AudioStream
+	_snd_bgm_menu = load(_PATH_BGM_MENU_WAV) as AudioStream
+	_snd_bgm_creator = load(_PATH_BGM_CREATOR_WAV) as AudioStream
+	_snd_bgm_world = load(_PATH_BGM_WORLD_WAV) as AudioStream
+	_snd_bgm_fallback = load(_PATH_BGM_FALLBACK_MP3) as AudioStream
 	_music = AudioStreamPlayer.new()
-	_music.bus = _resolve_bus_or_master(BUS_MUSIC)
+	# Same routing as other gameplay audio; splash roar uses this node successfully.
+	_music.bus = "Master"
 	_music.volume_db = -3.0
 	add_child(_music)
 	for i in 4:
@@ -92,50 +97,17 @@ func _ready() -> void:
 		_sfx_3d_pool.append(s3)
 
 
-func _resolve_bus_or_master(bus_name: String) -> String:
-	var idx := AudioServer.get_bus_index(bus_name)
-	if idx >= 0:
-		return bus_name
-	push_warning("GameAudio: bus \"%s\" not loaded — using Master (check Project Settings → Audio → default bus layout)." % bus_name)
-	return "Master"
-
-
-func _resolve_bgm_stream(wav_path: String, optional_mp3: String) -> AudioStream:
-	var wav := _load_bgm_wav_loop(wav_path)
-	if wav != null and wav.get_length() > 0.05:
-		return wav
-	if ResourceLoader.exists(optional_mp3):
-		var m := _load_mp3_loop(optional_mp3)
-		if m != null:
-			return m
-	push_warning("GameAudio: WAV missing or invalid (%s); trying Campfire fallback." % wav_path.get_file())
-	return _load_mp3_loop(_PATH_BGM_FALLBACK_MP3)
-
-
-func _load_bgm_wav_loop(path: String) -> AudioStream:
-	var raw: AudioStream = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as AudioStream
-	if raw == null:
-		raw = load(path) as AudioStream
-	if raw == null:
-		return null
-	var s: AudioStream = raw.duplicate(true)
-	if s is AudioStreamWAV:
-		var w := s as AudioStreamWAV
-		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	elif s is AudioStreamMP3:
-		(s as AudioStreamMP3).loop = true
-	return s
-
-
-func _load_mp3_loop(path: String) -> AudioStream:
-	var raw: AudioStream = load(path) as AudioStream
-	if raw == null:
-		push_warning("GameAudio: failed to load MP3: %s" % path)
-		return null
-	var s: AudioStream = raw.duplicate()
-	if s is AudioStreamMP3:
-		(s as AudioStreamMP3).loop = true
-	return s
+func _process(_delta: float) -> void:
+	var sc: Node = get_tree().current_scene
+	if sc == null:
+		return
+	var path := String(sc.scene_file_path).replace("\\", "/")
+	if path.is_empty():
+		return
+	if path == _last_scene_path_seen:
+		return
+	_last_scene_path_seen = path
+	apply_music_for_scene_path(path)
 
 
 func default_melee_impact_sound() -> AudioStream:
@@ -144,25 +116,88 @@ func default_melee_impact_sound() -> AudioStream:
 
 func apply_music_for_scene_path(scene_path: String) -> void:
 	var p := scene_path.replace("\\", "/")
+	if p.is_empty():
+		return
+	if p == _last_applied_music_scene and _music != null and _music.playing:
+		return
 	if p.contains("splash_boot"):
 		_play_splash_roar()
+		_last_applied_music_scene = p
 		return
+	var mp3_path := ""
+	var wav_path := ""
+	var preferred: AudioStream = null
 	var track_key := "default"
-	var stream: AudioStream = _music_world
 	var vol := -5.0
 	if p.contains("main_menu") or p.contains("options_menu"):
+		mp3_path = _PATH_BGM_MENU_MP3
+		wav_path = _PATH_BGM_MENU_WAV
+		preferred = _snd_bgm_menu
 		track_key = "menu"
-		stream = _music_menu
-		vol = -5.0
 	elif p.contains("character_creator"):
+		mp3_path = _PATH_BGM_CREATOR_MP3
+		wav_path = _PATH_BGM_CREATOR_WAV
+		preferred = _snd_bgm_creator
 		track_key = "creator"
-		stream = _music_creator
-		vol = -5.0
 	elif p.contains("world/regions") or p.contains("tutorial_isle"):
+		mp3_path = _PATH_BGM_WORLD_MP3
+		wav_path = _PATH_BGM_WORLD_WAV
+		preferred = _snd_bgm_world
 		track_key = "world"
-		stream = _music_world
-		vol = -5.0
-	_play_music_stream(stream, vol, track_key)
+	else:
+		mp3_path = _PATH_BGM_WORLD_MP3
+		wav_path = _PATH_BGM_WORLD_WAV
+		preferred = _snd_bgm_world
+		track_key = "world_fallback"
+	var base_stream: AudioStream = null
+	if preferred != null and not _stream_seems_invalid(preferred):
+		base_stream = preferred
+	else:
+		base_stream = _load_bgm_resource(mp3_path, wav_path)
+	if base_stream == null or _stream_seems_invalid(base_stream):
+		base_stream = _snd_bgm_fallback
+	if base_stream == null:
+		push_warning("GameAudio: no BGM stream available for \"%s\"." % track_key)
+		return
+	_play_loop_music_splash_style(base_stream, vol, track_key)
+	_last_applied_music_scene = p
+
+
+func _stream_seems_invalid(s: AudioStream) -> bool:
+	if s == null:
+		return true
+	return s.get_length() <= 0.001
+
+
+func _load_bgm_resource(mp3_path: String, wav_path: String) -> AudioStream:
+	if ResourceLoader.exists(mp3_path):
+		var m: AudioStream = load(mp3_path) as AudioStream
+		if m != null and not _stream_seems_invalid(m):
+			return m
+	var w: AudioStream = load(wav_path) as AudioStream
+	if w != null and not _stream_seems_invalid(w):
+		return w
+	push_warning("GameAudio: optional MP3 / WAV missing or invalid (%s); trying Campfire MP3." % wav_path.get_file())
+	return _snd_bgm_fallback
+
+
+## Same pattern as `_play_splash_roar`: duplicate → assign `_music.stream` → `play()`.
+func _play_loop_music_splash_style(base_stream: AudioStream, volume_db: float, track_key: String) -> void:
+	if _music == null:
+		return
+	if base_stream == null:
+		push_warning("GameAudio: no BGM resource for \"%s\"." % track_key)
+		return
+	var s: AudioStream = base_stream.duplicate()
+	if s is AudioStreamMP3:
+		(s as AudioStreamMP3).loop = true
+	elif s is AudioStreamWAV:
+		(s as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	_music.stop()
+	_music.stream = s
+	_music.volume_db = volume_db
+	_music_track_key = track_key
+	_music.play()
 
 
 func _play_splash_roar() -> void:
@@ -185,6 +220,7 @@ func stop_music() -> void:
 	if _music != null and _music.playing:
 		_music.stop()
 	_music_track_key = ""
+	_last_applied_music_scene = ""
 
 
 func play_ui_hover() -> void:
@@ -236,29 +272,6 @@ func play_sfx_3d(stream: AudioStream, world_position: Vector3, volume_db: float 
 	p.max_distance = max_distance
 	p.global_position = world_position
 	p.play()
-
-
-func _play_music_stream(stream: AudioStream, volume_db: float, track_key: String) -> void:
-	if stream == null or _music == null:
-		if stream == null:
-			push_warning("GameAudio: no BGM stream for track \"%s\"." % track_key)
-		return
-	if _music_track_key == track_key and _music.playing:
-		_music.volume_db = volume_db
-		return
-	_music.stop()
-	_music.stream = stream
-	_music.volume_db = volume_db
-	_music_track_key = track_key
-	_music.play()
-	call_deferred("_ensure_music_playing")
-
-
-func _ensure_music_playing() -> void:
-	if _music == null or _music.stream == null:
-		return
-	if not _music.playing:
-		_music.play()
 
 
 func _play_ui(stream: AudioStream, volume_db: float) -> void:

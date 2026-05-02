@@ -8,9 +8,6 @@ const _AnimalChickScene = preload("res://entities/characters/animals/chick.tscn"
 
 func _ready() -> void:
 	_setup_tutorial_animals_if_needed()
-	var ga: Node = get_tree().root.get_node_or_null("GameAudio")
-	if ga != null and ga.has_method("apply_music_for_scene_path") and not String(scene_file_path).is_empty():
-		ga.call("apply_music_for_scene_path", scene_file_path)
 
 
 func _setup_tutorial_animals_if_needed() -> void:
