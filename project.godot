@@ -40,10 +40,6 @@ config/version="1.1.0"
 run/main_scene="res://ui/boot_splash/splash_boot.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
-
 [autoload]
 
 GameState="*res://autoload/game_state.gd"

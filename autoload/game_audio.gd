@@ -53,10 +53,7 @@ var _snd_bow: AudioStream
 var _snd_spell: AudioStream
 var _snd_melee_default: AudioStream
 var _snd_beast_roar: AudioStream
-## Preloaded like splash roar so loop BGM uses the same resource path/cache as one-shots.
-var _snd_bgm_menu: AudioStream
-var _snd_bgm_creator: AudioStream
-var _snd_bgm_world: AudioStream
+## MP3 loop fallback when only 24-bit WAV exists (WAV often silent at runtime; export OGG/MP3 per track).
 var _snd_bgm_fallback: AudioStream
 
 
@@ -72,9 +69,6 @@ func _ready() -> void:
 	_snd_spell = load(_PATH_SPELL_CAST) as AudioStream
 	_snd_melee_default = load(_PATH_MELEE_DEFAULT_HIT) as AudioStream
 	_snd_beast_roar = load(_PATH_BEAST_ROAR) as AudioStream
-	_snd_bgm_menu = load(_PATH_BGM_MENU_WAV) as AudioStream
-	_snd_bgm_creator = load(_PATH_BGM_CREATOR_WAV) as AudioStream
-	_snd_bgm_world = load(_PATH_BGM_WORLD_WAV) as AudioStream
 	_snd_bgm_fallback = load(_PATH_BGM_FALLBACK_MP3) as AudioStream
 	_music = AudioStreamPlayer.new()
 	# Same routing as other gameplay audio; splash roar uses this node successfully.
@@ -126,34 +120,25 @@ func apply_music_for_scene_path(scene_path: String) -> void:
 		return
 	var mp3_path := ""
 	var wav_path := ""
-	var preferred: AudioStream = null
 	var track_key := "default"
 	var vol := -5.0
 	if p.contains("main_menu") or p.contains("options_menu"):
 		mp3_path = _PATH_BGM_MENU_MP3
 		wav_path = _PATH_BGM_MENU_WAV
-		preferred = _snd_bgm_menu
 		track_key = "menu"
 	elif p.contains("character_creator"):
 		mp3_path = _PATH_BGM_CREATOR_MP3
 		wav_path = _PATH_BGM_CREATOR_WAV
-		preferred = _snd_bgm_creator
 		track_key = "creator"
 	elif p.contains("world/regions") or p.contains("tutorial_isle"):
 		mp3_path = _PATH_BGM_WORLD_MP3
 		wav_path = _PATH_BGM_WORLD_WAV
-		preferred = _snd_bgm_world
 		track_key = "world"
 	else:
 		mp3_path = _PATH_BGM_WORLD_MP3
 		wav_path = _PATH_BGM_WORLD_WAV
-		preferred = _snd_bgm_world
 		track_key = "world_fallback"
-	var base_stream: AudioStream = null
-	if preferred != null and not _stream_seems_invalid(preferred):
-		base_stream = preferred
-	else:
-		base_stream = _load_bgm_resource(mp3_path, wav_path)
+	var base_stream: AudioStream = _load_bgm_resource(mp3_path, wav_path)
 	if base_stream == null or _stream_seems_invalid(base_stream):
 		base_stream = _snd_bgm_fallback
 	if base_stream == null:
@@ -174,10 +159,15 @@ func _load_bgm_resource(mp3_path: String, wav_path: String) -> AudioStream:
 		var m: AudioStream = load(mp3_path) as AudioStream
 		if m != null and not _stream_seems_invalid(m):
 			return m
+	var ogg_path := wav_path.trim_suffix(".wav") + ".ogg"
+	if ResourceLoader.exists(ogg_path):
+		var ogg: AudioStream = load(ogg_path) as AudioStream
+		if ogg != null and not _stream_seems_invalid(ogg):
+			return ogg
 	var w: AudioStream = load(wav_path) as AudioStream
 	if w != null and not _stream_seems_invalid(w):
 		return w
-	push_warning("GameAudio: optional MP3 / WAV missing or invalid (%s); trying Campfire MP3." % wav_path.get_file())
+	push_warning("GameAudio: no MP3/OGG/WAV for %s; using Campfire MP3." % wav_path.get_file())
 	return _snd_bgm_fallback
 
 
@@ -188,9 +178,23 @@ func _play_loop_music_splash_style(base_stream: AudioStream, volume_db: float, t
 	if base_stream == null:
 		push_warning("GameAudio: no BGM resource for \"%s\"." % track_key)
 		return
-	var s: AudioStream = base_stream.duplicate()
+	# Long imported WAV (often 24-bit) frequently produces silence at runtime; MP3/OGG match splash reliability.
+	var effective: AudioStream = base_stream
+	if effective is AudioStreamWAV:
+		if _snd_bgm_fallback != null:
+			push_warning(
+				"GameAudio: WAV loop skipped for \"%s\" — add an OGG or MP3 next to the WAV (same basename) or under optional paths in game_audio.gd."
+				% track_key
+			)
+			effective = _snd_bgm_fallback
+		else:
+			push_warning("GameAudio: WAV loop unusable and no Campfire fallback.")
+			return
+	var s: AudioStream = effective.duplicate()
 	if s is AudioStreamMP3:
 		(s as AudioStreamMP3).loop = true
+	elif s is AudioStreamOggVorbis:
+		(s as AudioStreamOggVorbis).loop = true
 	elif s is AudioStreamWAV:
 		(s as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
 	_music.stop()

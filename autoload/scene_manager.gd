@@ -29,9 +29,7 @@ func fade_to_scene(path: String) -> void:
 	if err != OK:
 		push_error("SceneManager: failed to load %s (error %s)" % [path, err])
 	else:
-		var ga: Node = get_tree().root.get_node_or_null("GameAudio")
-		if ga != null and ga.has_method("apply_music_for_scene_path"):
-			ga.call("apply_music_for_scene_path", path)
+		GameAudio.apply_music_for_scene_path(path)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await _fade_in()
