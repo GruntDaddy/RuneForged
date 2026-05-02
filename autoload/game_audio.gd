@@ -1,7 +1,7 @@
 extends Node
 
 ## Central one-shots, menu/world music, and shared combat streams.
-## BGM uses the same AudioStreamPlayer path as the splash roar: duplicate stream → assign → play().
+## BGM: duplicate stream → assign → play(), with fade-out before swaps and fade-in on new tracks.
 
 const BUS_MUSIC := "Music"
 const BUS_SFX := "SFX"
@@ -32,7 +32,14 @@ const _PATH_MELEE_DEFAULT_HIT := "res://assets/sfx/Impact Sounds/Audio/impactMet
 
 const _PATH_BEAST_ROAR := "res://assets/audio/Beast Fury Roar.mp3"
 
+const MUSIC_FADE_OUT_SEC := 0.35
+const MUSIC_FADE_IN_SEC := 0.5
+const SPLASH_AUDIO_FADE_IN_SEC := 0.14
+
+const _SILENCE_DB := -80.0
+
 var _music: AudioStreamPlayer
+var _music_fade_tween: Tween
 var _ui_players: Array[AudioStreamPlayer] = []
 
 var _sfx_3d_anchor: Node3D
@@ -115,8 +122,10 @@ func apply_music_for_scene_path(scene_path: String) -> void:
 	if p == _last_applied_music_scene and _music != null and _music.playing:
 		return
 	if p.contains("splash_boot"):
-		_play_splash_roar()
-		_last_applied_music_scene = p
+		_begin_music_transition(func():
+			_play_splash_roar_faded()
+			_last_applied_music_scene = p
+		)
 		return
 	var mp3_path := ""
 	var wav_path := ""
@@ -144,8 +153,37 @@ func apply_music_for_scene_path(scene_path: String) -> void:
 	if base_stream == null:
 		push_warning("GameAudio: no BGM stream available for \"%s\"." % track_key)
 		return
-	_play_loop_music_splash_style(base_stream, vol, track_key)
-	_last_applied_music_scene = p
+	_begin_music_transition(func():
+		_play_loop_music_faded(base_stream, vol, track_key)
+		_last_applied_music_scene = p
+	)
+
+
+func _kill_music_fade() -> void:
+	if _music_fade_tween != null:
+		_music_fade_tween.kill()
+		_music_fade_tween = null
+
+
+func _begin_music_transition(on_swapped: Callable) -> void:
+	_kill_music_fade()
+	if _music == null:
+		on_swapped.call()
+		return
+	if not _music.playing:
+		on_swapped.call()
+		return
+	_music_fade_tween = create_tween()
+	_music_fade_tween.tween_property(_music, "volume_db", _SILENCE_DB, MUSIC_FADE_OUT_SEC)
+	_music_fade_tween.tween_callback(on_swapped)
+
+
+func _fade_in_music_current(target_db: float, duration_sec: float) -> void:
+	_kill_music_fade()
+	if _music == null:
+		return
+	_music_fade_tween = create_tween()
+	_music_fade_tween.tween_property(_music, "volume_db", target_db, duration_sec)
 
 
 func _stream_seems_invalid(s: AudioStream) -> bool:
@@ -171,14 +209,10 @@ func _load_bgm_resource(mp3_path: String, wav_path: String) -> AudioStream:
 	return _snd_bgm_fallback
 
 
-## Same pattern as `_play_splash_roar`: duplicate → assign `_music.stream` → `play()`.
-func _play_loop_music_splash_style(base_stream: AudioStream, volume_db: float, track_key: String) -> void:
-	if _music == null:
-		return
+func _make_loop_stream(base_stream: AudioStream, track_key: String) -> AudioStream:
 	if base_stream == null:
 		push_warning("GameAudio: no BGM resource for \"%s\"." % track_key)
-		return
-	# Long imported WAV (often 24-bit) frequently produces silence at runtime; MP3/OGG match splash reliability.
+		return null
 	var effective: AudioStream = base_stream
 	if effective is AudioStreamWAV:
 		if _snd_bgm_fallback != null:
@@ -189,7 +223,7 @@ func _play_loop_music_splash_style(base_stream: AudioStream, volume_db: float, t
 			effective = _snd_bgm_fallback
 		else:
 			push_warning("GameAudio: WAV loop unusable and no Campfire fallback.")
-			return
+			return null
 	var s: AudioStream = effective.duplicate()
 	if s is AudioStreamMP3:
 		(s as AudioStreamMP3).loop = true
@@ -197,14 +231,24 @@ func _play_loop_music_splash_style(base_stream: AudioStream, volume_db: float, t
 		(s as AudioStreamOggVorbis).loop = true
 	elif s is AudioStreamWAV:
 		(s as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	return s
+
+
+func _play_loop_music_faded(base_stream: AudioStream, volume_db: float, track_key: String) -> void:
+	if _music == null:
+		return
+	var s: AudioStream = _make_loop_stream(base_stream, track_key)
+	if s == null:
+		return
 	_music.stop()
 	_music.stream = s
-	_music.volume_db = volume_db
+	_music.volume_db = _SILENCE_DB
 	_music_track_key = track_key
 	_music.play()
+	_fade_in_music_current(volume_db, MUSIC_FADE_IN_SEC)
 
 
-func _play_splash_roar() -> void:
+func _play_splash_roar_faded() -> void:
 	if _music == null:
 		return
 	if _snd_beast_roar == null:
@@ -213,14 +257,17 @@ func _play_splash_roar() -> void:
 	var roar: AudioStream = _snd_beast_roar.duplicate()
 	if roar is AudioStreamMP3:
 		(roar as AudioStreamMP3).loop = false
+	const target_db := -2.0
 	_music.stop()
 	_music.stream = roar
-	_music.volume_db = -2.0
+	_music.volume_db = _SILENCE_DB
 	_music_track_key = "splash_roar"
 	_music.play()
+	_fade_in_music_current(target_db, SPLASH_AUDIO_FADE_IN_SEC)
 
 
 func stop_music() -> void:
+	_kill_music_fade()
 	if _music != null and _music.playing:
 		_music.stop()
 	_music_track_key = ""
