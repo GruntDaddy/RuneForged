@@ -135,6 +135,30 @@ tracks/7/keys = {
 "update": 0,
 "values": [Color(1, 1, 1, 1)]
 }
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Splash_Bg/SplashLogo:modulate")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Splash_Bg/LogoMask:modulate")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
 
 [sub_resource type="Animation" id="Animation_3dni1"]
 resource_name = "fade_out"
@@ -154,7 +178,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_kr1xi"]
 resource_name = "splash_boot"
-length = 4.2
+length = 10.5
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -162,10 +186,10 @@ tracks/0/path = NodePath("Splash_Bg/SplashLogo:rotation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0.75, 3),
+"times": PackedFloat32Array(2.0, 8.75),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [0.0, 12.566370614359172]
+"values": [0.0, 18.84955592153876]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -174,10 +198,10 @@ tracks/1/path = NodePath("Splash_Bg/LogoMask:rotation")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0.75, 3),
+"times": PackedFloat32Array(2.0, 8.75),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [0.0, 12.566370614359172]
+"values": [0.0, 18.84955592153876]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -186,7 +210,7 @@ tracks/2/path = NodePath("Splash_Bg:scale")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(3.25, 4),
+"times": PackedFloat32Array(9.0, 9.75),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
 "values": [Vector2(1, 1), Vector2(15, 15)]
@@ -210,10 +234,34 @@ tracks/4/path = NodePath("Splash_Bg:modulate")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
-"times": PackedFloat32Array(0, 1.5, 3.2666667, 4.2),
+"times": PackedFloat32Array(0, 2.0, 8.9, 10.5),
 "transitions": PackedFloat32Array(2.9281707, 1, 0.3077863, 1),
 "update": 0,
 "values": [Color(0, 0, 0, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(0, 0, 0, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Splash_Bg/SplashLogo:modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 2.0, 2.15),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Splash_Bg/LogoMask:modulate")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 2.0, 2.15),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
 }
 
 [sub_resource type="Animation" id="Animation_0w44u"]

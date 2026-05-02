@@ -34,7 +34,7 @@ const _PATH_BEAST_ROAR := "res://assets/audio/Beast Fury Roar.mp3"
 
 const MUSIC_FADE_OUT_SEC := 0.35
 const MUSIC_FADE_IN_SEC := 0.5
-const SPLASH_AUDIO_FADE_IN_SEC := 0.14
+const SPLASH_AUDIO_FADE_IN_SEC := 2.0
 
 const _SILENCE_DB := -80.0
 
