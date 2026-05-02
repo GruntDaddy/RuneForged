@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://csqhlvtww8ty7" path="res://entities/characters/player/player.gd" id="1_eoic6"]
 [ext_resource type="PackedScene" uid="uid://c4e26ayvivfoj" path="res://entities/characters/base_character/base_character.tscn" id="1_jiqs4"]
-[ext_resource type="PackedScene" path="res://ui/hud/gameplay_toast.tscn" id="4_toast"]
-[ext_resource type="PackedScene" path="res://ui/hud/player_hud.tscn" id="5_phud"]
-[ext_resource type="PackedScene" path="res://ui/menus/game_menu.tscn" id="7_gmenu"]
+[ext_resource type="PackedScene" uid="uid://dgl5tq4lmknbr" path="res://ui/hud/gameplay_toast.tscn" id="4_toast"]
+[ext_resource type="PackedScene" uid="uid://bplayerhud001" path="res://ui/hud/player_hud.tscn" id="5_phud"]
+[ext_resource type="PackedScene" uid="uid://mt7stqvut2t0" path="res://ui/menus/game_menu.tscn" id="7_gmenu"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eoic6"]
 radius = 0.5332031
@@ -28,8 +28,6 @@ spring_length = 6.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig/SpringArm3D" unique_id=29609086]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-near = 0.05
-far = 4000.0
 current = true
 
 [node name="RayCast3D" type="RayCast3D" parent="." unique_id=1399969405]
@@ -38,6 +36,7 @@ collision_mask = 2
 
 [node name="InteractionPrompt" type="Label" parent="." unique_id=84111122]
 visible = false
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -51,11 +50,12 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.75)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 20
+text = "LMB: Chop"
 horizontal_alignment = 1
 vertical_alignment = 1
-text = "LMB: Chop"
 
 [node name="Reticle" type="TextureRect" parent="." unique_id=192044991]
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -68,8 +68,8 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 4
 
-[node name="PlayerHud" parent="." instance=ExtResource("5_phud")]
+[node name="PlayerHud" parent="." unique_id=1264199710 instance=ExtResource("5_phud")]
 
-[node name="GameMenu" parent="." instance=ExtResource("7_gmenu")]
+[node name="GameMenu" parent="." unique_id=2016666143 instance=ExtResource("7_gmenu")]
 
-[node name="GameplayToast" parent="." instance=ExtResource("4_toast")]
+[node name="GameplayToast" parent="." unique_id=2138007592 instance=ExtResource("4_toast")]

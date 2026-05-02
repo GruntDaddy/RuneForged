@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://c6y7pbrqmah4a"]
 
-[ext_resource type="Script" path="res://entities/projectiles/arrow_projectile.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://c6qt0mfy6g3x6" path="res://entities/projectiles/arrow_projectile.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://i2pnmebxf0fx" path="res://assets/kaykit/items/arrow_bow.gltf" id="2_mesh"]
 
-[node name="ArrowProjectile" type="Node3D"]
+[node name="ArrowProjectile" type="Node3D" unique_id=565437992]
 script = ExtResource("1_script")
 
-[node name="arrow_bow" parent="." instance=ExtResource("2_mesh")]
+[node name="arrow_common" parent="." unique_id=169523992 instance=ExtResource("2_mesh")]
 transform = Transform3D(0.42, 0, 0, 0, 0.42, 0, 0, 0, 0.42, 0, 0, 0)

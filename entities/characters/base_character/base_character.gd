@@ -1,6 +1,9 @@
 class_name BaseCharacter
 extends Node3D
 
+const _CombatFormulaService = preload("res://systems/combat/combat_formula_service.gd")
+const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
+
 ## Locomotion + one-shot tool / survival clips share the same AnimationPlayer library **Base**.
 ## Action state machine: locomotion updates are skipped while a tool/survival clip is playing.
 
@@ -667,6 +670,21 @@ func _off_hand_has_shield() -> bool:
 	return off_id.begins_with("shield_")
 
 
+## Bows are parented to the left hand (off_hand); main_hand non-bow hides the bow mesh when both are equipped.
+func _weapon_mesh_item_id() -> String:
+	var main_id := _normalize_item_id(_equipped_main_hand_item_id)
+	var off_id := _normalize_item_id(_equipped_off_hand_item_id)
+	var main_f := _CombatFormulaService.equipped_weapon_family(main_id)
+	var off_f := _CombatFormulaService.equipped_weapon_family(off_id)
+	if not main_id.is_empty() and main_f != _WeaponStats.WeaponFamily.BOW:
+		return main_id
+	if off_f == _WeaponStats.WeaponFamily.BOW:
+		return off_id
+	if not main_id.is_empty():
+		return main_id
+	return ""
+
+
 func _apply_weapon_visual_for_attack() -> void:
 	var tool_kind := _tool_kind_for_main_hand_item_id()
 	if tool_kind != ToolKind.NONE:
@@ -961,7 +979,7 @@ func _show_equipped_weapon_mesh() -> void:
 		equipped_weapon_root.visible = true
 	if equipped_weapon_left_root != null:
 		equipped_weapon_left_root.visible = false
-	match _equipped_main_hand_item_id:
+	match _weapon_mesh_item_id():
 		"dagger_bronze":
 			if dagger_bronze_mesh != null:
 				dagger_bronze_mesh.visible = true

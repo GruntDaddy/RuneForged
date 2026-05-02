@@ -2,6 +2,8 @@ extends CanvasLayer
 class_name GameMenu
 const ForgeTabScript = preload("res://ui/menus/tabs/forge_tab.gd")
 const _SpellCatalog = preload("res://systems/magic/spell_catalog.gd")
+const _CombatFormulaService = preload("res://systems/combat/combat_formula_service.gd")
+const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
 
 ## Spine tab indices (7 tabs + Codex uses World / People / Items filters inside).
 const TAB_VITALS := 0
@@ -2056,12 +2058,24 @@ func _swap_inv_equip(inv_idx: int, equip_slot: String) -> bool:
 	return true
 
 
+func _is_bow_weapon_item(it: ItemData) -> bool:
+	if it == null:
+		return false
+	var item_id := GameState.normalize_item_id(str(it.id))
+	return (
+		_CombatFormulaService.equipped_weapon_family(item_id)
+		== _WeaponStats.WeaponFamily.BOW
+	)
+
+
 func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 	if it == null:
 		return false
 	var item_id := str(it.id).to_lower()
 	match equip_slot:
 		"main_hand":
+			if _is_bow_weapon_item(it):
+				return false
 			return it.category in [ItemData.Category.TOOL, ItemData.Category.WEAPON]
 		"off_hand":
 			if _is_shield_item(it):
@@ -2128,6 +2142,8 @@ func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
 					return "off_hand"
 	match it.category:
 		ItemData.Category.WEAPON:
+			if _is_bow_weapon_item(it):
+				return "off_hand"
 			return "main_hand"
 		ItemData.Category.TOOL:
 			if id == "tool_torch" or id == "tool_chisel" or id == "tool_tacklebox":

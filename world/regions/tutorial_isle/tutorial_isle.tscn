@@ -714,7 +714,7 @@ script = ExtResource("75_tutorial_isle_script")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -1.5507965)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 221.39133, 9.956359, 385.6984)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 237.73006, 9.115337, 381.4382)
 day_night_controller_path = NodePath("../Environment/DayNightCycle")
 
 [node name="Wildlife" type="Node3D" parent="." unique_id=2010010000]

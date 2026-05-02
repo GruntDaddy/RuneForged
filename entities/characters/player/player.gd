@@ -554,11 +554,6 @@ func _attack_input_tick() -> void:
 				_melee_attack_buffer_deadline_ms = now_ms + int(maxf(0.05, melee_input_buffer_sec) * 1000.0)
 
 	if _equipped_weapon_is_bow():
-		var aiming_bow: bool = Input.is_action_pressed("block")
-		if not aiming_bow:
-			if base_character != null and base_character.has_method("try_cancel_bow_draw"):
-				base_character.try_cancel_bow_draw()
-			return
 		if Input.is_action_just_released("attack"):
 			if _try_bow_release_fire():
 				_next_harvest_allowed_ms = now_ms + int(_creature_attack_interval_sec() * 1000.0)
@@ -577,6 +572,9 @@ func _attack_input_tick() -> void:
 				drawing = bool(base_character.is_bow_drawn_or_drawing())
 			if not drawing and base_character != null and base_character.has_method("try_begin_bow_draw"):
 				base_character.try_begin_bow_draw()
+			return
+		if base_character != null and base_character.has_method("try_cancel_bow_draw"):
+			base_character.try_cancel_bow_draw()
 		return
 	if now_ms < _next_harvest_allowed_ms:
 		return
@@ -682,17 +680,48 @@ func _equipped_main_hand_id_str() -> String:
 	return GameState.normalize_item_id(str(m.get("id", "")))
 
 
-func _main_hand_weapon_family() -> _WeaponStats.WeaponFamily:
-	var id := _equipped_main_hand_id_str()
-	return _CombatFormulaService.equipped_weapon_family(id)
+func _equipped_off_hand_id_str() -> String:
+	var o: Variant = GameState.equipment.get("off_hand", null)
+	if o == null:
+		return ""
+	return GameState.normalize_item_id(str(o.get("id", "")))
+
+
+## Bows use off_hand (left). Anything non-bow in main_hand wins for melee/harvest; legacy bow-in-main still works.
+func _equipped_attack_weapon_family() -> _WeaponStats.WeaponFamily:
+	var main_id := _equipped_main_hand_id_str()
+	var off_id := _equipped_off_hand_id_str()
+	var main_f := _CombatFormulaService.equipped_weapon_family(main_id)
+	var off_f := _CombatFormulaService.equipped_weapon_family(off_id)
+	if not main_id.is_empty() and main_f != _WeaponStats.WeaponFamily.BOW:
+		return main_f
+	if off_f == _WeaponStats.WeaponFamily.BOW:
+		return _WeaponStats.WeaponFamily.BOW
+	if not main_id.is_empty():
+		return main_f
+	return _CombatFormulaService.equipped_weapon_family("")
+
+
+func _equipped_weapon_item_id_for_combat() -> String:
+	var main_id := _equipped_main_hand_id_str()
+	var off_id := _equipped_off_hand_id_str()
+	var main_f := _CombatFormulaService.equipped_weapon_family(main_id)
+	var off_f := _CombatFormulaService.equipped_weapon_family(off_id)
+	if not main_id.is_empty() and main_f != _WeaponStats.WeaponFamily.BOW:
+		return main_id
+	if off_f == _WeaponStats.WeaponFamily.BOW:
+		return off_id
+	if not main_id.is_empty():
+		return main_id
+	return ""
 
 
 func _equipped_weapon_is_bow() -> bool:
-	return _main_hand_weapon_family() == _WeaponStats.WeaponFamily.BOW
+	return _equipped_attack_weapon_family() == _WeaponStats.WeaponFamily.BOW
 
 
 func _creature_damage_amount() -> float:
-	var id := _equipped_main_hand_id_str()
+	var id := _equipped_weapon_item_id_for_combat()
 	return _CombatFormulaService.creature_damage_amount(
 		id,
 		unarmed_melee_damage,
@@ -702,7 +731,7 @@ func _creature_damage_amount() -> float:
 
 
 func _creature_attack_interval_sec() -> float:
-	var id := _equipped_main_hand_id_str()
+	var id := _equipped_weapon_item_id_for_combat()
 	return _CombatFormulaService.creature_attack_interval_sec(id, creature_attack_cooldown_sec)
 
 
@@ -725,7 +754,7 @@ func _try_creature_melee_hit() -> bool:
 	var collider: Object = _find_creature_melee_target()
 	if not _is_creature_candidate(collider):
 		return false
-	var family := _main_hand_weapon_family()
+	var family := _equipped_attack_weapon_family()
 	var played := false
 	var use_melee_clip_delays: bool = false
 	match family:
@@ -1040,7 +1069,7 @@ func _try_play_attack_air_whiff() -> bool:
 		return false
 	if base_character.has_method("is_animation_locked") and base_character.is_animation_locked():
 		return false
-	var family := _main_hand_weapon_family()
+	var family := _equipped_attack_weapon_family()
 	var played: bool = false
 	match family:
 		_WeaponStats.WeaponFamily.BOW:
@@ -1237,6 +1266,8 @@ func _quick_equip_hotbar_item(item_id: String) -> void:
 		if t == "shield":
 			equip_slot = "off_hand"
 			break
+	if _CombatFormulaService.equipped_weapon_family(item_id) == _WeaponStats.WeaponFamily.BOW:
+		equip_slot = "off_hand"
 	if item_id == "tool_torch":
 		equip_slot = "off_hand"
 	if item_id.begins_with("quiver_") or item_id.begins_with("backpack_"):
