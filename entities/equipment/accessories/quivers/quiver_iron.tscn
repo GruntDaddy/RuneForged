@@ -102,10 +102,12 @@ bind/22/name = &"handslot.l"
 bind/22/bone = -1
 bind/22/pose = Transform3D(-1.0000002, -4.352648e-09, -3.819581e-09, -2.3841864e-07, -8.936492e-09, 1.0000002, -4.7534914e-09, 1.0000002, -2.227898e-09, 0.88313264, 1.3397522e-07, -1.0492613)
 
-[node name="Quiver_Iron" type="Node3D" unique_id=720076930]
+[node name="Quiver_Iron" type="Node3D" unique_id=2133687190]
+transform = Transform3D(1, -1.2831065e-08, 3.4552272e-10, 1.2831065e-08, 0.9985508, -0.053817395, 3.4552272e-10, 0.053817395, 0.9985508, 0, 0, 0)
+visible = false
 
-[node name="quiver_iron" type="MeshInstance3D" parent="." unique_id=462326883]
+[node name="quiver_iron" type="MeshInstance3D" parent="." unique_id=1527399524]
 material_override = ExtResource("1_ye4a6")
 mesh = SubResource("ArrayMesh_d8xjw")
 skin = SubResource("Skin_b1wt1")
-skeleton = NodePath("../../../..")
+skeleton = NodePath("../../..")

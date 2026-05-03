@@ -95,9 +95,10 @@ bind/22/name = &"handslot.r"
 bind/22/bone = -1
 bind/22/pose = Transform3D(-1.0000002, 4.352591e-09, 3.819581e-09, 2.3841864e-07, -8.936492e-09, 1.0000002, 4.7534345e-09, 1.0000002, -2.227898e-09, -0.88313264, 1.3397522e-07, -1.0492613)
 
-[node name="Backpack_Large" type="Node3D" unique_id=1622764903]
+[node name="Backpack_Large" type="Node3D" unique_id=1899667396]
+visible = false
 
-[node name="backpack_large" type="MeshInstance3D" parent="." unique_id=2037564602]
+[node name="backpack_large" type="MeshInstance3D" parent="." unique_id=1064679530]
 mesh = SubResource("ArrayMesh_7fcah")
 skin = SubResource("Skin_qcsrp")
-skeleton = NodePath("../../../..")
+skeleton = NodePath("../../..")
