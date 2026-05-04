@@ -19,3 +19,4 @@ description = "A sturdy bronze shield for off-hand defense."
 category = 4
 max_stack = 1
 tags = PackedStringArray("armor", "shield", "bronze")
+pickup_scene_path = "res://world/pickups/shield_bronze_pickup.tscn"

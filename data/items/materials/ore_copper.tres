@@ -10,5 +10,5 @@ display_name = "Copper ore"
 description = "Unrefined copper ore from mining. Combine with tin ore at a smelter to create a bronze ingot."
 max_stack = 99
 tags = PackedStringArray("resource", "ore", "copper")
-pickup_scene_path = "res://entities/resource/resource_pickup_ore_copper.tscn"
+pickup_scene_path = "res://world/pickups/ore_copper_pickup.tscn"
 icon = ExtResource("2_icon")

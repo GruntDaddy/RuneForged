@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://world/item_pickup_interactable.gd" id="1_pickup_script"]
+[ext_resource type="PackedScene" path="res://entities/equipment/armor/platelegs/platelegs_bronze.tscn" id="2_visual"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
+radius = 0.28
+height = 0.8
+
+[node name="ArmorLegsBronzePickup" type="Node3D"]
+script = ExtResource("1_pickup_script")
+item_id = "armor_legs_bronze"
+[node name="Visual" parent="." instance=ExtResource("2_visual")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("CapsuleShape3D_pickup")

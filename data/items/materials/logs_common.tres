@@ -10,5 +10,5 @@ display_name = "Logs"
 description = "Wood cut from a tree."
 max_stack = 99
 tags = PackedStringArray("resource", "wood")
-pickup_scene_path = "res://entities/resource/resource_pickup_logs.tscn"
+pickup_scene_path = "res://world/pickups/logs_pickup.tscn"
 icon = ExtResource("2_icon")

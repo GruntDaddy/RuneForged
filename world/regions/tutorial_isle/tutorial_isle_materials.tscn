@@ -1,21 +1,21 @@
 [gd_scene format=4 uid="uid://bo7qoslxeh56"]
 
-[ext_resource type="PackedScene" uid="uid://cf750db6v0jph" path="res://entities/props/static/copper_bar.tscn" id="20_3vu1e"]
+[ext_resource type="PackedScene" uid="uid://cf750db6v0jph" path="res://world/pickups/ingot_copper_pickup.tscn" id="20_3vu1e"]
 [ext_resource type="Material" uid="uid://ca32d1pa2xnx1" path="res://shared/materials/Copper.tres" id="20_62lce"]
 [ext_resource type="Material" uid="uid://c4y6bafohjd1k" path="res://shared/materials/Tin.tres" id="21_bq618"]
-[ext_resource type="PackedScene" uid="uid://b31arwal73ifg" path="res://entities/props/static/copper_nuggets.tscn" id="23_fq2qr"]
-[ext_resource type="PackedScene" uid="uid://ccqrd3tma4c13" path="res://entities/props/static/iron_bar.tscn" id="27_rx877"]
-[ext_resource type="PackedScene" uid="uid://bs8ahdtsyglpe" path="res://entities/props/static/iron_nuggets.tscn" id="28_my7f7"]
+[ext_resource type="PackedScene" uid="uid://b31arwal73ifg" path="res://world/pickups/ore_copper_pickup.tscn" id="23_fq2qr"]
+[ext_resource type="PackedScene" uid="uid://ccqrd3tma4c13" path="res://world/pickups/ingot_iron_pickup.tscn" id="27_rx877"]
+[ext_resource type="PackedScene" uid="uid://bs8ahdtsyglpe" path="res://world/pickups/ore_iron_pickup.tscn" id="28_my7f7"]
 [ext_resource type="Material" uid="uid://s542iejn23ni" path="res://shared/materials/Gold.tres" id="29_bq618"]
-[ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://entities/props/static/silver_bar.tscn" id="29_ts002"]
-[ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://entities/props/static/silver_nuggets.tscn" id="30_dr1td"]
+[ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://world/pickups/ingot_silver_pickup.tscn" id="29_ts002"]
+[ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://world/pickups/ore_silver_pickup.tscn" id="30_dr1td"]
 [ext_resource type="Material" uid="uid://4nomqj0shgvn" path="res://shared/materials/Stone.tres" id="34_gb3ee"]
-[ext_resource type="PackedScene" uid="uid://bs2abg22r2s2n" path="res://assets/kaykit/items/log_split.gltf" id="35_3nag6"]
-[ext_resource type="PackedScene" uid="uid://bigov83wpwqt" path="res://assets/kaykit/resources/Stone_Brick.gltf" id="58_86282"]
+[ext_resource type="PackedScene" uid="uid://bs2abg22r2s2n" path="res://world/pickups/logs_pickup.tscn" id="35_3nag6"]
+[ext_resource type="PackedScene" uid="uid://bigov83wpwqt" path="res://world/pickups/stone_block_pickup.tscn" id="58_86282"]
 [ext_resource type="Texture2D" uid="uid://c8x1wyidgota" path="res://assets/kaykit/resources/resource_bits_texture.png" id="59_s80k1"]
-[ext_resource type="PackedScene" uid="uid://qqwf5qhal6v8" path="res://assets/kaykit/resources/Wood_Plank_C.gltf" id="66_t2imw"]
-[ext_resource type="PackedScene" uid="uid://bw6pvg8eefqkw" path="res://assets/kaykit/resources/Wood_Plank_B.gltf" id="67_81cpb"]
-[ext_resource type="PackedScene" uid="uid://b1xagv6kd3o6p" path="res://assets/kaykit/resources/Wood_Plank_A.gltf" id="68_kgvtc"]
+[ext_resource type="PackedScene" uid="uid://qqwf5qhal6v8" path="res://world/pickups/wood_planks_pickup.tscn" id="66_t2imw"]
+[ext_resource type="PackedScene" uid="uid://bw6pvg8eefqkw" path="res://world/pickups/wood_planks_pickup.tscn" id="67_81cpb"]
+[ext_resource type="PackedScene" uid="uid://b1xagv6kd3o6p" path="res://world/pickups/wood_planks_pickup.tscn" id="68_kgvtc"]
 [ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="70_item_pickup"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
@@ -611,15 +611,6 @@ data = PackedVector3Array(-0.23429999, 0.25, 0.775, 0.16569999, 0.29999998, 0.77
 
 [node name="Copper_Bar" parent="." unique_id=940789391 instance=ExtResource("20_3vu1e")]
 transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 201.73857, 10.551444, 375.62234)
-script = ExtResource("70_item_pickup")
-item_id = "ingot_copper"
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Copper_Bar" unique_id=920001001]
-collision_layer = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Copper_Bar/StaticBody3D" unique_id=920001002]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
-shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Tin_Bar" type="Node3D" parent="." unique_id=1744695828]
 transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 204.07799, 10.453113, 373.96704)
@@ -640,15 +631,6 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Copper_Nuggets" parent="." unique_id=1352546698 instance=ExtResource("23_fq2qr")]
 transform = Transform3D(0.8267415, 0.08816414, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.55780315, 0, 0.8299735, 199.64758, 10.886052, 375.0992)
-script = ExtResource("70_item_pickup")
-item_id = "ore_copper"
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Copper_Nuggets" unique_id=920001005]
-collision_layer = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Copper_Nuggets/StaticBody3D" unique_id=920001006]
-transform = Transform3D(0.9999999, 0, -2.9802322e-08, -7.450581e-09, 0.9999999, 0, 2.9802322e-08, 0, 0.9999999, 1.1801147, -0.010442734, 0.79312134)
-shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Tin_Nuggets" type="Node3D" parent="." unique_id=2076419323]
 transform = Transform3D(0.8267415, 0.08816414, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.55780315, 0, 0.8299735, 201.96109, 10.774248, 373.36627)
@@ -670,51 +652,15 @@ shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Iron_Bar" parent="." unique_id=778829037 instance=ExtResource("27_rx877")]
 transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 199.87468, 10.5083685, 377.51666)
-script = ExtResource("70_item_pickup")
-item_id = "ingot_iron"
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Iron_Bar" unique_id=920001009]
-collision_layer = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Iron_Bar/StaticBody3D" unique_id=920001010]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
-shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Iron_Nuggets" parent="." unique_id=1402091565 instance=ExtResource("28_my7f7")]
 transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 199.24548, 10.555809, 376.9228)
-script = ExtResource("70_item_pickup")
-item_id = "ore_iron"
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Iron_Nuggets" unique_id=920001011]
-collision_layer = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Iron_Nuggets/StaticBody3D" unique_id=920001012]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
-shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Silver_Bar" parent="." unique_id=1703529473 instance=ExtResource("29_ts002")]
 transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 197.70198, 10.440975, 379.5944)
-script = ExtResource("70_item_pickup")
-item_id = "ingot_silver"
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Silver_Bar" unique_id=920001013]
-collision_layer = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Silver_Bar/StaticBody3D" unique_id=920001014]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
-shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Silver_Nuggets" parent="." unique_id=1156454490 instance=ExtResource("30_dr1td")]
 transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 196.90857, 10.555809, 379.0154)
-script = ExtResource("70_item_pickup")
-item_id = "ore_silver"
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Silver_Nuggets" unique_id=920001015]
-collision_layer = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Silver_Nuggets/StaticBody3D" unique_id=920001016]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
-shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Gold_Bar" type="Node3D" parent="." unique_id=1469548758]
 transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 195.7233, 10.349287, 382.2438)

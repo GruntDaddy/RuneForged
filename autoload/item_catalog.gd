@@ -10,6 +10,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 	"tool_torch": "I_Torch01.png",
 	"tool_torch_burnt": "I_Torch02.png",
 	"logs": "I_Rock05.png",
+	"wood_planks": "E_Wood01.png",
 	"logs_oak": "I_Rock04.png",
 	"stone": "I_Rock01.png",
 	"ore_tin": "I_Rock02.png",

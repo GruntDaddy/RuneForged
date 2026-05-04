@@ -17,3 +17,4 @@ description = "A burnt torch that can be repaired at a campfire."
 category = 2
 max_stack = 1
 tags = PackedStringArray("tool", "torch", "burnt")
+pickup_scene_path = "res://world/pickups/tool_torch_burnt_pickup.tscn"

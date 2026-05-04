@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/schemas/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "wood_planks"
+display_name = "Wood planks"
+description = "Sawn planks for basic construction and crafting."
+max_stack = 99
+tags = PackedStringArray("resource", "wood")
+pickup_scene_path = "res://world/pickups/wood_planks_pickup.tscn"

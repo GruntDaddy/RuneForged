@@ -9,3 +9,4 @@ display_name = "Stone block"
 description = "A chiseled block of stone."
 max_stack = 99
 tags = PackedStringArray("resource", "stone", "block")
+pickup_scene_path = "res://world/pickups/stone_block_pickup.tscn"
