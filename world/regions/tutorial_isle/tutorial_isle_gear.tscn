@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dqmjkx6ghom2k" path="res://assets/kaykit/items/grindstone.gltf" id="2_jsgrk"]
 [ext_resource type="Material" uid="uid://d3a6q2uifsq0v" path="res://shared/materials/Bronze.tres" id="21_2m5ky"]
 [ext_resource type="Texture2D" uid="uid://crrsndgbaafck" path="res://assets/kaykit/items/knight_texture.png" id="22_33exj"]
-[ext_resource type="PackedScene" uid="uid://dqtds13wn64w6" path="res://entities/equipment/accessories/backpacks/backpack_small.tscn" id="25_vyey2"]
+[ext_resource type="PackedScene" path="res://world/pickups/backpack_small_pickup.tscn" id="25_vyey2"]
 [ext_resource type="PackedScene" uid="uid://wdpos66nlb5l" path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="26_w8lkd"]
 [ext_resource type="Texture2D" uid="uid://bydb2wmwb0svj" path="res://assets/kaykit/items/tools_bits_texture.png" id="37_q4s3i"]
 [ext_resource type="PackedScene" uid="uid://bowouj2mkapt8" path="res://entities/equipment/weapons/melee/dagger_bronze.tscn" id="45_txrpn"]

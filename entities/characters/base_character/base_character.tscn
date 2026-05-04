@@ -52,6 +52,7 @@
 [ext_resource type="PackedScene" uid="uid://besltly0rqqec" path="res://entities/equipment/accessories/capes/cape_dark_pink.tscn" id="21_dpmmt"]
 [ext_resource type="PackedScene" uid="uid://cigw3nxrjicja" path="res://entities/equipment/armor/helmet/full_helm_adamant.tscn" id="21_e22wm"]
 [ext_resource type="PackedScene" uid="uid://wdpos66nlb5l" path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="22_dk2se"]
+[ext_resource type="PackedScene" uid="uid://dqtds13wn64w6" path="res://entities/equipment/accessories/backpacks/backpack_small.tscn" id="80_bkpsm"]
 [ext_resource type="PackedScene" uid="uid://degnuahlotk3i" path="res://entities/equipment/armor/helmet/full_helm_rune.tscn" id="22_li1ky"]
 [ext_resource type="PackedScene" uid="uid://d1megw7ip7oq4" path="res://entities/equipment/weapons/ranged/bow_short_common.tscn" id="22_soir5"]
 [ext_resource type="PackedScene" uid="uid://dicwla6h7ol1b" path="res://entities/equipment/weapons/melee/spear_basic.tscn" id="23_g1qwb"]
@@ -524,6 +525,9 @@ visible = false
 transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
 
 [node name="Backpack_Large" parent="Rig_Medium/Skeleton3D/Backpacks" unique_id=1899667396 instance=ExtResource("22_dk2se")]
+
+[node name="Backpack_Small" parent="Rig_Medium/Skeleton3D/Backpacks" unique_id=360568528 instance=ExtResource("80_bkpsm")]
+visible = false
 
 [node name="HandAttach_R" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" unique_id=230755064]
 transform = Transform3D(0.14989454, 4.7683716e-07, -0.98870134, 2.9802322e-08, -0.99999917, -1.4901161e-07, -0.98870134, -4.3213367e-07, -0.14989462, -0.5479113, 0.73715466, 0.097976476)

@@ -5,8 +5,11 @@ extends Node
 signal inventory_changed
 
 const BASE_SLOT_COUNT := 28
-const BACKPACK_SLOT_COUNT := 14
-const SLOT_COUNT := BASE_SLOT_COUNT + BACKPACK_SLOT_COUNT
+## Largest backpack expansion; inventory array is always this wide for save stability.
+const MAX_BACKPACK_EXTRA_SLOTS := 28
+const SLOT_COUNT := BASE_SLOT_COUNT + MAX_BACKPACK_EXTRA_SLOTS
+## When a `backpack_*` item has `ItemData.backpack_extra_slots` == 0, use this many extra slots.
+const LEGACY_BACKPACK_EXTRA_SLOTS := 14
 ## Fallback when an item id is missing from ItemCatalog.
 const MAX_STACK := 99
 
@@ -51,10 +54,23 @@ func has_backpack_equipped() -> bool:
 	return false
 
 
+func get_equipped_backpack_extra_slots() -> int:
+	if not has_backpack_equipped():
+		return 0
+	var back_slot: Variant = GameState.equipment.get("back", null)
+	if back_slot == null:
+		return 0
+	var item_id := _normalize_item_id(str(back_slot.get("id", "")))
+	var it: ItemData = ItemCatalog.get_item(item_id)
+	if it != null and it.backpack_extra_slots > 0:
+		return clampi(it.backpack_extra_slots, 1, MAX_BACKPACK_EXTRA_SLOTS)
+	if item_id.begins_with("backpack_"):
+		return LEGACY_BACKPACK_EXTRA_SLOTS
+	return 0
+
+
 func get_unlocked_slot_count() -> int:
-	if has_backpack_equipped():
-		return SLOT_COUNT
-	return BASE_SLOT_COUNT
+	return BASE_SLOT_COUNT + get_equipped_backpack_extra_slots()
 
 
 func is_slot_unlocked(slot_idx: int) -> bool:
@@ -410,15 +426,11 @@ func get_item_count(item_name: String) -> int:
 func get_slot_data(index: int) -> Variant:
 	if index < 0 or index >= SLOT_COUNT:
 		return null
-	if not is_slot_unlocked(index):
-		return null
 	return slots[index]
 
 
 func remove_amount_from_slot(slot_idx: int, amount: int) -> bool:
 	if amount < 1 or slot_idx < 0 or slot_idx >= SLOT_COUNT:
-		return false
-	if not is_slot_unlocked(slot_idx):
 		return false
 	var s: Variant = slots[slot_idx]
 	if s == null:
@@ -454,12 +466,18 @@ func move_or_merge(from_idx: int, to_idx: int) -> void:
 		return
 	if to_idx < 0 or to_idx >= SLOT_COUNT:
 		return
-	if not is_slot_unlocked(from_idx) or not is_slot_unlocked(to_idx):
+	if not is_slot_unlocked(to_idx):
 		return
 	var a: Variant = slots[from_idx]
 	if a == null:
 		return
+	var from_unlocked := is_slot_unlocked(from_idx)
 	var b: Variant = slots[to_idx]
+	if not from_unlocked and b != null:
+		var aid0: String = str(a.get("id", ""))
+		var bid0: String = str(b.get("id", ""))
+		if aid0 != bid0:
+			return
 	if b == null:
 		slots[to_idx] = _duplicate_slot(a)
 		slots[from_idx] = null
@@ -506,8 +524,6 @@ func _duplicate_slot(s: Variant) -> Dictionary:
 
 func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_parent: Node) -> void:
 	if slot_idx < 0 or slot_idx >= SLOT_COUNT:
-		return
-	if not is_slot_unlocked(slot_idx):
 		return
 	var s: Variant = slots[slot_idx]
 	if s == null:

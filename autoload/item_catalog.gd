@@ -42,6 +42,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 	"tool_chisel": "S_Axe06.png",
 	"tool_tacklebox": "I_Mirror.png",
 	"backpack_large": "I_Mirror.png",
+	"backpack_small": "I_Mirror.png",
 	"rune_air": "I_Gem03.png",
 	"rune_earth": "I_Gem03.png",
 	"rune_water": "I_Gem03.png",

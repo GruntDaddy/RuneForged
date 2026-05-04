@@ -723,7 +723,7 @@ func _build_inventory_page(page: Control) -> void:
 	backpack_title.add_theme_font_size_override("font_size", 16)
 	backpack_inner.add_child(backpack_title)
 	_inv_backpack_locked_hint = Label.new()
-	_inv_backpack_locked_hint.text = "Equip a backpack in the Back slot to unlock 14 extra slots."
+	_inv_backpack_locked_hint.text = "Equip a backpack in the Back slot to unlock extra rows (14 with a small pack, 28 with a large one)."
 	_inv_backpack_locked_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_apply_body_label(_inv_backpack_locked_hint, 11)
 	_inv_backpack_locked_hint.add_theme_color_override("font_color", _COL_INK_MUTED)
@@ -1483,6 +1483,7 @@ func _refresh_inv_grid() -> void:
 	if _inv_slots.is_empty():
 		return
 	_refresh_backpack_visibility()
+	var unlocked_n := InventoryService.get_unlocked_slot_count()
 	for entry in _inv_slots:
 		var idx := int(entry.get("idx", -1))
 		var slot: Panel = entry.get("panel", null) as Panel
@@ -1506,6 +1507,7 @@ func _refresh_inv_grid() -> void:
 			name_l.text = ""
 			count_l.text = ""
 			_apply_slot_style(slot, false, "")
+		slot.modulate = Color.WHITE if idx < unlocked_n else Color(0.5, 0.52, 0.56, 0.82)
 
 
 func _refresh_equip_slots() -> void:

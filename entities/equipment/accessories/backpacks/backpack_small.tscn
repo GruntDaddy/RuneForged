@@ -110,4 +110,4 @@ transform = Transform3D(0.14424157, 0.9891169, -0.029016461, -0.15480563, -0.006
 material_override = ExtResource("1_hhaun")
 mesh = SubResource("ArrayMesh_742gl")
 skin = SubResource("Skin_w2v6r")
-skeleton = NodePath("../../Backpack_Large")
+skeleton = NodePath("../../..")

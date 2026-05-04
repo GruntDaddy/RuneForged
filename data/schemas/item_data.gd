@@ -38,6 +38,8 @@ enum Rarity {
 @export var use_effect_id: String = ""
 ## Optional cooldown for use/cast effects. 0 means script default.
 @export_range(0, 3600000, 1) var use_cooldown_ms: int = 0
+## When > 0 and this item is equipped in the `back` slot, unlocks this many inventory slots after `InventoryService.BASE_SLOT_COUNT`. 0 = use catalog fallback for `backpack_*` ids.
+@export_range(0, 64, 1) var backpack_extra_slots: int = 0
 
 
 func create_runtime_copy() -> ItemData:

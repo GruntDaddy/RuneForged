@@ -4,11 +4,11 @@
 
 [resource]
 script = ExtResource("1_id")
-id = "backpack_large"
-display_name = "Large backpack"
-description = "A rugged backpack that unlocks extra inventory space when equipped in the back slot."
+id = "backpack_small"
+display_name = "Small backpack"
+description = "A compact backpack that unlocks extra inventory space when equipped in the back slot."
 category = 5
 max_stack = 1
 tags = PackedStringArray("back", "backpack", "storage")
-backpack_extra_slots = 28
-pickup_scene_path = "res://world/pickups/backpack_large_pickup.tscn"
+backpack_extra_slots = 14
+pickup_scene_path = "res://world/pickups/backpack_small_pickup.tscn"
