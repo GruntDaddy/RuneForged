@@ -20,7 +20,7 @@ script = ExtResource("75_tutorial_isle_script")
 
 [node name="TutorialIsleMaterials" parent="." unique_id=1395670469 instance=ExtResource("tutorial_isle_mat_inst")]
 
-[node name="TutorialIsleGear" parent="." unique_id=1669393555 instance=ExtResource("tutorial_isle_gear_inst")]
+[node name="TutorialIsleGear" parent="." unique_id=1252829139 instance=ExtResource("tutorial_isle_gear_inst")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -1.5507965)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]

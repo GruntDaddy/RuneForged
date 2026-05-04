@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dqmjkx6ghom2k" path="res://assets/kaykit/items/grindstone.gltf" id="2_jsgrk"]
 [ext_resource type="Material" uid="uid://d3a6q2uifsq0v" path="res://shared/materials/Bronze.tres" id="21_2m5ky"]
 [ext_resource type="Texture2D" uid="uid://crrsndgbaafck" path="res://assets/kaykit/items/knight_texture.png" id="22_33exj"]
-[ext_resource type="PackedScene" path="res://world/pickups/backpack_small_pickup.tscn" id="25_vyey2"]
+[ext_resource type="PackedScene" uid="uid://cwiegunolb0ge" path="res://world/pickups/backpack_small_pickup.tscn" id="26_c5h0b"]
 [ext_resource type="PackedScene" uid="uid://wdpos66nlb5l" path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="26_w8lkd"]
 [ext_resource type="Texture2D" uid="uid://bydb2wmwb0svj" path="res://assets/kaykit/items/tools_bits_texture.png" id="37_q4s3i"]
 [ext_resource type="PackedScene" uid="uid://bowouj2mkapt8" path="res://entities/equipment/weapons/melee/dagger_bronze.tscn" id="45_txrpn"]
@@ -168,7 +168,7 @@ height = 1.0602417
 radius = 0.30908203
 height = 1.0602417
 
-[node name="TutorialIsleGear" type="Node3D" unique_id=1669393555]
+[node name="TutorialIsleGear" type="Node3D" unique_id=1252829139]
 
 [node name="tongs2" parent="." unique_id=666435724 instance=ExtResource("1_c5h0b")]
 transform = Transform3D(0.44321808, 0.23003058, 0.025371391, 0.020751256, 0.0150921075, -0.49934122, -0.2304933, 0.44368705, 0.0038313477, 201.95833, 10.8977375, 384.5088)
@@ -176,19 +176,19 @@ transform = Transform3D(0.44321808, 0.23003058, 0.025371391, 0.020751256, 0.0150
 [node name="grindstone2" parent="." unique_id=1577592752 instance=ExtResource("2_jsgrk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 198.5126, 10.299194, 384.27588)
 
-[node name="anvil2" type="Node3D" parent="." unique_id=46736924]
+[node name="anvil2" type="Node3D" parent="." unique_id=363944266]
 transform = Transform3D(-0.7115111, 0, -0.7026749, 0, 0.9999999, 0, 0.7026749, 0, -0.7115111, 219.22852, 9.914946, 383.61475)
 script = ExtResource("75_station")
 station = 4
 station_label = "Anvil"
 
-[node name="anvil" type="MeshInstance3D" parent="anvil2" unique_id=917366431]
+[node name="anvil" type="MeshInstance3D" parent="anvil2" unique_id=833000822]
 transform = Transform3D(-0.3555802, 0, 0.9346458, 0, 0.999999, 0, -0.9346458, 0, -0.3555802, 12.040627, 0.039230347, 10.010468)
 mesh = SubResource("ArrayMesh_mrvdc")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="anvil2/anvil" unique_id=294526507]
+[node name="StaticBody3D" type="StaticBody3D" parent="anvil2/anvil" unique_id=938285600]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="anvil2/anvil/StaticBody3D" unique_id=1887953160]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="anvil2/anvil/StaticBody3D" unique_id=795769651]
 shape = SubResource("ConcavePolygonShape3D_q4s3i")
 
 [node name="Tool_Hammer" parent="anvil2" unique_id=632950477 instance=ExtResource("64_s80k1")]
@@ -196,23 +196,23 @@ transform = Transform3D(0.6544638, 0.3405242, -0.13498338, 0.0056282557, 0.26699
 script = ExtResource("70_item_pickup")
 item_id = "tool_hammer"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="anvil2/Tool_Hammer" unique_id=1486335271]
+[node name="StaticBody3D" type="StaticBody3D" parent="anvil2/Tool_Hammer" unique_id=767458650]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="anvil2/Tool_Hammer/StaticBody3D" unique_id=1458873236]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="anvil2/Tool_Hammer/StaticBody3D" unique_id=1503496237]
 transform = Transform3D(0.9892738, -0.13546842, -0.05463838, 0.14566763, 0.94272184, 0.300106, 0.010854352, -0.30484447, 0.95234644, -0.02935791, 0.1769104, -0.012817383)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
-[node name="WeaponRack" type="Node3D" parent="." unique_id=115974635]
+[node name="WeaponRack" type="Node3D" parent="." unique_id=188996132]
 transform = Transform3D(0.64525765, 0, -0.7639651, 0, 1, 0, 0.7639651, 0, 0.64525765, 206.33897, 9.860466, 373.41364)
 
-[node name="weaponRack" type="MeshInstance3D" parent="WeaponRack" unique_id=49172666]
+[node name="weaponRack" type="MeshInstance3D" parent="WeaponRack" unique_id=920431828]
 transform = Transform3D(0.80950963, 0, 0.58710736, 0, 1, 0, -0.58710736, 0, 0.80950963, 6.749466, 0.09779835, -5.2408447)
 mesh = SubResource("ArrayMesh_k8t3g")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack/weaponRack" unique_id=603949766]
+[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack/weaponRack" unique_id=679148622]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack/weaponRack/StaticBody3D" unique_id=1370736084]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack/weaponRack/StaticBody3D" unique_id=1148882390]
 shape = SubResource("ConcavePolygonShape3D_3vu1e")
 
 [node name="Pickaxe_Bronze" parent="WeaponRack" unique_id=1211719090 instance=ExtResource("46_n5r66")]
@@ -220,10 +220,10 @@ transform = Transform3D(-0.53797495, -0.1702173, -0.49407414, -0.023300003, 0.71
 script = ExtResource("70_item_pickup")
 item_id = "pickaxe_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack/Pickaxe_Bronze" unique_id=1039048359]
+[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack/Pickaxe_Bronze" unique_id=2038879635]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack/Pickaxe_Bronze/StaticBody3D" unique_id=1937748699]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack/Pickaxe_Bronze/StaticBody3D" unique_id=123511809]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -232,23 +232,23 @@ transform = Transform3D(0.24037582, 0.06395341, -0.025088415, 0.05012686, -0.225
 script = ExtResource("70_item_pickup")
 item_id = "hatchet_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack/Hatchet_Bronze" unique_id=1086659648]
+[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack/Hatchet_Bronze" unique_id=1356828906]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack/Hatchet_Bronze/StaticBody3D" unique_id=1838518245]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack/Hatchet_Bronze/StaticBody3D" unique_id=935925466]
 transform = Transform3D(0.9999999, -7.450581e-09, 2.9802322e-08, -2.9802322e-08, 1, 0, -2.9802322e-08, 1.4901161e-08, 0.99999994, -0.18597412, 0.7352295, -0.37158203)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
-[node name="WeaponRack2" type="Node3D" parent="." unique_id=51101838]
+[node name="WeaponRack2" type="Node3D" parent="." unique_id=441557902]
 transform = Transform3D(-0.7703574, 0, 0.6376123, 0, 1, 0, -0.6376123, 0, -0.7703574, 212.17752, 9.835585, 385.22452)
 
-[node name="weaponRack2" type="MeshInstance3D" parent="WeaponRack2" unique_id=1331882218]
+[node name="weaponRack2" type="MeshInstance3D" parent="WeaponRack2" unique_id=1427514080]
 transform = Transform3D(0.80950963, 0, 0.58710736, 0, 1, 0, -0.58710736, 0, 0.80950963, 5.645355, 0.09779835, -4.4960327)
 mesh = SubResource("ArrayMesh_k8t3g")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack2/weaponRack2" unique_id=423880345]
+[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack2/weaponRack2" unique_id=1271271614]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack2/weaponRack2/StaticBody3D" unique_id=2029491688]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack2/weaponRack2/StaticBody3D" unique_id=1538993057]
 shape = SubResource("ConcavePolygonShape3D_3vu1e")
 
 [node name="1h_ShortSword_Bronze" parent="WeaponRack2/weaponRack2" unique_id=2143609465 instance=ExtResource("69_3vu1e")]
@@ -256,10 +256,10 @@ transform = Transform3D(0.9770912, 0.03694606, -0.20958716, -0.05340053, -0.9107
 script = ExtResource("70_item_pickup")
 item_id = "sword_1h_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack2/weaponRack2/1h_ShortSword_Bronze" unique_id=1824555699]
+[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack2/weaponRack2/1h_ShortSword_Bronze" unique_id=11852878]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack2/weaponRack2/1h_ShortSword_Bronze/StaticBody3D" unique_id=1286015919]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack2/weaponRack2/1h_ShortSword_Bronze/StaticBody3D" unique_id=200987754]
 transform = Transform3D(0.9999998, 1.0430813e-07, 2.9802322e-08, 0, 0.9999998, 1.4901161e-08, 0, -2.7567148e-07, 0.99999976, 0.0010986328, 0.41453552, 0.016235352)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -268,10 +268,10 @@ transform = Transform3D(0.39422283, -0.63533264, 0.058659527, 0.03823723, -0.045
 script = ExtResource("70_item_pickup")
 item_id = "dagger_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack2/Dagger_Bronze" unique_id=1090211684]
+[node name="StaticBody3D" type="StaticBody3D" parent="WeaponRack2/Dagger_Bronze" unique_id=1581054529]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack2/Dagger_Bronze/StaticBody3D" unique_id=1784227702]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WeaponRack2/Dagger_Bronze/StaticBody3D" unique_id=1722447274]
 transform = Transform3D(1, 8.940697e-08, -2.7939677e-09, 2.9802322e-08, 1, 3.7252903e-09, 9.313226e-10, -1.8626451e-09, 1.0000001, 0.0640564, 0.06484985, 0.036916733)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -280,10 +280,10 @@ transform = Transform3D(0.27713364, 0.641142, -0.48439026, -0.7753319, 0.3479549
 script = ExtResource("70_item_pickup")
 item_id = "armor_head_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="FullHelmBronze" unique_id=415828024]
+[node name="StaticBody3D" type="StaticBody3D" parent="FullHelmBronze" unique_id=903095435]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FullHelmBronze/StaticBody3D" unique_id=1761014631]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FullHelmBronze/StaticBody3D" unique_id=1595523843]
 transform = Transform3D(0.9999997, 2.386514e-09, -3.7252903e-09, -8.387724e-08, 0.99999976, 1.7508864e-07, 0, -1.1175871e-07, 0.9999996, -0.28845215, 1.8736725, 0.06585693)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -292,10 +292,10 @@ transform = Transform3D(0.539773, -0.9813472, -0.0015570372, -0.089604184, -0.05
 script = ExtResource("70_item_pickup")
 item_id = "armor_chest_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Platebody_Bronze" unique_id=1656389279]
+[node name="StaticBody3D" type="StaticBody3D" parent="Platebody_Bronze" unique_id=1277541869]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Platebody_Bronze/StaticBody3D" unique_id=597276524]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Platebody_Bronze/StaticBody3D" unique_id=1340026261]
 transform = Transform3D(1.0000017, 2.9802322e-08, 2.0116568e-07, 1.0430813e-06, 0.99999976, 8.195639e-08, 1.3411045e-07, 0, 0.9999997, 0.0049743652, 0.8300781, 0.08623886)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -304,25 +304,25 @@ transform = Transform3D(-1.1131947, -0.11512482, -0.044085562, -0.11598274, 1.11
 script = ExtResource("70_item_pickup")
 item_id = "armor_legs_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Platelegs_Bronze" unique_id=899450299]
+[node name="StaticBody3D" type="StaticBody3D" parent="Platelegs_Bronze" unique_id=687177120]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Platelegs_Bronze/StaticBody3D" unique_id=590866632]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Platelegs_Bronze/StaticBody3D" unique_id=1611821622]
 transform = Transform3D(0.9999993, 2.910383e-09, 2.2351742e-08, -3.6030542e-08, 0.99999976, 1.4901161e-08, -1.1175871e-08, 0, 0.9999998, -0.0016021729, 0.09105921, 0.005493164)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Smelter" parent="." unique_id=2028400591 instance=ExtResource("63_q4s3i")]
 transform = Transform3D(-1.4309607, 0, 0.44983518, 0, 1.5, 0, -0.44983518, 0, -1.4309607, 201.18936, 9.991051, 385.77997)
 
-[node name="Quiver_Common" parent="." unique_id=1965624251 instance=ExtResource("68_4b6nw")]
+[node name="Quiver_Common" parent="." unique_id=1018198647 instance=ExtResource("68_4b6nw")]
 transform = Transform3D(0.9943591, 0.008677904, -0.105709866, -0.10605706, 0.09390669, -0.9899158, 0.0013364739, 0.9955432, 0.09429734, 208.14622, 9.599884, 384.1496)
 script = ExtResource("70_item_pickup")
 item_id = "quiver_common"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Quiver_Common" unique_id=1609967827]
+[node name="StaticBody3D" type="StaticBody3D" parent="Quiver_Common" unique_id=2127282295]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Quiver_Common/StaticBody3D" unique_id=2043302249]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Quiver_Common/StaticBody3D" unique_id=731850395]
 transform = Transform3D(0.7390789, -0.6719541, -0.047329403, 0.67195636, 0.74036676, -0.01828738, 0.04732953, -0.018287402, 0.9987112, -0.004699707, 0.9616394, -0.31938553)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -331,10 +331,10 @@ transform = Transform3D(-0.025125435, 0.7186857, 0.21297829, 0.71992373, -0.0362
 script = ExtResource("70_item_pickup")
 item_id = "bow_short_common"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Bow_Short_Common" unique_id=1993035278]
+[node name="StaticBody3D" type="StaticBody3D" parent="Bow_Short_Common" unique_id=397758941]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Bow_Short_Common/StaticBody3D" unique_id=1781489879]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Bow_Short_Common/StaticBody3D" unique_id=357332324]
 transform = Transform3D(0.9003164, 0.42925942, 0.071874276, -0.04739724, -0.06745818, 0.9965949, 0.43264666, -0.9006579, -0.040388048, 0.17536926, 0.033813477, -0.0146484375)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -344,10 +344,10 @@ script = ExtResource("70_item_pickup")
 item_id = "ammo_arrow_bronze"
 quantity = 20
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bundle_Bronze" unique_id=43382438]
+[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bundle_Bronze" unique_id=427347991]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bundle_Bronze/StaticBody3D" unique_id=871553878]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bundle_Bronze/StaticBody3D" unique_id=70527044]
 transform = Transform3D(0.883333, 0, 0, 0, -0.010344622, 0.88327247, 0, -0.88327247, -0.010344622, 4.0641327, -0.48453712, -5.1548767)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -356,10 +356,10 @@ transform = Transform3D(1, 0, 0, 0, 0.9995818, -0.028916076, 0, 0.028916076, 0.9
 script = ExtResource("70_item_pickup")
 item_id = "ammo_arrow_bronze"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bronze" unique_id=720952418]
+[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bronze" unique_id=1450826735]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bronze/StaticBody3D" unique_id=1416683097]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bronze/StaticBody3D" unique_id=1108787092]
 transform = Transform3D(1, 0, 0, 0, -0.024379862, 0.99970275, 0, -0.99970275, -0.024379862, 3.8407745, -0.04578972, -4.367737)
 shape = SubResource("CapsuleShape3D_pickup_arrow_small")
 
@@ -369,10 +369,10 @@ script = ExtResource("70_item_pickup")
 item_id = "ammo_arrow_iron"
 quantity = 20
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bundle_Iron" unique_id=1286268907]
+[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bundle_Iron" unique_id=875502389]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bundle_Iron/StaticBody3D" unique_id=1902120662]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bundle_Iron/StaticBody3D" unique_id=152915447]
 transform = Transform3D(0.883333, 0, 0, 0, -0.08203914, -0.8795151, 0, 0.8795151, -0.08203914, 4.1202545, -0.38282204, -5.014038)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
@@ -381,10 +381,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 203.61462, 9.956255, 392.5550
 script = ExtResource("70_item_pickup")
 item_id = "ammo_arrow_iron"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Iron" unique_id=1166025806]
+[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Iron" unique_id=851941191]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Iron/StaticBody3D" unique_id=1008199358]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Iron/StaticBody3D" unique_id=1202297400]
 transform = Transform3D(0.9972489, 0.07290415, -0.013402773, 4.772583e-10, -0.18081093, -0.983518, -0.07412591, 0.980812, -0.1803135, 3.834015, 0.06686211, -4.344116)
 shape = SubResource("CapsuleShape3D_pickup_arrow_small")
 
@@ -393,10 +393,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 208.26869, 10.0456, 386.11438
 script = ExtResource("70_item_pickup")
 item_id = "ammo_arrow_common"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Common" unique_id=688935197]
+[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Common" unique_id=1694054154]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Common/StaticBody3D" unique_id=208350669]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Common/StaticBody3D" unique_id=1088782748]
 transform = Transform3D(0.9967677, 0.07922098, -0.013350873, 0, 0.16618359, 0.98609483, 0.0803381, -0.9829075, 0.16564643, 0, -0.045697212, 0)
 shape = SubResource("CapsuleShape3D_pickup_arrow_small")
 
@@ -406,42 +406,41 @@ script = ExtResource("70_item_pickup")
 item_id = "ammo_arrow_common"
 quantity = 20
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bundle_Common" unique_id=403218768]
+[node name="StaticBody3D" type="StaticBody3D" parent="Arrow_Bundle_Common" unique_id=1613979217]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bundle_Common/StaticBody3D" unique_id=1106869569]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Arrow_Bundle_Common/StaticBody3D" unique_id=1820045638]
 transform = Transform3D(0.883333, 0, 0, 0, 0.883333, 0, 0, 0, 0.883333, 0, 0.12554932, -0.012936592)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
-[node name="Shield_Bronze" type="Node3D" parent="." unique_id=1343667059]
+[node name="Shield_Bronze" type="Node3D" parent="." unique_id=180006820]
 transform = Transform3D(0.9809028, -0.11814359, 0.15450668, 0.0028403942, 0.8029955, 0.59597826, -0.1944792, -0.58415765, 0.7879962, 203.20865, 10.309912, 390.1378)
 script = ExtResource("70_item_pickup")
 item_id = "shield_bronze"
 
-[node name="shield_bronze" type="MeshInstance3D" parent="Shield_Bronze" unique_id=1735411182]
+[node name="shield_bronze" type="MeshInstance3D" parent="Shield_Bronze" unique_id=362943506]
 transform = Transform3D(0.8141701, -0.45908558, 0.35548523, 0.3998603, 0.88724387, 0.23002064, -0.42100137, -0.045129925, 0.90593755, 2.2366486, 1.5303497, -2.3134766)
 material_override = ExtResource("21_2m5ky")
 mesh = SubResource("ArrayMesh_scd3f")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Shield_Bronze/shield_bronze" unique_id=1147242400]
+[node name="StaticBody3D" type="StaticBody3D" parent="Shield_Bronze/shield_bronze" unique_id=855851335]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Shield_Bronze/shield_bronze/StaticBody3D" unique_id=35994434]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shield_Bronze/shield_bronze/StaticBody3D" unique_id=1571322209]
 transform = Transform3D(0.99676216, -0.058336586, 0.055333048, 0.058659494, 0.9982687, -0.0042305887, -0.05499059, 0.0074601322, 0.99845934, 0.0118255615, -0.011657715, 0.044403076)
 shape = SubResource("CapsuleShape3D_xnrm7")
 
-[node name="Backpack_Small" parent="." unique_id=360568528 instance=ExtResource("25_vyey2")]
-transform = Transform3D(-0.16783336, -0.194377, -0.9664624, 0.028751602, 0.97898644, -0.20188874, 0.985396, -0.06167102, -0.15871792, 205.41838, 9.521688, 385.55255)
-
 [node name="Backpack_Large" parent="." unique_id=1899667396 instance=ExtResource("26_w8lkd")]
 transform = Transform3D(-0.1678334, -0.19437699, -0.9664624, 0.028751602, 0.97898644, -0.20188878, 0.985396, -0.06167102, -0.15871795, 205.41838, 9.521688, 385.55255)
-visible = true
 script = ExtResource("70_item_pickup")
 item_id = "backpack_large"
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Backpack_Large" unique_id=515802451]
+[node name="StaticBody3D" type="StaticBody3D" parent="Backpack_Large" unique_id=2009298133]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Backpack_Large/StaticBody3D" unique_id=1972573104]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Backpack_Large/StaticBody3D" unique_id=1238302826]
 transform = Transform3D(0.999858, -7.450581e-09, -0.016854778, -3.7252903e-09, 0.9999999, 2.8871e-08, 0.016854763, 2.3283064e-08, 0.99985796, 0.011260986, 0.6671028, -0.4003601)
 shape = SubResource("CapsuleShape3D_s80k1")
+
+[node name="BackpackSmallPickup" parent="." unique_id=788126623 instance=ExtResource("26_c5h0b")]
+transform = Transform3D(-0.004380733, 0, -0.9999904, 0, 1, 0, 0.9999904, 0, -0.004380733, 205.43558, 9.625945, 385.5635)

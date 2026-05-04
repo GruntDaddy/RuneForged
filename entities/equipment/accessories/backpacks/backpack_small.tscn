@@ -102,11 +102,9 @@ bind/22/name = &"toes.r"
 bind/22/bone = -1
 bind/22/pose = Transform3D(-1, -1.5343316e-07, 3.3330096e-15, 3.0571214e-12, -1.3510248e-07, 0.9999992, -1.5343313e-07, 1.0000002, -4.37114e-08, -0.17094518, -0.46376124, 0.7931397)
 
-[node name="Backpack_Small" type="Node3D" unique_id=360568528]
-transform = Transform3D(-0.1678334, -0.19437699, -0.9664624, 0.028751602, 0.97898644, -0.20188878, 0.985396, -0.06167102, -0.15871795, 0, 0, 0)
+[node name="Backpack_Small" type="Node3D" unique_id=6488400]
 
-[node name="backpack_small" type="MeshInstance3D" parent="." unique_id=1855622948]
-transform = Transform3D(0.14424157, 0.9891169, -0.029016461, -0.15480563, -0.0064063407, -0.9879241, -0.9773588, 0.14699161, 0.15219687, 0.84213257, 0.34576035, -0.6095276)
+[node name="backpack_small" type="MeshInstance3D" parent="." unique_id=203722388]
 material_override = ExtResource("1_hhaun")
 mesh = SubResource("ArrayMesh_742gl")
 skin = SubResource("Skin_w2v6r")

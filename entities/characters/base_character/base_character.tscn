@@ -52,7 +52,6 @@
 [ext_resource type="PackedScene" uid="uid://besltly0rqqec" path="res://entities/equipment/accessories/capes/cape_dark_pink.tscn" id="21_dpmmt"]
 [ext_resource type="PackedScene" uid="uid://cigw3nxrjicja" path="res://entities/equipment/armor/helmet/full_helm_adamant.tscn" id="21_e22wm"]
 [ext_resource type="PackedScene" uid="uid://wdpos66nlb5l" path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="22_dk2se"]
-[ext_resource type="PackedScene" uid="uid://dqtds13wn64w6" path="res://entities/equipment/accessories/backpacks/backpack_small.tscn" id="80_bkpsm"]
 [ext_resource type="PackedScene" uid="uid://degnuahlotk3i" path="res://entities/equipment/armor/helmet/full_helm_rune.tscn" id="22_li1ky"]
 [ext_resource type="PackedScene" uid="uid://d1megw7ip7oq4" path="res://entities/equipment/weapons/ranged/bow_short_common.tscn" id="22_soir5"]
 [ext_resource type="PackedScene" uid="uid://dicwla6h7ol1b" path="res://entities/equipment/weapons/melee/spear_basic.tscn" id="23_g1qwb"]
@@ -96,6 +95,7 @@
 [ext_resource type="Animation" uid="uid://0entig14wpy2" path="res://assets/animations/rig_medium/combat/Melee_1H_Attack_Stab.res" id="76_k1esd"]
 [ext_resource type="Animation" uid="uid://m88fr24mqlqv" path="res://assets/animations/rig_medium/combat/Melee_Block_Attack.res" id="78_f4yw7"]
 [ext_resource type="Animation" uid="uid://565g5d0i45vj" path="res://assets/animations/rig_medium/combat/Melee_Block_Hit.res" id="79_24hmn"]
+[ext_resource type="PackedScene" uid="uid://dqtds13wn64w6" path="res://entities/equipment/accessories/backpacks/backpack_small.tscn" id="80_bkpsm"]
 [ext_resource type="Animation" uid="uid://bu6ffkd7htxbr" path="res://assets/animations/rig_medium/combat/Melee_Blocking.res" id="comb_blocking"]
 [ext_resource type="Animation" uid="uid://d1jhdgd1ofc03" path="res://assets/animations/rig_medium/combat/Ranged_Bow_Draw.res" id="comb_bow_dr"]
 [ext_resource type="Animation" uid="uid://c3ny3myxbc0a" path="res://assets/animations/rig_medium/combat/Ranged_Bow_Release.res" id="comb_bow_rel"]
@@ -517,14 +517,13 @@ visible = false
 transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
 
 [node name="Cape_Blue" parent="Rig_Medium/Skeleton3D/Capes" unique_id=1554171078 instance=ExtResource("32_rqdgg")]
-visible = false
 
 [node name="Cape_DarkPink" parent="Rig_Medium/Skeleton3D/Capes" unique_id=1375116981 instance=ExtResource("21_dpmmt")]
 
 [node name="Backpacks" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=671294743]
-transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0, 0)
 
 [node name="Backpack_Large" parent="Rig_Medium/Skeleton3D/Backpacks" unique_id=1899667396 instance=ExtResource("22_dk2se")]
+visible = false
 
 [node name="Backpack_Small" parent="Rig_Medium/Skeleton3D/Backpacks" unique_id=360568528 instance=ExtResource("80_bkpsm")]
 visible = false
@@ -687,15 +686,12 @@ transform = Transform3D(1, 0, 2.3841855e-07, 0, 1, 0, -2.3841855e-07, 0, 1, 0, 0
 
 [node name="Quiver_Common" parent="Rig_Medium/Skeleton3D/Quivers" unique_id=1965624251 instance=ExtResource("41_3ldw4")]
 transform = Transform3D(1, -1.2527728e-08, 3.2936084e-10, 1.2527728e-08, 0.99861854, -0.052545108, 3.2936495e-10, 0.052545108, 0.99861854, 0, 0, 0)
-visible = false
 
 [node name="Quiver_Bronze" parent="Rig_Medium/Skeleton3D/Quivers" unique_id=523486968 instance=ExtResource("43_k1esd")]
 transform = Transform3D(1, -7.983828e-09, 1.3371633e-10, 7.983828e-09, 0.9994392, -0.033486605, 1.3370993e-10, 0.033486605, 0.9994392, 0, 0, 0)
-visible = false
 
 [node name="Quiver_Iron" parent="Rig_Medium/Skeleton3D/Quivers" unique_id=720076930 instance=ExtResource("44_f4yw7")]
 transform = Transform3D(1, -1.2831064e-08, 3.455125e-10, 1.2831064e-08, 0.9985507, -0.053817395, 3.4552272e-10, 0.053817395, 0.9985507, 0, 0, 0)
-visible = false
 
 [node name="Helmets" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=1565207411]
 
