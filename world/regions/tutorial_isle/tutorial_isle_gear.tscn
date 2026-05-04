@@ -443,4 +443,4 @@ transform = Transform3D(0.999858, -7.450581e-09, -0.016854778, -3.7252903e-09, 0
 shape = SubResource("CapsuleShape3D_s80k1")
 
 [node name="BackpackSmallPickup" parent="." unique_id=788126623 instance=ExtResource("26_c5h0b")]
-transform = Transform3D(-0.004380733, 0, -0.9999904, 0, 1, 0, 0.9999904, 0, -0.004380733, 205.43558, 9.625945, 385.5635)
+transform = Transform3D(0.94815886, -0.3177413, -0.0059253946, -0.03818087, -0.0953841, -0.9947079, 0.31549463, 0.94336736, -0.102571, 206.355, 9.933418, 385.56464)

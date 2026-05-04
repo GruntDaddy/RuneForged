@@ -18,5 +18,5 @@ transform = Transform3D(1, 0, 0, 0, 0.99859, -0.053085405, 0, 0.053085405, 0.998
 collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=363606490]
-transform = Transform3D(0.022477865, -0.99974734, 0, 0.99974734, 0.022477865, 0, 0, 0, 1, 0.9814621, 0.45462105, -0.57054204)
+transform = Transform3D(-0.99938166, 0.03516122, 0, -0.03516122, -0.99938166, 0, 0, 0, 1, -0.018303305, 0.1676302, -0.019028723)
 shape = SubResource("CapsuleShape3D_pickup")
