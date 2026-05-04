@@ -1,5 +1,6 @@
 [gd_scene format=4 uid="uid://dqtds13wn64w6"]
 
+[ext_resource type="Material" uid="uid://clow44ajf6isy" path="res://shared/materials/caveman.tres" id="1_hhaun"]
 [ext_resource type="Texture2D" uid="uid://dvcs04g36wj6m" path="res://assets/kaykit/characters/raw/hiker_texture.png" id="1_o47gf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2h5n1"]
@@ -106,6 +107,7 @@ transform = Transform3D(-0.1678334, -0.19437699, -0.9664624, 0.028751602, 0.9789
 
 [node name="backpack_small" type="MeshInstance3D" parent="." unique_id=1855622948]
 transform = Transform3D(0.14424157, 0.9891169, -0.029016461, -0.15480563, -0.0064063407, -0.9879241, -0.9773588, 0.14699161, 0.15219687, 0.84213257, 0.34576035, -0.6095276)
+material_override = ExtResource("1_hhaun")
 mesh = SubResource("ArrayMesh_742gl")
 skin = SubResource("Skin_w2v6r")
 skeleton = NodePath("../../Backpack_Large")
