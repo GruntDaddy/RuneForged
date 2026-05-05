@@ -50,7 +50,7 @@ const LOD_FROZEN := 2
 ## Yaw offset (degrees) for imported meshes whose authored forward axis is not Godot's -Z.
 @export var visual_mesh_yaw_offset_deg: float = 0.0
 
-## Register with region `WildlifeLodController`; tiers throttle AI + billboard work when far from anchor.
+## Register with region `WildlifeLod`; tiers throttle AI + billboard work when far from anchor.
 @export var use_simulation_lod: bool = true
 ## Fish / pond wildlife: planar roam only; Y locked to spawn with gentle bob (no gravity).
 @export var aquatic: bool = false
@@ -91,12 +91,18 @@ var _lod_tier: int = LOD_FULL
 var _swim_phase: float = 0.0
 var _hb_billboard_tick: int = 0
 var _saved_floor_snap_length: float = 0.18
+var _far_culled: bool = false
+var _saved_collision_layer: int = 0
+var _saved_collision_mask: int = 0
+var _geometry_fade_instances: Array[GeometryInstance3D] = []
+var _geometry_fade_cache_dirty: bool = true
 
 
 func _ready() -> void:
 	add_to_group("creature")
-	if use_simulation_lod:
-		add_to_group("wildlife_lod")
+	add_to_group("wildlife_lod")
+	_saved_collision_layer = collision_layer
+	_saved_collision_mask = collision_mask
 	_saved_floor_snap_length = floor_snap_length
 	animation_player = _resolve_animation_player()
 	if animation_player:
@@ -114,7 +120,38 @@ func _ready() -> void:
 	_set_idle_phase()
 
 
-func apply_lod_distance_squared(dist_sq: float, full_radius_squared: float, low_radius_squared: float) -> void:
+## Called every frame from the region `WildlifeLod` controller. Handles far cull + distance fade; simulation tier updates only when `apply_tiers` is true.
+func apply_lod_frame(
+	dist_sq: float,
+	full_radius_squared: float,
+	low_radius_squared: float,
+	hide_radius_squared: float,
+	fade_start_squared: float,
+	apply_tiers: bool,
+) -> void:
+	if _dead:
+		return
+
+	if hide_radius_squared > 0.0 and dist_sq > hide_radius_squared:
+		_set_far_culled(true)
+		_reset_geometry_instance_transparency()
+		return
+
+	_set_far_culled(false)
+
+	if fade_start_squared > 0.0 and hide_radius_squared > 0.0 and dist_sq >= fade_start_squared:
+		var d := sqrt(dist_sq)
+		var d0 := sqrt(fade_start_squared)
+		var d1 := sqrt(hide_radius_squared)
+		var span := maxf(1e-4, d1 - d0)
+		var tr := clampf((d - d0) / span, 0.0, 1.0)
+		_set_geometry_instance_transparency(tr)
+	else:
+		_reset_geometry_instance_transparency()
+
+	if not apply_tiers:
+		return
+
 	if not use_simulation_lod:
 		_set_lod_tier(LOD_FULL)
 		return
@@ -126,6 +163,54 @@ func apply_lod_distance_squared(dist_sq: float, full_radius_squared: float, low_
 		_set_lod_tier(LOD_LOW)
 	else:
 		_set_lod_tier(LOD_FROZEN)
+
+
+func _rebuild_geometry_fade_cache() -> void:
+	_geometry_fade_instances.clear()
+	_collect_geometry_instances_for_fade(self)
+	_geometry_fade_cache_dirty = false
+
+
+func _collect_geometry_instances_for_fade(n: Node) -> void:
+	if n is GeometryInstance3D:
+		var gi := n as GeometryInstance3D
+		if is_instance_valid(gi):
+			_geometry_fade_instances.append(gi)
+	for c in n.get_children():
+		_collect_geometry_instances_for_fade(c)
+
+
+func _set_geometry_instance_transparency(instance_transparency: float) -> void:
+	if _geometry_fade_cache_dirty:
+		_rebuild_geometry_fade_cache()
+	var t := clampf(instance_transparency, 0.0, 1.0)
+	for gi in _geometry_fade_instances:
+		if is_instance_valid(gi):
+			gi.transparency = t
+
+
+func _reset_geometry_instance_transparency() -> void:
+	_set_geometry_instance_transparency(0.0)
+
+
+func _set_far_culled(active: bool) -> void:
+	if _far_culled == active:
+		return
+	_far_culled = active
+	if active:
+		velocity = Vector3.ZERO
+		_hit_knockback_planar = Vector3.ZERO
+		_wind_push_time_left = 0.0
+		collision_layer = 0
+		collision_mask = 0
+		visible = false
+		process_mode = Node.PROCESS_MODE_DISABLED
+	else:
+		process_mode = Node.PROCESS_MODE_INHERIT
+		visible = true
+		collision_layer = _saved_collision_layer
+		collision_mask = _saved_collision_mask
+		floor_snap_length = _saved_floor_snap_length
 
 
 func _set_lod_tier(tier: int) -> void:
@@ -670,6 +755,7 @@ func _setup_health_bar() -> void:
 	_health_bar_fill.position = Vector3(0.0, 0.0, 0.01)
 	_health_bar_root.add_child(_health_bar_fill)
 	_health_bar_root.visible = false
+	_geometry_fade_cache_dirty = true
 
 
 func _maybe_update_health_bar_billboard() -> void:

@@ -733,6 +733,9 @@ day_night_controller_path = NodePath("../Environment/DayNightCycle")
 
 [node name="WildlifeLod" type="Node" parent="." unique_id=230263382]
 script = ExtResource("wildlife_lod_script")
+hide_beyond_radius = 150.0
+fade_band_meters = 25.0
+tier_update_interval_sec = 0.12
 
 [node name="Wildlife" type="Node3D" parent="." unique_id=2010010000]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 218.5, 10, 383)
@@ -751,28 +754,28 @@ facing_yaw_offset = 0.25
 transform = Transform3D(0.20409203, 0, -1.4860506, 0, 1.5, 0, 1.4860506, 0, 0.20409203, -3.2530212, -0.002368927, -5.053253)
 
 [node name="Horse" parent="Wildlife" unique_id=1192112681 instance=ExtResource("animal_horse")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.13463, -0.083722, 5.49634)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.134628, -0.17495155, 5.496338)
 
 [node name="Cow" parent="Wildlife" unique_id=972359193 instance=ExtResource("animal_cow")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.23796, 0.110021, -2.58606)
+transform = Transform3D(0.99999994, -0.000162657, -0.00033789215, 0.0001628148, 0.9999999, 0.0004598735, 0.00033781613, -0.00045992932, 0.9999998, -11.237961, 0.04955578, -2.5860596)
 
 [node name="Bull" parent="Wildlife" unique_id=962112992 instance=ExtResource("animal_bull")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.87462, 0.11699, -4.72864)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.874619, 0.04211521, -4.7286377)
 
 [node name="Goose" parent="Wildlife" unique_id=231106028 instance=ExtResource("animal_goose")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.64748, 0.251039, -0.07568)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.647476, 0.0072641373, -0.075683594)
 
 [node name="Ram" parent="Wildlife" unique_id=1274637391 instance=ExtResource("animal_ram")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.56673, -0.640572, 9.93134)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.693268, 0.9490986, -13.424408)
 
 [node name="Sheep" parent="Wildlife" unique_id=210719398 instance=ExtResource("animal_sheep")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.77821, 0.557463, 7.97226)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.904755, 1.0524111, -15.383484)
 
 [node name="Turkey" parent="Wildlife" unique_id=998077888 instance=ExtResource("animal_turkey")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.93417, 0.603697, -8.16608)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.934174, 0.5608902, -8.166077)
 
 [node name="Pig" parent="Wildlife" unique_id=950403807 instance=ExtResource("animal_pig")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.79716, -0.032627, 3.3746)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.797165, -0.09838486, 3.3746033)
 
 [node name="Walleye" parent="Wildlife" unique_id=1386688933 instance=ExtResource("fish_walleye")]
 transform = Transform3D(-0.010489196, 0, -0.999945, 0, 1, 0, 0.999945, 0, -0.010489196, 2.72769, -9.640836, 52.34012)
