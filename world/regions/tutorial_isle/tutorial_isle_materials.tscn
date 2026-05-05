@@ -1,26 +1,22 @@
 [gd_scene format=4 uid="uid://bo7qoslxeh56"]
 
-[ext_resource type="PackedScene" uid="uid://cf750db6v0jph" path="res://world/pickups/ingot_copper_pickup.tscn" id="20_3vu1e"]
+[ext_resource type="PackedScene" uid="uid://cf750db6v0jph" path="res://entities/props/static/copper_bar.tscn" id="20_3vu1e"]
 [ext_resource type="Material" uid="uid://ca32d1pa2xnx1" path="res://shared/materials/Copper.tres" id="20_62lce"]
 [ext_resource type="Material" uid="uid://c4y6bafohjd1k" path="res://shared/materials/Tin.tres" id="21_bq618"]
-[ext_resource type="PackedScene" uid="uid://b31arwal73ifg" path="res://world/pickups/ore_copper_pickup.tscn" id="23_fq2qr"]
-[ext_resource type="PackedScene" uid="uid://ccqrd3tma4c13" path="res://world/pickups/ingot_iron_pickup.tscn" id="27_rx877"]
-[ext_resource type="PackedScene" uid="uid://bs8ahdtsyglpe" path="res://world/pickups/ore_iron_pickup.tscn" id="28_my7f7"]
+[ext_resource type="PackedScene" uid="uid://b31arwal73ifg" path="res://entities/props/static/copper_nuggets.tscn" id="23_fq2qr"]
+[ext_resource type="PackedScene" uid="uid://ccqrd3tma4c13" path="res://entities/props/static/iron_bar.tscn" id="27_rx877"]
+[ext_resource type="PackedScene" uid="uid://bs8ahdtsyglpe" path="res://entities/props/static/iron_nuggets.tscn" id="28_my7f7"]
 [ext_resource type="Material" uid="uid://s542iejn23ni" path="res://shared/materials/Gold.tres" id="29_bq618"]
-[ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://world/pickups/ingot_silver_pickup.tscn" id="29_ts002"]
-[ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://world/pickups/ore_silver_pickup.tscn" id="30_dr1td"]
+[ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://entities/props/static/silver_bar.tscn" id="29_ts002"]
+[ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://entities/props/static/silver_nuggets.tscn" id="30_dr1td"]
 [ext_resource type="Material" uid="uid://4nomqj0shgvn" path="res://shared/materials/Stone.tres" id="34_gb3ee"]
-[ext_resource type="PackedScene" uid="uid://bs2abg22r2s2n" path="res://world/pickups/logs_pickup.tscn" id="35_3nag6"]
-[ext_resource type="PackedScene" uid="uid://bigov83wpwqt" path="res://world/pickups/stone_block_pickup.tscn" id="58_86282"]
+[ext_resource type="PackedScene" uid="uid://bs2abg22r2s2n" path="res://assets/kaykit/items/log_split.gltf" id="35_3nag6"]
+[ext_resource type="PackedScene" uid="uid://bigov83wpwqt" path="res://assets/kaykit/resources/Stone_Brick.gltf" id="58_86282"]
 [ext_resource type="Texture2D" uid="uid://c8x1wyidgota" path="res://assets/kaykit/resources/resource_bits_texture.png" id="59_s80k1"]
-[ext_resource type="PackedScene" uid="uid://qqwf5qhal6v8" path="res://world/pickups/wood_planks_pickup.tscn" id="66_t2imw"]
-[ext_resource type="PackedScene" uid="uid://bw6pvg8eefqkw" path="res://world/pickups/wood_planks_pickup.tscn" id="67_81cpb"]
-[ext_resource type="PackedScene" uid="uid://b1xagv6kd3o6p" path="res://world/pickups/wood_planks_pickup.tscn" id="68_kgvtc"]
+[ext_resource type="PackedScene" uid="uid://qqwf5qhal6v8" path="res://assets/kaykit/resources/Wood_Plank_C.gltf" id="66_t2imw"]
+[ext_resource type="PackedScene" uid="uid://bw6pvg8eefqkw" path="res://assets/kaykit/resources/Wood_Plank_B.gltf" id="67_81cpb"]
+[ext_resource type="PackedScene" uid="uid://b1xagv6kd3o6p" path="res://assets/kaykit/resources/Wood_Plank_A.gltf" id="68_kgvtc"]
 [ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="70_item_pickup"]
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
-radius = 0.30908203
-height = 1.0602417
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_el0sd"]
 resource_name = "resource"
@@ -60,6 +56,10 @@ _surfaces = [{
 }]
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_47t6l")
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
+radius = 0.23291016
+height = 0.8704529
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l44pk"]
 resource_name = "resource"
@@ -667,7 +667,7 @@ transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.72325
 script = ExtResource("70_item_pickup")
 item_id = "ingot_gold"
 
-[node name="Iron_Bar" type="MeshInstance3D" parent="Gold_Bar" unique_id=1385761557]
+[node name="gold_bar" type="MeshInstance3D" parent="Gold_Bar" unique_id=1385761557]
 transform = Transform3D(0.9994168, 0.034131914, -0.0006104708, -0.034131914, 0.9987778, -0.035746973, -0.0006105006, 0.035746973, 0.9993603, -0.81036377, -0.07919216, 0.060195923)
 material_override = ExtResource("29_bq618")
 mesh = SubResource("ArrayMesh_4baf7")
@@ -676,7 +676,7 @@ mesh = SubResource("ArrayMesh_4baf7")
 collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Gold_Bar/StaticBody3D" unique_id=920001018]
-transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, -0.76989746, 0.119999886, 0.16433716)
+transform = Transform3D(0.12439687, 0.06718323, 0.9899534, -0.9895893, 0.08117314, 0.11884221, -0.0723734, -0.9944316, 0.07658142, -0.8185425, 0.020422935, 0.030410767)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Gold_Nuggets" type="Node3D" parent="." unique_id=967007471]
@@ -684,7 +684,7 @@ transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.81749
 script = ExtResource("70_item_pickup")
 item_id = "ore_gold"
 
-[node name="Iron_Nuggets" type="MeshInstance3D" parent="Gold_Nuggets" unique_id=1552953278]
+[node name="gold_nuggets" type="MeshInstance3D" parent="Gold_Nuggets" unique_id=1552953278]
 transform = Transform3D(0.99825203, -0.059051648, 0.0024814606, 0.059051648, 0.9947297, -0.08381968, 0.0024813712, 0.08381968, 0.996478, -0.21588135, -0.10295963, -0.78338623)
 material_override = ExtResource("29_bq618")
 mesh = SubResource("ArrayMesh_0k3so")

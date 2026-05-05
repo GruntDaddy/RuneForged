@@ -7,7 +7,9 @@ const _MAX_TREE_PATCHES := 48
 @onready var _terrain: Terrain3D = $Terrain3D
 @onready var _water: Node3D = $Water
 
-@export var trees_scan_root: NodePath = ^"Harvestables/Trees"
+## Harvestables root under the **main region scene** (e.g. tutorial_isle.tscn → Props/Harvestables).
+## Resolved via `current_scene`, not this node's parent (terrain sync lives on the environment subtree).
+@export var trees_scan_root: NodePath = ^"Props/Harvestables"
 ## World-space radius (meters) of extra dirt around each collected tree node.
 @export var tree_dirt_radius: float = 2.85
 ## How strongly grass weight is moved to dirt under trees (0 = off).
@@ -61,13 +63,27 @@ func _push_tree_dirt_patches() -> void:
 
 
 func _resolve_trees_scan_root() -> Node:
-	var root := get_node_or_null(trees_scan_root)
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+	var primary: NodePath = trees_scan_root
+	if primary.is_empty():
+		primary = ^"Props/Harvestables"
+	var root := scene.get_node_or_null(primary)
 	if root != null:
 		return root
-	# Tutorial isle split-scene layout keeps harvestables under the main scene.
-	var current_scene := get_tree().current_scene
-	if current_scene != null:
-		return current_scene.get_node_or_null(^"Props/Harvestables/Trees")
+	var fallbacks: Array[NodePath] = [
+		^"Props/Harvestables",
+		^"Harvestables",
+		^"Props/Harvestables/Trees",
+		^"Harvestables/Trees",
+	]
+	for p in fallbacks:
+		if p == primary:
+			continue
+		root = scene.get_node_or_null(p)
+		if root != null:
+			return root
 	return null
 
 
@@ -88,7 +104,8 @@ func _collect_tree_patches(n: Node, out: PackedVector4Array) -> void:
 		return
 	for c in n.get_children():
 		_collect_tree_patches(c, out)
-	if n is Node3D and n.name.begins_with("Harvestable"):
+	# Instanced trees are often renamed (e.g. "Trees_PalmTrees#HarvestableTree"); match substring.
+	if n is Node3D and String(n.name).contains("Harvestable"):
 		var o := n as Node3D
 		var p := o.global_position
 		out.append(Vector4(p.x, p.z, tree_dirt_radius, tree_dirt_strength))
