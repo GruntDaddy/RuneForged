@@ -1,29 +1,26 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cktg8oqrcdxr3"]
 
-[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Bull.fbx" id="2_model"]
+[ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" uid="uid://cqwo6qfubdob1" path="res://assets/Poly Animals/uploads_files_2802062_Bull.fbx" id="2_model"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.55
-height = 1.5
+[sub_resource type="BoxShape3D" id="BoxShape3D_mcf64"]
+size = Vector3(3.650879, 1.9629517, 1)
 
-[node name="Bull" type="CharacterBody3D"]
+[node name="Bull" type="CharacterBody3D" unique_id=673047377]
 collision_layer = 2
-collision_mask = 1
 script = ExtResource("1_wild")
-max_health = 52.0
+max_health = 100.0
 species_id = "bull"
 move_speed = 0.9
 roam_radius = 6.0
 respawn_seconds = 60.0
-visual_mesh_vertical_offset = -0.4
 visual_mesh_yaw_offset_deg = 90.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
-shape = SubResource("CapsuleShape3D_body")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=925144645]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28295898, 1.0254822, 0)
+shape = SubResource("BoxShape3D_mcf64")
 
-[node name="VisualRoot" type="Node3D" parent="."]
+[node name="VisualRoot" type="Node3D" parent="." unique_id=973134738]
 transform = Transform3D(0.88, 0, 0, 0, 0.88, 0, 0, 0, 0.88, 0, 0, 0)
 
-[node name="BullModel" parent="VisualRoot" instance=ExtResource("2_model")]
+[node name="BullModel" parent="VisualRoot" unique_id=27366547 instance=ExtResource("2_model")]

@@ -56,6 +56,10 @@ const LOD_FROZEN := 2
 @export var aquatic: bool = false
 @export var swim_bob_amplitude: float = 0.06
 @export var swim_bob_speed: float = 1.8
+## When LOD is frozen, land animals raycast down and set Y to hit + this (body origin above ground).
+@export var terrain_snap_y_offset: float = 0.1
+## Wider floor snap when LOD is low so move_and_slide keeps contact before is_on_floor flaps at range.
+@export var lod_low_floor_snap_length: float = 0.5
 
 @export var drops: Array[_AnimalDropEntry] = []
 
@@ -86,12 +90,14 @@ var _wind_push_speed: float = 0.0
 var _lod_tier: int = LOD_FULL
 var _swim_phase: float = 0.0
 var _hb_billboard_tick: int = 0
+var _saved_floor_snap_length: float = 0.18
 
 
 func _ready() -> void:
 	add_to_group("creature")
 	if use_simulation_lod:
 		add_to_group("wildlife_lod")
+	_saved_floor_snap_length = floor_snap_length
 	animation_player = _resolve_animation_player()
 	if animation_player:
 		_idle_clip = _resolve_clip_name(idle_animation)
@@ -165,6 +171,36 @@ func _aquatic_apply_bob_after_move(delta: float) -> void:
 	global_position.y = _spawn_position.y + bob
 
 
+func _query_ground_y_below() -> float:
+	var w := get_world_3d()
+	if w == null:
+		return NAN
+	var from := global_position + Vector3.UP * 5.0
+	var to := global_position + Vector3.DOWN * 50.0
+	var q := PhysicsRayQueryParameters3D.create(from, to)
+	q.collide_with_bodies = true
+	q.collide_with_areas = false
+	var mask := collision_mask
+	if mask == 0:
+		mask = 1
+	q.collision_mask = mask
+	q.exclude = [get_rid()]
+	var r := w.direct_space_state.intersect_ray(q)
+	if r.is_empty():
+		return NAN
+	return (r["position"] as Vector3).y
+
+
+## Far frozen sim: do not integrate gravity (avoids tunneling + fall_reset thrash when is_on_floor is unreliable).
+func _snap_frozen_land_to_ground() -> void:
+	var gy := _query_ground_y_below()
+	if is_nan(gy):
+		global_position.y = _spawn_position.y
+	else:
+		global_position.y = gy + terrain_snap_y_offset
+	velocity.y = 0.0
+
+
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
@@ -190,20 +226,28 @@ func _physics_process(delta: float) -> void:
 		_hit_knockback_planar *= exp(-hit_knockback_decay_per_sec * delta)
 		velocity.x = _hit_knockback_planar.x
 		velocity.z = _hit_knockback_planar.z
-		_aquatic_zero_vertical_velocity()
-		if not aquatic:
-			if not is_on_floor():
-				velocity.y -= _gravity * delta
-			else:
-				velocity.y = 0.0
-		move_and_slide()
-		_aquatic_apply_bob_after_move(delta)
+		if aquatic:
+			_aquatic_zero_vertical_velocity()
+			velocity.x = 0.0
+			velocity.z = 0.0
+			_hit_knockback_planar = Vector3.ZERO
+			move_and_slide()
+			_aquatic_apply_bob_after_move(delta)
+		else:
+			velocity.y = 0.0
+			floor_snap_length = 0.0
+			move_and_slide()
+			_snap_frozen_land_to_ground()
 		_play_clip(_idle_clip)
 		_maybe_update_health_bar_billboard()
 		_update_health_bar_visibility()
 		return
 
 	_enforce_spawn_leash()
+	if use_simulation_lod and _lod_tier == LOD_LOW:
+		floor_snap_length = lod_low_floor_snap_length
+	else:
+		floor_snap_length = _saved_floor_snap_length
 	var ai_dt := delta * _ai_time_scale()
 	_phase_timeout -= ai_dt
 	_flee_timeout = maxf(0.0, _flee_timeout - delta)

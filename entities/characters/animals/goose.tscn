@@ -1,29 +1,27 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://0dkvw1hncrxt"]
 
-[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Goose.fbx" id="2_model"]
+[ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" uid="uid://c1iqx3ih7uflj" path="res://assets/Poly Animals/uploads_files_2802062_Goose.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.22
-height = 0.38
+radius = 0.23339844
+height = 0.54065675
 
-[node name="Goose" type="CharacterBody3D"]
+[node name="Goose" type="CharacterBody3D" unique_id=721715437]
 collision_layer = 2
-collision_mask = 1
 script = ExtResource("1_wild")
-max_health = 18.0
+max_health = 25.0
 species_id = "goose"
 move_speed = 1.0
 roam_radius = 5.0
 respawn_seconds = 40.0
-visual_mesh_vertical_offset = -0.15
 visual_mesh_yaw_offset_deg = 90.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1805063524]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.024076909, 0.25255004, 0)
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="VisualRoot" type="Node3D" parent="."]
+[node name="VisualRoot" type="Node3D" parent="." unique_id=1502083941]
 transform = Transform3D(0.65, 0, 0, 0, 0.65, 0, 0, 0, 0.65, 0, 0, 0)
 
-[node name="GooseModel" parent="VisualRoot" instance=ExtResource("2_model")]
+[node name="GooseModel" parent="VisualRoot" unique_id=2019901832 instance=ExtResource("2_model")]

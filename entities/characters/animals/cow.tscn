@@ -1,29 +1,26 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dvxbtapk8fjfm"]
 
-[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Cow.fbx" id="2_model"]
+[ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" uid="uid://qdjehcfa7pal" path="res://assets/Poly Animals/uploads_files_2802062_Cow.fbx" id="2_model"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.52
-height = 1.45
+[sub_resource type="BoxShape3D" id="BoxShape3D_2qjb3"]
+size = Vector3(3.1464844, 1.8325806, 1)
 
-[node name="Cow" type="CharacterBody3D"]
+[node name="Cow" type="CharacterBody3D" unique_id=339244394]
 collision_layer = 2
-collision_mask = 1
 script = ExtResource("1_wild")
-max_health = 44.0
+max_health = 75.0
 species_id = "cow"
 move_speed = 0.95
 roam_radius = 6.5
 respawn_seconds = 55.0
-visual_mesh_vertical_offset = -0.38
 visual_mesh_yaw_offset_deg = 90.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 0)
-shape = SubResource("CapsuleShape3D_body")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1051062912]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36132813, 0.95129275, 0)
+shape = SubResource("BoxShape3D_2qjb3")
 
-[node name="VisualRoot" type="Node3D" parent="."]
+[node name="VisualRoot" type="Node3D" parent="." unique_id=297622542]
 transform = Transform3D(0.82, 0, 0, 0, 0.82, 0, 0, 0, 0.82, 0, 0, 0)
 
-[node name="CowModel" parent="VisualRoot" instance=ExtResource("2_model")]
+[node name="CowModel" parent="VisualRoot" unique_id=1856831156 instance=ExtResource("2_model")]

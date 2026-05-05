@@ -16,32 +16,32 @@
 [ext_resource type="PackedScene" uid="uid://dxobqkuv2sf3w" path="res://assets/kaykit/items/torch.gltf" id="21_dbqg5"]
 [ext_resource type="PackedScene" uid="uid://doxqvb2heoerk" path="res://assets/kaykit/items/torch_burnt.gltf" id="22_ypcn4"]
 [ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/tutorial_isle/tutorial_isle.gd" id="75_tutorial_isle_script"]
-[ext_resource type="Script" path="res://entities/characters/animals/wildlife_lod_controller.gd" id="wildlife_lod_script"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/horse.tscn" id="animal_horse"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/cow.tscn" id="animal_cow"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/bull.tscn" id="animal_bull"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/goose.tscn" id="animal_goose"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/ram.tscn" id="animal_ram"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/sheep.tscn" id="animal_sheep"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/turkey.tscn" id="animal_turkey"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/pig.tscn" id="animal_pig"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_walleye.tscn" id="fish_walleye"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_trout.tscn" id="fish_trout"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_sturgeon.tscn" id="fish_sturgeon"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_roach.tscn" id="fish_roach"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_pike.tscn" id="fish_pike"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_perch.tscn" id="fish_perch"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_largemouth.tscn" id="fish_largemouth"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_drum.tscn" id="fish_drum"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_catfish.tscn" id="fish_catfish"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_carp.tscn" id="fish_carp"]
-[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_bluegill.tscn" id="fish_bluegill"]
+[ext_resource type="PackedScene" uid="uid://cktg8oqrcdxr3" path="res://entities/characters/animals/bull.tscn" id="animal_bull"]
 [ext_resource type="PackedScene" uid="uid://c71f22kgv2gfw" path="res://entities/characters/animals/chick.tscn" id="animal_chick"]
 [ext_resource type="PackedScene" uid="uid://b5a04is8xdmy8" path="res://entities/characters/animals/chicken.tscn" id="animal_chicken"]
+[ext_resource type="PackedScene" uid="uid://dvxbtapk8fjfm" path="res://entities/characters/animals/cow.tscn" id="animal_cow"]
+[ext_resource type="PackedScene" uid="uid://0dkvw1hncrxt" path="res://entities/characters/animals/goose.tscn" id="animal_goose"]
+[ext_resource type="PackedScene" uid="uid://bltfdbn1h30ki" path="res://entities/characters/animals/horse.tscn" id="animal_horse"]
+[ext_resource type="PackedScene" uid="uid://ck5jpt3seoior" path="res://entities/characters/animals/pig.tscn" id="animal_pig"]
 [ext_resource type="PackedScene" uid="uid://dmjc7xfow7wa6" path="res://entities/characters/animals/rabbit.tscn" id="animal_rabbit"]
+[ext_resource type="PackedScene" uid="uid://bhw1r7a8w14e8" path="res://entities/characters/animals/ram.tscn" id="animal_ram"]
 [ext_resource type="PackedScene" uid="uid://exxthefxl5hh" path="res://entities/characters/animals/rooster.tscn" id="animal_rooster"]
+[ext_resource type="PackedScene" uid="uid://ckakw5wih3ppy" path="res://entities/characters/animals/sheep.tscn" id="animal_sheep"]
+[ext_resource type="PackedScene" uid="uid://c7wssr6af3bno" path="res://entities/characters/animals/turkey.tscn" id="animal_turkey"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_bluegill.tscn" id="fish_bluegill"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_carp.tscn" id="fish_carp"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_catfish.tscn" id="fish_catfish"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_drum.tscn" id="fish_drum"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_largemouth.tscn" id="fish_largemouth"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_perch.tscn" id="fish_perch"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_pike.tscn" id="fish_pike"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_roach.tscn" id="fish_roach"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_sturgeon.tscn" id="fish_sturgeon"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_trout.tscn" id="fish_trout"]
+[ext_resource type="PackedScene" path="res://entities/characters/animals/fish_walleye.tscn" id="fish_walleye"]
 [ext_resource type="PackedScene" uid="uid://dlwlceuuy3mu7" path="res://world/regions/tutorial_isle/tutorial_isle_environment.tscn" id="tutorial_isle_env_inst"]
 [ext_resource type="PackedScene" uid="uid://bo7qoslxeh56" path="res://world/regions/tutorial_isle/tutorial_isle_materials.tscn" id="tutorial_isle_mat_inst"]
+[ext_resource type="Script" uid="uid://brx4w4c1b6sny" path="res://entities/characters/animals/wildlife_lod_controller.gd" id="wildlife_lod_script"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_02qvn"]
 resource_name = "BrownDark"
@@ -731,9 +731,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 237.73006, 9.115337, 381.4382)
 day_night_controller_path = NodePath("../Environment/DayNightCycle")
 
-[node name="WildlifeLod" type="Node" parent="."]
+[node name="WildlifeLod" type="Node" parent="." unique_id=230263382]
 script = ExtResource("wildlife_lod_script")
-lod_anchor_path = NodePath("../Player")
 
 [node name="Wildlife" type="Node3D" parent="." unique_id=2010010000]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 218.5, 10, 383)
@@ -751,62 +750,62 @@ facing_yaw_offset = 0.25
 [node name="Chick" parent="Wildlife" unique_id=2010010004 instance=ExtResource("animal_chick")]
 transform = Transform3D(0.20409203, 0, -1.4860506, 0, 1.5, 0, 1.4860506, 0, 0.20409203, -3.2530212, -0.002368927, -5.053253)
 
-[node name="Horse" parent="Wildlife" instance=ExtResource("animal_horse")]
+[node name="Horse" parent="Wildlife" unique_id=1192112681 instance=ExtResource("animal_horse")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.13463, -0.083722, 5.49634)
 
-[node name="Cow" parent="Wildlife" instance=ExtResource("animal_cow")]
+[node name="Cow" parent="Wildlife" unique_id=972359193 instance=ExtResource("animal_cow")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.23796, 0.110021, -2.58606)
 
-[node name="Bull" parent="Wildlife" instance=ExtResource("animal_bull")]
+[node name="Bull" parent="Wildlife" unique_id=962112992 instance=ExtResource("animal_bull")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.87462, 0.11699, -4.72864)
 
-[node name="Goose" parent="Wildlife" instance=ExtResource("animal_goose")]
+[node name="Goose" parent="Wildlife" unique_id=231106028 instance=ExtResource("animal_goose")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.64748, 0.251039, -0.07568)
 
-[node name="Ram" parent="Wildlife" instance=ExtResource("animal_ram")]
+[node name="Ram" parent="Wildlife" unique_id=1274637391 instance=ExtResource("animal_ram")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.56673, -0.640572, 9.93134)
 
-[node name="Sheep" parent="Wildlife" instance=ExtResource("animal_sheep")]
+[node name="Sheep" parent="Wildlife" unique_id=210719398 instance=ExtResource("animal_sheep")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.77821, 0.557463, 7.97226)
 
-[node name="Turkey" parent="Wildlife" instance=ExtResource("animal_turkey")]
+[node name="Turkey" parent="Wildlife" unique_id=998077888 instance=ExtResource("animal_turkey")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.93417, 0.603697, -8.16608)
 
-[node name="Pig" parent="Wildlife" instance=ExtResource("animal_pig")]
+[node name="Pig" parent="Wildlife" unique_id=950403807 instance=ExtResource("animal_pig")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.79716, -0.032627, 3.3746)
 
-[node name="Walleye" parent="Wildlife" instance=ExtResource("fish_walleye")]
+[node name="Walleye" parent="Wildlife" unique_id=1386688933 instance=ExtResource("fish_walleye")]
 transform = Transform3D(-0.010489196, 0, -0.999945, 0, 1, 0, 0.999945, 0, -0.010489196, 2.72769, -9.640836, 52.34012)
 
-[node name="Trout" parent="Wildlife" instance=ExtResource("fish_trout")]
+[node name="Trout" parent="Wildlife" unique_id=1274225545 instance=ExtResource("fish_trout")]
 transform = Transform3D(0.23582064, 0, 0.9717966, 0, 1, 0, -0.9717966, 0, 0.23582064, -6.97334, -9.228998, 52.1257)
 
-[node name="Sturgeon" parent="Wildlife" instance=ExtResource("fish_sturgeon")]
+[node name="Sturgeon" parent="Wildlife" unique_id=2139675324 instance=ExtResource("fish_sturgeon")]
 transform = Transform3D(-0.23514207, 0.028834455, 0.97153324, -8.73843e-08, -0.9995599, 0.029666245, 0.971961, 0.0069756974, 0.23503858, -1.76985, -9.965322, 54.33896)
 
-[node name="Roach" parent="Wildlife" instance=ExtResource("fish_roach")]
-transform = Transform3D(-0.15988122, 1.3977261e-08, -0.9871361, -8.742277e-08, -1, 0, -0.9871361, 8.629819e-08, 0.15988122, 2.59508, -9.4136402, 48.54028)
+[node name="Roach" parent="Wildlife" unique_id=956649580 instance=ExtResource("fish_roach")]
+transform = Transform3D(-0.15988122, 1.3977261e-08, -0.9871361, -8.742277e-08, -1, 0, -0.9871361, 8.629819e-08, 0.15988122, 2.59508, -9.41364, 48.54028)
 
-[node name="Pike" parent="Wildlife" instance=ExtResource("fish_pike")]
-transform = Transform3D(-0.03268415, 0, 0.9994657, 0, 1, 0, -0.9994657, 0, -0.03268415, -1.76253, -9.54909587, 46.20987)
+[node name="Pike" parent="Wildlife" unique_id=1872764899 instance=ExtResource("fish_pike")]
+transform = Transform3D(-0.03268415, 0, 0.9994657, 0, 1, 0, -0.9994657, 0, -0.03268415, -1.76253, -9.549096, 46.20987)
 
-[node name="Perch" parent="Wildlife" instance=ExtResource("fish_perch")]
-transform = Transform3D(0.31404215, 0, 0.94940907, 0, 1, 0, -0.94940907, 0, 0.31404215, -1.9807, -9.5476473, 50.6596)
+[node name="Perch" parent="Wildlife" unique_id=1973830981 instance=ExtResource("fish_perch")]
+transform = Transform3D(0.31404215, 0, 0.94940907, 0, 1, 0, -0.94940907, 0, 0.31404215, -1.9807, -9.547647, 50.6596)
 
-[node name="Largemouth" parent="Wildlife" instance=ExtResource("fish_largemouth")]
-transform = Transform3D(-0.16640738, 0, 0.9860571, 0, 1, 0, -0.9860571, 0, -0.16640738, -5.92441, -9.5019161, 48.96042)
+[node name="Largemouth" parent="Wildlife" unique_id=752096754 instance=ExtResource("fish_largemouth")]
+transform = Transform3D(-0.16640738, 0, 0.9860571, 0, 1, 0, -0.9860571, 0, -0.16640738, -5.92441, -9.501916, 48.96042)
 
-[node name="Drum" parent="Wildlife" instance=ExtResource("fish_drum")]
-transform = Transform3D(0.64187795, 0, 0.7668068, 0, 1, 0, -0.7668068, 0, 0.64187795, -12.8397, -9.4289641, 50.40747)
+[node name="Drum" parent="Wildlife" unique_id=225244325 instance=ExtResource("fish_drum")]
+transform = Transform3D(0.64187795, 0, 0.7668068, 0, 1, 0, -0.7668068, 0, 0.64187795, -12.8397, -9.428964, 50.40747)
 
-[node name="Catfish" parent="Wildlife" instance=ExtResource("fish_catfish")]
-transform = Transform3D(0.23203656, 0, 0.9727071, 0, 1, 0, -0.9727071, 0, 0.23203656, -9.98346, -9.10099584, 47.87027)
+[node name="Catfish" parent="Wildlife" unique_id=196509124 instance=ExtResource("fish_catfish")]
+transform = Transform3D(0.23203656, 0, 0.9727071, 0, 1, 0, -0.9727071, 0, 0.23203656, -9.98346, -9.100996, 47.87027)
 
-[node name="Carp" parent="Wildlife" instance=ExtResource("fish_carp")]
-transform = Transform3D(0.184243, 0, 0.9828807, 0, 1, 0, -0.9828807, 0, 0.184243, -8.00111, -9.2745264, 45.87952)
+[node name="Carp" parent="Wildlife" unique_id=129961400 instance=ExtResource("fish_carp")]
+transform = Transform3D(0.184243, 0, 0.9828807, 0, 1, 0, -0.9828807, 0, 0.184243, -8.00111, -9.274527, 45.87952)
 
-[node name="Bluegill" parent="Wildlife" instance=ExtResource("fish_bluegill")]
-transform = Transform3D(0.06604755, 0, -0.9978165, 0, 1, 0, 0.9978165, 0, 0.06604755, 2.3649, -9.42879975, 45.33658)
+[node name="Bluegill" parent="Wildlife" unique_id=1175918508 instance=ExtResource("fish_bluegill")]
+transform = Transform3D(0.06604755, 0, -0.9978165, 0, 1, 0, 0.9978165, 0, 0.06604755, 2.3649, -9.4288, 45.33658)
 
 [node name="Buildings" parent="." unique_id=576262690 instance=ExtResource("10_gypqo")]
 
