@@ -94,6 +94,7 @@ var _swim_phase: float = 0.0
 var _hb_billboard_tick: int = 0
 var _saved_floor_snap_length: float = 0.18
 var _ground_snap_body_offset: float = 0.0
+var _terrain3d_cache: Terrain3D
 
 
 func _ready() -> void:
@@ -213,10 +214,12 @@ func _aquatic_apply_bob_after_move(delta: float) -> void:
 	global_position.y = _spawn_position.y + bob
 
 
+## Physics ray straight down. With Terrain3D **Dynamic / Game** collision, shapes exist mainly near the camera, so rays often miss terrain far away — see [method _terrain_height_data_at_feet] fallback.
 func _query_ground_y_below() -> float:
 	var w := get_world_3d()
 	if w == null:
-		return NAN
+		return _terrain_height_data_at_feet()
+
 	var from := global_position + Vector3.UP * 5.0
 	var to := global_position + Vector3.DOWN * 50.0
 	var q := PhysicsRayQueryParameters3D.create(from, to)
@@ -228,9 +231,47 @@ func _query_ground_y_below() -> float:
 	q.collision_mask = mask
 	q.exclude = [get_rid()]
 	var r := w.direct_space_state.intersect_ray(q)
-	if r.is_empty():
+	if not r.is_empty():
+		return (r["position"] as Vector3).y
+
+	var data_y := _terrain_height_data_at_feet()
+	if not is_nan(data_y):
+		return data_y
+	return NAN
+
+
+func _get_terrain3d() -> Terrain3D:
+	if _terrain3d_cache != null and is_instance_valid(_terrain3d_cache):
+		return _terrain3d_cache
+	var grouped := get_tree().get_first_node_in_group(&"terrain3d")
+	if grouped is Terrain3D:
+		_terrain3d_cache = grouped as Terrain3D
+		return _terrain3d_cache
+	var root: Node = get_tree().current_scene
+	if root == null:
+		root = get_tree().root
+	var found := _find_first_terrain3d(root)
+	if found != null:
+		_terrain3d_cache = found
+	return found
+
+
+func _find_first_terrain3d(n: Node) -> Terrain3D:
+	if n is Terrain3D:
+		return n as Terrain3D
+	for c in n.get_children():
+		var t := _find_first_terrain3d(c)
+		if t != null:
+			return t
+	return null
+
+
+func _terrain_height_data_at_feet() -> float:
+	var t := _get_terrain3d()
+	if t == null or t.data == null:
 		return NAN
-	return (r["position"] as Vector3).y
+	var h: float = t.data.get_height(global_position)
+	return h
 
 
 ## Far frozen sim: vertical placement from height query (no gravity). Call **after** [method move_and_slide] in the frozen branch so CharacterBody3D finishes its physics step first; snapping before slide fights collision resolution.

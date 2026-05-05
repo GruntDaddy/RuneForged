@@ -15,6 +15,9 @@ const _MAX_TREE_PATCHES := 48
 
 
 func _ready() -> void:
+	if _terrain != null:
+		# Lets gameplay code resolve Terrain3D without paths (see WildAnimal ground queries).
+		_terrain.add_to_group(&"terrain3d")
 	_apply_sea_level()
 	_push_tree_dirt_patches()
 	if Engine.is_editor_hint() and _terrain != null and _terrain.vertex_spacing > 1.0:
