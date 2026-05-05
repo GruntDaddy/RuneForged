@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c7wssr6af3bno"]
 
 [ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" uid="uid://blhyf8nnihvt1" path="res://assets/Poly Animals/uploads_files_2802062_Turkey.fbx" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://blhyf8nnihvt1" path="res://assets/poly_animals/uploads_files_2802062_Turkey.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.3178711

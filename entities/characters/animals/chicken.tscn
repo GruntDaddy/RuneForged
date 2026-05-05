@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b5a04is8xdmy8"]
 
 [ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" uid="uid://boya5uq3imykc" path="res://assets/Poly Animals/uploads_files_2802062_Chicken.fbx" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://boya5uq3imykc" path="res://assets/poly_animals/uploads_files_2802062_Chicken.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.28

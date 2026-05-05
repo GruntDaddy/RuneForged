@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dvxbtapk8fjfm"]
 
 [ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" uid="uid://qdjehcfa7pal" path="res://assets/Poly Animals/uploads_files_2802062_Cow.fbx" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://qdjehcfa7pal" path="res://assets/poly_animals/uploads_files_2802062_Cow.fbx" id="2_model"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2qjb3"]
 size = Vector3(3.1464844, 1.8325806, 1)
