@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cuaylerkag0m2"
+path="res://.godot/imported/footstep_concrete_000.ogg-fae8e13f522a84c433916695063d6f96.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/Impact Sounds/Audio/footstep_concrete_000.ogg"
+dest_files=["res://.godot/imported/footstep_concrete_000.ogg-fae8e13f522a84c433916695063d6f96.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

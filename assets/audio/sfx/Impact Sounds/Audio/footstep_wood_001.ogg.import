@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://b0mxvo6512u2d"
+path="res://.godot/imported/footstep_wood_001.ogg-7126b39e4668b40aa426fb8d3a3ab0ec.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/Impact Sounds/Audio/footstep_wood_001.ogg"
+dest_files=["res://.godot/imported/footstep_wood_001.ogg-7126b39e4668b40aa426fb8d3a3ab0ec.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

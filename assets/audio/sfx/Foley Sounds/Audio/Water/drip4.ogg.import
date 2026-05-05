@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://7u7whfbex8aa"
+path="res://.godot/imported/drip4.ogg-db6e761fd0241e7e3516ba7e140c0b7c.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/Foley Sounds/Audio/Water/drip4.ogg"
+dest_files=["res://.godot/imported/drip4.ogg-db6e761fd0241e7e3516ba7e140c0b7c.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

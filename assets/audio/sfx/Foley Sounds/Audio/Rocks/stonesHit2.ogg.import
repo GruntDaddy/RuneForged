@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://c01kvdgljrvlj"
+path="res://.godot/imported/stonesHit2.ogg-55918e8db571a90df893162adab05c69.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/Foley Sounds/Audio/Rocks/stonesHit2.ogg"
+dest_files=["res://.godot/imported/stonesHit2.ogg-55918e8db571a90df893162adab05c69.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

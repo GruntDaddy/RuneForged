@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://tjhb6sy4btyq"
+path="res://.godot/imported/clothBelt2.ogg-c7dd7e9b88a98b0cfb3e09e8d406640b.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/RPG Audio/Audio/clothBelt2.ogg"
+dest_files=["res://.godot/imported/clothBelt2.ogg-c7dd7e9b88a98b0cfb3e09e8d406640b.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

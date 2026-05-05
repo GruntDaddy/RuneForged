@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cu1rafb4a2jvk"
+path="res://.godot/imported/switch23.ogg-345a3664c1910873149c8201f6e609ac.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/UI Audio/Audio/switch23.ogg"
+dest_files=["res://.godot/imported/switch23.ogg-345a3664c1910873149c8201f6e609ac.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

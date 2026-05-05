@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://k8o0xj6ikcho"
+path="res://.godot/imported/hitHelmet2.ogg-31e2b7b0dd0e841d56b9ec5f4c0dcd8d.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/Foley Sounds/Audio/Swords/hitHelmet2.ogg"
+dest_files=["res://.godot/imported/hitHelmet2.ogg-31e2b7b0dd0e841d56b9ec5f4c0dcd8d.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bdgygpui30lwu"
+path="res://.godot/imported/platesHit9.ogg-5e09961e4127341dab99eeccfa67a9ba.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/Foley Sounds/Audio/Plating/platesHit9.ogg"
+dest_files=["res://.godot/imported/platesHit9.ogg-5e09961e4127341dab99eeccfa67a9ba.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

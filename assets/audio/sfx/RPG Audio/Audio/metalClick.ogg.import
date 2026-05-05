@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://c1e11haieaxne"
+path="res://.godot/imported/metalClick.ogg-9cb2d426c04e43b6583069f442226c0d.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/RPG Audio/Audio/metalClick.ogg"
+dest_files=["res://.godot/imported/metalClick.ogg-9cb2d426c04e43b6583069f442226c0d.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
