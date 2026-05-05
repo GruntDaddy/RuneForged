@@ -244,6 +244,8 @@ func _ready() -> void:
 		camera_3d.h_offset = camera_shoulder_h_offset
 		_melee_cam_shake_rest_pos = camera_3d.position
 	if spring_arm != null:
+		# Ray/shape cast must not hit this CharacterBody (cast originates near the pivot and can start inside the capsule).
+		spring_arm.add_excluded_object(get_rid())
 		spring_arm.spring_length = clampf(spring_arm.spring_length, zoom_min_distance, zoom_max_distance)
 		_zoom_target_distance = spring_arm.spring_length
 	_refresh_interaction_collider_cache(true)

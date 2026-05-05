@@ -56,8 +56,8 @@ const LOD_FROZEN := 2
 @export var aquatic: bool = false
 @export var swim_bob_amplitude: float = 0.06
 @export var swim_bob_speed: float = 1.8
-## When LOD is frozen, land animals raycast down and set Y to hit + this (body origin above ground).
-@export var terrain_snap_y_offset: float = 0.1
+## Extra clearance when snapping by ray/frozen LOD only; keep small so meshes do not hover.
+@export var terrain_snap_y_offset: float = 0.02
 ## Wider floor snap when LOD is low so move_and_slide keeps contact before is_on_floor flaps at range.
 @export var lod_low_floor_snap_length: float = 0.5
 ## Inward/outward margin (m) around the region node's low_sim_radius (see wildlife_lod_controller.gd) so LOW and FROZEN tiers do not flip when distance hovers on the boundary (gravity vs frozen snap causes sink/pop).
@@ -274,14 +274,17 @@ func _terrain_height_data_at_feet() -> float:
 	return h
 
 
-## Keeps land animals from falling through Terrain3D when dynamic collision is not built under them (camera-relative collision). Matches Terrain3D docs: prefer [method Terrain3DData.get_height] over relying on physics alone for distant agents.
+## Last-resort: stop fall-through when there is no floor contact. When [method CharacterBody3D.is_on_floor] is already true, physics has resolved contact — do not raise the body or [Terrain3DData.get_height] + offsets can sit above the collision solve and cause hovering.
 func _clamp_land_above_terrain_heightfield() -> void:
 	if aquatic:
+		return
+	if is_on_floor():
 		return
 	var th := _terrain_height_data_at_feet()
 	if is_nan(th):
 		return
-	var min_origin_y := th + _ground_snap_body_offset + terrain_snap_y_offset
+	# Align body origin to heightfield + capsule bottom only (no terrain_snap_y_offset — that is for ray snap, not anti-fallthrough).
+	var min_origin_y := th + _ground_snap_body_offset
 	if global_position.y < min_origin_y - 1e-4:
 		global_position.y = min_origin_y
 		if velocity.y < 0.0:
