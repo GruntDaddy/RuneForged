@@ -1,36 +1,32 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://dmjc7xfow7wa6"]
 
-[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Rabbit.fbx" id="2_model"]
+[ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" uid="uid://cwqe0m6y4iebi" path="res://assets/Poly Animals/uploads_files_2802062_Rabbit.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.26
-height = 0.54
+radius = 0.15575683
+height = 0.31151366
 
-[node name="Rabbit" type="CharacterBody3D"]
+[node name="Rabbit" type="CharacterBody3D" unique_id=2093697694]
+collision_layer = 2
 script = ExtResource("1_wild")
-species_id = "rabbit"
 max_health = 14.0
+species_id = "rabbit"
 move_speed = 1.35
 roam_radius = 4.8
 idle_time_min = 0.8
 idle_time_max = 2.4
 walk_time_min = 1.0
 walk_time_max = 2.3
-attack_damage = 8.0
 respawn_seconds = 22.0
 visual_mesh_vertical_offset = -0.27
 visual_mesh_yaw_offset_deg = 90.0
-idle_animation = &"Idle"
-walk_animation = &"Walk"
-death_animation = &"Death"
-collision_layer = 2
-collision_mask = 1
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2080107236]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14011079, 0)
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="VisualRoot" type="Node3D" parent="."]
+[node name="VisualRoot" type="Node3D" parent="." unique_id=160530586]
 transform = Transform3D(0.58, 0, 0, 0, 0.58, 0, 0, 0, 0.58, 0, 0, 0)
 
-[node name="RabbitModel" parent="VisualRoot" instance=ExtResource("2_model")]
+[node name="RabbitModel" parent="VisualRoot" unique_id=838317340 instance=ExtResource("2_model")]

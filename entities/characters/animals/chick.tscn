@@ -1,16 +1,17 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://c71f22kgv2gfw"]
 
-[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
-[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Chick.fbx" id="2_model"]
+[ext_resource type="Script" uid="uid://buy60ke6wfvn6" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" uid="uid://bhnnh1gma7hq1" path="res://assets/Poly Animals/uploads_files_2802062_Chick.fbx" id="2_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.20
+radius = 0.2
 height = 0.42
 
-[node name="Chick" type="CharacterBody3D"]
+[node name="Chick" type="CharacterBody3D" unique_id=1315208478]
+collision_layer = 2
 script = ExtResource("1_wild")
-species_id = "chick"
 max_health = 10.0
+species_id = "chick"
 move_speed = 1.2
 roam_radius = 3.4
 idle_time_min = 0.7
@@ -21,16 +22,12 @@ attack_damage = 6.0
 respawn_seconds = 20.0
 visual_mesh_vertical_offset = -0.29
 visual_mesh_yaw_offset_deg = 90.0
-idle_animation = &"Idle"
-walk_animation = &"Walk"
-death_animation = &"Death"
-collision_layer = 2
-collision_mask = 1
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1476545366]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.20324278, 0)
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="VisualRoot" type="Node3D" parent="."]
+[node name="VisualRoot" type="Node3D" parent="." unique_id=1792031852]
 transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 0, 0, 0)
 
-[node name="ChickModel" parent="VisualRoot" instance=ExtResource("2_model")]
+[node name="ChickModel" parent="VisualRoot" unique_id=155213232 instance=ExtResource("2_model")]

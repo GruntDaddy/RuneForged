@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802062_Horse.fbx" id="2_model"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.48
+height = 1.35
+
+[node name="Horse" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_wild")
+max_health = 42.0
+species_id = "horse"
+move_speed = 1.05
+roam_radius = 7.5
+idle_time_min = 1.0
+idle_time_max = 3.2
+walk_time_min = 1.4
+walk_time_max = 3.5
+respawn_seconds = 55.0
+visual_mesh_vertical_offset = -0.35
+visual_mesh_yaw_offset_deg = 90.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+transform = Transform3D(0.85, 0, 0, 0, 0.85, 0, 0, 0, 0.85, 0, 0, 0)
+
+[node name="HorseModel" parent="VisualRoot" instance=ExtResource("2_model")]

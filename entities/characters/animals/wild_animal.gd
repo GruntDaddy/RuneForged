@@ -3,6 +3,10 @@ class_name WildAnimal
 
 const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_entry.gd")
 
+const LOD_FULL := 0
+const LOD_LOW := 1
+const LOD_FROZEN := 2
+
 @export var max_health: float = 20.0
 @export var species_id: String = ""
 @export var move_speed: float = 1.1
@@ -46,6 +50,13 @@ const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_
 ## Yaw offset (degrees) for imported meshes whose authored forward axis is not Godot's -Z.
 @export var visual_mesh_yaw_offset_deg: float = 0.0
 
+## Register with region `WildlifeLodController`; tiers throttle AI + billboard work when far from anchor.
+@export var use_simulation_lod: bool = true
+## Fish / pond wildlife: planar roam only; Y locked to spawn with gentle bob (no gravity).
+@export var aquatic: bool = false
+@export var swim_bob_amplitude: float = 0.06
+@export var swim_bob_speed: float = 1.8
+
 @export var drops: Array[_AnimalDropEntry] = []
 
 var animation_player: AnimationPlayer
@@ -72,9 +83,15 @@ var _wind_push_time_left: float = 0.0
 var _wind_push_dir: Vector3 = Vector3.ZERO
 var _wind_push_speed: float = 0.0
 
+var _lod_tier: int = LOD_FULL
+var _swim_phase: float = 0.0
+var _hb_billboard_tick: int = 0
+
 
 func _ready() -> void:
 	add_to_group("creature")
+	if use_simulation_lod:
+		add_to_group("wildlife_lod")
 	animation_player = _resolve_animation_player()
 	if animation_player:
 		_idle_clip = _resolve_clip_name(idle_animation)
@@ -91,6 +108,63 @@ func _ready() -> void:
 	_set_idle_phase()
 
 
+func apply_lod_distance_squared(dist_sq: float, full_radius_squared: float, low_radius_squared: float) -> void:
+	if not use_simulation_lod:
+		_set_lod_tier(LOD_FULL)
+		return
+	var full_r2 := maxf(0.01, full_radius_squared)
+	var low_r2 := maxf(full_r2 + 0.01, low_radius_squared)
+	if dist_sq <= full_r2:
+		_set_lod_tier(LOD_FULL)
+	elif dist_sq <= low_r2:
+		_set_lod_tier(LOD_LOW)
+	else:
+		_set_lod_tier(LOD_FROZEN)
+
+
+func _set_lod_tier(tier: int) -> void:
+	if _lod_tier == tier:
+		return
+	_lod_tier = tier
+
+
+func _ai_time_scale() -> float:
+	if not use_simulation_lod:
+		return 1.0
+	match _lod_tier:
+		LOD_FULL:
+			return 1.0
+		LOD_LOW:
+			return 0.42
+		_:
+			return 0.0
+
+
+func _move_speed_scale() -> float:
+	if not use_simulation_lod:
+		return 1.0
+	match _lod_tier:
+		LOD_FULL:
+			return 1.0
+		LOD_LOW:
+			return 0.58
+		_:
+			return 0.0
+
+
+func _aquatic_zero_vertical_velocity() -> void:
+	if aquatic:
+		velocity.y = 0.0
+
+
+func _aquatic_apply_bob_after_move(delta: float) -> void:
+	if not aquatic:
+		return
+	_swim_phase += delta * swim_bob_speed
+	var bob := sin(_swim_phase) * swim_bob_amplitude
+	global_position.y = _spawn_position.y + bob
+
+
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
@@ -99,17 +173,39 @@ func _physics_process(delta: float) -> void:
 		var pv := _wind_push_dir * _wind_push_speed
 		velocity.x = pv.x
 		velocity.z = pv.z
-		if not is_on_floor():
-			velocity.y -= _gravity * delta
-		else:
-			velocity.y = 0.0
+		_aquatic_zero_vertical_velocity()
+		if not aquatic:
+			if not is_on_floor():
+				velocity.y -= _gravity * delta
+			else:
+				velocity.y = 0.0
 		move_and_slide()
+		_aquatic_apply_bob_after_move(delta)
 		_update_anim()
-		_update_health_bar_billboard()
+		_maybe_update_health_bar_billboard()
 		_update_health_bar_visibility()
 		return
+
+	if use_simulation_lod and _lod_tier == LOD_FROZEN:
+		_hit_knockback_planar *= exp(-hit_knockback_decay_per_sec * delta)
+		velocity.x = _hit_knockback_planar.x
+		velocity.z = _hit_knockback_planar.z
+		_aquatic_zero_vertical_velocity()
+		if not aquatic:
+			if not is_on_floor():
+				velocity.y -= _gravity * delta
+			else:
+				velocity.y = 0.0
+		move_and_slide()
+		_aquatic_apply_bob_after_move(delta)
+		_play_clip(_idle_clip)
+		_maybe_update_health_bar_billboard()
+		_update_health_bar_visibility()
+		return
+
 	_enforce_spawn_leash()
-	_phase_timeout -= delta
+	var ai_dt := delta * _ai_time_scale()
+	_phase_timeout -= ai_dt
 	_flee_timeout = maxf(0.0, _flee_timeout - delta)
 	if _phase_timeout <= 0.0:
 		if _is_walking:
@@ -117,7 +213,8 @@ func _physics_process(delta: float) -> void:
 		else:
 			_set_walk_phase()
 	var planar_velocity := Vector3.ZERO
-	if _is_walking:
+	var spd_scale := _move_speed_scale()
+	if _is_walking and spd_scale > 1e-6:
 		var to_target := _walk_target - global_position
 		to_target.y = 0.0
 		var len_sq := to_target.length_squared()
@@ -126,11 +223,9 @@ func _physics_process(delta: float) -> void:
 			var target_yaw := atan2(-dir.x, -dir.z) + facing_yaw_offset
 			rotation.y = lerp_angle(rotation.y, target_yaw, clampf(turn_speed * delta, 0.0, 1.0))
 			if len_sq > 0.04:
-				# Move along facing, not straight at the target. Mixing lerped yaw with full path
-				# velocity makes the body slide sideways (strafe) while the walk clip plays forward.
 				var forward := -global_transform.basis.z
 				forward.y = 0.0
-				var speed := move_speed * (flee_speed_multiplier if _flee_timeout > 0.0 else 1.0)
+				var speed := move_speed * spd_scale * (flee_speed_multiplier if _flee_timeout > 0.0 else 1.0)
 				if forward.length_squared() > 1e-8:
 					planar_velocity = forward.normalized() * speed
 				else:
@@ -138,23 +233,33 @@ func _physics_process(delta: float) -> void:
 	_hit_knockback_planar *= exp(-hit_knockback_decay_per_sec * delta)
 	velocity.x = planar_velocity.x + _hit_knockback_planar.x
 	velocity.z = planar_velocity.z + _hit_knockback_planar.z
-	if not is_on_floor():
-		velocity.y -= _gravity * delta
-	else:
-		velocity.y = 0.0
+	_aquatic_zero_vertical_velocity()
+	if not aquatic:
+		if not is_on_floor():
+			velocity.y -= _gravity * delta
+		else:
+			velocity.y = 0.0
 	move_and_slide()
+	_aquatic_apply_bob_after_move(delta)
 	_update_anim()
-	_update_health_bar_billboard()
+	_maybe_update_health_bar_billboard()
 	_update_health_bar_visibility()
 
 
 func _enforce_spawn_leash() -> void:
-	if global_position.y < _spawn_position.y - fall_reset_depth:
-		_reset_to_spawn()
-		return
+	if not aquatic:
+		if global_position.y < _spawn_position.y - fall_reset_depth:
+			_reset_to_spawn()
+			return
 	var max_dist := maxf(roam_radius, 1.0) * maxf(max_spawn_wander_multiplier, 1.5)
-	if global_position.distance_to(_spawn_position) <= max_dist:
-		return
+	if aquatic:
+		var dx := global_position.x - _spawn_position.x
+		var dz := global_position.z - _spawn_position.z
+		if (dx * dx + dz * dz) <= max_dist * max_dist:
+			return
+	else:
+		if global_position.distance_to(_spawn_position) <= max_dist:
+			return
 	# Too far away: force a return leg instead of letting wildlife drift out of play space.
 	_flee_timeout = 0.0
 	_is_walking = true
@@ -444,6 +549,34 @@ func _default_drops_for_species(species: String) -> Array[_AnimalDropEntry]:
 				_make_drop("hide_raw", 0.75, 1, 1),
 				_make_drop("bone", 0.30, 1, 1),
 			]
+		"horse", "cow", "bull":
+			return [
+				_make_drop("meat_raw", 0.82, 2, 4),
+				_make_drop("hide_raw", 0.6, 1, 2),
+				_make_drop("bone", 0.4, 1, 2),
+			]
+		"pig":
+			return [
+				_make_drop("meat_raw", 0.9, 2, 3),
+				_make_drop("bone", 0.25, 1, 1),
+			]
+		"goose", "turkey":
+			return [
+				_make_drop("feather", 0.75, 1, 3),
+				_make_drop("meat_raw", 0.7, 1, 2),
+				_make_drop("bone", 0.2, 1, 1),
+			]
+		"ram", "sheep":
+			return [
+				_make_drop("meat_raw", 0.75, 1, 2),
+				_make_drop("hide_raw", 0.8, 1, 2),
+				_make_drop("bone", 0.25, 1, 1),
+			]
+		"walleye", "trout", "sturgeon", "roach", "pike", "perch", "largemouth", "drum", "catfish", "carp", "bluegill":
+			return [
+				_make_drop("meat_raw", 0.88, 1, 2),
+				_make_drop("bone", 0.1, 0, 1),
+			]
 	return []
 
 
@@ -493,6 +626,19 @@ func _setup_health_bar() -> void:
 	_health_bar_fill.position = Vector3(0.0, 0.0, 0.01)
 	_health_bar_root.add_child(_health_bar_fill)
 	_health_bar_root.visible = false
+
+
+func _maybe_update_health_bar_billboard() -> void:
+	if _health_bar_root == null or _dead:
+		return
+	var must_always := (not use_simulation_lod) or (_lod_tier == LOD_FULL)
+	var recent_hit := Time.get_ticks_msec() <= _health_bar_visible_until_ms
+	if must_always or recent_hit:
+		_update_health_bar_billboard()
+		return
+	_hb_billboard_tick += 1
+	if _hb_billboard_tick % 10 == 0:
+		_update_health_bar_billboard()
 
 
 func _update_health_bar_billboard() -> void:

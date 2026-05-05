@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/characters/animals/wild_animal.gd" id="1_wild"]
+[ext_resource type="PackedScene" path="res://assets/Poly Animals/uploads_files_2802040_Walleye.fbx" id="2_model"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.12
+height = 0.35
+
+[node name="Walleye" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_wild")
+aquatic = true
+species_id = "walleye"
+max_health = 10.0
+move_speed = 0.32
+roam_radius = 4.5
+swim_bob_amplitude = 0.05
+swim_bob_speed = 2.0
+respawn_seconds = 38.0
+visual_mesh_yaw_offset_deg = 90.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 0, 0, 0)
+
+[node name="WalleyeModel" parent="VisualRoot" instance=ExtResource("2_model")]

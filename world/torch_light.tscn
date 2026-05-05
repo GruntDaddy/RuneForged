@@ -1,7 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://bhlydfnakucpj"]
 
-[ext_resource type="Script" path="res://world/torch_light.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://entities/equipment/off_hand/torch.tscn" id="2_torch"]
+[ext_resource type="Script" uid="uid://cyn6svg8ftdk2" path="res://world/torch_light.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://b7pnqddunrelb" path="res://entities/equipment/off_hand/torch.tscn" id="2_torch"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_torch"]
+radius = 0.10546875
+height = 1.2283204
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_flame"]
 direction = Vector3(0, 1, 0)
@@ -29,43 +33,36 @@ color = Color(1, 0.66, 0.25, 1)
 [sub_resource type="QuadMesh" id="QuadMesh_embers"]
 size = Vector2(0.04, 0.04)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_torch"]
-radius = 0.16
-height = 0.8
-
-[node name="TorchLight" type="Node3D"]
+[node name="TorchLight" type="Node3D" unique_id=82612558]
 script = ExtResource("1_script")
 
-[node name="TorchVisual" parent="." instance=ExtResource("2_torch")]
-visible = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="TorchVisual" parent="." unique_id=995736986 instance=ExtResource("2_torch")]
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1893004386]
 collision_layer = 2
-collision_mask = 1
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-position = Vector3(0, 0.45, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=38542151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3405274, 0)
 shape = SubResource("CapsuleShape3D_torch")
 
-[node name="FlameParticles" type="GPUParticles3D" parent="."]
-position = Vector3(0, 0.98, 0)
+[node name="FlameParticles" type="GPUParticles3D" parent="." unique_id=2141212587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.98, 0)
 amount = 30
 lifetime = 0.85
 process_material = SubResource("ParticleProcessMaterial_flame")
 draw_pass_1 = SubResource("QuadMesh_flame")
 
-[node name="EmberParticles" type="GPUParticles3D" parent="."]
-position = Vector3(0, 0.92, 0)
+[node name="EmberParticles" type="GPUParticles3D" parent="." unique_id=1379257446]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, 0)
 amount = 12
 lifetime = 1.2
 process_material = SubResource("ParticleProcessMaterial_embers")
 draw_pass_1 = SubResource("QuadMesh_embers")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
-position = Vector3(0, 0.95, 0)
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=2108262627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
 light_color = Color(1, 0.6, 0.28, 1)
 light_energy = 1.55
-omni_range = 7.8
 shadow_enabled = true
 shadow_bias = 0.08
+omni_range = 7.8
