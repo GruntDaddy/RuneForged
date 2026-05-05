@@ -58,7 +58,7 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_47t6l")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
-radius = 0.23291016
+radius = 0.22949219
 height = 0.8704529
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l44pk"]
@@ -693,7 +693,7 @@ mesh = SubResource("ArrayMesh_0k3so")
 collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Gold_Nuggets/StaticBody3D" unique_id=920001020]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19184875, -0.0540905, -0.8154907)
+transform = Transform3D(-0.15487659, 0.9611964, 0.22828883, -0.8367363, -0.0047683176, -0.54758507, -0.52524817, -0.27582553, 0.80500627, -0.19184875, 0.031154633, -0.8154907)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Stone_Brick" parent="." unique_id=1293744304 instance=ExtResource("58_86282")]

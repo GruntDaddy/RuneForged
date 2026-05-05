@@ -1,19 +1,19 @@
-[gd_scene load_steps=4 format=3 uid="uid://d0akejah1t7y6"]
+[gd_scene format=3 uid="uid://d0akejah1t7y6"]
 
 [ext_resource type="PackedScene" path="res://world/pickups/hatchet_basic_pickup.tscn" id="1_hatchet"]
 [ext_resource type="PackedScene" path="res://world/pickups/tool_torch_pickup.tscn" id="2_torch"]
 [ext_resource type="PackedScene" path="res://world/pickups/tool_torch_burnt_pickup.tscn" id="3_torch_burnt"]
 
-[node name="TutorialIsleGear" type="Node3D"]
+[node name="TutorialIsleGear" type="Node3D" unique_id=356084226]
 
-[node name="Tent" type="Node3D" parent="."]
+[node name="Tent" type="Node3D" parent="." unique_id=1529524785]
 transform = Transform3D(0.74591804, 0, -0.6660379, 0, 1, 0, 0.6660379, 0, 0.74591804, 221.80356, 10.0974045, 374.50104)
 
-[node name="Hatchet_Basic" parent="Tent" instance=ExtResource("1_hatchet")]
-transform = Transform3D(0.27276233, -0.8726878, -0.40499032, 0.794588, 0.4416802, -0.4165914, 0.5424304, -0.20816955, 0.8139012, -1.3019714, 1.3933372, 1.9184265)
+[node name="Hatchet_Basic" parent="Tent" unique_id=2089678677 instance=ExtResource("1_hatchet")]
+transform = Transform3D(0.27276233, -0.8726878, -0.40499032, 0.794588, 0.4416802, -0.4165914, 0.5424304, -0.20816955, 0.8139012, -1.3019714, 2.4038925, 1.9184113)
 
-[node name="torch2" parent="Tent" instance=ExtResource("2_torch")]
+[node name="torch2" parent="Tent" unique_id=999478024 instance=ExtResource("2_torch")]
 transform = Transform3D(-0.011408564, -0.809662, -0.5867853, 0.9956169, 0.04527901, -0.08183446, 0.092827335, -0.5851473, 0.80559653, 1.9367371, -0.20400333, -0.8644409)
 
-[node name="torch_burnt2" parent="Tent" instance=ExtResource("3_torch_burnt")]
+[node name="torch_burnt2" parent="Tent" unique_id=558971390 instance=ExtResource("3_torch_burnt")]
 transform = Transform3D(-0.0049793925, 0.10022345, -0.99495244, -0.99931085, -0.037103962, 0.0012636464, -0.03679003, 0.9942729, 0.10033932, -0.31570435, -0.0743494, 2.2955017)

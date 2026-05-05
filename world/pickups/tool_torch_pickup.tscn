@@ -1,21 +1,21 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://mjq201k51687"]
 
-[ext_resource type="Script" path="res://world/item_pickup_interactable.gd" id="1_pickup_script"]
-[ext_resource type="PackedScene" path="res://assets/kaykit/items/torch.gltf" id="2_visual"]
+[ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="1_pickup_script"]
+[ext_resource type="PackedScene" uid="uid://dxobqkuv2sf3w" path="res://assets/kaykit/items/torch.gltf" id="2_visual"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
-radius = 0.28
-height = 0.8
+radius = 0.14404297
+height = 1.1467774
 
-[node name="ToolTorchPickup" type="Node3D"]
+[node name="ToolTorchPickup" type="Node3D" unique_id=1070452488]
 script = ExtResource("1_pickup_script")
 item_id = "tool_torch"
-[node name="Visual" parent="." instance=ExtResource("2_visual")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="Visual" parent="." unique_id=126650594 instance=ExtResource("2_visual")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1879086332]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=2092006375]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3884278, 0)
 shape = SubResource("CapsuleShape3D_pickup")
