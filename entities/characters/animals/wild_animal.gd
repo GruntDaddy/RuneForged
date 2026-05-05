@@ -247,13 +247,13 @@ func _get_terrain3d() -> Terrain3D:
 	if grouped is Terrain3D:
 		_terrain3d_cache = grouped as Terrain3D
 		return _terrain3d_cache
-	var root: Node = get_tree().current_scene
-	if root == null:
-		root = get_tree().root
-	var found := _find_first_terrain3d(root)
-	if found != null:
-		_terrain3d_cache = found
-	return found
+	for r in [get_tree().current_scene, get_tree().root]:
+		if r != null:
+			var found := _find_first_terrain3d(r)
+			if found != null:
+				_terrain3d_cache = found
+				return found
+	return null
 
 
 func _find_first_terrain3d(n: Node) -> Terrain3D:
@@ -272,6 +272,20 @@ func _terrain_height_data_at_feet() -> float:
 		return NAN
 	var h: float = t.data.get_height(global_position)
 	return h
+
+
+## Keeps land animals from falling through Terrain3D when dynamic collision is not built under them (camera-relative collision). Matches Terrain3D docs: prefer [method Terrain3DData.get_height] over relying on physics alone for distant agents.
+func _clamp_land_above_terrain_heightfield() -> void:
+	if aquatic:
+		return
+	var th := _terrain_height_data_at_feet()
+	if is_nan(th):
+		return
+	var min_origin_y := th + _ground_snap_body_offset + terrain_snap_y_offset
+	if global_position.y < min_origin_y - 1e-4:
+		global_position.y = min_origin_y
+		if velocity.y < 0.0:
+			velocity.y = 0.0
 
 
 ## Far frozen sim: vertical placement from height query (no gravity). Call **after** [method move_and_slide] in the frozen branch so CharacterBody3D finishes its physics step first; snapping before slide fights collision resolution.
@@ -336,6 +350,8 @@ func _physics_process(delta: float) -> void:
 			else:
 				velocity.y = 0.0
 		move_and_slide()
+		if not aquatic:
+			_clamp_land_above_terrain_heightfield()
 		_aquatic_apply_bob_after_move(delta)
 		_update_anim()
 		_maybe_update_health_bar_billboard()
@@ -404,6 +420,8 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.y = 0.0
 	move_and_slide()
+	if not aquatic:
+		_clamp_land_above_terrain_heightfield()
 	_aquatic_apply_bob_after_move(delta)
 	_update_anim()
 	_maybe_update_health_bar_billboard()
