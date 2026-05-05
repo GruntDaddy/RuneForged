@@ -60,6 +60,8 @@ const LOD_FROZEN := 2
 @export var terrain_snap_y_offset: float = 0.1
 ## Wider floor snap when LOD is low so move_and_slide keeps contact before is_on_floor flaps at range.
 @export var lod_low_floor_snap_length: float = 0.5
+## Inward/outward margin (m) around the region node's low_sim_radius (see wildlife_lod_controller.gd) so LOW and FROZEN tiers do not flip when distance hovers on the boundary (gravity vs frozen snap causes sink/pop).
+@export var lod_tier_hysteresis_meters: float = 6.0
 
 @export var drops: Array[_AnimalDropEntry] = []
 
@@ -149,8 +151,8 @@ func apply_lod_frame(
 		var d0 := sqrt(fade_start_squared)
 		var d1 := sqrt(hide_radius_squared)
 		var span := maxf(1e-4, d1 - d0)
-		var tr := clampf((d - d0) / span, 0.0, 1.0)
-		_set_geometry_instance_transparency(tr)
+		var fade_t := clampf((d - d0) / span, 0.0, 1.0)
+		_set_geometry_instance_transparency(fade_t)
 	else:
 		_reset_geometry_instance_transparency()
 
@@ -162,12 +164,36 @@ func apply_lod_frame(
 		return
 	var full_r2 := maxf(0.01, full_radius_squared)
 	var low_r2 := maxf(full_r2 + 0.01, low_radius_squared)
+	_set_lod_tier(_resolve_simulation_lod_tier(dist_sq, full_r2, low_r2))
+
+
+func _resolve_simulation_lod_tier(dist_sq: float, full_r2: float, low_r2: float) -> int:
+	var raw := LOD_FROZEN
 	if dist_sq <= full_r2:
-		_set_lod_tier(LOD_FULL)
+		raw = LOD_FULL
 	elif dist_sq <= low_r2:
-		_set_lod_tier(LOD_LOW)
-	else:
-		_set_lod_tier(LOD_FROZEN)
+		raw = LOD_LOW
+
+	if raw == _lod_tier:
+		return raw
+
+	var dist := sqrt(dist_sq)
+	var low_lin := sqrt(low_r2)
+	var h := clampf(lod_tier_hysteresis_meters, 0.0, low_lin * 0.4)
+
+	# Thaw out of frozen: stay frozen until anchor is clearly inside the low band.
+	if _lod_tier == LOD_FROZEN and raw != LOD_FROZEN:
+		if dist < low_lin - h:
+			return raw
+		return LOD_FROZEN
+
+	# Enter frozen: require passing slightly beyond the low band so grazing the edge does not toggle.
+	if raw == LOD_FROZEN and _lod_tier != LOD_FROZEN:
+		if dist > low_lin + h:
+			return LOD_FROZEN
+		return _lod_tier
+
+	return raw
 
 
 func _rebuild_geometry_fade_cache() -> void:
@@ -365,8 +391,8 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.y = 0.0
 			floor_snap_length = 0.0
-			move_and_slide()
 			_snap_frozen_land_to_ground()
+			move_and_slide()
 		_play_clip(_idle_clip)
 		_maybe_update_health_bar_billboard()
 		_update_health_bar_visibility()
