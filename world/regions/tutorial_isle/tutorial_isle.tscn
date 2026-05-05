@@ -896,6 +896,7 @@ mesh = SubResource("ArrayMesh_4jy7w")
 [node name="StaticBody3D" type="StaticBody3D" parent="Props/ShipWreck/ShipSmall" unique_id=1313434058]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Props/ShipWreck/ShipSmall/StaticBody3D" unique_id=160422774]
+transform = Transform3D(1, 0, 1.4901161e-08, 0, 1, -2.9802322e-08, 0, 2.9802322e-08, 1, 0.0006904602, 0.00061798096, 0.0012207031)
 shape = SubResource("ConcavePolygonShape3D_l6ncw")
 
 [node name="Skeleton_Minion" type="Node3D" parent="Props" unique_id=1724043614]
