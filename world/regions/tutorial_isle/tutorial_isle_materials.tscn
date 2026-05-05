@@ -696,47 +696,127 @@ collision_layer = 2
 transform = Transform3D(-0.15487659, 0.9611964, 0.22828883, -0.8367363, -0.0047683176, -0.54758507, -0.52524817, -0.27582553, 0.80500627, -0.19184875, 0.031154633, -0.8154907)
 shape = SubResource("CapsuleShape3D_pickup_gear")
 
-[node name="Stone_Brick" parent="." unique_id=1293744304 instance=ExtResource("58_86282")]
+[node name="Stone_Brick" type="Node3D" parent="." unique_id=1293744304]
 transform = Transform3D(0.61279875, 0.06702108, -0.7873919, -0.045752555, 0.9977346, 0.049317457, 0.7889134, 0.0058035143, 0.61447686, 214.8533, 9.925252, 366.52216)
+script = ExtResource("70_item_pickup")
+item_id = "stone_block"
+
+[node name="Stone_Brick_Model" parent="Stone_Brick" unique_id=912938471 instance=ExtResource("58_86282")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Stone_Brick" unique_id=912938472]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Stone_Brick/StaticBody3D" unique_id=912938473]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Stone_Chunks_Large" type="Node3D" parent="." unique_id=1035698715]
 transform = Transform3D(-0.9846846, -0.06700143, -0.16095653, -0.06793629, 0.99768966, 0.0003056638, 0.16056418, 0.011235766, -0.9869615, 209.56691, 9.908934, 367.32327)
+script = ExtResource("70_item_pickup")
+item_id = "stone"
+quantity = 6
 
 [node name="Stone_Chunks_Large" type="MeshInstance3D" parent="Stone_Chunks_Large" unique_id=113231908]
 transform = Transform3D(1.0000001, 5.820766e-10, -1.4901161e-08, 1.1641532e-09, 1, 9.313226e-10, -1.4901161e-08, -9.313226e-10, 1, 0.008087158, -0.11878586, -3.0517578e-05)
 material_override = ExtResource("34_gb3ee")
 mesh = SubResource("ArrayMesh_sth0w")
 
+[node name="StaticBody3D" type="StaticBody3D" parent="Stone_Chunks_Large" unique_id=912938474]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Stone_Chunks_Large/StaticBody3D" unique_id=912938475]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.15, -0.05)
+shape = SubResource("CapsuleShape3D_pickup_gear")
+
 [node name="Stone_Chunks_Small" type="Node3D" parent="." unique_id=329965588]
 transform = Transform3D(-0.96760637, 0.20274653, -0.15043859, 0.14171642, 0.9293343, 0.34096056, 0.20893627, 0.308596, -0.9279624, 208.47716, 10.267285, 368.62518)
+script = ExtResource("70_item_pickup")
+item_id = "stone"
+quantity = 3
 
 [node name="Stone_Chunks_Small" type="MeshInstance3D" parent="Stone_Chunks_Small" unique_id=159663051]
 material_override = ExtResource("34_gb3ee")
 mesh = SubResource("ArrayMesh_klqqq")
 
-[node name="log_split2" parent="." unique_id=1702415087 instance=ExtResource("35_3nag6")]
+[node name="StaticBody3D" type="StaticBody3D" parent="Stone_Chunks_Small" unique_id=912938476]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Stone_Chunks_Small/StaticBody3D" unique_id=912938477]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")
+
+[node name="log_split2" type="Node3D" parent="." unique_id=1702415087]
 transform = Transform3D(-0.205894, -0.9632109, -0.17272098, 0.57992566, 0.022067262, -0.8143704, 0.7882218, -0.26783943, 0.55404705, 215.11989, 10.22912, 374.14395)
+script = ExtResource("70_item_pickup")
+item_id = "logs"
+quantity = 2
+
+[node name="LogSplit_Model" parent="log_split2" unique_id=912938478 instance=ExtResource("35_3nag6")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="log_split2" unique_id=912938479]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="log_split2/StaticBody3D" unique_id=912938480]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Wood_Log_Stack" type="Node3D" parent="." unique_id=1869896156]
 transform = Transform3D(0.32409897, 0, 0.94602317, 0, 1, 0, -0.94602317, 0, 0.32409897, 219.4763, 9.899187, 384.65005)
+script = ExtResource("70_item_pickup")
+item_id = "logs"
+quantity = 12
 
 [node name="Wood_Log_Stack" type="MeshInstance3D" parent="Wood_Log_Stack" unique_id=789764523]
 transform = Transform3D(0.8806425, -0.012712765, -0.4736128, 0.028766103, 0.9992304, 0.026666626, 0.47290927, -0.037107706, 0.8803305, 10.7777405, 0, -8.024261)
 mesh = SubResource("ArrayMesh_4o5ii")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Wood_Log_Stack/Wood_Log_Stack" unique_id=923288251]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Wood_Log_Stack/Wood_Log_Stack/StaticBody3D" unique_id=750812743]
 shape = SubResource("ConcavePolygonShape3D_my7f7")
 
-[node name="Wood_Plank_C2" parent="." unique_id=1941831437 instance=ExtResource("66_t2imw")]
+[node name="Wood_Plank_C2" type="Node3D" parent="." unique_id=1941831437]
 transform = Transform3D(0.57653064, 0.00011650509, -0.8170757, -0.028013222, 0.9994149, -0.019623622, 0.8165955, 0.03420247, 0.5761964, 217.54256, 9.930662, 374.88004)
+script = ExtResource("70_item_pickup")
+item_id = "wood_planks"
 
-[node name="Wood_Plank_B2" parent="." unique_id=1266478418 instance=ExtResource("67_81cpb")]
+[node name="Wood_Plank_C2_Model" parent="Wood_Plank_C2" unique_id=912938481 instance=ExtResource("66_t2imw")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Wood_Plank_C2" unique_id=912938482]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wood_Plank_C2/StaticBody3D" unique_id=912938483]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")
+
+[node name="Wood_Plank_B2" type="Node3D" parent="." unique_id=1266478418]
 transform = Transform3D(0.103681296, 0.0005396456, -0.9946105, -0.040732276, 0.99916315, -0.0037039847, 0.9937764, 0.040896792, 0.103616185, 216.86575, 9.984038, 374.3637)
+script = ExtResource("70_item_pickup")
+item_id = "wood_planks"
 
-[node name="Wood_Plank_A2" parent="." unique_id=1320602474 instance=ExtResource("68_kgvtc")]
+[node name="Wood_Plank_B2_Model" parent="Wood_Plank_B2" unique_id=912938484 instance=ExtResource("67_81cpb")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Wood_Plank_B2" unique_id=912938485]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wood_Plank_B2/StaticBody3D" unique_id=912938486]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")
+
+[node name="Wood_Plank_A2" type="Node3D" parent="." unique_id=1320602474]
 transform = Transform3D(-0.5240321, 0.000116511445, -0.85169876, -0.04659222, 0.9984985, 0.02880383, 0.8504233, 0.054776605, -0.5232401, 217.19289, 10.091052, 374.65985)
+script = ExtResource("70_item_pickup")
+item_id = "wood_planks"
+
+[node name="Wood_Plank_A2_Model" parent="Wood_Plank_A2" unique_id=912938487 instance=ExtResource("68_kgvtc")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Wood_Plank_A2" unique_id=912938488]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wood_Plank_A2/StaticBody3D" unique_id=912938489]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+shape = SubResource("CapsuleShape3D_pickup_gear")
 
 [node name="Pallet_Wood_Large" type="Node3D" parent="." unique_id=1329818429]
 transform = Transform3D(-0.17687851, 0, -0.9842328, -0.006888362, 0.9999755, 0.0012379219, 0.98420864, 0.006998714, -0.17687419, 217.83073, 9.85233, 369.41754)
@@ -746,6 +826,7 @@ metadata/_edit_group_ = true
 mesh = SubResource("ArrayMesh_uv18v")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Wood_Large/Pallet_Wood" unique_id=1066354546]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Wood_Large/Pallet_Wood/StaticBody3D" unique_id=507961791]
 shape = SubResource("ConcavePolygonShape3D_ts002")
@@ -753,11 +834,15 @@ shape = SubResource("ConcavePolygonShape3D_ts002")
 [node name="Wood_Planks_Stack_Large2" type="Node3D" parent="Pallet_Wood_Large" unique_id=941718003]
 transform = Transform3D(1, 0, 0.000104665756, 0, 1, 0, -0.000104665756, 0, 1, -0.0047912598, 0.28100204, 0.008605957)
 metadata/_edit_group_ = true
+script = ExtResource("70_item_pickup")
+item_id = "wood_planks"
+quantity = 18
 
 [node name="Wood_Planks_Stack_Large" type="MeshInstance3D" parent="Pallet_Wood_Large/Wood_Planks_Stack_Large2" unique_id=1678663947]
 mesh = SubResource("ArrayMesh_522tj")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Wood_Large/Wood_Planks_Stack_Large2/Wood_Planks_Stack_Large" unique_id=1578584022]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Wood_Large/Wood_Planks_Stack_Large2/Wood_Planks_Stack_Large/StaticBody3D" unique_id=592223978]
 shape = SubResource("ConcavePolygonShape3D_dr1td")
@@ -770,6 +855,7 @@ metadata/_edit_group_ = true
 mesh = SubResource("ArrayMesh_uv18v")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Wood_Medium/Pallet_Wood" unique_id=1174133775]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Wood_Medium/Pallet_Wood/StaticBody3D" unique_id=102134375]
 shape = SubResource("ConcavePolygonShape3D_gb3ee")
@@ -777,11 +863,15 @@ shape = SubResource("ConcavePolygonShape3D_gb3ee")
 [node name="Wood_Planks_Stack_Medium2" type="Node3D" parent="Pallet_Wood_Medium" unique_id=2067453678]
 transform = Transform3D(0.9997733, 0, 0.021291345, 0, 1, 0, -0.021291345, 0, 0.9997733, -0.010070801, 0.28588486, -0.041488647)
 metadata/_edit_group_ = true
+script = ExtResource("70_item_pickup")
+item_id = "wood_planks"
+quantity = 12
 
 [node name="Wood_Planks_Stack_Medium" type="MeshInstance3D" parent="Pallet_Wood_Medium/Wood_Planks_Stack_Medium2" unique_id=1863208944]
 mesh = SubResource("ArrayMesh_01b4u")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Wood_Medium/Wood_Planks_Stack_Medium2/Wood_Planks_Stack_Medium" unique_id=1094693257]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Wood_Medium/Wood_Planks_Stack_Medium2/Wood_Planks_Stack_Medium/StaticBody3D" unique_id=1354254157]
 shape = SubResource("ConcavePolygonShape3D_r0t1d")
@@ -794,17 +884,23 @@ metadata/_edit_group_ = true
 mesh = SubResource("ArrayMesh_uv18v")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Wood_Small/Pallet_Wood" unique_id=884368149]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Wood_Small/Pallet_Wood/StaticBody3D" unique_id=1707244090]
 shape = SubResource("ConcavePolygonShape3D_3nag6")
 
 [node name="Wood_Planks_Stack_Small2" type="Node3D" parent="Pallet_Wood_Small" unique_id=1104331229]
 transform = Transform3D(0.9992223, 0, -0.039434284, 0, 1, 0, 0.039434284, 0, 0.9992223, -0.010528564, 0.28084755, 0.01272583)
+metadata/_edit_group_ = true
+script = ExtResource("70_item_pickup")
+item_id = "wood_planks"
+quantity = 8
 
 [node name="Wood_Planks_Stack_Small" type="MeshInstance3D" parent="Pallet_Wood_Small/Wood_Planks_Stack_Small2" unique_id=1603133731]
 mesh = SubResource("ArrayMesh_n7e6m")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Wood_Small/Wood_Planks_Stack_Small2/Wood_Planks_Stack_Small" unique_id=1894328444]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Wood_Small/Wood_Planks_Stack_Small2/Wood_Planks_Stack_Small/StaticBody3D" unique_id=608381415]
 shape = SubResource("ConcavePolygonShape3D_ado1i")
@@ -817,6 +913,7 @@ metadata/_edit_group_ = true
 mesh = SubResource("ArrayMesh_uv18v")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Stone_Medium/Pallet_Wood" unique_id=1427890883]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Stone_Medium/Pallet_Wood/StaticBody3D" unique_id=1853495132]
 shape = SubResource("ConcavePolygonShape3D_6kivj")
@@ -824,11 +921,15 @@ shape = SubResource("ConcavePolygonShape3D_6kivj")
 [node name="Stone_Bricks_Stack_Medium2" type="Node3D" parent="Pallet_Stone_Medium" unique_id=922019859]
 transform = Transform3D(-0.011187345, 0, -0.9999374, 0, 1, 0, 0.9999374, 0, -0.011187345, 0.0034484863, 0.29297447, -0.01083374)
 metadata/_edit_group_ = true
+script = ExtResource("70_item_pickup")
+item_id = "stone_block"
+quantity = 14
 
 [node name="Stone_Bricks_Stack_Medium" type="MeshInstance3D" parent="Pallet_Stone_Medium/Stone_Bricks_Stack_Medium2" unique_id=853030246]
 mesh = SubResource("ArrayMesh_f4u4n")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Stone_Medium/Stone_Bricks_Stack_Medium2/Stone_Bricks_Stack_Medium" unique_id=1438676579]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Stone_Medium/Stone_Bricks_Stack_Medium2/Stone_Bricks_Stack_Medium/StaticBody3D" unique_id=1743253185]
 shape = SubResource("ConcavePolygonShape3D_7spe6")
@@ -841,6 +942,7 @@ metadata/_edit_group_ = true
 mesh = SubResource("ArrayMesh_uv18v")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Stone_Small/Pallet_Wood" unique_id=36293628]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Stone_Small/Pallet_Wood/StaticBody3D" unique_id=1297225857]
 shape = SubResource("ConcavePolygonShape3D_hloqf")
@@ -848,11 +950,15 @@ shape = SubResource("ConcavePolygonShape3D_hloqf")
 [node name="Stone_Bricks_Stack_Small2" type="Node3D" parent="Pallet_Stone_Small" unique_id=651772753]
 transform = Transform3D(-0.03160265, 0, -0.9995005, 0, 1, 0, 0.9995005, 0, -0.03160265, -0.031951904, 0.29807472, 0.055877686)
 metadata/_edit_group_ = true
+script = ExtResource("70_item_pickup")
+item_id = "stone_block"
+quantity = 8
 
 [node name="Stone_Bricks_Stack_Small" type="MeshInstance3D" parent="Pallet_Stone_Small/Stone_Bricks_Stack_Small2" unique_id=978678692]
 mesh = SubResource("ArrayMesh_hgjcx")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Stone_Small/Stone_Bricks_Stack_Small2/Stone_Bricks_Stack_Small" unique_id=1648697267]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Stone_Small/Stone_Bricks_Stack_Small2/Stone_Bricks_Stack_Small/StaticBody3D" unique_id=485174622]
 shape = SubResource("ConcavePolygonShape3D_2y1ns")
@@ -865,6 +971,7 @@ metadata/_edit_group_ = true
 mesh = SubResource("ArrayMesh_uv18v")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Stone_Large/Pallet_Wood" unique_id=465753542]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Stone_Large/Pallet_Wood/StaticBody3D" unique_id=849841258]
 shape = SubResource("ConcavePolygonShape3D_5nfy5")
@@ -872,11 +979,15 @@ shape = SubResource("ConcavePolygonShape3D_5nfy5")
 [node name="Stone_Bricks_Stack_Large2" type="Node3D" parent="Pallet_Stone_Large" unique_id=1327161303]
 transform = Transform3D(-0.03587094, 0.0048503764, -0.99934465, 0.0003172371, 0.99998814, 0.0048421123, 0.99935645, -0.00014331097, -0.0358721, 0.010650635, 0.29332352, 0.013305664)
 metadata/_edit_group_ = true
+script = ExtResource("70_item_pickup")
+item_id = "stone_block"
+quantity = 24
 
 [node name="Stone_Bricks_Stack_Large" type="MeshInstance3D" parent="Pallet_Stone_Large/Stone_Bricks_Stack_Large2" unique_id=6636383]
 mesh = SubResource("ArrayMesh_ml06k")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Pallet_Stone_Large/Stone_Bricks_Stack_Large2/Stone_Bricks_Stack_Large" unique_id=1937655606]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pallet_Stone_Large/Stone_Bricks_Stack_Large2/Stone_Bricks_Stack_Large/StaticBody3D" unique_id=1286585593]
 shape = SubResource("ConcavePolygonShape3D_djm32")

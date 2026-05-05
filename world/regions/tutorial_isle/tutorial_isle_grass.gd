@@ -4,7 +4,7 @@ extends "res://addons/simplegrasstextured/grass.gd"
 ## Tutorial isle grass: KayKit mesh + texture, SimpleGrassTextured wind shader.
 ## Paint in editor with SimpleGrassTextured tools (airbrush/pencil) after selecting this node.
 
-const _KAYKIT_GLTF := "res://assets/kaykit/Forest & Nature Pack/Color3/Grass_1_D_Singlesided_Color3.gltf"
+const _KAYKIT_GLTF := "res://assets/kaykit/forest_and_nature_pack/Color3/Grass_1_D_Singlesided_Color3.gltf"
 static var _mesh_cache: Mesh
 
 
