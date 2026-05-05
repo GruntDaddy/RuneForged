@@ -101,6 +101,9 @@ var _geometry_fade_cache_dirty: bool = true
 func _ready() -> void:
 	add_to_group("creature")
 	add_to_group("wildlife_lod")
+	# Match Player CharacterBody: tutorial terrain + static meshes use physics layers 1–2.
+	if not aquatic:
+		collision_mask |= 3
 	_saved_collision_layer = collision_layer
 	_saved_collision_mask = collision_mask
 	_saved_floor_snap_length = floor_snap_length
