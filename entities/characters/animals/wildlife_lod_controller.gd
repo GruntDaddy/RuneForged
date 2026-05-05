@@ -21,6 +21,17 @@ var _anchor: Node3D
 var _tier_tick_accum: float = 0.0
 
 
+func _resolve_anchor() -> void:
+	if lod_anchor_path.is_empty():
+		_anchor = null
+		return
+	var node := get_node_or_null(lod_anchor_path)
+	if node is Node3D:
+		_anchor = node as Node3D
+	else:
+		_anchor = null
+
+
 func _ready() -> void:
 	_resolve_anchor()
 
