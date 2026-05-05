@@ -96,6 +96,7 @@ var _saved_collision_layer: int = 0
 var _saved_collision_mask: int = 0
 var _geometry_fade_instances: Array[GeometryInstance3D] = []
 var _geometry_fade_cache_dirty: bool = true
+var _ground_snap_body_offset: float = 0.0
 
 
 func _ready() -> void:
@@ -107,6 +108,7 @@ func _ready() -> void:
 	_saved_collision_layer = collision_layer
 	_saved_collision_mask = collision_mask
 	_saved_floor_snap_length = floor_snap_length
+	_ground_snap_body_offset = _compute_ground_snap_body_offset()
 	animation_player = _resolve_animation_player()
 	if animation_player:
 		_idle_clip = _resolve_clip_name(idle_animation)
@@ -214,6 +216,8 @@ func _set_far_culled(active: bool) -> void:
 		collision_layer = _saved_collision_layer
 		collision_mask = _saved_collision_mask
 		floor_snap_length = _saved_floor_snap_length
+		if not aquatic:
+			_snap_frozen_land_to_ground()
 
 
 func _set_lod_tier(tier: int) -> void:
@@ -285,8 +289,45 @@ func _snap_frozen_land_to_ground() -> void:
 	if is_nan(gy):
 		global_position.y = _spawn_position.y
 	else:
-		global_position.y = gy + terrain_snap_y_offset
+		global_position.y = gy + _ground_snap_body_offset + terrain_snap_y_offset
 	velocity.y = 0.0
+
+
+func _compute_ground_snap_body_offset() -> float:
+	var body_bottom_y := 0.0
+	for c in get_children():
+		if not (c is CollisionShape3D):
+			continue
+		var cs := c as CollisionShape3D
+		if cs.disabled:
+			continue
+		var shape := cs.shape
+		if shape == null:
+			continue
+		var center_y := cs.position.y
+		var bottom_y := center_y
+		if shape is CapsuleShape3D:
+			var cap := shape as CapsuleShape3D
+			bottom_y = center_y - (cap.radius + (cap.height * 0.5))
+		elif shape is SphereShape3D:
+			var sph := shape as SphereShape3D
+			bottom_y = center_y - sph.radius
+		elif shape is CylinderShape3D:
+			var cyl := shape as CylinderShape3D
+			bottom_y = center_y - (cyl.height * 0.5)
+		elif shape is BoxShape3D:
+			var box := shape as BoxShape3D
+			bottom_y = center_y - box.size.y * 0.5
+		elif shape is ConvexPolygonShape3D:
+			var cp := shape as ConvexPolygonShape3D
+			var points := cp.points
+			if not points.is_empty():
+				var min_y := INF
+				for p in points:
+					min_y = minf(min_y, (p as Vector3).y)
+				bottom_y = center_y + min_y
+		body_bottom_y = minf(body_bottom_y, bottom_y)
+	return maxf(0.0, -body_bottom_y)
 
 
 func _physics_process(delta: float) -> void:
