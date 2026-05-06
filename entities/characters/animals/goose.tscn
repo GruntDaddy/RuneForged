@@ -15,7 +15,7 @@ species_id = "goose"
 move_speed = 1.0
 roam_radius = 5.0
 respawn_seconds = 40.0
-visual_mesh_vertical_offset = -0.045
+visual_mesh_vertical_offset = -0.18
 visual_mesh_yaw_offset_deg = 90.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1805063524]

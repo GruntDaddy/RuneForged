@@ -368,17 +368,17 @@ script = ExtResource("wildlife_lod_script")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 218.5, 10, 383)
 
 [node name="Chicken" parent="Wildlife" unique_id=422012867 instance=ExtResource("animal_chicken")]
-transform = Transform3D(0.13606136, 0.008818286, -0.99066114, 0, 0.9999605, 0.008901062, 0.99070054, -0.0012110906, 0.13605598, -4.138916, 0.011161804, -6.320648)
+transform = Transform3D(0.13606136, 0.008818286, -0.99066114, 0, 0.9999605, 0.008901062, 0.99070054, -0.0012110906, 0.13605598, -4.138916, 0, -6.320648)
 
 [node name="Rabbit" parent="Wildlife" unique_id=2093697694 instance=ExtResource("animal_rabbit")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -10.216019, 0.032473564, 1.6967468)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -10.216019, 0, 1.6967468)
 
 [node name="Rooster" parent="Wildlife" unique_id=2061071183 instance=ExtResource("animal_rooster")]
-transform = Transform3D(0.5855678, 0, 1.1043597, 0, 1.25, 0, -1.1043597, 0, 0.5855678, -7.6874695, -0.21831894, 7.576996)
+transform = Transform3D(0.5855678, 0, 1.1043597, 0, 1.25, 0, -1.1043597, 0, 0.5855678, -7.6874695, 0, 7.576996)
 facing_yaw_offset = 0.25
 
 [node name="Chick" parent="Wildlife" unique_id=1315208478 instance=ExtResource("animal_chick")]
-transform = Transform3D(0.20409203, 0, -1.4860506, 0, 1.5, 0, 1.4860506, 0, 0.20409203, -3.2530212, -0.002368927, -5.053253)
+transform = Transform3D(0.20409203, 0, -1.4860506, 0, 1.5, 0, 1.4860506, 0, 0.20409203, -3.2530212, 0, -5.053253)
 
 [node name="Horse" parent="Wildlife" unique_id=794432065 instance=ExtResource("animal_horse")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.134628, -0.17495155, 5.496338)

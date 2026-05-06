@@ -112,6 +112,7 @@ func _ready() -> void:
 		_hit_clip = _resolve_clip_name(hit_animation)
 		_death_clip = _resolve_clip_name(death_animation)
 	_apply_visual_vertical_offset()
+	_snap_land_to_ground_on_spawn()
 	_spawn_position = global_position
 	_health = maxf(1.0, max_health)
 	_setup_health_bar()
@@ -336,6 +337,19 @@ func _compute_ground_snap_body_offset() -> float:
 				bottom_y = center_y + min_y
 		body_bottom_y = minf(body_bottom_y, bottom_y)
 	return maxf(0.0, -body_bottom_y)
+
+
+func _snap_land_to_ground_on_spawn() -> void:
+	if aquatic:
+		return
+	var gy := _query_ground_y_below()
+	if is_nan(gy):
+		var th := _terrain_height_data_at_feet()
+		if is_nan(th):
+			return
+		gy = th
+	global_position.y = gy + _ground_snap_body_offset + terrain_snap_y_offset
+	velocity.y = 0.0
 
 
 func _physics_process(delta: float) -> void:
