@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://bl7e3ql2g5ysu" path="res://assets/kaykit/items/caveman_texture.png" id="1_kjjs1"]
 [ext_resource type="AudioStream" uid="uid://drqg7e63npgt0" path="res://assets/audio/Campfire Loop.mp3" id="sf_audio"]
-[ext_resource type="Material" path="res://shared/materials/campfire_fire_shader_material.tres" id="sf_fire_mat"]
+[ext_resource type="Material" uid="uid://dwvfk2xjkoqsr" path="res://shared/materials/campfire_fire_shader_material.tres" id="sf_fire_mat"]
 [ext_resource type="Script" uid="uid://cqchiskk3d77e" path="res://entities/building_parts/campfire.gd" id="sf_script"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_2xsqb"]
@@ -112,7 +112,7 @@ transform = Transform3D(0.9999441, 0.01053885, -0.00072702765, -0.010500949, 0.9
 script = ExtResource("sf_script")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=281800084]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+transform = Transform3D(1.0000001, -3.3833203e-10, 1.3620593e-08, 1.9645086e-10, 1, -1.1175871e-08, 0, 0, 1.0000002, 0.68357366, 0.58808625, 1.7114747)
 light_color = Color(1, 0.58, 0.26, 1)
 light_energy = 2.35
 shadow_enabled = true
@@ -126,17 +126,12 @@ mesh = SubResource("SphereMesh_2xsqb")
 surface_material_override/0 = ExtResource("sf_fire_mat")
 
 [node name="SmokeParticles" type="GPUParticles3D" parent="." unique_id=1561982051]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
-emitting = false
-amount = 14
-lifetime = 2.5
-explosiveness = 0.08
-randomness = 0.35
+transform = Transform3D(1, -3.3833203e-10, 0, -1.6589183e-09, 1, -1.4901161e-08, 0, 0, 1, 0.62296396, 0.48982918, 1.6525267)
 process_material = SubResource("ParticleProcessMaterial_cfsmoke")
 draw_pass_1 = SubResource("QuadMesh_cfsmoke")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1430938225]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+transform = Transform3D(1.0000001, -3.3833203e-10, 1.3620593e-08, 1.9645086e-10, 1, -1.1175871e-08, 0, 0, 1.0000002, 0.61972624, 0.24091057, 1.6249)
 stream = ExtResource("sf_audio")
 unit_size = 5.0
 max_distance = 24.0
