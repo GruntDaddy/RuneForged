@@ -2419,6 +2419,13 @@ func play_campfire_ignite_animation() -> float:
 	return float(base_character.try_play_shortest_tool_clip(["Lockpick", "Lockpicking"]))
 
 
+func finish_campfire_ignite_animation() -> void:
+	if base_character != null and base_character.has_method("cancel_tool_action"):
+		base_character.cancel_tool_action()
+	velocity.x = 0.0
+	velocity.z = 0.0
+
+
 func _try_interact() -> void:
 	if _gameplay_input_blocked():
 		return

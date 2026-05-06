@@ -263,16 +263,24 @@ func _anim_path(clip: String) -> StringName:
 
 
 func _disable_equipped_tool_colliders() -> void:
-	if hand_r_slot == null:
-		return
-	var bodies: Array[Node] = hand_r_slot.find_children("*", "StaticBody3D", true, false)
-	for n in bodies:
-		var sb := n as StaticBody3D
-		if sb == null:
-			continue
-		# Equipped hand tools are visual props; their physics bodies can push/carry the player capsule.
-		sb.collision_layer = 0
-		sb.collision_mask = 0
+	var roots: Array[Node] = []
+	if hand_r_slot != null:
+		roots.append(hand_r_slot)
+	if hand_l_slot != null:
+		roots.append(hand_l_slot)
+	# Some off-hand props (shields/accessories) are not direct children of hand_l_slot.
+	var skel: Node = get_node_or_null("Rig_Medium/Skeleton3D")
+	if skel != null:
+		roots.append(skel)
+	for root in roots:
+		var bodies: Array[Node] = root.find_children("*", "StaticBody3D", true, false)
+		for n in bodies:
+			var sb := n as StaticBody3D
+			if sb == null:
+				continue
+			# Equipped hand/off-hand props are visual only; their bodies can push the player capsule.
+			sb.collision_layer = 0
+			sb.collision_mask = 0
 
 
 func _rebind_equipment_mesh_skeleton_paths() -> void:

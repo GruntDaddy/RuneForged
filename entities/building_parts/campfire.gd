@@ -242,6 +242,8 @@ func _action_light_fire(player: Node) -> void:
 	if ignite_anim_sec <= 0.0:
 		ignite_anim_sec = 0.65
 	await get_tree().create_timer(ignite_anim_sec).timeout
+	if player != null and player.has_method("finish_campfire_ignite_animation"):
+		player.finish_campfire_ignite_animation()
 	_is_lit = true
 	if _fuel_seconds <= 0.0:
 		_try_consume_next_log()
