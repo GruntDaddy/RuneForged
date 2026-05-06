@@ -422,6 +422,16 @@ func _on_animation_finished(anim_name: StringName) -> void:
 			anim_player.play(_anim_path(_ANIM_SIT_FLOOR_IDLE), 0.08)
 			return
 		_rest_floor_looping = false
+	if _rest_floor_looping and clip_name == _ANIM_SIT_FLOOR_IDLE:
+		if anim_player != null and anim_player.has_animation(_anim_path(_ANIM_SIT_FLOOR_IDLE)):
+			anim_player.speed_scale = 1.0
+			anim_player.play(_anim_path(_ANIM_SIT_FLOOR_IDLE), 0.02)
+			return
+		_rest_floor_looping = false
+	if _rest_floor_looping and clip_name == _ANIM_SIT_FLOOR_STAND_UP:
+		_action_state = ActionState.LOCOMOTION
+		_apply_tool_kind(_player_chosen_tool)
+		return
 	_action_state = ActionState.LOCOMOTION
 	_apply_tool_kind(_player_chosen_tool)
 

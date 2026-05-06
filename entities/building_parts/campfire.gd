@@ -25,8 +25,8 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var ignite_log_cost: int = 0
 @export var fuel_add_log_cost: int = 0
 @export var rest_safe_min_distance: float = 1.35
-@export var rest_safe_max_distance: float = 2.75
-@export var rest_snap_distance: float = 2.2
+@export var rest_safe_max_distance: float = 4.5
+@export var rest_snap_distance: float = 3.7
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
 @export var campfire_recipe_ids: PackedStringArray = PackedStringArray()
 
@@ -243,6 +243,7 @@ func _action_light_fire(player: Node) -> void:
 	if _total_logs_in_slots() <= 0:
 		_notify_player(player, "Add logs before lighting.")
 		return
+	_face_player_toward_fire(player as Node3D)
 	_ignition_in_progress = true
 	var restore_off_hand: Variant = _capture_off_hand_state()
 	_set_temp_tinderbox_off_hand(player)
@@ -615,7 +616,7 @@ func _update_status_label() -> void:
 		return
 	var lines: Array[String] = []
 	if _is_lit:
-		lines.append("Fire: %s" % _format_seconds(int(_fuel_seconds)))
+		lines.append("Fire: %s" % _format_seconds(_total_fire_seconds_remaining()))
 	if not _cook_active.is_empty():
 		var raw_id: String = str(_cook_active.get("id", ""))
 		var raw_name: String = InventoryService.get_item_display_name(raw_id)
@@ -630,6 +631,20 @@ func _format_seconds(seconds: int) -> String:
 		var s: int = seconds % 60
 		return "%dm %02ds" % [m, s]
 	return "%ds" % maxi(0, seconds)
+
+
+func _total_fire_seconds_remaining() -> int:
+	var total: int = maxi(0, int(ceil(_fuel_seconds)))
+	for slot in _log_slots:
+		if slot == null:
+			continue
+		if typeof(slot) != TYPE_DICTIONARY:
+			continue
+		var item_id := str((slot as Dictionary).get("id", ""))
+		if item_id.is_empty():
+			continue
+		total += maxi(0, _get_burn_seconds_for(item_id))
+	return total
 
 
 # ----- Save / load --------------------------------------------------------

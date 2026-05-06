@@ -2180,6 +2180,8 @@ func _is_harvest_tool_action_active() -> bool:
 
 
 func _cancel_harvest_on_movement_input(move_vec: Vector2) -> void:
+	if _campfire_resting:
+		return
 	if not _movement_cancels_harvest(move_vec):
 		return
 	_clear_harvest_interact_approach()
@@ -2188,6 +2190,8 @@ func _cancel_harvest_on_movement_input(move_vec: Vector2) -> void:
 
 
 func _cancel_harvest_on_movement_press() -> void:
+	if _campfire_resting:
+		return
 	_clear_harvest_interact_approach()
 	if _is_mid_harvest_tool_or_chain():
 		_abort_harvest_tool_animation()
