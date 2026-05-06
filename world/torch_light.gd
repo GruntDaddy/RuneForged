@@ -15,7 +15,8 @@ extends Node3D
 @export var flicker_range_amount: float = 0.65
 
 @onready var _light: OmniLight3D = $OmniLight3D
-@onready var _flame: GPUParticles3D = $FlameParticles
+@onready var _fire_mesh: MeshInstance3D = $FireMesh
+@onready var _smoke: GPUParticles3D = $SmokeParticles
 
 var _is_lit: bool = false
 var _fuel_seconds: float = 0.0
@@ -43,7 +44,7 @@ func _process(delta: float) -> void:
 func get_interaction_prompt(_player: Node) -> String:
 	if _is_lit:
 		return "E: Add fuel to torch (+%d log)" % fuel_add_log_cost
-	return "E: Ignite torch (%d log)" % ignite_log_cost
+	return "E: Ignite torch (tinderbox)"
 
 
 func interact(player: Node) -> bool:
@@ -54,8 +55,8 @@ func interact(player: Node) -> bool:
 		_add_fuel_logs(fuel_add_log_cost)
 		_notify_player(player, "Torch fueled (+%ds)." % int(seconds_per_log * float(fuel_add_log_cost)))
 		return true
-	if not _consume_logs(player, ignite_log_cost):
-		_notify_player(player, "Need %d logs to light this torch." % ignite_log_cost)
+	if not _player_has_tinderbox():
+		_notify_player(player, "Need a tinderbox in inventory to ignite this torch.")
 		return false
 	light_torch(initial_logs_on_ignite)
 	_notify_player(player, "Torch lit.")
@@ -76,6 +77,10 @@ func extinguish() -> void:
 	_is_lit = false
 	_save_state()
 	_apply_visuals()
+
+
+func _player_has_tinderbox() -> bool:
+	return int(InventoryService.get_item_count("tinderbox")) > 0
 
 
 func _consume_logs(_player: Node, amount: int) -> bool:
@@ -113,7 +118,10 @@ func _notify_player(player: Node, msg: String) -> void:
 
 func _apply_visuals() -> void:
 	_light.visible = _is_lit
-	_flame.emitting = _is_lit
+	if _fire_mesh != null:
+		_fire_mesh.visible = _is_lit
+	if _smoke != null:
+		_smoke.emitting = _is_lit
 	if _is_lit:
 		_light.light_energy = maxf(0.8, flicker_base_energy)
 		_light.omni_range = maxf(3.0, flicker_range_base)

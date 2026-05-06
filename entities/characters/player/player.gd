@@ -2383,7 +2383,17 @@ func _resolve_interactable_target(collider: Object) -> Object:
 
 
 func _gameplay_input_blocked() -> bool:
-	return game_menu != null and game_menu.visible
+	if game_menu != null and game_menu.visible:
+		return true
+	var cf: Node = get_node_or_null("CampfireInventoryPanel")
+	if cf != null and cf is CanvasLayer and (cf as CanvasLayer).visible:
+		return true
+	return false
+
+
+func notify_torch_lit_changed() -> void:
+	if base_character != null and base_character.has_method("refresh_torch_lit_visuals"):
+		base_character.refresh_torch_lit_visuals()
 
 
 func _try_interact() -> void:

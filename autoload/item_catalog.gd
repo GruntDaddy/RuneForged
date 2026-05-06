@@ -9,6 +9,8 @@ var _warned_missing_icon_for_item: Dictionary = {}  ## item_id -> true
 const _RPG_ICON_BY_ITEM_ID := {
 	"tool_torch": "I_Torch01.png",
 	"tool_torch_burnt": "I_Torch02.png",
+	"tinderbox": "I_Mirror.png",
+	"meat_cooked": "I_C_Meat.png",
 	"logs": "I_Rock05.png",
 	"wood_planks": "E_Wood01.png",
 	"logs_oak": "I_Rock04.png",

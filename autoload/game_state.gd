@@ -242,7 +242,31 @@ func set_equipment_slot(slot: String, item_id: String, count: int = 1) -> void:
 	if norm_id.is_empty():
 		equipment.erase(slot)
 		return
-	equipment[slot] = {"id": norm_id, "count": maxi(1, count)}
+	var entry: Dictionary = {"id": norm_id, "count": maxi(1, count)}
+	if norm_id == "tool_torch":
+		entry["torch_lit"] = false
+	equipment[slot] = entry
+
+
+func set_torch_lit_on_off_hand(lit: bool) -> void:
+	var v: Variant = get_equipment_slot("off_hand")
+	if typeof(v) != TYPE_DICTIONARY:
+		return
+	var d: Dictionary = v
+	if normalize_item_id(str(d.get("id", ""))) != "tool_torch":
+		return
+	d["torch_lit"] = lit
+	equipment["off_hand"] = d
+
+
+func is_off_hand_torch_lit() -> bool:
+	var v: Variant = get_equipment_slot("off_hand")
+	if typeof(v) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = v
+	if normalize_item_id(str(d.get("id", ""))) != "tool_torch":
+		return false
+	return bool(d.get("torch_lit", false))
 
 
 func clear_equipment_slot(slot: String) -> void:
@@ -261,7 +285,10 @@ func _normalize_equipment_map() -> void:
 		if norm_id.is_empty():
 			equipment.erase(slot)
 			continue
-		equipment[key] = {"id": norm_id, "count": maxi(1, int(d.get("count", 1)))}
+		var rebuilt: Dictionary = {"id": norm_id, "count": maxi(1, int(d.get("count", 1)))}
+		if norm_id == "tool_torch" and d.has("torch_lit"):
+			rebuilt["torch_lit"] = bool(d.get("torch_lit", false))
+		equipment[key] = rebuilt
 
 
 func _sync_skill_registry_from_legacy_fields() -> void:

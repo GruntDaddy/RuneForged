@@ -26,4 +26,4 @@ inputs = Array[ExtResource("1_ing")]([SubResource("Resource_ing_burnt_torch"), S
 output_item_id = "tool_torch"
 skill_id = "survival"
 required_skill_level = 5
-station = 1
+station = 3

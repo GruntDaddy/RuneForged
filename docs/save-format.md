@@ -29,7 +29,13 @@
 - **`skill_levels`**: dictionary (`skill_id -> int`) canonical skill registry. Legacy flat fields above remain supported and are synchronized for backward compatibility.
 - **`time_of_day`**: float in `[0, 1)`, used by `DayNightController` to resume cycle position.
 - **`moon_phase`**: float in `[0, 1)`, moon phase offset used by sky shader/controller.
-- **`world_fire_states`**: dictionary keyed by node path (string), values are dictionaries with fire runtime state (e.g. `lit`, `fuel_seconds`).
+- **`world_fire_states`**: dictionary keyed by node path or explicit `fire_state_id` (string), values are dictionaries with fire runtime state:
+  - **`lit`**: bool.
+  - **`fuel_seconds`**: float remaining burn time.
+  - **`logs_burned_counter`**: int for charcoal mint pacing (campfires).
+  - **`log_slots`**: optional array (length 4) of `null` or `{ "id": "logs", "count": int }` per campfire log slot. Missing key loads as empty slots.
+  - **`cook_slots`**: optional array (length 2) of `null` or stack dicts (campfire cooking; `meat_raw`). Missing key loads empty.
+  - **`cook_progress_sec`**: optional array (length 2) of floats 0–`COOK_TIME_SEC` per cooking slot. Missing key defaults to zeros.
 - **`placed_fire_nodes`**: array of dictionaries for player-placed fire props:
   - `region`: string region id.
   - `scene_path`: packed scene path.
@@ -43,7 +49,8 @@ Legacy saves missing these keys default safely in `GameState.from_dict()`.
 
 ## Equipment persistence contract
 
-- `game_state.equipment` remains a dictionary of slots to `{ "id": String, "count": int }`.
+- `game_state.equipment` remains a dictionary of slots to `{ "id": String, "count": int }` plus optional fields when needed:
+  - **`torch_lit`** (optional, `off_hand` only when `id` is `tool_torch`): bool — whether the equipped torch flame is active (lit from a fire). Defaults to false when missing or when swapping to a different torch.
 - Slot writes should go through `GameState.set_equipment_slot(slot, item_id, count)` and clears through `GameState.clear_equipment_slot(slot)` so IDs are normalized consistently.
 - Legacy aliases are normalized during load in `GameState.from_dict()` via `GameState.normalize_item_id(...)`.
   - Current aliases include: `wood -> logs`, `oak_logs -> logs_oak`, `torch -> tool_torch`, `hammer -> tool_hammer`, `chisel -> tool_chisel`.

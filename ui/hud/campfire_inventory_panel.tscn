@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://campfire_inv_panel001"]
+
+[ext_resource type="Script" path="res://ui/hud/campfire_inventory_panel.gd" id="1_script"]
+
+[node name="CampfireInventoryPanel" type="CanvasLayer"]
+layer = 52
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.55)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(420, 280)
+mouse_filter = 0
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/PanelContainer"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/Margin"]
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox"]
+text = "Campfire"
+horizontal_alignment = 1
+
+[node name="HintLabel" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox"]
+autowrap_mode = 2
+
+[node name="LogLabel" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox"]
+text = "Logs (click slot: take → add from bag)"
+
+[node name="LogRow" type="GridContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+columns = 4
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="CookLabel" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox"]
+text = "Cooking (raw meat only; click to add/take)"
+
+[node name="CookRow" type="GridContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+columns = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="DepositRow" type="HBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+theme_override_constants/separation = 8
+
+[node name="DepositLogButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/DepositRow"]
+text = "Deposit 1 log"
+
+[node name="TakeLogButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/DepositRow"]
+text = "Take 1 log"
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+theme_override_constants/separation = 8
+
+[node name="LightButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/ButtonRow"]
+text = "Light fire"
+
+[node name="RestButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/ButtonRow"]
+text = "Rest / Save"
+
+[node name="CloseButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/ButtonRow"]
+text = "Close"

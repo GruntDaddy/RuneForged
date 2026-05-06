@@ -3,6 +3,7 @@ extends Node3D
 
 const _CombatFormulaService = preload("res://systems/combat/combat_formula_service.gd")
 const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
+const _TORCH_FIRE_MAT: Material = preload("res://shared/materials/campfire_fire_shader_material.tres")
 
 ## Locomotion + one-shot tool / survival clips share the same AnimationPlayer library **Base**.
 ## Action state machine: locomotion updates are skipped while a tool/survival clip is playing.
@@ -212,6 +213,8 @@ func _ready() -> void:
 	_rebind_equipment_mesh_skeleton_paths()
 	_apply_armor_visibility()
 	_apply_tool_kind(_player_chosen_tool)
+	_ensure_torch_addon_fire_nodes()
+	_apply_torch_addon_fire()
 
 
 func _validate_runtime_contract() -> void:
@@ -913,6 +916,62 @@ func _set_weapon_meshes_visible(enabled: bool) -> void:
 		bow_long_left_mesh.visible = enabled
 
 
+func refresh_torch_lit_visuals() -> void:
+	_apply_torch_addon_fire()
+
+
+func _ensure_torch_addon_fire_nodes() -> void:
+	if torch_mesh == null:
+		return
+	if torch_mesh.get_node_or_null("TorchAddonFire") != null:
+		return
+	var qfire := QuadMesh.new()
+	qfire.size = Vector2(0.26, 0.38)
+	var fire_mi := MeshInstance3D.new()
+	fire_mi.name = "TorchAddonFire"
+	fire_mi.mesh = qfire
+	var fm: Material = _TORCH_FIRE_MAT.duplicate()
+	fire_mi.material_override = fm
+	fire_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	fire_mi.transform = Transform3D(Basis(), Vector3(0, 0.82, 0))
+	torch_mesh.add_child(fire_mi)
+	var smoke := GPUParticles3D.new()
+	smoke.name = "TorchAddonSmoke"
+	smoke.amount = 10
+	smoke.lifetime = 1.6
+	smoke.explosiveness = 0.05
+	smoke.randomness = 0.35
+	smoke.emitting = false
+	var pm := ParticleProcessMaterial.new()
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 16.0
+	pm.initial_velocity_min = 0.05
+	pm.initial_velocity_max = 0.22
+	pm.gravity = Vector3(0, -0.1, 0)
+	pm.scale_min = 0.04
+	pm.scale_max = 0.14
+	pm.color = Color(0.35, 0.35, 0.35, 0.42)
+	smoke.process_material = pm
+	var qsm := QuadMesh.new()
+	qsm.size = Vector2(0.14, 0.14)
+	smoke.draw_pass_1 = qsm
+	smoke.transform = Transform3D(Basis(), Vector3(0, 0.92, 0))
+	torch_mesh.add_child(smoke)
+
+
+func _apply_torch_addon_fire() -> void:
+	if torch_mesh == null:
+		return
+	_ensure_torch_addon_fire_nodes()
+	var fire_mi := torch_mesh.get_node_or_null("TorchAddonFire") as MeshInstance3D
+	var smoke := torch_mesh.get_node_or_null("TorchAddonSmoke") as GPUParticles3D
+	var show_fire: bool = torch_mesh.visible and GameState.is_off_hand_torch_lit()
+	if fire_mi != null:
+		fire_mi.visible = show_fire
+	if smoke != null:
+		smoke.emitting = show_fire
+
+
 func _apply_off_hand_visibility() -> void:
 	var off_id := _normalize_item_id(_equipped_off_hand_item_id)
 	if torch_mesh != null:
@@ -931,6 +990,7 @@ func _apply_off_hand_visibility() -> void:
 		shield_square_iron_mesh.visible = off_id == "shield_square_iron"
 	if shield_wooden_mesh != null:
 		shield_wooden_mesh.visible = off_id == "shield_wooden"
+	_apply_torch_addon_fire()
 
 
 func _normalize_item_id(id: String) -> String:
