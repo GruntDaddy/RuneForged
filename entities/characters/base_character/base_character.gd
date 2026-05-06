@@ -791,6 +791,35 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 	return true
 
 
+## Plays the shortest available clip from `clip_candidates` as a one-shot tool action.
+## Returns the chosen clip duration in seconds, or `-1.0` when no clip could be played.
+func try_play_shortest_tool_clip(clip_candidates: Array[String]) -> float:
+	if anim_player == null:
+		return -1.0
+	if is_animation_locked():
+		return -1.0
+	var picked_path := ""
+	var picked_len := INF
+	for clip in clip_candidates:
+		var path := _anim_path(clip)
+		if not anim_player.has_animation(path):
+			continue
+		var anim_res: Animation = anim_player.get_animation(path)
+		if anim_res == null:
+			continue
+		var dur := maxf(0.01, anim_res.length)
+		if dur < picked_len:
+			picked_len = dur
+			picked_path = path
+	if picked_path.is_empty():
+		return -1.0
+	_apply_tool_kind(_player_chosen_tool)
+	_action_state = ActionState.TOOL_ACTION
+	anim_player.speed_scale = 1.0
+	anim_player.play(picked_path, 0.12)
+	return picked_len
+
+
 func get_hand_slot(is_right: bool = true) -> BoneAttachment3D:
 	return hand_r_slot if is_right else hand_l_slot
 

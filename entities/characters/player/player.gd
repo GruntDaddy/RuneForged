@@ -2411,6 +2411,14 @@ func notify_torch_lit_changed() -> void:
 		base_character.refresh_torch_lit_visuals()
 
 
+func play_campfire_ignite_animation() -> float:
+	if base_character == null:
+		return -1.0
+	if not base_character.has_method("try_play_shortest_tool_clip"):
+		return -1.0
+	return float(base_character.try_play_shortest_tool_clip(["Lockpick", "Lockpicking"]))
+
+
 func _try_interact() -> void:
 	if _gameplay_input_blocked():
 		return

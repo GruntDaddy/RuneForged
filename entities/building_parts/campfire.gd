@@ -48,6 +48,7 @@ var _log_slots: Array = []
 var _cook_active: Dictionary = {}
 var _cook_progress_sec: float = 0.0
 var _cook_auto_enabled: bool = false
+var _ignition_in_progress: bool = false
 
 var _legacy_log_spill: Dictionary = {}
 var _low_fuel_warned: bool = false
@@ -156,7 +157,7 @@ func get_interaction_prompts(player: Node) -> Array:
 		prompts.append({"action": "interact", "label": "Light Torch"})
 	elif _can_add_log_now():
 		prompts.append({"action": "interact", "label": "Add Logs"})
-	if not _is_lit and _player_has_tinderbox_equipped():
+	if not _is_lit and _player_has_tinderbox_in_inventory():
 		if _total_logs_in_slots() > 0:
 			prompts.append({"action": "interact_secondary", "label": "Light Fire"})
 		else:
@@ -226,16 +227,27 @@ func _action_add_log(player: Node) -> void:
 func _action_light_fire(player: Node) -> void:
 	if _is_lit:
 		return
-	if not _player_has_tinderbox_equipped():
-		_notify_player(player, "Equip a tinderbox to light the fire.")
+	if _ignition_in_progress:
+		return
+	if not _player_has_tinderbox_in_inventory():
+		_notify_player(player, "You need a tinderbox in your inventory to light the fire.")
 		return
 	if _total_logs_in_slots() <= 0:
 		_notify_player(player, "Add logs before lighting.")
 		return
+	_ignition_in_progress = true
+	var restore_off_hand: Variant = _capture_off_hand_state()
+	_set_temp_tinderbox_off_hand(player)
+	var ignite_anim_sec := _play_ignite_animation(player)
+	if ignite_anim_sec <= 0.0:
+		ignite_anim_sec = 0.65
+	await get_tree().create_timer(ignite_anim_sec).timeout
 	_is_lit = true
 	if _fuel_seconds <= 0.0:
 		_try_consume_next_log()
 	_low_fuel_warned = false
+	_restore_off_hand_state(player, restore_off_hand)
+	_ignition_in_progress = false
 	_save_state()
 	_apply_visuals()
 	_notify_player(player, "Campfire lit.")
@@ -297,17 +309,45 @@ func _player_has_unlit_torch_equipped() -> bool:
 	return not bool(off.get("torch_lit", false))
 
 
-func _player_has_tinderbox_equipped() -> bool:
-	var gs: Node = get_node_or_null("/root/GameState")
-	if gs == null:
-		return false
-	for slot in ["main_hand", "off_hand"]:
-		var e: Variant = gs.get_equipment_slot(slot)
-		if typeof(e) != TYPE_DICTIONARY:
-			continue
-		if str((e as Dictionary).get("id", "")) == "tinderbox":
-			return true
-	return false
+func _player_has_tinderbox_in_inventory() -> bool:
+	return int(InventoryService.get_item_count("tinderbox")) > 0
+
+
+func _capture_off_hand_state() -> Variant:
+	var off: Variant = GameState.get_equipment_slot("off_hand")
+	if typeof(off) == TYPE_DICTIONARY:
+		return (off as Dictionary).duplicate(true)
+	return null
+
+
+func _set_temp_tinderbox_off_hand(player: Node) -> void:
+	GameState.set_equipment_slot("off_hand", "tinderbox", 1)
+	_sync_player_equipment_visuals(player)
+
+
+func _restore_off_hand_state(player: Node, state: Variant) -> void:
+	if typeof(state) == TYPE_DICTIONARY:
+		GameState.equipment["off_hand"] = (state as Dictionary).duplicate(true)
+	else:
+		GameState.clear_equipment_slot("off_hand")
+	_sync_player_equipment_visuals(player)
+	if player != null and player.has_method("notify_torch_lit_changed"):
+		player.notify_torch_lit_changed()
+
+
+func _sync_player_equipment_visuals(player: Node) -> void:
+	if player == null:
+		return
+	if player.has_method("_sync_equipped_hand_visuals"):
+		player.call("_sync_equipped_hand_visuals")
+
+
+func _play_ignite_animation(player: Node) -> float:
+	if player == null:
+		return -1.0
+	if player.has_method("play_campfire_ignite_animation"):
+		return float(player.call("play_campfire_ignite_animation"))
+	return -1.0
 
 
 func _can_add_log_now() -> bool:
