@@ -1,12 +1,13 @@
-[gd_scene format=4 uid="uid://b31arwal73ifg"]
+[gd_scene format=4 uid="uid://bcaukdul404il"]
 
-[ext_resource type="Texture2D" uid="uid://c8x1wyidgota" path="res://assets/kaykit/resources/resource_bits_texture.png" id="1_kjpj2"]
-[ext_resource type="Material" uid="uid://ca32d1pa2xnx1" path="res://shared/materials/Copper.tres" id="2_cpq15"]
-[ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="pickup_script"]
+[ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="1_ppipl"]
+[ext_resource type="Material" uid="uid://c4y6bafohjd1k" path="res://shared/materials/Tin.tres" id="2_3p3nl"]
+[ext_resource type="Texture2D" uid="uid://c8x1wyidgota" path="res://assets/kaykit/resources/resource_bits_texture.png" id="3_jxxmn"]
+[ext_resource type="Material" uid="uid://ca32d1pa2xnx1" path="res://shared/materials/Copper.tres" id="4_7qai3"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l44pk"]
 resource_name = "resource"
-albedo_texture = ExtResource("1_kjpj2")
+albedo_texture = ExtResource("3_jxxmn")
 roughness = 0.5
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_vdob3"]
@@ -43,23 +44,24 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_vdob3")
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
-radius = 0.35839844
-height = 0.7167969
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
+radius = 0.32128906
+height = 0.74316406
 
-[node name="Copper_Ore" type="Node3D" unique_id=1352546698]
-transform = Transform3D(0.82674164, 0.088164136, 0.55563116, -0.0731739, 0.99610597, -0.049178246, -0.5578033, 0, 0.8299736, 0, 0, 0)
-script = ExtResource("pickup_script")
-item_id = "ore_copper"
+[node name="Tin_Nuggets" type="Node3D" unique_id=1571568342]
+transform = Transform3D(0.8267415, 0.08816414, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.55780315, 0, 0.8299735, 0, 0, 0)
+script = ExtResource("1_ppipl")
+item_id = "ore_tin"
 
-[node name="Copper_Nuggets" type="MeshInstance3D" parent="." unique_id=888140074]
-transform = Transform3D(0.99630916, -0.08260811, 0.023344755, 0.08458624, 0.99108994, -0.10289218, -0.014636874, 0.104486875, 0.99441874, 1.1715698, -0.07606506, 0.8343811)
+[node name="Tin_Nuggets" type="MeshInstance3D" parent="." unique_id=1605742064]
+transform = Transform3D(0.9963091, -0.0826081, 0.023344666, 0.08458624, 0.9910897, -0.10289217, -0.014636755, 0.10448684, 0.99441856, 0.833725, -0.008684158, 0.28042603)
+material_override = ExtResource("2_3p3nl")
 mesh = SubResource("ArrayMesh_kuuk4")
-surface_material_override/0 = ExtResource("2_cpq15")
+surface_material_override/0 = ExtResource("4_7qai3")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=662007162]
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=622276858]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=281362378]
-transform = Transform3D(1, 0, 4.4703484e-07, 2.0653827e-07, 1, 6.81718e-09, -2.9802322e-08, 0, 1, 1.2203577, -0.03886938, 0.8237146)
-shape = SubResource("CapsuleShape3D_pickup")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=700907126]
+transform = Transform3D(0.9999931, 2.5404364e-07, -2.8908253e-06, -2.2351742e-07, 0.99999285, 1.8626451e-08, 4.976988e-06, -7.050896e-08, 0.9999915, 0.8686517, 0.02862931, 0.22357178)
+shape = SubResource("CapsuleShape3D_pickup_gear")

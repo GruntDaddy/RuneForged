@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://d2cl2nb7ih1bb"]
+
+[ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="1_vbhx8"]
+[ext_resource type="PackedScene" uid="uid://qqwf5qhal6v8" path="res://assets/kaykit/resources/Wood_Plank_C.gltf" id="2_a8nu6"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
+radius = 0.22949219
+height = 1.6145859
+
+[node name="Wood_Plank_C2" type="Node3D" unique_id=2126650943]
+transform = Transform3D(0.57653064, 0.00011650509, -0.8170757, -0.028013222, 0.9994149, -0.019623622, 0.8165955, 0.03420247, 0.5761964, 0, 0, 0)
+script = ExtResource("1_vbhx8")
+item_id = "wood_planks"
+
+[node name="Wood_Plank_C2_Model" parent="." unique_id=1941831437 instance=ExtResource("2_a8nu6")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1655121286]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1999356810]
+transform = Transform3D(0.7877502, 0.031040639, 0.6152262, -0.6149654, -0.018372718, 0.7883469, 0.035776794, -0.9993553, 0.0046190023, 0.0012059703, 0.032215353, 0.005486573)
+shape = SubResource("CapsuleShape3D_pickup_gear")

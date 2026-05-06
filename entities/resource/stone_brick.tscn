@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://d1irxsv7w24c7"]
+
+[ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="1_5dyob"]
+[ext_resource type="PackedScene" uid="uid://bigov83wpwqt" path="res://assets/kaykit/resources/Stone_Brick.gltf" id="2_or8xx"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
+radius = 0.22949219
+height = 0.8704529
+
+[node name="Stone_Brick" type="Node3D" unique_id=1308947424]
+transform = Transform3D(0.61279875, 0.06702108, -0.7873919, -0.045752555, 0.9977346, 0.049317457, 0.7889134, 0.0058035143, 0.61447686, 0, 0, 0)
+script = ExtResource("1_5dyob")
+item_id = "stone_block"
+
+[node name="Stone_Brick_Model" parent="." unique_id=1293744304 instance=ExtResource("2_or8xx")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1768728514]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1744348738]
+transform = Transform3D(0.83650887, 0.012502223, 0.54781127, -0.5476604, -0.013641081, 0.8365894, 0.017931938, -0.99982876, -0.0045639277, 0.0017547163, 0.18173191, -0.001876178)
+shape = SubResource("CapsuleShape3D_pickup_gear")

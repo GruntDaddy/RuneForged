@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://blv2c22bxqknw"]
+
+[ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="1_up5ie"]
+[ext_resource type="PackedScene" uid="uid://bs2abg22r2s2n" path="res://assets/kaykit/items/log_split.gltf" id="2_gxoj0"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup_gear"]
+radius = 0.12158203
+height = 1.1107597
+
+[node name="log_split2" type="Node3D" unique_id=13394712]
+transform = Transform3D(-0.205894, -0.9632109, -0.17272098, 0.57992566, 0.022067262, -0.8143704, 0.7882218, -0.26783943, 0.55404705, 0, 0, 0)
+script = ExtResource("1_up5ie")
+item_id = "logs"
+quantity = 2
+
+[node name="LogSplit_Model" parent="." unique_id=1702415087 instance=ExtResource("2_gxoj0")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1345894014]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1327214188]
+transform = Transform3D(1, 0, -2.9802322e-08, 0, 1, 0, -2.9802322e-08, 0, 1, -0.07719597, -0.022735396, 0.10840375)
+shape = SubResource("CapsuleShape3D_pickup_gear")

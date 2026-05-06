@@ -4,10 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://c8x1wyidgota" path="res://assets/kaykit/resources/resource_bits_texture.png" id="2_jlrlg"]
 [ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="pickup_script"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
-radius = 0.35
-height = 0.85
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_el0sd"]
 resource_name = "resource"
 albedo_texture = ExtResource("2_jlrlg")
@@ -47,6 +43,10 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_47t6l")
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
+radius = 0.22705078
+height = 0.8669922
+
 [node name="Copper_Bar" type="Node3D" unique_id=940789391]
 transform = Transform3D(0.7266227, 0, -0.6870368, 0, 1, 0, 0.6870368, 0, 0.7266227, 0, 0, 0)
 script = ExtResource("pickup_script")
@@ -56,9 +56,9 @@ item_id = "ingot_copper"
 material_override = ExtResource("1_meawg")
 mesh = SubResource("ArrayMesh_30hgv")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=677474385]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1151130064]
+transform = Transform3D(0.940336, 0.039111912, 0.33799314, -0.3400699, 0.075848944, 0.9373364, 0.011024535, -0.99635184, 0.08462426, 0.0010088836, 0.09075075, -0.0056558372)
 shape = SubResource("CapsuleShape3D_pickup")

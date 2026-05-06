@@ -4,10 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://c8x1wyidgota" path="res://assets/kaykit/resources/resource_bits_texture.png" id="2_7roso"]
 [ext_resource type="Script" uid="uid://c7w7avlamv3un" path="res://world/item_pickup_interactable.gd" id="pickup_script"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
-radius = 0.48
-height = 0.55
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stebo"]
 resource_name = "resource"
 albedo_texture = ExtResource("2_7roso")
@@ -47,18 +43,23 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_8fclh")
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
+radius = 0.3491211
+height = 0.6982422
+
 [node name="Iron_Nuggets" type="Node3D" unique_id=1402091565]
 transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 0, 0, 0)
 script = ExtResource("pickup_script")
 item_id = "ore_iron"
 
 [node name="Iron_Nuggets" type="MeshInstance3D" parent="." unique_id=321495821]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.032421384, 0, 0.046019886)
 material_override = ExtResource("1_pltbi")
 mesh = SubResource("ArrayMesh_0k3so")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1037977035]
 collision_layer = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.18, 0.65)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1603922598]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03810813, 0.09722683, 0.007564744)
 shape = SubResource("CapsuleShape3D_pickup")
