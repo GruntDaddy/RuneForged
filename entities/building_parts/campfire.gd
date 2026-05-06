@@ -26,7 +26,7 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var fuel_add_log_cost: int = 0
 @export var rest_safe_min_distance: float = 1.35
 @export var rest_safe_max_distance: float = 2.75
-@export var rest_snap_distance: float = 1.8
+@export var rest_snap_distance: float = 2.2
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
 @export var campfire_recipe_ids: PackedStringArray = PackedStringArray()
 
@@ -324,13 +324,12 @@ func _place_and_face_player_for_rest(player: Node) -> void:
 		away.y = 0.0
 		if away.length_squared() < 0.001:
 			away = Vector3(0.0, 0.0, 1.0)
-		dist = away.length()
-	var dir := away / maxf(0.001, dist)
-	var should_snap: bool = dist < rest_safe_min_distance or dist > rest_safe_max_distance
-	if should_snap:
-		var target: Vector3 = global_position + dir * rest_snap_distance
-		target.y = p3.global_position.y
-		p3.global_position = target
+	var dir := away.normalized()
+	# Always place on a safe radius before sit so root-motion clips cannot start inside the fire.
+	var snap_dist := clampf(rest_snap_distance, rest_safe_min_distance, rest_safe_max_distance)
+	var target: Vector3 = global_position + dir * snap_dist
+	target.y = p3.global_position.y
+	p3.global_position = target
 	_face_player_toward_fire(p3)
 
 

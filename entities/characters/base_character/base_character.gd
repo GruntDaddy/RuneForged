@@ -70,6 +70,7 @@ enum ActionState {
 @onready var tacklebox_hand_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tacklebox
 @onready var torch_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Torch
 @onready var chisel_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Chisel
+@onready var tinderbox_mesh: Node3D = $Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft/Tinderbox
 @onready var shield_bronze_mesh: Node3D = get_node_or_null(
 	"Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield/Shield_Kite_Bronze"
 ) as Node3D
@@ -1066,6 +1067,8 @@ func _apply_off_hand_visibility() -> void:
 		chisel_mesh.visible = off_id == "tool_chisel"
 	if tacklebox_hand_mesh != null:
 		tacklebox_hand_mesh.visible = off_id == "tool_tacklebox"
+	if tinderbox_mesh != null:
+		tinderbox_mesh.visible = off_id == "tinderbox" or off_id == "tool_tinderbox"
 	if shield_bronze_mesh != null:
 		shield_bronze_mesh.visible = off_id == "shield_bronze"
 	if shield_iron_mesh != null:
