@@ -10,6 +10,19 @@
 - Optional authoring fields on `ItemData`:
   - `pickup_scene_path`: explicit world scene for drop/place behavior (preferred over hardcoded lookup when present).
   - `use_effect_id` and `use_cooldown_ms`: data-driven item-use effect hooks (currently used by runes).
+  - `burn_seconds` (int, default `0`): fuel value when consumed by fire-based stations (campfire). `0` means the item is not a fuel. Canonical fuels: `logs` = `120`, `logs_oak` = `240`.
+  - `cook_difficulty` (float `0..1`, default `0.0`): chance of producing the burned variant instead of the cooked variant when auto-cooked over a campfire. `0.0` means the item is not cookable. Canonical cookables: `meat_raw` = `0.05`, `fish_raw` = `0.15`.
+  - `cooked_id` (string, default empty): item id produced on a successful cook. Required for cookable items.
+  - `burned_id` (string, default empty): item id produced on a failed cook (burn). If empty, a burn roll is treated as a successful cook.
+
+## Cookable items (campfire conversion)
+
+| Raw id      | Cooked id     | Burned id     | `cook_difficulty` |
+|-------------|---------------|---------------|-------------------|
+| `meat_raw`  | `meat_cooked` | `meat_burned` | `0.05`            |
+| `fish_raw`  | `fish_cooked` | `fish_burned` | `0.15`            |
+
+`meat_burned` and `fish_burned` are consumable food items; balance/effect tuning is intentionally deferred. Fish raw/cooked/burned items currently have no world drop source; fishing integration is tracked separately.
 
 ## Stacking (`ItemData.max_stack`)
 

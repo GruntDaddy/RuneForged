@@ -1,20 +1,22 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://bh334jdpuam8t"]
 
 [ext_resource type="Script" path="res://entities/resource/resource_pickup.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://assets/kaykit/resources/Wood_Log_B.gltf" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://ca2cwv660fibb" path="res://assets/kaykit/restraunt_bits/food_ingredient_steak.gltf" id="2_cwkuj"]
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
-radius = 0.52
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_xrh05"]
+height = 0.068847656
+radius = 0.22167969
 
-[node name="ResourcePickupMeat" type="Area3D"]
+[node name="ResourcePickupMeat" type="Area3D" unique_id=521335572]
 script = ExtResource("1_script")
 resource_type = "meat_raw"
 ground_clearance = 0.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("SphereShape3D_pickup")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1342807094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.033691406, 0)
+shape = SubResource("CylinderShape3D_xrh05")
 
-[node name="Visual" type="Node3D" parent="."]
+[node name="Visual" type="Node3D" parent="." unique_id=88060876]
 
-[node name="MeatVisual" parent="Visual" instance=ExtResource("2_model")]
-transform = Transform3D(0.45, 0, 0, 0, 0.22, 0, 0, 0, 0.45, 0, 0, 0)
+[node name="MeatVisual" parent="Visual" unique_id=714553534 instance=ExtResource("2_cwkuj")]
+transform = Transform3D(0.017792495, 0, 0.4496481, 0, 0.22, 0, -0.4496481, 0, 0.017792495, 0, 0, 0)

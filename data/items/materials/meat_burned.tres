@@ -5,13 +5,10 @@
 
 [resource]
 script = ExtResource("1_item")
-id = "meat_raw"
-display_name = "Raw meat"
-description = "Fresh meat from hunted animals."
+id = "meat_burned"
+display_name = "Burned meat"
+description = "Charred and bitter. Still edible if you're desperate."
+category = 1
 max_stack = 99
-tags = PackedStringArray("resource", "meat")
-pickup_scene_path = "res://entities/resource/resource_pickup_meat.tscn"
+tags = PackedStringArray("consumable", "meat", "food", "burned")
 icon = ExtResource("2_icon")
-cook_difficulty = 0.05
-cooked_id = "meat_cooked"
-burned_id = "meat_burned"

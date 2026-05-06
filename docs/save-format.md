@@ -31,11 +31,14 @@
 - **`moon_phase`**: float in `[0, 1)`, moon phase offset used by sky shader/controller.
 - **`world_fire_states`**: dictionary keyed by node path or explicit `fire_state_id` (string), values are dictionaries with fire runtime state:
   - **`lit`**: bool.
-  - **`fuel_seconds`**: float remaining burn time.
+  - **`fuel_seconds`**: float remaining burn time. Each consumed log adds the item's `burn_seconds` (item data); legacy saves still use the campfire's flat `seconds_per_log` fallback.
   - **`logs_burned_counter`**: int for charcoal mint pacing (campfires).
-  - **`log_slots`**: optional array (length 4) of `null` or `{ "id": "logs", "count": int }` per campfire log slot. Missing key loads as empty slots.
-  - **`cook_slots`**: optional array (length 2) of `null` or stack dicts (campfire cooking; `meat_raw`). Missing key loads empty.
-  - **`cook_progress_sec`**: optional array (length 2) of floats 0–`COOK_TIME_SEC` per cooking slot. Missing key defaults to zeros.
+  - **`log_slots`**: optional array (length 4) of `null` or `{ "id": String }` per campfire log slot — one log per slot, any item with `burn_seconds > 0` (e.g. `logs`, `logs_oak`). Missing key loads as empty slots.
+  - **`cook_active`**: optional dictionary describing the single in-progress auto-cook entry: `{ "id": String, "cooked_id": String, "burned_id": String, "difficulty": float }`. Empty/missing means nothing is cooking.
+  - **`cook_progress_sec`**: optional float (0–`COOK_TIME_SEC`) for the active cook entry. Defaults to `0.0`.
+  - **`cook_auto_enabled`**: optional bool — whether the campfire is configured to auto-pull cookables from inventory. Defaults to `false`.
+
+Legacy `cook_slots` (array of 2) and array-form `cook_progress_sec` written by pre-rework campfires are silently ignored on load. Legacy `log_slots` entries with `count > 1` are migrated by retaining one log per slot and spilling the surplus back into the player's inventory on first load.
 - **`placed_fire_nodes`**: array of dictionaries for player-placed fire props:
   - `region`: string region id.
   - `scene_path`: packed scene path.

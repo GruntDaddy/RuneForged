@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" uid="uid://bc3743mbucn7f" path="res://data/schemas/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "fish_raw"
+display_name = "Raw fish"
+description = "Slippery and cold. Best cooked over a fire."
+max_stack = 99
+tags = PackedStringArray("resource", "fish")
+cook_difficulty = 0.15
+cooked_id = "fish_cooked"
+burned_id = "fish_burned"

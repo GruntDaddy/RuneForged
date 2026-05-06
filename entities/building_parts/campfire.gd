@@ -1,22 +1,29 @@
 extends Node3D
 
-const LOG_SLOT_COUNT := 4
-const COOK_SLOT_COUNT := 2
-const COOK_TIME_SEC := 24.0
+## Campfire interactable. Prompt-driven, single equipped tinderbox to ignite,
+## per-log burn time read from item data, single-slot auto-cook with random
+## burn rolls. Old drag-and-drop panel is removed; status surfaces via a
+## floating Label3D above the fire and brief player notifications.
 
-const _PANEL_SCENE := preload("res://ui/hud/campfire_inventory_panel.tscn")
+const LOG_SLOT_COUNT := 4
+const COOK_TIME_SEC := 24.0
+const _LOW_FUEL_WARNING_SEC := 30.0
+const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 
 @export var fire_state_id: String = ""
 @export var start_lit: bool = false
-@export var seconds_per_log: float = 120.0
-@export var initial_logs_on_ignite: int = 2
 @export var auto_extinguish_when_empty: bool = true
-@export var ignite_log_cost: int = 1
-@export var fuel_add_log_cost: int = 1
 @export var charcoal_per_logs_burned: int = 2
 @export var rest_warmth_minutes: float = 10.0
 @export var warmth_night_run_bonus: float = 0.2
 @export var warmth_night_penalty: float = 0.15
+## Fallback burn duration when an item resource is missing `burn_seconds`.
+@export var fallback_log_burn_seconds: int = 120
+## Deprecated. Retained for save/scene compatibility; per-log burn time now lives in item data.
+@export var seconds_per_log: float = 120.0
+@export var initial_logs_on_ignite: int = 1
+@export var ignite_log_cost: int = 0
+@export var fuel_add_log_cost: int = 0
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
 @export var campfire_recipe_ids: PackedStringArray = PackedStringArray()
 
@@ -25,89 +32,152 @@ const _PANEL_SCENE := preload("res://ui/hud/campfire_inventory_panel.tscn")
 @onready var _smoke: GPUParticles3D = $SmokeParticles
 @onready var _audio: AudioStreamPlayer3D = $AudioStreamPlayer3D
 @onready var _logs_visual: Node3D = $Campfire_Logs
+@onready var _status_label: Label3D = get_node_or_null("StatusLabel")
 
 var _is_lit: bool = false
 var _fuel_seconds: float = 0.0
 var _flicker_t: float = 0.0
 var _logs_burned_counter: int = 0
 
-var _log_slots: Array = [] ## Array of null or { "id": String, "count": int } — only "logs"
-var _cook_slots: Array = []
-var _cook_progress_sec: Array = []
+## 4 fixed slots; each slot is null OR { "id": String } (one log per slot).
+var _log_slots: Array = []
+
+## Single in-progress cook entry.
+## Empty when nothing is cooking. Otherwise:
+##   { "id": String, "cooked_id": String, "burned_id": String, "difficulty": float }
+var _cook_active: Dictionary = {}
+var _cook_progress_sec: float = 0.0
+var _cook_auto_enabled: bool = false
+
+var _legacy_log_spill: Dictionary = {}
+var _low_fuel_warned: bool = false
 
 
 func _ready() -> void:
 	_init_slot_arrays()
 	_load_state()
 	_apply_visuals()
+	_update_status_label()
+	if not _legacy_log_spill.is_empty():
+		call_deferred("_apply_legacy_log_spill")
 
 
 func _init_slot_arrays() -> void:
 	_log_slots.clear()
 	for _i in LOG_SLOT_COUNT:
 		_log_slots.append(null)
-	_cook_slots.clear()
-	for _i in COOK_SLOT_COUNT:
-		_cook_slots.append(null)
-	_cook_progress_sec.clear()
-	for _i in COOK_SLOT_COUNT:
-		_cook_progress_sec.append(0.0)
+	_cook_active = {}
+	_cook_progress_sec = 0.0
 
 
 func _process(delta: float) -> void:
-	if not _is_lit:
-		return
-	_fuel_seconds = maxf(0.0, _fuel_seconds - delta)
-	# Auto-feed from stocked logs so the fire can keep burning while fueled.
-	if _fuel_seconds <= seconds_per_log * 0.35 and _consume_logs_from_slots(fuel_add_log_cost):
-		_add_fuel_logs(fuel_add_log_cost)
-		_apply_log_visuals()
-		_save_state()
-	if auto_extinguish_when_empty and _fuel_seconds <= 0.0:
-		extinguish()
-		return
+	if _is_lit:
+		_fuel_seconds = maxf(0.0, _fuel_seconds - delta)
+		if _fuel_seconds <= 0.0:
+			if not _try_consume_next_log():
+				if auto_extinguish_when_empty:
+					extinguish()
+					_update_status_label()
+					return
+		_tick_visuals(delta)
+		_tick_cooking(delta)
+		_tick_low_fuel_warning()
+	_update_status_label()
+
+
+func _tick_visuals(delta: float) -> void:
 	_flicker_t += delta * 4.4
 	var wave: float = sin(_flicker_t) * 0.58 + sin(_flicker_t * 0.41 + 0.75) * 0.33
 	_light.light_energy = maxf(0.1, 2.15 + wave * 0.45)
 	_light.omni_range = maxf(1.0, 10.5 + wave * 1.15)
-	var fuel_norm: float = clampf(_fuel_seconds / maxf(1.0, seconds_per_log * 2.0), 0.35, 1.0)
+	var fuel_norm: float = clampf(_fuel_seconds / 240.0, 0.35, 1.0)
 	if _fire_mesh != null:
-		var s := lerpf(0.72, 1.04, fuel_norm) * (1.0 + wave * 0.035)
+		var s: float = lerpf(0.72, 1.04, fuel_norm) * (1.0 + wave * 0.035)
 		_fire_mesh.scale = Vector3(s, s, s)
 	if _smoke != null:
 		_smoke.amount_ratio = clampf(lerpf(0.35, 1.0, fuel_norm), 0.2, 1.0)
-	_tick_cooking(delta)
+
+
+func _tick_low_fuel_warning() -> void:
+	if _fuel_seconds <= _LOW_FUEL_WARNING_SEC and _total_logs_in_slots() <= 0:
+		if not _low_fuel_warned:
+			_low_fuel_warned = true
+			_notify_nearby("The fire is dying. Add logs.")
+	else:
+		_low_fuel_warned = false
 
 
 func _tick_cooking(delta: float) -> void:
-	for i in COOK_SLOT_COUNT:
-		var slot: Variant = _cook_slots[i]
-		if slot == null:
-			_cook_progress_sec[i] = 0.0
-			continue
-		var sid := str(slot.get("id", ""))
-		var cnt := int(slot.get("count", 0))
-		if sid != "meat_raw" or cnt <= 0:
-			_cook_progress_sec[i] = 0.0
-			continue
-		_cook_progress_sec[i] = float(_cook_progress_sec[i]) + delta
-		if float(_cook_progress_sec[i]) >= COOK_TIME_SEC:
-			_cook_progress_sec[i] = 0.0
-			cnt -= 1
-			if cnt <= 0:
-				_cook_slots[i] = null
-			else:
-				_cook_slots[i] = {"id": "meat_raw", "count": cnt}
-			var left: int = InventoryService.add_item("meat_cooked", 1)
-			if left > 0:
-				_notify_nearby("Inventory full — cooked meat fell into the ash.")
-			else:
-				_notify_nearby("Meat cooked.")
-			_save_state()
+	if not _cook_auto_enabled:
+		return
+	if _cook_active.is_empty():
+		var picked := _pick_next_cookable_from_inventory()
+		if picked.is_empty():
+			return
+		_cook_active = picked
+		_cook_progress_sec = 0.0
+		_save_state()
+		return
+	_cook_progress_sec += delta
+	if _cook_progress_sec >= COOK_TIME_SEC:
+		_finish_cook()
 
 
-func get_interaction_prompt(_player: Node) -> String:
-	return "E: Campfire"
+func _finish_cook() -> void:
+	var raw_id := str(_cook_active.get("id", ""))
+	var cooked_id := str(_cook_active.get("cooked_id", ""))
+	var burned_id := str(_cook_active.get("burned_id", ""))
+	var difficulty := float(_cook_active.get("difficulty", 0.0))
+	_cook_active = {}
+	_cook_progress_sec = 0.0
+	var burned: bool = randf() < clampf(difficulty, 0.0, 1.0) and not burned_id.is_empty()
+	var produced_id := burned_id if burned else cooked_id
+	if produced_id.is_empty():
+		_save_state()
+		return
+	var left: int = InventoryService.add_item(produced_id, 1)
+	var produced_name: String = InventoryService.get_item_display_name(produced_id)
+	if left > 0:
+		_notify_nearby("Inventory full — %s fell into the ash." % produced_name.to_lower())
+	elif burned:
+		var raw_name: String = InventoryService.get_item_display_name(raw_id)
+		_notify_nearby("You burned the %s." % raw_name.to_lower())
+	else:
+		_notify_nearby("%s cooked." % produced_name)
+	_save_state()
+
+
+# ----- Interaction API ----------------------------------------------------
+
+func get_interaction_prompts(player: Node) -> Array:
+	var prompts: Array = []
+	var has_unlit_torch: bool = _is_lit and _player_has_unlit_torch_equipped()
+	if has_unlit_torch:
+		prompts.append({"action": "interact", "label": "Light Torch"})
+	elif _can_add_log_now():
+		prompts.append({"action": "interact", "label": "Add Logs"})
+	if not _is_lit and _player_has_tinderbox_equipped():
+		if _total_logs_in_slots() > 0:
+			prompts.append({"action": "interact_secondary", "label": "Light Fire"})
+		else:
+			prompts.append({"action": "interact_secondary", "label": "Add logs before lighting"})
+	if _is_lit and _has_any_cookable_in_inventory(player):
+		if _cook_auto_enabled:
+			prompts.append({"action": "interact_tertiary", "label": "Stop Cooking"})
+		else:
+			prompts.append({"action": "interact_tertiary", "label": "Cook Meat/Fish"})
+	if _is_lit:
+		prompts.append({"action": "interact_quaternary", "label": "Rest"})
+	return prompts
+
+
+func get_interaction_prompt(player: Node) -> String:
+	# Fallback for any code path that hasn't adopted multi-prompts.
+	var prompts := get_interaction_prompts(player)
+	if prompts.is_empty():
+		return ""
+	var first: Dictionary = prompts[0]
+	return "E: %s" % str(first.get("label", "Campfire"))
 
 
 func interact(player: Node) -> bool:
@@ -115,9 +185,90 @@ func interact(player: Node) -> bool:
 		return false
 	if _is_lit and _try_light_equipped_torch(player):
 		return true
-	_open_panel(player)
+	_action_add_log(player)
 	return true
 
+
+func interact_with_action(player: Node, action_id: String) -> bool:
+	if player == null:
+		return false
+	match action_id:
+		"interact_secondary":
+			_action_light_fire(player)
+		"interact_tertiary":
+			_action_toggle_cook(player)
+		"interact_quaternary":
+			_action_rest(player)
+		_:
+			return false
+	return true
+
+
+# ----- Actions ------------------------------------------------------------
+
+func _action_add_log(player: Node) -> void:
+	var slot_idx := _find_empty_log_slot()
+	if slot_idx < 0:
+		_notify_player(player, "Log slots are full.")
+		return
+	var item_id := _find_best_log_in_inventory()
+	if item_id.is_empty():
+		_notify_player(player, "No logs in inventory.")
+		return
+	InventoryService.remove_item(item_id, 1)
+	_log_slots[slot_idx] = {"id": item_id}
+	_save_state()
+	_apply_log_visuals()
+	var dname: String = InventoryService.get_item_display_name(item_id)
+	_notify_player(player, "Added %s to the fire." % dname.to_lower())
+
+
+func _action_light_fire(player: Node) -> void:
+	if _is_lit:
+		return
+	if not _player_has_tinderbox_equipped():
+		_notify_player(player, "Equip a tinderbox to light the fire.")
+		return
+	if _total_logs_in_slots() <= 0:
+		_notify_player(player, "Add logs before lighting.")
+		return
+	_is_lit = true
+	if _fuel_seconds <= 0.0:
+		_try_consume_next_log()
+	_low_fuel_warned = false
+	_save_state()
+	_apply_visuals()
+	_notify_player(player, "Campfire lit.")
+
+
+func _action_toggle_cook(player: Node) -> void:
+	if not _is_lit:
+		_notify_player(player, "Light the fire first.")
+		return
+	_cook_auto_enabled = not _cook_auto_enabled
+	if not _cook_auto_enabled and not _cook_active.is_empty():
+		var raw_id := str(_cook_active.get("id", ""))
+		if not raw_id.is_empty():
+			var left: int = InventoryService.add_item(raw_id, 1)
+			if left > 0:
+				_notify_player(player, "Inventory full — %s fell into the ash." % raw_id)
+		_cook_active = {}
+		_cook_progress_sec = 0.0
+	_save_state()
+	if _cook_auto_enabled:
+		_notify_player(player, "Cooking started.")
+	else:
+		_notify_player(player, "Cooking stopped.")
+
+
+func _action_rest(player: Node) -> void:
+	if not _is_lit:
+		_notify_player(player, "Light the fire first.")
+		return
+	_apply_rest_and_save(player)
+
+
+# ----- Helpers ------------------------------------------------------------
 
 func _try_light_equipped_torch(player: Node) -> bool:
 	var off: Variant = GameState.get_equipment_slot("off_hand")
@@ -136,328 +287,152 @@ func _try_light_equipped_torch(player: Node) -> bool:
 	return true
 
 
-func _open_panel(player: Node) -> void:
-	var panel: CanvasLayer = _ensure_panel(player)
-	if panel != null and panel.has_method("open"):
-		panel.call("open", self, player)
-
-
-func _ensure_panel(player: Node) -> CanvasLayer:
-	if player == null:
-		return null
-	var existing: Node = player.get_node_or_null("CampfireInventoryPanel")
-	if existing != null:
-		return existing as CanvasLayer
-	var p: CanvasLayer = _PANEL_SCENE.instantiate()
-	p.name = "CampfireInventoryPanel"
-	player.add_child(p)
-	return p
-
-
-func build_slot_refresh_payload() -> Dictionary:
-	var can_light := (not _is_lit) and _player_has_tinderbox() and _total_logs_in_slots() >= ignite_log_cost
-	return {"is_lit": _is_lit, "can_light": can_light}
-
-
-func get_panel_hint_text() -> String:
-	if not _is_lit:
-		if not _player_has_tinderbox():
-			return "Need a tinderbox in inventory to ignite. Stock logs in the slots below."
-		if _total_logs_in_slots() < ignite_log_cost:
-			return "Need at least %d log(s) in the fire to ignite." % ignite_log_cost
-		return "Ready to light when you press Light fire."
-	return "Fire burns fuel from log slots. Rest saves like before."
-
-
-func get_log_slot_dict(idx: int) -> Dictionary:
-	if idx < 0 or idx >= LOG_SLOT_COUNT:
-		return {}
-	var s: Variant = _log_slots[idx]
-	if s == null:
-		return {}
-	return s
-
-
-func get_cook_slot_dict(idx: int) -> Dictionary:
-	if idx < 0 or idx >= COOK_SLOT_COUNT:
-		return {}
-	var s: Variant = _cook_slots[idx]
-	if s == null:
-		return {}
-	var d: Dictionary = (s as Dictionary).duplicate(true)
-	if idx < _cook_progress_sec.size():
-		d["progress"] = float(_cook_progress_sec[idx]) / COOK_TIME_SEC
-	return d
-
-
-func panel_cycle_log_slot(idx: int, player: Node) -> void:
-	if idx < 0 or idx >= LOG_SLOT_COUNT:
-		return
-	var s: Variant = _log_slots[idx]
-	if s != null:
-		var cnt := int(s.get("count", 0))
-		if cnt > 0:
-			var take: int = mini(cnt, 1)
-			var left: int = InventoryService.add_item("logs", take)
-			var added: int = take - left
-			if added <= 0:
-				_notify_player(player, "Inventory full.")
-				return
-			cnt -= added
-			if cnt <= 0:
-				_log_slots[idx] = null
-			else:
-				_log_slots[idx] = {"id": "logs", "count": cnt}
-			_save_state()
-			_apply_log_visuals()
-			return
-	# Empty slot: deposit one log from player
-	if int(InventoryService.get_item_count("logs")) < 1:
-		_notify_player(player, "No logs in inventory.")
-		return
-	InventoryService.remove_item("logs", 1)
-	_add_logs_to_slot_amount(idx, 1)
-	_save_state()
-	_apply_log_visuals()
-
-
-func panel_cycle_cook_slot(idx: int, player: Node) -> void:
-	if idx < 0 or idx >= COOK_SLOT_COUNT:
-		return
-	var s: Variant = _cook_slots[idx]
-	if s != null:
-		var iid := str(s.get("id", ""))
-		var cnt := int(s.get("count", 0))
-		if iid == "meat_raw" and cnt > 0:
-			var left: int = InventoryService.add_item("meat_raw", 1)
-			if left > 0:
-				_notify_player(player, "Inventory full.")
-				return
-			cnt -= 1
-			_cook_progress_sec[idx] = 0.0
-			if cnt <= 0:
-				_cook_slots[idx] = null
-			else:
-				_cook_slots[idx] = {"id": "meat_raw", "count": cnt}
-			_save_state()
-			return
-	# deposit raw meat
-	if int(InventoryService.get_item_count("meat_raw")) < 1:
-		_notify_player(player, "No raw meat in inventory.")
-		return
-	InventoryService.remove_item("meat_raw", 1)
-	var it_meat: ItemData = ItemCatalog.get_item("meat_raw")
-	var mx: int = it_meat.max_stack if it_meat != null else 99
-	if _cook_slots[idx] == null:
-		_cook_slots[idx] = {"id": "meat_raw", "count": 1}
-	else:
-		var oc := int(_cook_slots[idx].get("count", 0))
-		if oc >= mx:
-			InventoryService.add_item("meat_raw", 1)
-			_notify_player(player, "Cooking slot full.")
-			return
-		_cook_slots[idx] = {"id": "meat_raw", "count": oc + 1}
-	_cook_progress_sec[idx] = 0.0
-	_save_state()
-
-
-func panel_drop_item_to_log_slot(idx: int, item_id: String, player: Node) -> bool:
-	if idx < 0 or idx >= LOG_SLOT_COUNT:
+func _player_has_unlit_torch_equipped() -> bool:
+	var off: Variant = GameState.get_equipment_slot("off_hand")
+	if typeof(off) != TYPE_DICTIONARY:
 		return false
-	if item_id != "logs":
-		_notify_player(player, "Only logs can go into log slots.")
+	var oid := GameState.normalize_item_id(str(off.get("id", "")))
+	if oid != "tool_torch":
 		return false
-	if int(InventoryService.get_item_count("logs")) < 1:
-		_notify_player(player, "No logs in inventory.")
-		return false
-	var slot: Variant = _log_slots[idx]
-	if slot == null:
-		InventoryService.remove_item("logs", 1)
-		_log_slots[idx] = {"id": "logs", "count": 1}
-		_save_state()
-		_apply_log_visuals()
-		return true
-	var sid := str(slot.get("id", ""))
-	var cnt := int(slot.get("count", 0))
-	if sid != "logs":
-		_notify_player(player, "That log slot is occupied.")
-		return false
-	var it: ItemData = ItemCatalog.get_item("logs")
-	var mx: int = it.max_stack if it != null else 99
-	if cnt >= mx:
-		_notify_player(player, "That log slot is full.")
-		return false
-	InventoryService.remove_item("logs", 1)
-	_log_slots[idx] = {"id": "logs", "count": cnt + 1}
-	_save_state()
-	_apply_log_visuals()
-	return true
+	return not bool(off.get("torch_lit", false))
 
 
-func panel_drop_item_to_cook_slot(idx: int, item_id: String, player: Node) -> bool:
-	if idx < 0 or idx >= COOK_SLOT_COUNT:
+func _player_has_tinderbox_equipped() -> bool:
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null:
 		return false
-	if item_id != "meat_raw":
-		_notify_player(player, "Only raw meat can be cooked here.")
-		return false
-	if int(InventoryService.get_item_count("meat_raw")) < 1:
-		_notify_player(player, "No raw meat in inventory.")
-		return false
-	var it_meat: ItemData = ItemCatalog.get_item("meat_raw")
-	var mx: int = it_meat.max_stack if it_meat != null else 99
-	if _cook_slots[idx] == null:
-		InventoryService.remove_item("meat_raw", 1)
-		_cook_slots[idx] = {"id": "meat_raw", "count": 1}
-		_cook_progress_sec[idx] = 0.0
-		_save_state()
-		return true
-	var iid := str(_cook_slots[idx].get("id", ""))
-	var oc := int(_cook_slots[idx].get("count", 0))
-	if iid != "meat_raw":
-		_notify_player(player, "That cook slot is occupied.")
-		return false
-	if oc >= mx:
-		_notify_player(player, "That cook slot is full.")
-		return false
-	InventoryService.remove_item("meat_raw", 1)
-	_cook_slots[idx] = {"id": "meat_raw", "count": oc + 1}
-	_cook_progress_sec[idx] = 0.0
-	_save_state()
-	return true
+	for slot in ["main_hand", "off_hand"]:
+		var e: Variant = gs.get_equipment_slot(slot)
+		if typeof(e) != TYPE_DICTIONARY:
+			continue
+		if str((e as Dictionary).get("id", "")) == "tinderbox":
+			return true
+	return false
 
 
-func panel_deposit_one_log(player: Node) -> void:
-	if int(InventoryService.get_item_count("logs")) < 1:
-		_notify_player(player, "No logs to deposit.")
-		return
+func _can_add_log_now() -> bool:
+	if _find_empty_log_slot() < 0:
+		return false
+	return not _find_best_log_in_inventory().is_empty()
+
+
+func _find_empty_log_slot() -> int:
 	for i in LOG_SLOT_COUNT:
 		if _log_slots[i] == null:
-			InventoryService.remove_item("logs", 1)
-			_log_slots[i] = {"id": "logs", "count": 1}
-			_save_state()
-			_apply_log_visuals()
-			return
-		var sid := str(_log_slots[i].get("id", ""))
-		var cnt := int(_log_slots[i].get("count", 0))
-		if sid == "logs":
-			var it: ItemData = ItemCatalog.get_item("logs")
-			var mx: int = it.max_stack if it != null else 99
-			if cnt < mx:
-				InventoryService.remove_item("logs", 1)
-				_log_slots[i] = {"id": "logs", "count": cnt + 1}
-				_save_state()
-				_apply_log_visuals()
-				return
-	_notify_player(player, "Log slots are full.")
+			return i
+	return -1
 
 
-func panel_take_one_log(player: Node) -> void:
-	for i in range(LOG_SLOT_COUNT - 1, -1, -1):
+func _find_best_log_in_inventory() -> String:
+	var best_id: String = ""
+	var best_burn: int = -1
+	for raw_id in ItemCatalog.get_all_ids():
+		var id := str(raw_id)
+		var item: ItemData = ItemCatalog.get_item(id)
+		if item == null or item.burn_seconds <= 0:
+			continue
+		if int(InventoryService.get_item_count(id)) <= 0:
+			continue
+		var burn: int = int(item.burn_seconds)
+		if best_id.is_empty() or burn < best_burn:
+			best_id = id
+			best_burn = burn
+	return best_id
+
+
+func _has_any_cookable_in_inventory(_player: Node) -> bool:
+	for id in _COOKABLE_PRIORITY:
+		if int(InventoryService.get_item_count(id)) > 0:
+			return true
+	for raw_id in ItemCatalog.get_all_ids():
+		var item: ItemData = ItemCatalog.get_item(str(raw_id))
+		if item == null or item.cook_difficulty <= 0.0 or item.cooked_id.is_empty():
+			continue
+		if int(InventoryService.get_item_count(str(raw_id))) > 0:
+			return true
+	return false
+
+
+func _pick_next_cookable_from_inventory() -> Dictionary:
+	for id in _COOKABLE_PRIORITY:
+		var picked := _pull_cookable_into_active(id)
+		if not picked.is_empty():
+			return picked
+	for raw_id in ItemCatalog.get_all_ids():
+		var picked := _pull_cookable_into_active(str(raw_id))
+		if not picked.is_empty():
+			return picked
+	return {}
+
+
+func _pull_cookable_into_active(item_id: String) -> Dictionary:
+	if item_id.is_empty():
+		return {}
+	var item: ItemData = ItemCatalog.get_item(item_id)
+	if item == null or item.cook_difficulty <= 0.0 or item.cooked_id.is_empty():
+		return {}
+	if int(InventoryService.get_item_count(item_id)) <= 0:
+		return {}
+	InventoryService.remove_item(item_id, 1)
+	return {
+		"id": item_id,
+		"cooked_id": item.cooked_id,
+		"burned_id": item.burned_id,
+		"difficulty": float(item.cook_difficulty),
+	}
+
+
+func _try_consume_next_log() -> bool:
+	for i in LOG_SLOT_COUNT:
 		var s: Variant = _log_slots[i]
 		if s == null:
 			continue
-		var cnt := int(s.get("count", 0))
-		if cnt <= 0:
-			continue
-		var left: int = InventoryService.add_item("logs", 1)
-		if left > 0:
-			_notify_player(player, "Inventory full.")
-			return
-		cnt -= 1
-		if cnt <= 0:
+		var item_id := str((s as Dictionary).get("id", ""))
+		if item_id.is_empty():
 			_log_slots[i] = null
-		else:
-			_log_slots[i] = {"id": "logs", "count": cnt}
-		_save_state()
+			continue
+		var burn := _get_burn_seconds_for(item_id)
+		_log_slots[i] = null
+		_fuel_seconds += float(burn)
+		_logs_burned_counter += 1
+		_mint_charcoal_from_logs()
 		_apply_log_visuals()
-		return
-	_notify_player(player, "No logs in the fire.")
+		return true
+	return false
 
 
-func panel_try_light(player: Node) -> void:
-	if _is_lit:
-		return
-	if not _player_has_tinderbox():
-		_notify_player(player, "You need a tinderbox to light the fire.")
-		return
-	if not _consume_logs_from_slots(ignite_log_cost):
-		_notify_player(player, "Need %d log(s) in the fire to light it." % ignite_log_cost)
-		return
-	light_fire(initial_logs_on_ignite)
-	_apply_log_visuals()
-	_notify_player(player, "Campfire lit.")
-
-
-func panel_rest_save(player: Node) -> void:
-	if not _is_lit:
-		_notify_player(player, "Light the fire first.")
-		return
-	_apply_rest_and_save(player)
-
-
-func _player_has_tinderbox() -> bool:
-	return int(InventoryService.get_item_count("tinderbox")) > 0
+func _get_burn_seconds_for(item_id: String) -> int:
+	var item: ItemData = ItemCatalog.get_item(item_id)
+	if item != null and item.burn_seconds > 0:
+		return int(item.burn_seconds)
+	return maxi(1, fallback_log_burn_seconds)
 
 
 func _total_logs_in_slots() -> int:
 	var t := 0
 	for i in LOG_SLOT_COUNT:
-		var s: Variant = _log_slots[i]
-		if s == null:
-			continue
-		if str(s.get("id", "")) == "logs":
-			t += int(s.get("count", 0))
+		if _log_slots[i] != null:
+			t += 1
 	return t
 
 
-func _consume_logs_from_slots(amount: int) -> bool:
-	var need := amount
-	if need <= 0:
-		return true
-	for i in LOG_SLOT_COUNT:
-		var s: Variant = _log_slots[i]
-		if s == null:
-			continue
-		if str(s.get("id", "")) != "logs":
-			continue
-		var cnt := int(s.get("count", 0))
-		if cnt <= 0:
-			continue
-		var take := mini(cnt, need)
-		cnt -= take
-		need -= take
-		if cnt <= 0:
-			_log_slots[i] = null
-		else:
-			_log_slots[i] = {"id": "logs", "count": cnt}
-		if need <= 0:
-			return true
-	return false
+# ----- Lifecycle / visuals ------------------------------------------------
 
-
-func _add_logs_to_slot_amount(slot_idx: int, amount: int) -> void:
-	if amount <= 0 or slot_idx < 0 or slot_idx >= LOG_SLOT_COUNT:
+func light_fire(_logs_to_add: int = 0) -> void:
+	if _is_lit:
 		return
-	var s: Variant = _log_slots[slot_idx]
-	if s == null:
-		_log_slots[slot_idx] = {"id": "logs", "count": amount}
-		return
-	var cnt := int(s.get("count", 0))
-	_log_slots[slot_idx] = {"id": "logs", "count": cnt + amount}
-
-
-func light_fire(logs_to_add: int = 0) -> void:
 	_is_lit = true
-	if logs_to_add > 0:
-		_add_fuel_logs(logs_to_add)
-	elif _fuel_seconds <= 0.0:
-		_fuel_seconds = seconds_per_log
+	if _fuel_seconds <= 0.0:
+		if not _try_consume_next_log():
+			_fuel_seconds = float(seconds_per_log)
+	_low_fuel_warned = false
 	_save_state()
 	_apply_visuals()
 
 
 func extinguish() -> void:
 	_is_lit = false
+	_low_fuel_warned = false
 	_save_state()
 	_apply_visuals()
 
@@ -476,14 +451,6 @@ func _apply_rest_and_save(player: Node) -> void:
 	if sm != null and sm.has_method("save_game"):
 		sm.save_game()
 	_notify_player(player, "You rest by the fire. Game saved.")
-
-
-func _add_fuel_logs(log_count: int) -> void:
-	if log_count <= 0:
-		return
-	_fuel_seconds += seconds_per_log * float(log_count)
-	_logs_burned_counter += log_count
-	_mint_charcoal_from_logs()
 
 
 func _mint_charcoal_from_logs() -> void:
@@ -533,6 +500,34 @@ func _apply_log_visuals() -> void:
 		_logs_visual.visible = _total_logs_in_slots() > 0
 
 
+func _update_status_label() -> void:
+	if _status_label == null:
+		return
+	var should_show: bool = _is_lit or not _cook_active.is_empty()
+	_status_label.visible = should_show
+	if not should_show:
+		return
+	var lines: Array[String] = []
+	if _is_lit:
+		lines.append("Fire: %s" % _format_seconds(int(_fuel_seconds)))
+	if not _cook_active.is_empty():
+		var raw_id: String = str(_cook_active.get("id", ""))
+		var raw_name: String = InventoryService.get_item_display_name(raw_id)
+		lines.append("Cooking %s: %ds / %ds" % [raw_name.to_lower(), int(_cook_progress_sec), int(COOK_TIME_SEC)])
+	_status_label.text = "\n".join(lines)
+
+
+func _format_seconds(seconds: int) -> String:
+	if seconds >= 60:
+		@warning_ignore("integer_division")
+		var m: int = seconds / 60
+		var s: int = seconds % 60
+		return "%dm %02ds" % [m, s]
+	return "%ds" % maxi(0, seconds)
+
+
+# ----- Save / load --------------------------------------------------------
+
 func _state_key() -> String:
 	if not fire_state_id.is_empty():
 		return fire_state_id
@@ -549,23 +544,38 @@ func _slot_dict_to_save(arr: Array) -> Array:
 	return out
 
 
-func _slot_dict_from_load(raw: Variant, template_size: int) -> Array:
+func _log_slots_from_load(raw: Variant) -> Array:
 	var out: Array = []
+	for _i in LOG_SLOT_COUNT:
+		out.append(null)
 	if typeof(raw) != TYPE_ARRAY:
-		for _i in template_size:
-			out.append(null)
 		return out
 	var ra: Array = raw
-	for i in template_size:
-		if i < ra.size():
-			var e: Variant = ra[i]
-			if e == null or typeof(e) != TYPE_DICTIONARY:
-				out.append(null)
-			else:
-				out.append((e as Dictionary).duplicate(true))
-		else:
-			out.append(null)
+	var write_idx := 0
+	for i in ra.size():
+		if write_idx >= LOG_SLOT_COUNT:
+			break
+		var e: Variant = ra[i]
+		if e == null or typeof(e) != TYPE_DICTIONARY:
+			continue
+		var item_id := str((e as Dictionary).get("id", ""))
+		if item_id.is_empty():
+			continue
+		out[write_idx] = {"id": item_id}
+		write_idx += 1
+		# Legacy save stored count > 1 per slot; spill the surplus back to the player.
+		var count := int((e as Dictionary).get("count", 1))
+		if count > 1:
+			_legacy_log_spill[item_id] = int(_legacy_log_spill.get(item_id, 0)) + (count - 1)
 	return out
+
+
+func _apply_legacy_log_spill() -> void:
+	for id in _legacy_log_spill.keys():
+		var n := int(_legacy_log_spill[id])
+		if n > 0:
+			InventoryService.add_item(str(id), n)
+	_legacy_log_spill.clear()
 
 
 func _load_state() -> void:
@@ -573,7 +583,7 @@ func _load_state() -> void:
 	var gs: Node = get_node_or_null("/root/GameState")
 	if gs == null:
 		_is_lit = start_lit
-		_fuel_seconds = seconds_per_log if start_lit else 0.0
+		_fuel_seconds = float(seconds_per_log) if start_lit else 0.0
 		_logs_burned_counter = 0
 		return
 	var key: String = _state_key()
@@ -581,18 +591,24 @@ func _load_state() -> void:
 		var d: Variant = gs.world_fire_states.get(key, {})
 		if typeof(d) == TYPE_DICTIONARY:
 			_is_lit = bool(d.get("lit", start_lit))
-			_fuel_seconds = maxf(0.0, float(d.get("fuel_seconds", seconds_per_log if _is_lit else 0.0)))
+			_fuel_seconds = maxf(0.0, float(d.get("fuel_seconds", float(seconds_per_log) if _is_lit else 0.0)))
 			_logs_burned_counter = maxi(0, int(d.get("logs_burned_counter", 0)))
-			_log_slots = _slot_dict_from_load(d.get("log_slots", []), LOG_SLOT_COUNT)
-			_cook_slots = _slot_dict_from_load(d.get("cook_slots", []), COOK_SLOT_COUNT)
-			var cp: Variant = d.get("cook_progress_sec", [])
-			if typeof(cp) == TYPE_ARRAY:
-				var cpa: Array = cp
-				for i in mini(COOK_SLOT_COUNT, cpa.size()):
-					_cook_progress_sec[i] = float(cpa[i])
+			_log_slots = _log_slots_from_load(d.get("log_slots", []))
+			var ca: Variant = d.get("cook_active", {})
+			if typeof(ca) == TYPE_DICTIONARY and not (ca as Dictionary).is_empty():
+				_cook_active = (ca as Dictionary).duplicate(true)
+				var cp: Variant = d.get("cook_progress_sec", 0.0)
+				if typeof(cp) == TYPE_FLOAT or typeof(cp) == TYPE_INT:
+					_cook_progress_sec = float(cp)
+				else:
+					_cook_progress_sec = 0.0
+			else:
+				_cook_active = {}
+				_cook_progress_sec = 0.0
+			_cook_auto_enabled = bool(d.get("cook_auto_enabled", false))
 			return
 	_is_lit = start_lit
-	_fuel_seconds = seconds_per_log if start_lit else 0.0
+	_fuel_seconds = float(seconds_per_log) if start_lit else 0.0
 	_logs_burned_counter = 0
 
 
@@ -600,14 +616,12 @@ func _save_state() -> void:
 	var gs: Node = get_node_or_null("/root/GameState")
 	if gs == null or not ("world_fire_states" in gs):
 		return
-	var cp: Array = []
-	for i in COOK_SLOT_COUNT:
-		cp.append(float(_cook_progress_sec[i]))
 	gs.world_fire_states[_state_key()] = {
 		"lit": _is_lit,
 		"fuel_seconds": _fuel_seconds,
 		"logs_burned_counter": _logs_burned_counter,
 		"log_slots": _slot_dict_to_save(_log_slots),
-		"cook_slots": _slot_dict_to_save(_cook_slots),
-		"cook_progress_sec": cp,
+		"cook_active": _cook_active.duplicate(true),
+		"cook_progress_sec": _cook_progress_sec,
+		"cook_auto_enabled": _cook_auto_enabled,
 	}

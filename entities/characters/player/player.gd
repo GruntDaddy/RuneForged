@@ -22,6 +22,13 @@ const _H_INV_FULL := 3
 const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 const _DefaultHitVfxScene: PackedScene = preload("res://entities/effects/hit_spark_burst.tscn")
 
+## Extra contextual interact keys forwarded to interactables that opt into multi-prompt UX.
+const INTERACT_EXTRA_ACTIONS: Array[String] = [
+	"interact_secondary",
+	"interact_tertiary",
+	"interact_quaternary",
+]
+
 @export var move_speed: float = 3.15
 @export var run_multiplier: float = 2.6
 @export var turn_speed: float = 12.0
@@ -341,6 +348,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_interact()
 		get_viewport().set_input_as_handled()
 		return
+	for extra_action in INTERACT_EXTRA_ACTIONS:
+		if event.is_action_pressed(extra_action):
+			_try_interact_action(extra_action)
+			get_viewport().set_input_as_handled()
+			return
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_zoom_target_distance = clampf(_zoom_target_distance - zoom_step, zoom_min_distance, zoom_max_distance)
@@ -2341,6 +2353,12 @@ func _update_interaction_prompt() -> void:
 			interaction_prompt.visible = true
 			return
 	var interactable: Object = _resolve_interactable_target(collider)
+	if interactable != null and interactable.has_method("get_interaction_prompts"):
+		var multi_text := _build_multi_prompt_text(interactable)
+		if not multi_text.is_empty():
+			interaction_prompt.text = multi_text
+			interaction_prompt.visible = true
+			return
 	if interactable != null and interactable.has_method("get_interaction_prompt"):
 		interaction_prompt.text = String(interactable.get_interaction_prompt(self))
 		interaction_prompt.visible = not interaction_prompt.text.is_empty()
@@ -2384,9 +2402,6 @@ func _resolve_interactable_target(collider: Object) -> Object:
 
 func _gameplay_input_blocked() -> bool:
 	if game_menu != null and game_menu.visible:
-		return true
-	var cf: Node = get_node_or_null("CampfireInventoryPanel")
-	if cf != null and cf is CanvasLayer and (cf as CanvasLayer).visible:
 		return true
 	return false
 
@@ -2432,6 +2447,68 @@ func _try_interact() -> void:
 	if interactable == null or not interactable.has_method("interact"):
 		return
 	interactable.interact(self)
+
+
+func _try_interact_action(action_id: String) -> void:
+	if _gameplay_input_blocked():
+		return
+	var collider: Object = _get_interaction_collider_cached(true)
+	if collider == null:
+		return
+	var interactable: Object = _resolve_interactable_target(collider)
+	if interactable == null or not interactable.has_method("interact_with_action"):
+		return
+	interactable.interact_with_action(self, action_id)
+
+
+func _build_multi_prompt_text(interactable: Object) -> String:
+	var prompts_var: Variant = interactable.call("get_interaction_prompts", self)
+	if typeof(prompts_var) != TYPE_ARRAY:
+		return ""
+	var prompts: Array = prompts_var
+	if prompts.is_empty():
+		return ""
+	var lines: Array[String] = []
+	for entry in prompts:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var label := str((entry as Dictionary).get("label", "")).strip_edges()
+		if label.is_empty():
+			continue
+		var action := str((entry as Dictionary).get("action", "interact"))
+		var key_label := _action_key_label(action)
+		if key_label.is_empty():
+			lines.append(label)
+		else:
+			lines.append("[%s] %s" % [key_label, label])
+	if lines.is_empty():
+		return ""
+	return "\n".join(lines)
+
+
+func _action_key_label(action_id: String) -> String:
+	if not InputMap.has_action(action_id):
+		return ""
+	for ev in InputMap.action_get_events(action_id):
+		if ev is InputEventKey:
+			var ek := ev as InputEventKey
+			var pk: int = ek.physical_keycode
+			if pk == 0:
+				pk = ek.keycode
+			if pk != 0:
+				var s := OS.get_keycode_string(pk)
+				if not s.is_empty():
+					return s.to_upper()
+		elif ev is InputEventMouseButton:
+			var mb := ev as InputEventMouseButton
+			match mb.button_index:
+				MOUSE_BUTTON_LEFT:
+					return "LMB"
+				MOUSE_BUTTON_RIGHT:
+					return "RMB"
+				MOUSE_BUTTON_MIDDLE:
+					return "MMB"
+	return ""
 
 
 func _try_pickup_item_from_world(collider: Object) -> bool:

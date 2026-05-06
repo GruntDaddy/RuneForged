@@ -12,3 +12,4 @@ max_stack = 99
 tags = PackedStringArray("resource", "wood")
 pickup_scene_path = "res://world/pickups/logs_pickup.tscn"
 icon = ExtResource("2_icon")
+burn_seconds = 120
