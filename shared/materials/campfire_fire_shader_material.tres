@@ -7,8 +7,8 @@
 render_priority = 1
 shader = ExtResource("1_fire_shader")
 shader_parameter/noise_tex = ExtResource("2_noise")
-shader_parameter/root_color = Color(0.90299326, 0.6367556, 1.92523e-06, 1)
-shader_parameter/tip_color = Color(0.92891836, 0.2733439, 0, 1)
-shader_parameter/fire_alpha = 0.7930000376675
-shader_parameter/fire_speed = Vector2(0.04, 0.73)
-shader_parameter/fire_aperture = 0.458000021755
+shader_parameter/root_color = Color(1, 0.8627451, 0.3647059, 1)
+shader_parameter/tip_color = Color(1, 0.28627452, 0.08235294, 1)
+shader_parameter/fire_alpha = 0.68000000715256
+shader_parameter/fire_speed = Vector2(0.02, 0.58)
+shader_parameter/fire_aperture = 0.25999999046326

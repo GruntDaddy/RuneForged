@@ -7,7 +7,7 @@ const COOK_TIME_SEC := 24.0
 const _PANEL_SCENE := preload("res://ui/hud/campfire_inventory_panel.tscn")
 
 @export var fire_state_id: String = ""
-@export var start_lit: bool = true
+@export var start_lit: bool = false
 @export var seconds_per_log: float = 120.0
 @export var initial_logs_on_ignite: int = 2
 @export var auto_extinguish_when_empty: bool = true
@@ -58,6 +58,11 @@ func _process(delta: float) -> void:
 	if not _is_lit:
 		return
 	_fuel_seconds = maxf(0.0, _fuel_seconds - delta)
+	# Auto-feed from stocked logs so the fire can keep burning while fueled.
+	if _fuel_seconds <= seconds_per_log * 0.35 and _consume_logs_from_slots(fuel_add_log_cost):
+		_add_fuel_logs(fuel_add_log_cost)
+		_apply_log_visuals()
+		_save_state()
 	if auto_extinguish_when_empty and _fuel_seconds <= 0.0:
 		extinguish()
 		return
@@ -65,6 +70,12 @@ func _process(delta: float) -> void:
 	var wave: float = sin(_flicker_t) * 0.58 + sin(_flicker_t * 0.41 + 0.75) * 0.33
 	_light.light_energy = maxf(0.1, 2.15 + wave * 0.45)
 	_light.omni_range = maxf(1.0, 10.5 + wave * 1.15)
+	var fuel_norm: float = clampf(_fuel_seconds / maxf(1.0, seconds_per_log * 2.0), 0.35, 1.0)
+	if _fire_mesh != null:
+		var s := lerpf(0.72, 1.04, fuel_norm) * (1.0 + wave * 0.035)
+		_fire_mesh.scale = Vector3(s, s, s)
+	if _smoke != null:
+		_smoke.amount_ratio = clampf(lerpf(0.35, 1.0, fuel_norm), 0.2, 1.0)
 	_tick_cooking(delta)
 
 
@@ -248,6 +259,71 @@ func panel_cycle_cook_slot(idx: int, player: Node) -> void:
 		_cook_slots[idx] = {"id": "meat_raw", "count": oc + 1}
 	_cook_progress_sec[idx] = 0.0
 	_save_state()
+
+
+func panel_drop_item_to_log_slot(idx: int, item_id: String, player: Node) -> bool:
+	if idx < 0 or idx >= LOG_SLOT_COUNT:
+		return false
+	if item_id != "logs":
+		_notify_player(player, "Only logs can go into log slots.")
+		return false
+	if int(InventoryService.get_item_count("logs")) < 1:
+		_notify_player(player, "No logs in inventory.")
+		return false
+	var slot: Variant = _log_slots[idx]
+	if slot == null:
+		InventoryService.remove_item("logs", 1)
+		_log_slots[idx] = {"id": "logs", "count": 1}
+		_save_state()
+		_apply_log_visuals()
+		return true
+	var sid := str(slot.get("id", ""))
+	var cnt := int(slot.get("count", 0))
+	if sid != "logs":
+		_notify_player(player, "That log slot is occupied.")
+		return false
+	var it: ItemData = ItemCatalog.get_item("logs")
+	var mx: int = it.max_stack if it != null else 99
+	if cnt >= mx:
+		_notify_player(player, "That log slot is full.")
+		return false
+	InventoryService.remove_item("logs", 1)
+	_log_slots[idx] = {"id": "logs", "count": cnt + 1}
+	_save_state()
+	_apply_log_visuals()
+	return true
+
+
+func panel_drop_item_to_cook_slot(idx: int, item_id: String, player: Node) -> bool:
+	if idx < 0 or idx >= COOK_SLOT_COUNT:
+		return false
+	if item_id != "meat_raw":
+		_notify_player(player, "Only raw meat can be cooked here.")
+		return false
+	if int(InventoryService.get_item_count("meat_raw")) < 1:
+		_notify_player(player, "No raw meat in inventory.")
+		return false
+	var it_meat: ItemData = ItemCatalog.get_item("meat_raw")
+	var mx: int = it_meat.max_stack if it_meat != null else 99
+	if _cook_slots[idx] == null:
+		InventoryService.remove_item("meat_raw", 1)
+		_cook_slots[idx] = {"id": "meat_raw", "count": 1}
+		_cook_progress_sec[idx] = 0.0
+		_save_state()
+		return true
+	var iid := str(_cook_slots[idx].get("id", ""))
+	var oc := int(_cook_slots[idx].get("count", 0))
+	if iid != "meat_raw":
+		_notify_player(player, "That cook slot is occupied.")
+		return false
+	if oc >= mx:
+		_notify_player(player, "That cook slot is full.")
+		return false
+	InventoryService.remove_item("meat_raw", 1)
+	_cook_slots[idx] = {"id": "meat_raw", "count": oc + 1}
+	_cook_progress_sec[idx] = 0.0
+	_save_state()
+	return true
 
 
 func panel_deposit_one_log(player: Node) -> void:
@@ -435,8 +511,12 @@ func _apply_visuals() -> void:
 	_light.visible = _is_lit
 	if _fire_mesh != null:
 		_fire_mesh.visible = _is_lit
+		if not _is_lit:
+			_fire_mesh.scale = Vector3.ONE
 	if _smoke != null:
 		_smoke.emitting = _is_lit
+		if not _is_lit:
+			_smoke.amount_ratio = 1.0
 	if _is_lit:
 		_light.light_energy = 2.35
 		_light.omni_range = 11.0
