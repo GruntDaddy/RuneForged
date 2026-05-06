@@ -24,6 +24,9 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var initial_logs_on_ignite: int = 1
 @export var ignite_log_cost: int = 0
 @export var fuel_add_log_cost: int = 0
+@export var rest_safe_min_distance: float = 1.35
+@export var rest_safe_max_distance: float = 2.75
+@export var rest_snap_distance: float = 1.8
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
 @export var campfire_recipe_ids: PackedStringArray = PackedStringArray()
 
@@ -114,6 +117,8 @@ func _tick_cooking(delta: float) -> void:
 	if _cook_active.is_empty():
 		var picked := _pick_next_cookable_from_inventory()
 		if picked.is_empty():
+			_cook_auto_enabled = false
+			_save_state()
 			return
 		_cook_active = picked
 		_cook_progress_sec = 0.0
@@ -264,6 +269,9 @@ func _action_toggle_cook(player: Node) -> void:
 	if not _is_lit:
 		_notify_player(player, "Light the fire first.")
 		return
+	if not _cook_auto_enabled and _cook_active.is_empty() and not _has_any_cookable_in_inventory(player):
+		_notify_player(player, "No raw meat or fish in inventory.")
+		return
 	_cook_auto_enabled = not _cook_auto_enabled
 	if not _cook_auto_enabled and not _cook_active.is_empty():
 		var raw_id := str(_cook_active.get("id", ""))
@@ -289,6 +297,7 @@ func _action_rest(player: Node) -> void:
 			player.stop_campfire_rest()
 		return
 	if player != null and player.has_method("start_campfire_rest"):
+		_place_and_face_player_for_rest(player)
 		if not bool(player.call("start_campfire_rest", self)):
 			_notify_player(player, "Cannot rest right now.")
 			return
@@ -300,6 +309,42 @@ func on_player_rest_stopped(player: Node, _standup_duration: float = -1.0) -> vo
 	if player == null:
 		return
 	_notify_player(player, "You stand up.")
+
+
+func _place_and_face_player_for_rest(player: Node) -> void:
+	var p3: Node3D = player as Node3D
+	if p3 == null:
+		return
+	var fire_flat := Vector3(global_position.x, 0.0, global_position.z)
+	var player_flat := Vector3(p3.global_position.x, 0.0, p3.global_position.z)
+	var away: Vector3 = player_flat - fire_flat
+	var dist: float = away.length()
+	if dist < 0.001:
+		away = -global_basis.z
+		away.y = 0.0
+		if away.length_squared() < 0.001:
+			away = Vector3(0.0, 0.0, 1.0)
+		dist = away.length()
+	var dir := away / maxf(0.001, dist)
+	var should_snap: bool = dist < rest_safe_min_distance or dist > rest_safe_max_distance
+	if should_snap:
+		var target: Vector3 = global_position + dir * rest_snap_distance
+		target.y = p3.global_position.y
+		p3.global_position = target
+	_face_player_toward_fire(p3)
+
+
+func _face_player_toward_fire(player_body: Node3D) -> void:
+	var to_fire := global_position - player_body.global_position
+	to_fire.y = 0.0
+	if to_fire.length_squared() < 0.0001:
+		return
+	var yaw := atan2(to_fire.x, to_fire.z)
+	var base := player_body.get_node_or_null("BaseCharacter") as Node3D
+	if base != null:
+		base.rotation.y = yaw
+	else:
+		player_body.rotation.y = yaw
 
 
 # ----- Helpers ------------------------------------------------------------
