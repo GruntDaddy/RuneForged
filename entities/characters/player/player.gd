@@ -220,12 +220,16 @@ var _build_preview_rotation_y: float = 0.0
 var _build_preview_node: Node3D = null
 var _build_preview_valid: bool = false
 var _build_mode_active: bool = false
+var _campfire_resting: bool = false
+var _campfire_rest_source: WeakRef = null
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
 	if base_character != null and base_character.has_method("is_blocking") and base_character.is_blocking():
 		amt *= shield_block_damage_multiplier
 	health = maxf(health - amt, 0.0)
+	if _campfire_resting:
+		_stop_campfire_rest(true)
 	# Taking a hit should break harvest automation immediately.
 	_stop_harvest_auto()
 	_clear_harvest_interact_approach()
@@ -344,6 +348,10 @@ func _unhandled_input(event: InputEvent) -> void:
 					game_menu.call("_set_build_rotation_from_player", _build_preview_rotation_y)
 				get_viewport().set_input_as_handled()
 				return
+	if event.is_action_pressed("interact_quaternary") and _campfire_resting:
+		_stop_campfire_rest(true)
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("interact"):
 		_try_interact()
 		get_viewport().set_input_as_handled()
@@ -426,6 +434,8 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= (_gravity * gravity_multiplier) * delta
 
 	var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if _campfire_resting:
+		raw_move = Vector2.ZERO
 	_cancel_harvest_on_movement_input(raw_move)
 	var input_vec := raw_move
 	var approach_input := _harvest_interact_move_input()
@@ -2409,6 +2419,48 @@ func _gameplay_input_blocked() -> bool:
 func notify_torch_lit_changed() -> void:
 	if base_character != null and base_character.has_method("refresh_torch_lit_visuals"):
 		base_character.refresh_torch_lit_visuals()
+
+
+func start_campfire_rest(campfire: Node) -> bool:
+	if _campfire_resting:
+		return true
+	if campfire == null or not is_instance_valid(campfire):
+		return false
+	if base_character == null:
+		return false
+	if not base_character.has_method("start_floor_rest_loop"):
+		return false
+	var started: bool = bool(base_character.start_floor_rest_loop())
+	if not started:
+		return false
+	velocity.x = 0.0
+	velocity.z = 0.0
+	_campfire_resting = true
+	_campfire_rest_source = weakref(campfire)
+	return true
+
+
+func stop_campfire_rest() -> void:
+	_stop_campfire_rest(false)
+
+
+func is_campfire_resting() -> bool:
+	return _campfire_resting
+
+
+func _stop_campfire_rest(notify: bool) -> void:
+	if not _campfire_resting:
+		return
+	_campfire_resting = false
+	velocity.x = 0.0
+	velocity.z = 0.0
+	var standup_dur: float = -1.0
+	if base_character != null and base_character.has_method("stop_floor_rest_loop"):
+		standup_dur = float(base_character.stop_floor_rest_loop())
+	var campfire: Node = _campfire_rest_source.get_ref() if _campfire_rest_source != null else null
+	_campfire_rest_source = null
+	if notify and campfire != null and is_instance_valid(campfire) and campfire.has_method("on_player_rest_stopped"):
+		campfire.call("on_player_rest_stopped", self, standup_dur)
 
 
 func play_campfire_ignite_animation() -> float:

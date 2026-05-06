@@ -144,7 +144,7 @@ max_distance = 24.0
 [node name="StatusLabel" type="Label3D" parent="." unique_id=1209351744]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.64, 1.8, 1.62)
 visible = false
-pixel_size = 0.005
+pixel_size = 0.0034
 billboard = 2
 no_depth_test = true
 fixed_size = true
@@ -152,8 +152,8 @@ shaded = false
 double_sided = true
 alpha_cut = 1
 text = ""
-font_size = 32
-outline_size = 8
+font_size = 16
+outline_size = 3
 modulate = Color(1, 0.86, 0.62, 1)
 outline_modulate = Color(0, 0, 0, 0.85)
 

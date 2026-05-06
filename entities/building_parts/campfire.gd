@@ -168,7 +168,10 @@ func get_interaction_prompts(player: Node) -> Array:
 		else:
 			prompts.append({"action": "interact_tertiary", "label": "Cook Meat/Fish"})
 	if _is_lit:
-		prompts.append({"action": "interact_quaternary", "label": "Rest"})
+		var rest_label := "Rest"
+		if player != null and player.has_method("is_campfire_resting") and bool(player.is_campfire_resting()):
+			rest_label = "Stand Up"
+		prompts.append({"action": "interact_quaternary", "label": rest_label})
 	return prompts
 
 
@@ -238,6 +241,8 @@ func _action_light_fire(player: Node) -> void:
 	_ignition_in_progress = true
 	var restore_off_hand: Variant = _capture_off_hand_state()
 	_set_temp_tinderbox_off_hand(player)
+	# Ensure off-hand visuals are updated before the ignite clip starts.
+	await get_tree().process_frame
 	var ignite_anim_sec := _play_ignite_animation(player)
 	if ignite_anim_sec <= 0.0:
 		ignite_anim_sec = 0.65
@@ -279,7 +284,22 @@ func _action_rest(player: Node) -> void:
 	if not _is_lit:
 		_notify_player(player, "Light the fire first.")
 		return
+	if player != null and player.has_method("is_campfire_resting") and bool(player.is_campfire_resting()):
+		if player.has_method("stop_campfire_rest"):
+			player.stop_campfire_rest()
+		return
+	if player != null and player.has_method("start_campfire_rest"):
+		if not bool(player.call("start_campfire_rest", self)):
+			_notify_player(player, "Cannot rest right now.")
+			return
 	_apply_rest_and_save(player)
+	_notify_player(player, "Resting by the fire. Press [G] to stand.")
+
+
+func on_player_rest_stopped(player: Node, _standup_duration: float = -1.0) -> void:
+	if player == null:
+		return
+	_notify_player(player, "You stand up.")
 
 
 # ----- Helpers ------------------------------------------------------------

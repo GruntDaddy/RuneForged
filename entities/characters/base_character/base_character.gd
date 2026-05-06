@@ -148,6 +148,9 @@ const _ANIM_PICKAXE := "Pickaxe"
 const _ANIM_INTERACT := "Interact"
 const _ANIM_PICKUP := "PickUp"
 const _ANIM_USE_ITEM := "Use_Item"
+const _ANIM_SIT_FLOOR_DOWN := "Sit_floor_Down"
+const _ANIM_SIT_FLOOR_IDLE := "Sit_floor_Idle"
+const _ANIM_SIT_FLOOR_STAND_UP := "Sit_floor_StandUp"
 ## Combat clips are authored under `Base/` in AnimationLibrary (may alias survival poses until sword/block/bow slices ship).
 const _ANIM_MELEE_1H := "Melee_Attack_1H"
 const _ANIM_MELEE_ALT_CHOP := "Chop"
@@ -190,6 +193,7 @@ var _melee_combo_step: int = 0
 var _active_melee_clip: String = ""
 var _active_rune_cast_clip: String = ""
 var _last_melee_attack_ms: int = -1
+var _rest_floor_looping: bool = false
 
 
 func _ready() -> void:
@@ -411,6 +415,12 @@ func _on_animation_finished(anim_name: StringName) -> void:
 
 	if _action_state != ActionState.TOOL_ACTION:
 		return
+	if _rest_floor_looping and clip_name == _ANIM_SIT_FLOOR_DOWN:
+		if anim_player != null and anim_player.has_animation(_anim_path(_ANIM_SIT_FLOOR_IDLE)):
+			anim_player.speed_scale = 1.0
+			anim_player.play(_anim_path(_ANIM_SIT_FLOOR_IDLE), 0.08)
+			return
+		_rest_floor_looping = false
 	_action_state = ActionState.LOCOMOTION
 	_apply_tool_kind(_player_chosen_tool)
 
@@ -532,6 +542,7 @@ func cancel_tool_action() -> void:
 	_block_hold_active = false
 	_bow_phase = 0
 	_active_rune_cast_clip = ""
+	_rest_floor_looping = false
 	_action_state = ActionState.LOCOMOTION
 	if anim_player != null:
 		anim_player.stop()
@@ -826,6 +837,44 @@ func try_play_shortest_tool_clip(clip_candidates: Array[String]) -> float:
 	anim_player.speed_scale = 1.0
 	anim_player.play(picked_path, 0.12)
 	return picked_len
+
+
+func start_floor_rest_loop() -> bool:
+	if anim_player == null:
+		return false
+	if is_animation_locked():
+		return false
+	var down_path := _anim_path(_ANIM_SIT_FLOOR_DOWN)
+	var idle_path := _anim_path(_ANIM_SIT_FLOOR_IDLE)
+	if not anim_player.has_animation(down_path) or not anim_player.has_animation(idle_path):
+		return false
+	_rest_floor_looping = true
+	_action_state = ActionState.TOOL_ACTION
+	anim_player.speed_scale = 1.0
+	anim_player.play(down_path, 0.12)
+	return true
+
+
+func stop_floor_rest_loop() -> float:
+	if anim_player == null:
+		return -1.0
+	if not _rest_floor_looping:
+		return -1.0
+	_rest_floor_looping = false
+	var stand_path := _anim_path(_ANIM_SIT_FLOOR_STAND_UP)
+	if not anim_player.has_animation(stand_path):
+		cancel_tool_action()
+		return -1.0
+	var stand_anim: Animation = anim_player.get_animation(stand_path)
+	var dur := maxf(0.01, stand_anim.length) if stand_anim != null else 0.8
+	_action_state = ActionState.TOOL_ACTION
+	anim_player.speed_scale = 1.0
+	anim_player.play(stand_path, 0.08)
+	return dur
+
+
+func is_floor_resting() -> bool:
+	return _rest_floor_looping
 
 
 func get_hand_slot(is_right: bool = true) -> BoneAttachment3D:
