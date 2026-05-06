@@ -6,8 +6,8 @@
 [ext_resource type="Script" uid="uid://cqchiskk3d77e" path="res://entities/building_parts/campfire.gd" id="sf_script"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_2xsqb"]
-radius = 0.56
-height = 1.965
+radius = 0.27
+height = 1.53
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cfsmoke"]
 direction = Vector3(0, 1, 0)
@@ -110,6 +110,7 @@ data = PackedVector3Array(-0.0314, 0.22379999, 0.3832, -0.0255, 0.1629, 0.437899
 transform = Transform3D(0.9999441, 0.01053885, -0.00072702765, -0.010500949, 0.9991309, 0.04033836, 0.0011515021, -0.04032847, 0.9991857, 0, 0, 0)
 script = ExtResource("sf_script")
 charcoal_per_logs_burned = 1
+initial_logs_on_ignite = 0
 
 [node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=281800084]
 transform = Transform3D(1.0000001, -3.3833203e-10, 1.3620593e-08, 1.9645086e-10, 1, -1.1175871e-08, 0, 0, 1.0000002, 0.68357366, 0.58808625, 1.7114747)

@@ -27,6 +27,8 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var rest_safe_min_distance: float = 1.35
 @export var rest_safe_max_distance: float = 4.5
 @export var rest_snap_distance: float = 3.7
+## While fuel is in the last N seconds, fire/light/smoke scale down before hiding.
+@export var fire_fade_out_seconds: float = 2.25
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
 @export var campfire_recipe_ids: PackedStringArray = PackedStringArray()
 
@@ -77,33 +79,36 @@ func _init_slot_arrays() -> void:
 func _process(delta: float) -> void:
 	if _is_lit:
 		_fuel_seconds = maxf(0.0, _fuel_seconds - delta)
+		var fade_mult := 1.0
+		if fire_fade_out_seconds > 0.0 and _fuel_seconds <= fire_fade_out_seconds:
+			fade_mult = clampf(_fuel_seconds / fire_fade_out_seconds, 0.0, 1.0)
 		if _fuel_seconds <= 0.0:
-			if not _try_consume_next_log():
-				if auto_extinguish_when_empty:
-					extinguish()
-					_update_status_label()
-					return
-		_tick_visuals(delta)
+			if auto_extinguish_when_empty:
+				extinguish()
+				_update_status_label()
+				return
+		_tick_visuals(delta, fade_mult)
 		_tick_cooking(delta)
 		_tick_low_fuel_warning()
 	_update_status_label()
 
 
-func _tick_visuals(delta: float) -> void:
+func _tick_visuals(delta: float, fade_mult: float = 1.0) -> void:
 	_flicker_t += delta * 4.4
 	var wave: float = sin(_flicker_t) * 0.58 + sin(_flicker_t * 0.41 + 0.75) * 0.33
-	_light.light_energy = maxf(0.1, 2.15 + wave * 0.45)
-	_light.omni_range = maxf(1.0, 10.5 + wave * 1.15)
-	var fuel_norm: float = clampf(_fuel_seconds / 240.0, 0.35, 1.0)
+	var energy_base := maxf(0.1, 2.15 + wave * 0.45) * fade_mult
+	_light.light_energy = energy_base
+	_light.omni_range = maxf(1.0, 10.5 + wave * 1.15) * lerpf(0.35, 1.0, fade_mult)
+	var fuel_norm: float = clampf(_fuel_seconds / 240.0, 0.35, 1.0) * fade_mult
 	if _fire_mesh != null:
-		var s: float = lerpf(0.72, 1.04, fuel_norm) * (1.0 + wave * 0.035)
+		var s: float = lerpf(0.72, 1.04, fuel_norm) * (1.0 + wave * 0.035) * lerpf(0.15, 1.0, fade_mult)
 		_fire_mesh.scale = Vector3(s, s, s)
 	if _smoke != null:
-		_smoke.amount_ratio = clampf(lerpf(0.35, 1.0, fuel_norm), 0.2, 1.0)
+		_smoke.amount_ratio = clampf(lerpf(0.35, 1.0, fuel_norm), 0.05, 1.0)
 
 
 func _tick_low_fuel_warning() -> void:
-	if _fuel_seconds <= _LOW_FUEL_WARNING_SEC and _total_logs_in_slots() <= 0:
+	if _fuel_seconds <= _LOW_FUEL_WARNING_SEC and _fuel_seconds > 0.0001:
 		if not _low_fuel_warned:
 			_low_fuel_warned = true
 			_notify_nearby("The fire is dying. Add logs.")
@@ -226,6 +231,8 @@ func _action_add_log(player: Node) -> void:
 		return
 	InventoryService.remove_item(item_id, 1)
 	_log_slots[slot_idx] = {"id": item_id}
+	if _is_lit:
+		_fuel_seconds += float(_get_burn_seconds_for(item_id))
 	_save_state()
 	_apply_log_visuals()
 	var dname: String = InventoryService.get_item_display_name(item_id)
@@ -257,7 +264,7 @@ func _action_light_fire(player: Node) -> void:
 		player.finish_campfire_ignite_animation()
 	_is_lit = true
 	if _fuel_seconds <= 0.0:
-		_try_consume_next_log()
+		_pool_all_logs_into_fuel()
 	_low_fuel_warned = false
 	_restore_off_hand_state(player, restore_off_hand)
 	_ignition_in_progress = false
@@ -489,23 +496,20 @@ func _pull_cookable_into_active(item_id: String) -> Dictionary:
 	}
 
 
-func _try_consume_next_log() -> bool:
+## Pull burn time from every slotted log into the fuel pool without removing visuals yet.
+func _pool_all_logs_into_fuel() -> void:
+	var total := 0.0
 	for i in LOG_SLOT_COUNT:
 		var s: Variant = _log_slots[i]
 		if s == null:
 			continue
+		if typeof(s) != TYPE_DICTIONARY:
+			continue
 		var item_id := str((s as Dictionary).get("id", ""))
 		if item_id.is_empty():
-			_log_slots[i] = null
 			continue
-		var burn := _get_burn_seconds_for(item_id)
-		_log_slots[i] = null
-		_fuel_seconds += float(burn)
-		_logs_burned_counter += 1
-		_mint_charcoal_from_logs()
-		_apply_log_visuals()
-		return true
-	return false
+		total += float(_get_burn_seconds_for(item_id))
+	_fuel_seconds += total
 
 
 func _get_burn_seconds_for(item_id: String) -> int:
@@ -530,7 +534,9 @@ func light_fire(_logs_to_add: int = 0) -> void:
 		return
 	_is_lit = true
 	if _fuel_seconds <= 0.0:
-		if not _try_consume_next_log():
+		if _total_logs_in_slots() > 0:
+			_pool_all_logs_into_fuel()
+		else:
 			_fuel_seconds = float(seconds_per_log)
 	_low_fuel_warned = false
 	_save_state()
@@ -538,7 +544,14 @@ func light_fire(_logs_to_add: int = 0) -> void:
 
 
 func extinguish() -> void:
+	var n_logs := _total_logs_in_slots()
+	if n_logs > 0:
+		_logs_burned_counter += n_logs
+		_mint_charcoal_from_logs()
+	for i in LOG_SLOT_COUNT:
+		_log_slots[i] = null
 	_is_lit = false
+	_fuel_seconds = 0.0
 	_low_fuel_warned = false
 	_save_state()
 	_apply_visuals()
@@ -634,17 +647,7 @@ func _format_seconds(seconds: int) -> String:
 
 
 func _total_fire_seconds_remaining() -> int:
-	var total: int = maxi(0, int(ceil(_fuel_seconds)))
-	for slot in _log_slots:
-		if slot == null:
-			continue
-		if typeof(slot) != TYPE_DICTIONARY:
-			continue
-		var item_id := str((slot as Dictionary).get("id", ""))
-		if item_id.is_empty():
-			continue
-		total += maxi(0, _get_burn_seconds_for(item_id))
-	return total
+	return maxi(0, int(ceil(_fuel_seconds)))
 
 
 # ----- Save / load --------------------------------------------------------
