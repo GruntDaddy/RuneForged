@@ -354,7 +354,7 @@ transform = Transform3D(-0.07033638, -0.21421123, -0.9742516, 0.9956169, 0.04527
 transform = Transform3D(0.020789335, -0.587465, -0.8089828, -0.99931085, -0.037103962, 0.0012636464, -0.03075881, 0.8083986, -0.58783114, 219.10597, 10.023055, 377.45813)
 
 [node name="Tinderbox" parent="TutorialIsleGear" unique_id=530989741 instance=ExtResource("7_3x6k3")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 217.61766, 10.017235, 376.90564)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 217.61766, 10.025494, 376.90564)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 223.44919, 9.953686, 382.90683)
@@ -374,7 +374,7 @@ transform = Transform3D(0.13606136, 0.008818286, -0.99066114, 0, 0.9999605, 0.00
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -10.216019, 0, 1.6967468)
 
 [node name="Rooster" parent="Wildlife" unique_id=2061071183 instance=ExtResource("animal_rooster")]
-transform = Transform3D(0.5855678, 0, 1.1043597, 0, 1.25, 0, -1.1043597, 0, 0.5855678, -7.6874695, 0, 7.576996)
+transform = Transform3D(0.5855678, 0, 1.1043597, 0, 1.25, 0, -1.1043597, 0, 0.5855678, -7.6874695, -0.2237091, 7.576996)
 facing_yaw_offset = 0.25
 
 [node name="Chick" parent="Wildlife" unique_id=1315208478 instance=ExtResource("animal_chick")]
@@ -440,7 +440,7 @@ transform = Transform3D(0.06604755, 0, -0.9978165, 0, 1, 0, 0.9978165, 0, 0.0660
 [node name="Buildings" parent="." unique_id=576262690 instance=ExtResource("10_gypqo")]
 
 [node name="Building_Church_Red" parent="Buildings" unique_id=970642371 instance=ExtResource("33_rwr6f")]
-transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747, 123.12158, 19.78211, 339.85956)
+transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747, 24.38453, 34.724457, 148.02827)
 
 [node name="Props" type="Node3D" parent="." unique_id=1982939143]
 

@@ -19,16 +19,16 @@ const _PATH_BGM_WORLD_MP3 := "res://assets/audio/The New Kingdom.mp3"
 
 const _PATH_BGM_FALLBACK_MP3 := "res://assets/audio/Campfire Loop.mp3"
 
-const _PATH_UI_SWITCH := "res://assets/sfx/UI Audio/Audio/switch22.ogg"
-const _PATH_UI_CONFIRM := "res://assets/sfx/UI Audio/Audio/switch29.ogg"
-const _PATH_UI_TAB := "res://assets/sfx/Interface Sounds/Audio/switch_003.ogg"
-const _PATH_BOOK_OPEN := "res://assets/sfx/RPG Audio/Audio/bookOpen.ogg"
-const _PATH_BOOK_CLOSE := "res://assets/sfx/RPG Audio/Audio/bookClose.ogg"
-const _PATH_BOOK_FLIP := "res://assets/sfx/RPG Audio/Audio/bookFlip2.ogg"
+const _PATH_UI_SWITCH := "res://assets/audio/sfx/UI Audio/Audio/switch22.ogg"
+const _PATH_UI_CONFIRM := "res://assets/audio/sfx/UI Audio/Audio/switch29.ogg"
+const _PATH_UI_TAB := "res://assets/audio/sfx/Interface Sounds/Audio/switch_003.ogg"
+const _PATH_BOOK_OPEN := "res://assets/audio/sfx/RPG Audio/Audio/bookOpen.ogg"
+const _PATH_BOOK_CLOSE := "res://assets/audio/sfx/RPG Audio/Audio/bookClose.ogg"
+const _PATH_BOOK_FLIP := "res://assets/audio/sfx/RPG Audio/Audio/bookFlip2.ogg"
 
-const _PATH_BOW_RELEASE := "res://assets/sfx/Impact Sounds/Audio/impactGeneric_light_000.ogg"
-const _PATH_SPELL_CAST := "res://assets/sfx/Impact Sounds/Audio/impactBell_heavy_001.ogg"
-const _PATH_MELEE_DEFAULT_HIT := "res://assets/sfx/Impact Sounds/Audio/impactMetal_medium_001.ogg"
+const _PATH_BOW_RELEASE := "res://assets/audio/sfx/Impact Sounds/Audio/impactGeneric_light_000.ogg"
+const _PATH_SPELL_CAST := "res://assets/audio/sfx/Impact Sounds/Audio/impactBell_heavy_001.ogg"
+const _PATH_MELEE_DEFAULT_HIT := "res://assets/audio/sfx/Impact Sounds/Audio/impactMetal_medium_001.ogg"
 
 const _PATH_BEAST_ROAR := "res://assets/audio/Beast Fury Roar.mp3"
 
@@ -64,19 +64,32 @@ var _snd_beast_roar: AudioStream
 var _snd_bgm_fallback: AudioStream
 
 
+func _try_load_stream(path: String, label: String) -> AudioStream:
+	if path.is_empty():
+		return null
+	if not ResourceLoader.exists(path):
+		push_warning("GameAudio: missing %s — %s" % [label, path])
+		return null
+	var res: Resource = load(path)
+	if res is AudioStream:
+		return res as AudioStream
+	push_warning("GameAudio: not an AudioStream for %s — %s" % [label, path])
+	return null
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_snd_ui_switch = load(_PATH_UI_SWITCH) as AudioStream
-	_snd_ui_confirm = load(_PATH_UI_CONFIRM) as AudioStream
-	_snd_ui_tab = load(_PATH_UI_TAB) as AudioStream
-	_snd_book_open = load(_PATH_BOOK_OPEN) as AudioStream
-	_snd_book_close = load(_PATH_BOOK_CLOSE) as AudioStream
-	_snd_book_flip = load(_PATH_BOOK_FLIP) as AudioStream
-	_snd_bow = load(_PATH_BOW_RELEASE) as AudioStream
-	_snd_spell = load(_PATH_SPELL_CAST) as AudioStream
-	_snd_melee_default = load(_PATH_MELEE_DEFAULT_HIT) as AudioStream
-	_snd_beast_roar = load(_PATH_BEAST_ROAR) as AudioStream
-	_snd_bgm_fallback = load(_PATH_BGM_FALLBACK_MP3) as AudioStream
+	_snd_ui_switch = _try_load_stream(_PATH_UI_SWITCH, "UI hover")
+	_snd_ui_confirm = _try_load_stream(_PATH_UI_CONFIRM, "UI confirm")
+	_snd_ui_tab = _try_load_stream(_PATH_UI_TAB, "UI tab")
+	_snd_book_open = _try_load_stream(_PATH_BOOK_OPEN, "book open")
+	_snd_book_close = _try_load_stream(_PATH_BOOK_CLOSE, "book close")
+	_snd_book_flip = _try_load_stream(_PATH_BOOK_FLIP, "book flip")
+	_snd_bow = _try_load_stream(_PATH_BOW_RELEASE, "bow release")
+	_snd_spell = _try_load_stream(_PATH_SPELL_CAST, "spell cast")
+	_snd_melee_default = _try_load_stream(_PATH_MELEE_DEFAULT_HIT, "melee hit")
+	_snd_beast_roar = _try_load_stream(_PATH_BEAST_ROAR, "beast roar")
+	_snd_bgm_fallback = _try_load_stream(_PATH_BGM_FALLBACK_MP3, "BGM fallback (Campfire)")
 	_music = AudioStreamPlayer.new()
 	# Same routing as other gameplay audio; splash roar uses this node successfully.
 	_music.bus = "Master"

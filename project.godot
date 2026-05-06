@@ -233,7 +233,7 @@ sgt_wind_direction={
 }
 sgt_wind_movement={
 "type": "vec3",
-"value": Vector2(0, 0)
+"value": Vector3(0, 0, 0)
 }
 sgt_wind_strength={
 "type": "float",
