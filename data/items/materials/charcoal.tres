@@ -7,5 +7,6 @@ script = ExtResource("1_item")
 id = "charcoal"
 display_name = "Charcoal"
 description = "Fuel-rich charcoal produced from burned logs."
+pickup_scene_path = "res://entities/resource/resource_pickup_charcoal.tscn"
 max_stack = 99
 tags = PackedStringArray("material", "fuel", "charcoal")

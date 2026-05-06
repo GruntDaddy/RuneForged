@@ -58,6 +58,11 @@ var _ignition_in_progress: bool = false
 var _legacy_log_spill: Dictionary = {}
 var _low_fuel_warned: bool = false
 
+## After fuel runs out: logs stay black until player collects charcoal via [F] (`interact_secondary`).
+var _ash_waiting_pickup: bool = false
+var _pending_charcoal_count: int = 0
+var _log_material_backup: Dictionary = {}
+
 
 func _ready() -> void:
 	_init_slot_arrays()
@@ -162,6 +167,9 @@ func _finish_cook() -> void:
 
 func get_interaction_prompts(player: Node) -> Array:
 	var prompts: Array = []
+	if _ash_waiting_pickup:
+		prompts.append({"action": "interact_secondary", "label": "Collect charcoal"})
+		return prompts
 	var has_unlit_torch: bool = _is_lit and _player_has_unlit_torch_equipped()
 	if has_unlit_torch:
 		prompts.append({"action": "interact", "label": "Light Torch"})
@@ -197,6 +205,9 @@ func get_interaction_prompt(player: Node) -> String:
 func interact(player: Node) -> bool:
 	if player == null:
 		return false
+	if _ash_waiting_pickup:
+		_notify_player(player, "Press [F] to collect charcoal from the ash.")
+		return true
 	if _is_lit and _try_light_equipped_torch(player):
 		return true
 	_action_add_log(player)
@@ -208,7 +219,10 @@ func interact_with_action(player: Node, action_id: String) -> bool:
 		return false
 	match action_id:
 		"interact_secondary":
-			_action_light_fire(player)
+			if _ash_waiting_pickup:
+				_collect_charcoal(player)
+			else:
+				_action_light_fire(player)
 		"interact_tertiary":
 			_action_toggle_cook(player)
 		"interact_quaternary":
@@ -240,6 +254,9 @@ func _action_add_log(player: Node) -> void:
 
 
 func _action_light_fire(player: Node) -> void:
+	if _ash_waiting_pickup:
+		_notify_player(player, "Collect charcoal from the ash first.")
+		return
 	if _is_lit:
 		return
 	if _ignition_in_progress:
@@ -425,6 +442,8 @@ func _play_ignite_animation(player: Node) -> float:
 
 
 func _can_add_log_now() -> bool:
+	if _ash_waiting_pickup:
+		return false
 	if _find_empty_log_slot() < 0:
 		return false
 	return not _find_best_log_in_inventory().is_empty()
@@ -530,6 +549,8 @@ func _total_logs_in_slots() -> int:
 # ----- Lifecycle / visuals ------------------------------------------------
 
 func light_fire(_logs_to_add: int = 0) -> void:
+	if _ash_waiting_pickup:
+		return
 	if _is_lit:
 		return
 	_is_lit = true
@@ -545,16 +566,54 @@ func light_fire(_logs_to_add: int = 0) -> void:
 
 func extinguish() -> void:
 	var n_logs := _total_logs_in_slots()
-	if n_logs > 0:
+	var had_logs := n_logs > 0
+	if had_logs:
 		_logs_burned_counter += n_logs
-		_mint_charcoal_from_logs()
+		_compute_pending_charcoal_from_counter()
 	for i in LOG_SLOT_COUNT:
 		_log_slots[i] = null
 	_is_lit = false
 	_fuel_seconds = 0.0
 	_low_fuel_warned = false
+	if had_logs:
+		_ash_waiting_pickup = true
+		_apply_burned_logs_visual(true)
+	else:
+		_ash_waiting_pickup = false
+		_pending_charcoal_count = 0
 	_save_state()
 	_apply_visuals()
+
+
+func _compute_pending_charcoal_from_counter() -> void:
+	_pending_charcoal_count = 0
+	if charcoal_per_logs_burned <= 0:
+		return
+	var grants := int(floor(float(_logs_burned_counter) / float(charcoal_per_logs_burned)))
+	if grants <= 0:
+		return
+	_logs_burned_counter -= grants * charcoal_per_logs_burned
+	_pending_charcoal_count = grants
+
+
+func _collect_charcoal(player: Node) -> void:
+	if not _ash_waiting_pickup:
+		return
+	var n := maxi(0, _pending_charcoal_count)
+	if n > 0:
+		var left: int = InventoryService.add_item("charcoal", n)
+		if left > 0:
+			_pending_charcoal_count = left
+			_notify_player(player, "Inventory full — couldn't carry all charcoal.")
+			return
+	_pending_charcoal_count = 0
+	_ash_waiting_pickup = false
+	_apply_burned_logs_visual(false)
+	_save_state()
+	_apply_visuals()
+	if player != null:
+		var msg := "Ash cleared." if n <= 0 else "Collected charcoal."
+		_notify_player(player, msg)
 
 
 func _apply_rest_and_save(player: Node) -> void:
@@ -571,16 +630,6 @@ func _apply_rest_and_save(player: Node) -> void:
 	if sm != null and sm.has_method("save_game"):
 		sm.save_game()
 	_notify_player(player, "You rest by the fire. Game saved.")
-
-
-func _mint_charcoal_from_logs() -> void:
-	if charcoal_per_logs_burned <= 0:
-		return
-	var grants := int(floor(float(_logs_burned_counter) / float(charcoal_per_logs_burned)))
-	if grants <= 0:
-		return
-	_logs_burned_counter -= grants * charcoal_per_logs_burned
-	InventoryService.add_item("charcoal", grants)
 
 
 func _notify_player(player: Node, msg: String) -> void:
@@ -617,17 +666,47 @@ func _apply_visuals() -> void:
 
 func _apply_log_visuals() -> void:
 	if _logs_visual != null:
-		_logs_visual.visible = _total_logs_in_slots() > 0
+		_logs_visual.visible = _total_logs_in_slots() > 0 or _ash_waiting_pickup
+
+
+func _apply_burned_logs_visual(active: bool) -> void:
+	if _logs_visual == null:
+		return
+	if active:
+		if not _log_material_backup.is_empty():
+			return
+		for mi in _logs_visual.find_children("*", "MeshInstance3D", true, false):
+			var mesh_i := mi as MeshInstance3D
+			if mesh_i == null:
+				continue
+			if _log_material_backup.has(mesh_i):
+				continue
+			_log_material_backup[mesh_i] = mesh_i.material_override
+			var ash := StandardMaterial3D.new()
+			ash.albedo_color = Color(0.07, 0.065, 0.06, 1.0)
+			ash.roughness = 0.94
+			mesh_i.material_override = ash
+	else:
+		for k in _log_material_backup.keys():
+			var mesh_i := k as MeshInstance3D
+			if mesh_i != null and is_instance_valid(mesh_i):
+				mesh_i.material_override = _log_material_backup[k]
+		_log_material_backup.clear()
 
 
 func _update_status_label() -> void:
 	if _status_label == null:
 		return
-	var should_show: bool = _is_lit or not _cook_active.is_empty()
+	var should_show: bool = _is_lit or not _cook_active.is_empty() or _ash_waiting_pickup
 	_status_label.visible = should_show
 	if not should_show:
 		return
 	var lines: Array[String] = []
+	if _ash_waiting_pickup:
+		if _pending_charcoal_count > 0:
+			lines.append("Charcoal in ash — [F] to collect")
+		else:
+			lines.append("Ash pile — [F] to clear")
 	if _is_lit:
 		lines.append("Fire: %s" % _format_seconds(_total_fire_seconds_remaining()))
 	if not _cook_active.is_empty():
@@ -709,6 +788,8 @@ func _load_state() -> void:
 		_is_lit = start_lit
 		_fuel_seconds = float(seconds_per_log) if start_lit else 0.0
 		_logs_burned_counter = 0
+		_ash_waiting_pickup = false
+		_pending_charcoal_count = 0
 		return
 	var key: String = _state_key()
 	if "world_fire_states" in gs and gs.world_fire_states.has(key):
@@ -730,10 +811,16 @@ func _load_state() -> void:
 				_cook_active = {}
 				_cook_progress_sec = 0.0
 			_cook_auto_enabled = bool(d.get("cook_auto_enabled", false))
+			_ash_waiting_pickup = bool(d.get("ash_waiting_pickup", false))
+			_pending_charcoal_count = maxi(0, int(d.get("pending_charcoal_count", 0)))
+			if _ash_waiting_pickup:
+				call_deferred("_apply_burned_logs_visual", true)
 			return
 	_is_lit = start_lit
 	_fuel_seconds = float(seconds_per_log) if start_lit else 0.0
 	_logs_burned_counter = 0
+	_ash_waiting_pickup = false
+	_pending_charcoal_count = 0
 
 
 func _save_state() -> void:
@@ -748,4 +835,6 @@ func _save_state() -> void:
 		"cook_active": _cook_active.duplicate(true),
 		"cook_progress_sec": _cook_progress_sec,
 		"cook_auto_enabled": _cook_auto_enabled,
+		"ash_waiting_pickup": _ash_waiting_pickup,
+		"pending_charcoal_count": _pending_charcoal_count,
 	}

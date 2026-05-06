@@ -37,6 +37,8 @@
   - **`cook_active`**: optional dictionary describing the single in-progress auto-cook entry: `{ "id": String, "cooked_id": String, "burned_id": String, "difficulty": float }`. Empty/missing means nothing is cooking.
   - **`cook_progress_sec`**: optional float (0–`COOK_TIME_SEC`) for the active cook entry. Defaults to `0.0`.
   - **`cook_auto_enabled`**: optional bool — whether the campfire is configured to auto-pull cookables from inventory. Defaults to `false`.
+  - **`ash_waiting_pickup`**: optional bool — campfire has cooled with charcoal left in the ash pile until collected via `[F]` (`interact_secondary`). Defaults to `false`.
+  - **`pending_charcoal_count`**: optional int — charcoal units staged for pickup while `ash_waiting_pickup` is true. Defaults to `0`.
 
 Legacy `cook_slots` (array of 2) and array-form `cook_progress_sec` written by pre-rework campfires are silently ignored on load. Legacy `log_slots` entries with `count > 1` are migrated by retaining one log per slot and spilling the surplus back into the player's inventory on first load.
 - **`placed_fire_nodes`**: array of dictionaries for player-placed fire props:
