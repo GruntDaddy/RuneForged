@@ -2416,7 +2416,8 @@ func play_campfire_ignite_animation() -> float:
 		return -1.0
 	if not base_character.has_method("try_play_shortest_tool_clip"):
 		return -1.0
-	return float(base_character.try_play_shortest_tool_clip(["Lockpick", "Lockpicking"]))
+	var clip_candidates: Array[String] = ["Lockpick", "Lockpicking"]
+	return float(base_character.try_play_shortest_tool_clip(clip_candidates))
 
 
 func finish_campfire_ignite_animation() -> void:
