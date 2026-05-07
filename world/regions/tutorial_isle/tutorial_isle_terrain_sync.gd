@@ -1,6 +1,8 @@
 extends Node3D
 ## Keeps Terrain3D isle biome `sea_level_y` in sync with the `Water` node, and pushes tree XZ
 ## positions for procedural dirt rings under trunks (shader reads `tree_dirt_patches`).
+##
+## **Terrain3D:** Main island uses node `Terrain3D`, group `terrain3d`, data `res://data/terrain3d`. If you add a second overlay terrain (e.g. paths), resolve gameplay height via [Terrain3DPrimaryResolver] or group `terrain3d`, not arbitrary `find_children` order.
 
 const _MAX_TREE_PATCHES := 48
 

@@ -30,3 +30,8 @@ RuneForged is a Godot 4 action RPG with itemization, runes, combat systems, UI-d
 - Keep gameplay logic out of UI when possible
 - Do not create new global systems casually
 - Ask before large refactors
+
+## Terrain3D (tutorial isle)
+- **Where it lives:** `Terrain3D` is defined in [`world/regions/tutorial_isle/tutorial_isle_environment.tscn`](world/regions/tutorial_isle/tutorial_isle_environment.tscn) (root node `TutorialIsleEnvironment`). The overworld [`tutorial_isle.tscn`](world/regions/tutorial_isle/tutorial_isle.tscn) **instances** that file as **`Environment`**. In the Scene dock **expand that instance**, enable **Editable Children**, or **open `tutorial_isle_environment.tscn`** — terrain nodes are not direct children of `TutorialIsle`.
+- **Plugin:** Project → Project Settings → Plugins → **Terrain3D** enabled; region data under `res://data/terrain3d` (see node `data_directory`).
+- **Play vs edit:** Use **Run Project** (or load into overworld from the menu flow). **Run Current Scene** on e.g. `player.tscn` alone will not load the island terrain.

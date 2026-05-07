@@ -18,3 +18,14 @@ Fill in the table when you cut a stable tag (copy row into `docs/release-vX.Y.Z.
 ## Secrets
 
 Never commit Android keystores, Steam SDK secrets, or API keys. Keep those in local-only overrides or CI secrets.
+
+## Editor: Terrain3D vendor noise
+
+The Terrain3D addon ships **demo** and **examples** trees that are not part of RuneForged gameplay. To keep the FileSystem dock focused on your content, the repo uses an **empty `.gdignore` file** in:
+
+- `addons/terrain_3d/demo/`
+- `addons/terrain_3d/examples/`
+
+Godot hides those folders from the editor dock. To open a stock demo scene, delete or rename the `.gdignore` in that folder and reload the project. The `examples/terrain.tscn` flow may require the **Terrainy** editor plugin; that plugin is not enabled in `project.godot` by default.
+
+When you create a local **`export_presets.cfg`**, add **export exclude filters** for the same paths so builds do not pack vendor demos (exact glob syntax depends on the Godot version; use the Export dialog’s “Filters to export non-resource files” / exclude list and mirror that in committed templates if you add `export_presets.example.cfg`).

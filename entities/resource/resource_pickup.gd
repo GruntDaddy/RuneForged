@@ -1,6 +1,7 @@
 extends Area3D
 
 const _InventoryService = preload("res://autoload/inventory_service.gd")
+const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
 
 @export var resource_type: String = "logs"
 @export var quantity: int = 1
@@ -13,6 +14,8 @@ const _InventoryService = preload("res://autoload/inventory_service.gd")
 @export var auto_snap_visual_to_ground: bool = false
 ## After landing, nudge the root so mesh bottom matches terrain probe (fixes log vs sphere origin).
 @export var align_bottom_to_ground_on_settle: bool = true
+## When set, height queries use this terrain (main island). Otherwise uses group `terrain3d`, then the first Terrain3D that is not the paths overlay.
+@export var terrain_override: Terrain3D
 
 var _velocity: Vector3 = Vector3.ZERO
 var _is_airborne: bool = false
@@ -74,13 +77,12 @@ func _find_terrain_3d() -> Node:
 	if is_instance_valid(_terrain_3d_cache) and _terrain_3d_cache.is_inside_tree():
 		return _terrain_3d_cache
 	_terrain_3d_cache = null
-	var root := get_tree().root
-	if root == null:
+	var tree := get_tree()
+	if tree == null:
 		return null
-	var found: Array[Node] = root.find_children("*", "Terrain3D", true, false)
-	if found.is_empty():
-		return null
-	_terrain_3d_cache = found[0]
+	var t: Terrain3D = _Terrain3DPrimaryResolver.find_primary(tree, terrain_override)
+	if t != null:
+		_terrain_3d_cache = t
 	return _terrain_3d_cache
 
 

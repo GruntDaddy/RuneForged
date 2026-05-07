@@ -275,6 +275,13 @@ func _terrain_height_data_at_feet() -> float:
 	return h
 
 
+func _terrain_height_data_at_feet_pos(world_pos: Vector3) -> float:
+	var t := _get_terrain3d()
+	if t == null or t.data == null:
+		return NAN
+	return t.data.get_height(world_pos)
+
+
 ## Last-resort: stop fall-through when there is no floor contact. When [method CharacterBody3D.is_on_floor] is already true, physics has resolved contact — do not raise the body or [Terrain3DData.get_height] + offsets can sit above the collision solve and cause hovering.
 func _clamp_land_above_terrain_heightfield() -> void:
 	if aquatic:
@@ -619,6 +626,11 @@ func _snap_drop_to_ground(drop_node: Node3D) -> void:
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.size() > 0:
 		drop_node.global_position.y = (hit["position"] as Vector3).y + 0.06
+		return
+	# Dynamic Terrain3D collision may not exist at this XZ — match resource_pickup / clamp logic.
+	var hf := _terrain_height_data_at_feet_pos(drop_node.global_position)
+	if not is_nan(hf):
+		drop_node.global_position.y = hf + 0.06
 
 
 func _schedule_respawn() -> void:

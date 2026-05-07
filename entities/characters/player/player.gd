@@ -21,6 +21,7 @@ const _H_INV_FULL := 3
 
 const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 const _DefaultHitVfxScene: PackedScene = preload("res://entities/effects/hit_spark_burst.tscn")
+const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
 
 ## Extra contextual interact keys forwarded to interactables that opt into multi-prompt UX.
 const INTERACT_EXTRA_ACTIONS: Array[String] = [
@@ -1646,10 +1647,17 @@ func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
 	q.collide_with_bodies = true
 	q.exclude = _projectile_exclude_rids()
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	var place_pos: Vector3
+	var nrm: Vector3
 	if hit.is_empty():
-		return {"valid": false, "position": target, "normal": Vector3.UP, "reason": "Need solid ground to place this."}
-	var place_pos := hit["position"] as Vector3
-	var nrm := (hit.get("normal", Vector3.UP) as Vector3).normalized()
+		var hf: float = _Terrain3DPrimaryResolver.height_at_world(get_tree(), target)
+		if is_nan(hf):
+			return {"valid": false, "position": target, "normal": Vector3.UP, "reason": "Need solid ground to place this."}
+		place_pos = Vector3(target.x, hf, target.z)
+		nrm = Vector3.UP
+	else:
+		place_pos = hit["position"] as Vector3
+		nrm = (hit.get("normal", Vector3.UP) as Vector3).normalized()
 	var check := SphereShape3D.new()
 	var radius := 0.35
 	if item_id == "campfire_kit":
