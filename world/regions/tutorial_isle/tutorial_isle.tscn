@@ -1,10 +1,7 @@
 [gd_scene format=4 uid="uid://cj88e5jeos7lm"]
 
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
-[ext_resource type="PackedScene" uid="uid://i20it4m1p2vu" path="res://world/pickups/hatchet_basic_pickup.tscn" id="4_rwr6f"]
-[ext_resource type="PackedScene" uid="uid://mjq201k51687" path="res://world/pickups/tool_torch_pickup.tscn" id="5_8pv40"]
-[ext_resource type="PackedScene" uid="uid://dsbck7u367kfk" path="res://world/pickups/tool_torch_burnt_pickup.tscn" id="6_3x6k3"]
-[ext_resource type="PackedScene" uid="uid://dpbhu47xdy13l" path="res://entities/building_parts/tinderbox.tscn" id="7_3x6k3"]
+[ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="4_isg8b"]
 [ext_resource type="PackedScene" uid="uid://w8vscph1wpmv" path="res://world/regions/tutorial_isle/tutorial_isle_buildings.tscn" id="10_gypqo"]
 [ext_resource type="PackedScene" uid="uid://b7dacipqpquux" path="res://entities/building_parts/anvil.tscn" id="12_rwr6f"]
 [ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/tutorial_isle/tutorial_isle_harvestables.tscn" id="15_8pv40"]
@@ -341,20 +338,8 @@ script = ExtResource("75_tutorial_isle_script")
 
 [node name="TutorialIsleMaterials" parent="." unique_id=1395670469 instance=ExtResource("tutorial_isle_mat_inst")]
 
-[node name="TutorialIsleGear" type="Node3D" parent="." unique_id=1524291900]
+[node name="TutorialIsleGear" parent="." unique_id=1634643593 instance=ExtResource("4_isg8b")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -1.5507965)
-
-[node name="Hatchet_Basic" parent="TutorialIsleGear" unique_id=2089678677 instance=ExtResource("4_rwr6f")]
-transform = Transform3D(-0.15782088, -0.5123048, -0.8441786, 0.794588, 0.4416802, -0.4165914, 0.5862787, -0.7365206, 0.33736467, 218.67253, 11.458391, 376.66547)
-
-[node name="Torch" parent="TutorialIsleGear" unique_id=999478024 instance=ExtResource("5_8pv40")]
-transform = Transform3D(-0.07033638, -0.21421123, -0.9742516, 0.9956169, 0.04527901, -0.08183446, 0.06164305, -0.97573745, 0.21008772, 223.05359, 9.893401, 376.53235)
-
-[node name="Torch_Burnt" parent="TutorialIsleGear" unique_id=558971390 instance=ExtResource("6_3x6k3")]
-transform = Transform3D(0.020789335, -0.587465, -0.8089828, -0.99931085, -0.037103962, 0.0012636464, -0.03075881, 0.8083986, -0.58783114, 219.10597, 10.023055, 377.45813)
-
-[node name="Tinderbox" parent="TutorialIsleGear" unique_id=530989741 instance=ExtResource("7_3x6k3")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 217.61766, 10.025494, 376.90564)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 223.44919, 9.953686, 382.90683)
