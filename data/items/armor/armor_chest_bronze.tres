@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="ArmorData" format=3]
+[gd_resource type="Resource" script_class="ArmorData" format=3 uid="uid://2x8ytr3sl00v"]
 
-[ext_resource type="Script" path="res://data/schemas/armor_data.gd" id="1_ad"]
-[ext_resource type="Script" path="res://data/schemas/armor_stats.gd" id="2_as"]
+[ext_resource type="Script" uid="uid://0hoopiqiqiwo" path="res://data/schemas/armor_data.gd" id="1_ad"]
+[ext_resource type="Script" uid="uid://c452kc51gv6qw" path="res://data/schemas/armor_stats.gd" id="2_as"]
 
 [sub_resource type="Resource" id="Resource_as"]
 script = ExtResource("2_as")
-slot = 1
 armor_value = 7.0
 resist_physical = 0.08
 resist_magic = 0.01

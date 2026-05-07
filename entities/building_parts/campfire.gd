@@ -27,6 +27,8 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var rest_safe_min_distance: float = 1.35
 @export var rest_safe_max_distance: float = 4.5
 @export var rest_snap_distance: float = 3.7
+## Hide floating status text when the player is farther than this distance (meters).
+@export var status_label_max_distance_m: float = 10.0
 ## While fuel is in the last N seconds, fire/light/smoke scale down before hiding.
 @export var fire_fade_out_seconds: float = 2.25
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
@@ -65,6 +67,8 @@ var _log_material_backup: Dictionary = {}
 
 
 func _ready() -> void:
+	add_to_group("campfire_status")
+	_configure_status_label_visuals()
 	_init_slot_arrays()
 	_load_state()
 	_apply_visuals()
@@ -697,7 +701,7 @@ func _apply_burned_logs_visual(active: bool) -> void:
 func _update_status_label() -> void:
 	if _status_label == null:
 		return
-	var should_show: bool = _is_lit or not _cook_active.is_empty() or _ash_waiting_pickup
+	var should_show: bool = (_is_lit or not _cook_active.is_empty() or _ash_waiting_pickup) and _is_player_within_status_range() and _is_primary_campfire_for_player()
 	_status_label.visible = should_show
 	if not should_show:
 		return
@@ -714,6 +718,45 @@ func _update_status_label() -> void:
 		var raw_name: String = InventoryService.get_item_display_name(raw_id)
 		lines.append("Cooking %s: %ds / %ds" % [raw_name.to_lower(), int(_cook_progress_sec), int(COOK_TIME_SEC)])
 	_status_label.text = "\n".join(lines)
+
+
+func _is_player_within_status_range() -> bool:
+	var max_dist := maxf(0.1, status_label_max_distance_m)
+	var p := get_tree().get_first_node_in_group("player")
+	if not (p is Node3D):
+		return true
+	return global_position.distance_to((p as Node3D).global_position) <= max_dist
+
+
+func _is_primary_campfire_for_player() -> bool:
+	var p := get_tree().get_first_node_in_group("player")
+	if not (p is Node3D):
+		return true
+	var p3 := p as Node3D
+	var my_dist_sq := global_position.distance_squared_to(p3.global_position)
+	for n in get_tree().get_nodes_in_group("campfire_status"):
+		if n == self or not (n is Node3D):
+			continue
+		if not is_instance_valid(n):
+			continue
+		var other := n as Node3D
+		if global_position.is_equal_approx(other.global_position):
+			continue
+		var d2 := other.global_position.distance_squared_to(p3.global_position)
+		if d2 + 0.0001 < my_dist_sq:
+			return false
+	return true
+
+
+func _configure_status_label_visuals() -> void:
+	if _status_label == null:
+		return
+	_status_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_status_label.outline_modulate = Color(0.0, 0.0, 0.0, 1.0)
+	_status_label.no_depth_test = true
+	_status_label.render_priority = 127
+	_status_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_status_label.fixed_size = true
 
 
 func _format_seconds(seconds: int) -> String:

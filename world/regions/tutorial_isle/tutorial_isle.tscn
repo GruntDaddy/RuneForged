@@ -28,8 +28,8 @@
 [ext_resource type="PackedScene" uid="uid://ckakw5wih3ppy" path="res://entities/characters/animals/sheep.tscn" id="animal_sheep"]
 [ext_resource type="PackedScene" uid="uid://c7wssr6af3bno" path="res://entities/characters/animals/turkey.tscn" id="animal_turkey"]
 [ext_resource type="PackedScene" path="res://world/enemy_spawner.tscn" id="enemy_spawner_scene"]
-[ext_resource type="Resource" path="res://data/enemies/variants/skeleton_archer_t1.tres" id="enemy_variant_skeleton_archer"]
-[ext_resource type="Resource" path="res://data/enemies/variants/skeleton_melee_t1.tres" id="enemy_variant_skeleton_melee"]
+[ext_resource type="Resource" uid="uid://dwp0npoqfw7yu" path="res://data/enemies/variants/skeleton_archer_t1.tres" id="enemy_variant_skeleton_archer"]
+[ext_resource type="Resource" uid="uid://b82iui3pm0cq4" path="res://data/enemies/variants/skeleton_melee_t1.tres" id="enemy_variant_skeleton_melee"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_bluegill.tscn" id="fish_bluegill"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_carp.tscn" id="fish_carp"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_catfish.tscn" id="fish_catfish"]
@@ -368,48 +368,45 @@ max_alive = 1
 spawn_radius = 8.0
 initial_spawn_count = 1
 
-[node name="Sword1hBronzePickup" parent="EnemySpawns" unique_id=1711562902 instance=ExtResource("10_ad2jt")]
-transform = Transform3D(0.072141595, -0.9973945, 0, 0.030598132, 0.0022131645, 0.9995294, -0.99692494, -0.07210763, 0.030678064, 14.181747, 0.019264221, 70.76019)
-
 [node name="Wildlife" type="Node3D" parent="." unique_id=2010010000]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 218.5, 10, 383)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 182.27791, 14.020657, 367.78497)
 
 [node name="Chicken" parent="Wildlife" unique_id=422012867 instance=ExtResource("animal_chicken")]
-transform = Transform3D(0.13606136, 0.008818286, -0.99066114, 0, 0.9999605, 0.008901062, 0.99070054, -0.0012110906, 0.13605598, -4.138916, 0, -6.320648)
+transform = Transform3D(0.13606136, 0.008818286, -0.99066114, 0, 0.9999605, 0.008901062, 0.99070054, -0.0012110906, 0.13605598, -4.138916, -0.3848772, -6.320648)
 
 [node name="Rabbit" parent="Wildlife" unique_id=2093697694 instance=ExtResource("animal_rabbit")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -10.216019, 0, 1.6967468)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -10.216019, -1.7978477, 1.6967468)
 
 [node name="Rooster" parent="Wildlife" unique_id=2061071183 instance=ExtResource("animal_rooster")]
-transform = Transform3D(0.5855678, 0, 1.1043597, 0, 1.25, 0, -1.1043597, 0, 0.5855678, -7.6874695, -0.2237091, 7.576996)
+transform = Transform3D(0.5855678, 0, 1.1043597, 0, 1.25, 0, -1.1043597, 0, 0.5855678, -7.6874695, -3.0581684, 7.576996)
 facing_yaw_offset = 0.25
 
 [node name="Chick" parent="Wildlife" unique_id=1315208478 instance=ExtResource("animal_chick")]
-transform = Transform3D(0.20409203, 0, -1.4860506, 0, 1.5, 0, 1.4860506, 0, 0.20409203, -3.2530212, 0, -5.053253)
+transform = Transform3D(0.20409203, 0, -1.4860506, 0, 1.5, 0, 1.4860506, 0, 0.20409203, -3.2530212, -0.6086073, -5.053253)
 
 [node name="Horse" parent="Wildlife" unique_id=794432065 instance=ExtResource("animal_horse")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.134628, -0.17495155, 5.496338)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.134628, -2.6022787, 5.496338)
 
 [node name="Cow" parent="Wildlife" unique_id=339244394 instance=ExtResource("animal_cow")]
-transform = Transform3D(0.99999994, -0.000162657, -0.00033789215, 0.0001628148, 0.9999999, 0.0004598735, 0.00033781613, -0.00045992932, 0.9999998, -11.237961, 0.04955578, -2.5860596)
+transform = Transform3D(0.99999994, -0.000162657, -0.00033789215, 0.0001628148, 0.9999999, 0.0004598735, 0.00033781613, -0.00045992932, 0.9999998, -11.237961, -0.889884, -2.5860596)
 
 [node name="Bull" parent="Wildlife" unique_id=673047377 instance=ExtResource("animal_bull")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.874619, 0.04211521, -4.7286377)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.874619, -0.5206404, -4.7286377)
 
 [node name="Goose" parent="Wildlife" unique_id=721715437 instance=ExtResource("animal_goose")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.647476, 0.0072641373, -0.075683594)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.647476, -1.223361, -0.075683594)
 
 [node name="Ram" parent="Wildlife" unique_id=526877876 instance=ExtResource("animal_ram")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.693268, 0.9490986, -13.424408)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.693268, 1.4432068, -13.424408)
 
 [node name="Sheep" parent="Wildlife" unique_id=2065604094 instance=ExtResource("animal_sheep")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.904755, 1.0524111, -15.383484)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.904755, 1.4684668, -11.611084)
 
 [node name="Turkey" parent="Wildlife" unique_id=438324930 instance=ExtResource("animal_turkey")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.934174, 0.5608902, -8.166077)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.934174, 0.63938713, -8.166077)
 
 [node name="Pig" parent="Wildlife" unique_id=1119555635 instance=ExtResource("animal_pig")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.797165, -0.09838486, 3.3746033)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.797165, -2.053937, 3.3746033)
 
 [node name="Walleye" parent="Wildlife" unique_id=1386688933 instance=ExtResource("fish_walleye")]
 transform = Transform3D(-0.010489196, 0, -0.999945, 0, 1, 0, 0.999945, 0, -0.010489196, 2.72769, -9.640836, 52.34012)
@@ -741,3 +738,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 199.43643, 10.299194, 382.747
 
 [node name="Smelter" parent="Props" unique_id=2028400591 instance=ExtResource("17_gja2q")]
 transform = Transform3D(-1.4309607, 0, 0.44983518, 0, 1.5, 0, -0.44983518, 0, -1.4309607, 202.11319, 9.991051, 384.25137)
+
+[node name="Sword1hBronzePickup" parent="Props" unique_id=1711562902 instance=ExtResource("10_ad2jt")]
+transform = Transform3D(0.66549236, -0.47137457, -0.57872796, -0.31016845, -0.8798848, 0.35999757, -0.6789076, -0.06007247, -0.7317622, 216.87296, 10.617497, 376.4443)

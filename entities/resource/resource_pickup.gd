@@ -188,7 +188,9 @@ func _on_body_entered(body: Node3D) -> void:
 				body.call("show_gameplay_message", "Inventory full.")
 			else:
 				var item_label := inventory.get_item_display_name(resource_type)
-				if added > 1:
+				if left > 0:
+					body.call("show_gameplay_message", "Picked up %d × %s. Inventory full." % [added, item_label])
+				elif added > 1:
 					body.call("show_gameplay_message", "Picked up %d × %s." % [added, item_label])
 				else:
 					body.call("show_gameplay_message", "Picked up %s." % item_label)

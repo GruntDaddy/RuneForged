@@ -62,6 +62,14 @@ const LOD_FROZEN := 2
 @export var lod_low_floor_snap_length: float = 0.5
 ## Inward/outward margin (m) around the region node's low_sim_radius (see wildlife_lod_controller.gd) so LOW and FROZEN tiers do not flip when distance hovers on the boundary (gravity vs frozen snap causes sink/pop).
 @export var lod_tier_hysteresis_meters: float = 6.0
+## Keep body origin glued to sampled ground each frame (helps on uneven terrain).
+@export var follow_ground_continuously: bool = true
+## Tilt body to match terrain normal while moving/standing on slopes.
+@export var align_body_to_ground: bool = true
+## Max body tilt angle (degrees) applied from terrain normal.
+@export var ground_align_max_tilt_deg: float = 22.0
+## Smoothing speed for vertical follow + slope tilt.
+@export var ground_align_smoothing: float = 10.0
 
 @export var drops: Array[_AnimalDropEntry] = []
 
@@ -241,6 +249,31 @@ func _query_ground_y_below() -> float:
 	return NAN
 
 
+func _query_ground_hit_below() -> Dictionary:
+	var w := get_world_3d()
+	if w != null:
+		var from := global_position + Vector3.UP * 5.0
+		var to := global_position + Vector3.DOWN * 50.0
+		var q := PhysicsRayQueryParameters3D.create(from, to)
+		q.collide_with_bodies = true
+		q.collide_with_areas = false
+		var mask := collision_mask
+		if mask == 0:
+			mask = 1
+		q.collision_mask = mask
+		q.exclude = [get_rid()]
+		var r := w.direct_space_state.intersect_ray(q)
+		if not r.is_empty():
+			return r
+	var th := _terrain_height_data_at_feet()
+	if not is_nan(th):
+		return {
+			"position": Vector3(global_position.x, th, global_position.z),
+			"normal": Vector3.UP,
+		}
+	return {}
+
+
 func _get_terrain3d() -> Terrain3D:
 	if _terrain3d_cache != null and is_instance_valid(_terrain3d_cache):
 		return _terrain3d_cache
@@ -307,6 +340,45 @@ func _snap_frozen_land_to_ground() -> void:
 	else:
 		global_position.y = gy + _ground_snap_body_offset + terrain_snap_y_offset
 	velocity.y = 0.0
+
+
+func _follow_ground_and_align_body(delta: float) -> void:
+	if aquatic:
+		return
+	var hit := _query_ground_hit_below()
+	if hit.is_empty():
+		return
+
+	var pos: Vector3 = hit["position"] as Vector3
+	var target_y := pos.y + _ground_snap_body_offset + terrain_snap_y_offset
+	if follow_ground_continuously:
+		var y_err := target_y - global_position.y
+		var can_correct := is_on_floor() or absf(y_err) <= 0.45
+		if can_correct:
+			var t := clampf(ground_align_smoothing * delta, 0.0, 1.0)
+			global_position.y = lerpf(global_position.y, target_y, t)
+			if absf(target_y - global_position.y) <= 0.005:
+				global_position.y = target_y
+			if velocity.y < 0.0 and y_err > 0.0:
+				velocity.y = 0.0
+
+	if not align_body_to_ground:
+		var flat_t := clampf(ground_align_smoothing * delta, 0.0, 1.0)
+		rotation.x = lerp_angle(rotation.x, 0.0, flat_t)
+		rotation.z = lerp_angle(rotation.z, 0.0, flat_t)
+		return
+
+	var n: Vector3 = (hit.get("normal", Vector3.UP) as Vector3).normalized()
+	if n.length_squared() <= 1e-6:
+		n = Vector3.UP
+	var yaw := rotation.y
+	var normal_local := Basis(Vector3.UP, -yaw) * n
+	var max_tilt := deg_to_rad(maxf(0.0, ground_align_max_tilt_deg))
+	var target_x := clampf(atan2(normal_local.z, normal_local.y), -max_tilt, max_tilt)
+	var target_z := clampf(-atan2(normal_local.x, normal_local.y), -max_tilt, max_tilt)
+	var tilt_lerp := clampf(ground_align_smoothing * delta, 0.0, 1.0)
+	rotation.x = lerp_angle(rotation.x, target_x, tilt_lerp)
+	rotation.z = lerp_angle(rotation.z, target_z, tilt_lerp)
 
 
 func _compute_ground_snap_body_offset() -> float:
@@ -376,6 +448,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		if not aquatic:
 			_clamp_land_above_terrain_heightfield()
+			_follow_ground_and_align_body(delta)
 		_aquatic_apply_bob_after_move(delta)
 		_update_anim()
 		_maybe_update_health_bar_billboard()
@@ -398,6 +471,7 @@ func _physics_process(delta: float) -> void:
 			floor_snap_length = 0.0
 			move_and_slide()
 			_snap_frozen_land_to_ground()
+			_follow_ground_and_align_body(delta)
 		_play_clip(_idle_clip)
 		_maybe_update_health_bar_billboard()
 		_update_health_bar_visibility()
@@ -446,6 +520,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if not aquatic:
 		_clamp_land_above_terrain_heightfield()
+		_follow_ground_and_align_body(delta)
 	_aquatic_apply_bob_after_move(delta)
 	_update_anim()
 	_maybe_update_health_bar_billboard()
