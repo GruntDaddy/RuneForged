@@ -357,13 +357,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 201.56836, 10, 310.75156)
 
 [node name="SkeletonMeleeSpawner" parent="EnemySpawns" unique_id=1391849732 instance=ExtResource("enemy_spawner_scene")]
 variant_data = ExtResource("enemy_variant_skeleton_melee")
-respawn_seconds = 18.0
+max_alive = 2
+initial_spawn_count = 1
 
 [node name="SkeletonArcherSpawner" parent="EnemySpawns" unique_id=1415506865 instance=ExtResource("enemy_spawner_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, -6)
 variant_data = ExtResource("enemy_variant_skeleton_archer")
-max_alive = 2
-respawn_seconds = 24.0
+max_alive = 1
 spawn_radius = 8.0
 initial_spawn_count = 1
 

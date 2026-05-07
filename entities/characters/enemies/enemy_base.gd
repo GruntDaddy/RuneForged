@@ -209,43 +209,10 @@ func _update_animation(moving: bool) -> void:
 	if _animation_player == null:
 		return
 	if _dead:
-		_play_best_clip(["Death", "Die", "death", "die"])
+		_play_best_clip(["Death_A", "Death_B", "Death", "Die", "death", "die"])
 		return
 	if _state == State.ATTACK:
-		if uses_ranged_attacks:
-			if _ranged_attack_stage == RangedAttackStage.DRAW:
-				_play_best_clip(
-					[
-						"Ranged_Bow_Draw",
-						"Ranged_Bow_Draw_Up",
-						"Ranged_Bow_Aiming_Idle",
-						"Ranged_Bow_Idle",
-					]
-				)
-				return
-			if _ranged_attack_stage == RangedAttackStage.RECOVER:
-				_play_best_clip(
-					[
-						"Ranged_Bow_Release",
-						"Ranged_Bow_Release_Up",
-						"Ranged_Bow_Aiming_Idle",
-						"Ranged_Bow_Idle",
-					]
-				)
-				return
-		_play_best_clip(
-			[
-				"Attack",
-				"Melee_1H_Attack_Chop",
-				"Melee_1H_Attack_Slice_Diagonal",
-				"Melee_Attack_1H",
-				"Attack_01",
-				"Shoot",
-				"Ranged_Bow_Release",
-				"Ranged_Bow_Release_Up",
-				"attack",
-			]
-		)
+		_play_best_clip(_attack_animation_candidates())
 		return
 	if moving:
 		_play_best_clip(["Walk", "Run", "Walking_B", "walk"])
@@ -264,6 +231,46 @@ func _play_best_clip(candidates: Array[String]) -> void:
 			return
 		_animation_player.play(resolved, 0.1)
 		return
+
+
+func _attack_animation_candidates() -> Array[String]:
+	if uses_ranged_attacks:
+		if _ranged_attack_stage == RangedAttackStage.DRAW:
+			return [
+				"Ranged_Bow_Draw",
+				"Ranged_Bow_Draw_Up",
+				"Ranged_Bow_Aiming_Idle",
+				"Ranged_Bow_Idle",
+				"Ranged_Magic_Raise",
+				"Ranged_Magic_Spellcasting",
+			]
+		if _ranged_attack_stage == RangedAttackStage.RECOVER:
+			return [
+				"Ranged_Bow_Release",
+				"Ranged_Bow_Release_Up",
+				"Ranged_Bow_Aiming_Idle",
+				"Ranged_Bow_Idle",
+				"Ranged_Magic_Shoot",
+				"Ranged_Magic_Spellcasting",
+			]
+		# While waiting for cooldown, hold ranged-ready stance only (never melee swings).
+		return [
+			"Ranged_Bow_Aiming_Idle",
+			"Ranged_Bow_Idle",
+			"Ranged_Magic_Spellcasting",
+			"Ranged_Magic_Raise",
+			"Idle",
+			"Idle_A",
+		]
+
+	return [
+		"Attack",
+		"Melee_1H_Attack_Chop",
+		"Melee_1H_Attack_Slice_Diagonal",
+		"Melee_Attack_1H",
+		"Attack_01",
+		"attack",
+	]
 
 
 func _resolve_animation_player() -> AnimationPlayer:
