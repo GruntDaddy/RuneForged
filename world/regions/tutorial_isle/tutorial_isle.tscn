@@ -26,6 +26,9 @@
 [ext_resource type="PackedScene" uid="uid://exxthefxl5hh" path="res://entities/characters/animals/rooster.tscn" id="animal_rooster"]
 [ext_resource type="PackedScene" uid="uid://ckakw5wih3ppy" path="res://entities/characters/animals/sheep.tscn" id="animal_sheep"]
 [ext_resource type="PackedScene" uid="uid://c7wssr6af3bno" path="res://entities/characters/animals/turkey.tscn" id="animal_turkey"]
+[ext_resource type="PackedScene" path="res://world/enemy_spawner.tscn" id="enemy_spawner_scene"]
+[ext_resource type="Resource" path="res://data/enemies/variants/skeleton_archer_t1.tres" id="enemy_variant_skeleton_archer"]
+[ext_resource type="Resource" path="res://data/enemies/variants/skeleton_melee_t1.tres" id="enemy_variant_skeleton_melee"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_bluegill.tscn" id="fish_bluegill"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_carp.tscn" id="fish_carp"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_catfish.tscn" id="fish_catfish"]
@@ -348,6 +351,21 @@ stamina_drain_run = 1.0
 
 [node name="WildlifeLod" type="Node" parent="." unique_id=230263382]
 script = ExtResource("wildlife_lod_script")
+
+[node name="EnemySpawns" type="Node3D" parent="." unique_id=1936201401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 201.56836, 10, 310.75156)
+
+[node name="SkeletonMeleeSpawner" parent="EnemySpawns" unique_id=1391849732 instance=ExtResource("enemy_spawner_scene")]
+variant_data = ExtResource("enemy_variant_skeleton_melee")
+respawn_seconds = 18.0
+
+[node name="SkeletonArcherSpawner" parent="EnemySpawns" unique_id=1415506865 instance=ExtResource("enemy_spawner_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, -6)
+variant_data = ExtResource("enemy_variant_skeleton_archer")
+max_alive = 2
+respawn_seconds = 24.0
+spawn_radius = 8.0
+initial_spawn_count = 1
 
 [node name="Wildlife" type="Node3D" parent="." unique_id=2010010000]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 218.5, 10, 383)

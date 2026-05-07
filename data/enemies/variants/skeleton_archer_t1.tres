@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyVariantData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://data/schemas/enemy_variant_data.gd" id="1_variant"]
+[ext_resource type="PackedScene" path="res://entities/characters/character_presets/npc/skeleton_rogue.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://data/enemies/behaviors/skeleton_archer_t1.tres" id="3_behavior"]
+[ext_resource type="Resource" path="res://data/enemies/drops/skeleton_archer_t1_drop_profile.tres" id="4_drop"]
+[ext_resource type="PackedScene" path="res://entities/projectiles/arrow_projectile.tscn" id="5_projectile"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = "skeleton_archer_t1"
+display_name = "Skeleton Archer T1"
+visual_scene = ExtResource("2_visual")
+max_health = 26.0
+move_speed = 2.1
+attack_damage = 5.0
+xp_value = 14.0
+behavior_profile = ExtResource("3_behavior")
+drop_profile = ExtResource("4_drop")
+projectile_scene = ExtResource("5_projectile")
+projectile_speed = 23.0
+projectile_lifetime = 7.0

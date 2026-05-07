@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyVariantData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://data/schemas/enemy_variant_data.gd" id="1_variant"]
+[ext_resource type="PackedScene" path="res://entities/characters/character_presets/npc/skeleton_warrior.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://data/enemies/behaviors/skeleton_melee_t1.tres" id="3_behavior"]
+[ext_resource type="Resource" path="res://data/enemies/drops/skeleton_melee_t1_drop_profile.tres" id="4_drop"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = "skeleton_melee_t1"
+display_name = "Skeleton Melee T1"
+visual_scene = ExtResource("2_visual")
+max_health = 34.0
+move_speed = 2.35
+attack_damage = 7.0
+xp_value = 12.0
+behavior_profile = ExtResource("3_behavior")
+drop_profile = ExtResource("4_drop")
