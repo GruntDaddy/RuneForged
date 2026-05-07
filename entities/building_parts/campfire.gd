@@ -2,8 +2,8 @@ extends Node3D
 
 ## Campfire interactable. Prompt-driven, single equipped tinderbox to ignite,
 ## per-log burn time read from item data, single-slot auto-cook with random
-## burn rolls. Old drag-and-drop panel is removed; status surfaces via a
-## floating Label3D above the fire and brief player notifications.
+## burn rolls. Old drag-and-drop panel is removed; status surfaces via
+## interaction prompts and brief player notifications.
 
 const LOG_SLOT_COUNT := 4
 const COOK_TIME_SEC := 24.0
@@ -27,13 +27,10 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var rest_safe_min_distance: float = 1.35
 @export var rest_safe_max_distance: float = 4.5
 @export var rest_snap_distance: float = 3.7
-## Hide floating status text when the player is farther than this distance (meters).
-@export var status_label_max_distance_m: float = 10.0
-## If two campfires overlap (e.g. static + persisted placed fire), hide this label
-## when another campfire is within this radius so only one timer remains visible.
-@export var status_label_overlap_suppress_radius_m: float = 1.0
 ## While fuel is in the last N seconds, fire/light/smoke scale down before hiding.
 @export var fire_fade_out_seconds: float = 2.25
+## Hide world burn timer when player moves farther than this many meters.
+@export var timer_hide_distance_m: float = 15.0
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
 @export var campfire_recipe_ids: PackedStringArray = PackedStringArray()
 
@@ -42,7 +39,7 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @onready var _smoke: GPUParticles3D = $SmokeParticles
 @onready var _audio: AudioStreamPlayer3D = $AudioStreamPlayer3D
 @onready var _logs_visual: Node3D = $Campfire_Logs
-@onready var _status_label: Label3D = get_node_or_null("StatusLabel")
+@onready var _burn_timer_label: Label3D = $BurnTimerLabel
 
 var _is_lit: bool = false
 var _fuel_seconds: float = 0.0
@@ -70,12 +67,10 @@ var _log_material_backup: Dictionary = {}
 
 
 func _ready() -> void:
-	add_to_group("campfire_status")
-	_configure_status_label_visuals()
 	_init_slot_arrays()
 	_load_state()
 	_apply_visuals()
-	_update_status_label()
+	_update_burn_timer_label()
 	if not _legacy_log_spill.is_empty():
 		call_deferred("_apply_legacy_log_spill")
 
@@ -97,12 +92,32 @@ func _process(delta: float) -> void:
 		if _fuel_seconds <= 0.0:
 			if auto_extinguish_when_empty:
 				extinguish()
-				_update_status_label()
 				return
 		_tick_visuals(delta, fade_mult)
 		_tick_cooking(delta)
 		_tick_low_fuel_warning()
-	_update_status_label()
+	_update_burn_timer_label()
+
+
+func _update_burn_timer_label() -> void:
+	if _burn_timer_label == null:
+		return
+	if not _is_lit or _fuel_seconds <= 0.0:
+		_burn_timer_label.visible = false
+		return
+	var player := get_tree().get_first_node_in_group("player") as Node3D
+	if player == null:
+		_burn_timer_label.visible = false
+		return
+	var dist := global_position.distance_to(player.global_position)
+	if dist > timer_hide_distance_m:
+		_burn_timer_label.visible = false
+		return
+	_burn_timer_label.visible = true
+	var total_sec := maxi(0, int(ceil(_fuel_seconds)))
+	var mins := int(floor(float(total_sec) / 60.0))
+	var secs := total_sec % 60
+	_burn_timer_label.text = "%d:%02d" % [mins, secs]
 
 
 func _tick_visuals(delta: float, fade_mult: float = 1.0) -> void:
@@ -699,121 +714,6 @@ func _apply_burned_logs_visual(active: bool) -> void:
 			if mesh_i != null and is_instance_valid(mesh_i):
 				mesh_i.material_override = _log_material_backup[k]
 		_log_material_backup.clear()
-
-
-func _update_status_label() -> void:
-	if _status_label == null:
-		return
-	var should_show: bool = (_is_lit or not _cook_active.is_empty() or _ash_waiting_pickup) and _is_player_within_status_range() and _is_primary_campfire_for_player() and not _should_suppress_for_overlap()
-	if should_show:
-		_hide_other_campfire_status_labels()
-	_status_label.visible = should_show
-	if not should_show:
-		return
-	var lines: Array[String] = []
-	if _ash_waiting_pickup:
-		if _pending_charcoal_count > 0:
-			lines.append("Charcoal in ash — [F] to collect")
-		else:
-			lines.append("Ash pile — [F] to clear")
-	if _is_lit:
-		lines.append("Fire: %s" % _format_seconds(_total_fire_seconds_remaining()))
-	if not _cook_active.is_empty():
-		var raw_id: String = str(_cook_active.get("id", ""))
-		var raw_name: String = InventoryService.get_item_display_name(raw_id)
-		lines.append("Cooking %s: %ds / %ds" % [raw_name.to_lower(), int(_cook_progress_sec), int(COOK_TIME_SEC)])
-	_status_label.text = "\n".join(lines)
-
-
-func _is_player_within_status_range() -> bool:
-	var max_dist := maxf(0.1, status_label_max_distance_m)
-	var p := get_tree().get_first_node_in_group("player")
-	if not (p is Node3D):
-		return true
-	return global_position.distance_to((p as Node3D).global_position) <= max_dist
-
-
-func _is_primary_campfire_for_player() -> bool:
-	var p := get_tree().get_first_node_in_group("player")
-	if not (p is Node3D):
-		return true
-	var p3 := p as Node3D
-	var my_dist_sq := global_position.distance_squared_to(p3.global_position)
-	var my_id := get_instance_id()
-	for n in get_tree().get_nodes_in_group("campfire_status"):
-		if n == self or not (n is Node3D):
-			continue
-		if not is_instance_valid(n):
-			continue
-		var other := n as Node3D
-		var d2 := other.global_position.distance_squared_to(p3.global_position)
-		if d2 + 0.0001 < my_dist_sq:
-			return false
-		# Tie-break overlapping/equal-distance campfires so only one timer can show.
-		if absf(d2 - my_dist_sq) <= 0.0001 and n.get_instance_id() < my_id:
-			return false
-	return true
-
-
-func _configure_status_label_visuals() -> void:
-	if _status_label == null:
-		return
-	_status_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_status_label.outline_modulate = Color(0.0, 0.0, 0.0, 1.0)
-	_status_label.no_depth_test = true
-	_status_label.render_priority = 127
-	_status_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_status_label.fixed_size = true
-
-
-func _hide_other_campfire_status_labels() -> void:
-	for n in get_tree().get_nodes_in_group("campfire_status"):
-		if n == null or not is_instance_valid(n) or n == self:
-			continue
-		if not n.has_method("_set_status_label_visible"):
-			continue
-		n.call("_set_status_label_visible", false)
-
-
-func _set_status_label_visible(v: bool) -> void:
-	if _status_label == null:
-		return
-	_status_label.visible = v
-
-
-func _should_suppress_for_overlap() -> bool:
-	var r := maxf(0.05, status_label_overlap_suppress_radius_m)
-	var r2 := r * r
-	var mine_placed := String(fire_state_id).begins_with("placed_fire_")
-	for n in get_tree().get_nodes_in_group("campfire_status"):
-		if n == null or not is_instance_valid(n) or n == self or not (n is Node3D):
-			continue
-		var other := n as Node3D
-		if global_position.distance_squared_to(other.global_position) > r2:
-			continue
-		var other_placed := false
-		if "fire_state_id" in n:
-			other_placed = String(n.fire_state_id).begins_with("placed_fire_")
-		# Prefer non-placed (authored world) campfire label when overlapping.
-		if mine_placed and not other_placed:
-			return true
-		# Deterministic fallback for same class of overlaps.
-		if n.get_instance_id() < get_instance_id():
-			return true
-	return false
-
-
-func _format_seconds(seconds: int) -> String:
-	if seconds >= 60:
-		@warning_ignore("integer_division")
-		var m: int = seconds / 60
-		var s: int = seconds % 60
-		return "%dm %02ds" % [m, s]
-	return "%ds" % maxi(0, seconds)
-
-
-func _total_fire_seconds_remaining() -> int:
-	return maxi(0, int(ceil(_fuel_seconds)))
 
 
 # ----- Save / load --------------------------------------------------------
