@@ -15,6 +15,12 @@ enum State {
 	RETURN_TO_LEASH,
 }
 
+enum RangedAttackStage {
+	NONE,
+	DRAW,
+	RECOVER,
+}
+
 @export var variant_data: _EnemyVariantData
 
 @export var max_health: float = 30.0
@@ -31,6 +37,8 @@ enum State {
 @export var projectile_scene: PackedScene
 @export var projectile_speed: float = 20.0
 @export var projectile_lifetime: float = 6.0
+@export var ranged_draw_time_sec: float = 0.38
+@export var ranged_recover_time_sec: float = 0.34
 @export var death_remove_delay_sec: float = 1.2
 
 @export var drop_profile: _EnemyDropProfile
@@ -54,6 +62,9 @@ var _attack_cooldown_left: float = 0.0
 var _dead: bool = false
 var _walk_target: Vector3 = Vector3.ZERO
 var _target_player: Node3D = null
+var _ranged_attack_stage: RangedAttackStage = RangedAttackStage.NONE
+var _ranged_stage_left_sec: float = 0.0
+var _ranged_attack_target_ref: WeakRef = null
 
 var _health_bar_root: Node3D
 var _health_bar_fill: MeshInstance3D
@@ -102,6 +113,7 @@ func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 	_attack_cooldown_left = maxf(0.0, _attack_cooldown_left - delta)
+	_update_ranged_attack_tick(delta)
 	_target_player = _find_player_target()
 	_update_state_machine(delta)
 	_update_movement(delta)
@@ -200,6 +212,27 @@ func _update_animation(moving: bool) -> void:
 		_play_best_clip(["Death", "Die", "death", "die"])
 		return
 	if _state == State.ATTACK:
+		if uses_ranged_attacks:
+			if _ranged_attack_stage == RangedAttackStage.DRAW:
+				_play_best_clip(
+					[
+						"Ranged_Bow_Draw",
+						"Ranged_Bow_Draw_Up",
+						"Ranged_Bow_Aiming_Idle",
+						"Ranged_Bow_Idle",
+					]
+				)
+				return
+			if _ranged_attack_stage == RangedAttackStage.RECOVER:
+				_play_best_clip(
+					[
+						"Ranged_Bow_Release",
+						"Ranged_Bow_Release_Up",
+						"Ranged_Bow_Aiming_Idle",
+						"Ranged_Bow_Idle",
+					]
+				)
+				return
 		_play_best_clip(
 			[
 				"Attack",
@@ -208,6 +241,8 @@ func _update_animation(moving: bool) -> void:
 				"Melee_Attack_1H",
 				"Attack_01",
 				"Shoot",
+				"Ranged_Bow_Release",
+				"Ranged_Bow_Release_Up",
 				"attack",
 			]
 		)
@@ -285,11 +320,63 @@ func _try_attack_player() -> void:
 	if _target_player == null or _attack_cooldown_left > 0.0:
 		return
 	if uses_ranged_attacks:
-		_fire_projectile_towards(_target_player)
+		if _ranged_attack_stage == RangedAttackStage.NONE:
+			_ranged_attack_stage = RangedAttackStage.DRAW
+			_ranged_stage_left_sec = maxf(0.05, ranged_draw_time_sec)
+			_ranged_attack_target_ref = weakref(_target_player)
+			_play_best_clip(
+				[
+					"Ranged_Bow_Draw",
+					"Ranged_Bow_Draw_Up",
+					"Ranged_Bow_Aiming_Idle",
+					"Ranged_Bow_Idle",
+				]
+			)
 	else:
 		if _target_player.has_method("apply_damage"):
 			_target_player.call("apply_damage", attack_damage)
-	_attack_cooldown_left = attack_cooldown
+		_attack_cooldown_left = attack_cooldown
+
+
+func _update_ranged_attack_tick(delta: float) -> void:
+	if not uses_ranged_attacks or _ranged_attack_stage == RangedAttackStage.NONE:
+		return
+	if _dead:
+		_ranged_attack_stage = RangedAttackStage.NONE
+		_ranged_stage_left_sec = 0.0
+		_ranged_attack_target_ref = null
+		return
+	_ranged_stage_left_sec = maxf(0.0, _ranged_stage_left_sec - delta)
+	if _ranged_attack_stage == RangedAttackStage.DRAW and _ranged_stage_left_sec <= 0.0:
+		var target: Node3D = _resolve_ranged_attack_target()
+		if target != null:
+			_fire_projectile_towards(target)
+			_play_best_clip(
+				[
+					"Ranged_Bow_Release",
+					"Ranged_Bow_Release_Up",
+					"Ranged_Bow_Aiming_Idle",
+				]
+			)
+			_attack_cooldown_left = attack_cooldown
+			_ranged_attack_stage = RangedAttackStage.RECOVER
+			_ranged_stage_left_sec = maxf(0.05, ranged_recover_time_sec)
+		else:
+			_ranged_attack_stage = RangedAttackStage.NONE
+			_ranged_stage_left_sec = 0.0
+			_ranged_attack_target_ref = null
+	elif _ranged_attack_stage == RangedAttackStage.RECOVER and _ranged_stage_left_sec <= 0.0:
+		_ranged_attack_stage = RangedAttackStage.NONE
+		_ranged_attack_target_ref = null
+
+
+func _resolve_ranged_attack_target() -> Node3D:
+	var ref_target: Object = _ranged_attack_target_ref.get_ref() if _ranged_attack_target_ref != null else null
+	if ref_target is Node3D and is_instance_valid(ref_target):
+		return ref_target as Node3D
+	if _target_player != null and is_instance_valid(_target_player):
+		return _target_player
+	return null
 
 
 func _fire_projectile_towards(target: Node3D) -> void:
@@ -364,11 +451,14 @@ func _die() -> void:
 	if _dead:
 		return
 	_dead = true
+	_ranged_attack_stage = RangedAttackStage.NONE
+	_ranged_stage_left_sec = 0.0
+	_ranged_attack_target_ref = null
 	collision_layer = 0
 	collision_mask = 0
 	_spawn_drops()
-	_play_best_clip(["Death", "Die", "death", "die"])
-	get_tree().create_timer(maxf(0.1, death_remove_delay_sec)).timeout.connect(func() -> void:
+	_play_best_clip(["Death_A", "Death_B", "Death", "Die", "death", "die"])
+	get_tree().create_timer(maxf(1.0, death_remove_delay_sec)).timeout.connect(func() -> void:
 		queue_free()
 	)
 
