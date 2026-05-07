@@ -29,6 +29,9 @@ const _COOKABLE_PRIORITY := ["meat_raw", "fish_raw"]
 @export var rest_snap_distance: float = 3.7
 ## Hide floating status text when the player is farther than this distance (meters).
 @export var status_label_max_distance_m: float = 10.0
+## If two campfires overlap (e.g. static + persisted placed fire), hide this label
+## when another campfire is within this radius so only one timer remains visible.
+@export var status_label_overlap_suppress_radius_m: float = 1.0
 ## While fuel is in the last N seconds, fire/light/smoke scale down before hiding.
 @export var fire_fade_out_seconds: float = 2.25
 ## Deprecated: torch recipes moved to workbench; left empty for saves/scenes that still set it.
@@ -701,7 +704,9 @@ func _apply_burned_logs_visual(active: bool) -> void:
 func _update_status_label() -> void:
 	if _status_label == null:
 		return
-	var should_show: bool = (_is_lit or not _cook_active.is_empty() or _ash_waiting_pickup) and _is_player_within_status_range() and _is_primary_campfire_for_player()
+	var should_show: bool = (_is_lit or not _cook_active.is_empty() or _ash_waiting_pickup) and _is_player_within_status_range() and _is_primary_campfire_for_player() and not _should_suppress_for_overlap()
+	if should_show:
+		_hide_other_campfire_status_labels()
 	_status_label.visible = should_show
 	if not should_show:
 		return
@@ -734,16 +739,18 @@ func _is_primary_campfire_for_player() -> bool:
 		return true
 	var p3 := p as Node3D
 	var my_dist_sq := global_position.distance_squared_to(p3.global_position)
+	var my_id := get_instance_id()
 	for n in get_tree().get_nodes_in_group("campfire_status"):
 		if n == self or not (n is Node3D):
 			continue
 		if not is_instance_valid(n):
 			continue
 		var other := n as Node3D
-		if global_position.is_equal_approx(other.global_position):
-			continue
 		var d2 := other.global_position.distance_squared_to(p3.global_position)
 		if d2 + 0.0001 < my_dist_sq:
+			return false
+		# Tie-break overlapping/equal-distance campfires so only one timer can show.
+		if absf(d2 - my_dist_sq) <= 0.0001 and n.get_instance_id() < my_id:
 			return false
 	return true
 
@@ -757,6 +764,43 @@ func _configure_status_label_visuals() -> void:
 	_status_label.render_priority = 127
 	_status_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_status_label.fixed_size = true
+
+
+func _hide_other_campfire_status_labels() -> void:
+	for n in get_tree().get_nodes_in_group("campfire_status"):
+		if n == null or not is_instance_valid(n) or n == self:
+			continue
+		if not n.has_method("_set_status_label_visible"):
+			continue
+		n.call("_set_status_label_visible", false)
+
+
+func _set_status_label_visible(v: bool) -> void:
+	if _status_label == null:
+		return
+	_status_label.visible = v
+
+
+func _should_suppress_for_overlap() -> bool:
+	var r := maxf(0.05, status_label_overlap_suppress_radius_m)
+	var r2 := r * r
+	var mine_placed := String(fire_state_id).begins_with("placed_fire_")
+	for n in get_tree().get_nodes_in_group("campfire_status"):
+		if n == null or not is_instance_valid(n) or n == self or not (n is Node3D):
+			continue
+		var other := n as Node3D
+		if global_position.distance_squared_to(other.global_position) > r2:
+			continue
+		var other_placed := false
+		if "fire_state_id" in n:
+			other_placed = String(n.fire_state_id).begins_with("placed_fire_")
+		# Prefer non-placed (authored world) campfire label when overlapping.
+		if mine_placed and not other_placed:
+			return true
+		# Deterministic fallback for same class of overlaps.
+		if n.get_instance_id() < get_instance_id():
+			return true
+	return false
 
 
 func _format_seconds(seconds: int) -> String:
