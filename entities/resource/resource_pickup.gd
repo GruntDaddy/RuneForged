@@ -180,5 +180,16 @@ func _on_body_entered(body: Node3D) -> void:
 			% [detail, resource_type, get_path()]
 		)
 	else:
-		(inv as _InventoryService).add_item(resource_type, quantity)
+		var inventory := inv as _InventoryService
+		var left: int = inventory.add_item(resource_type, quantity)
+		var added: int = maxi(0, quantity - left)
+		if body.has_method("show_gameplay_message"):
+			if added <= 0:
+				body.call("show_gameplay_message", "Inventory full.")
+			else:
+				var item_label := inventory.get_item_display_name(resource_type)
+				if added > 1:
+					body.call("show_gameplay_message", "Picked up %d × %s." % [added, item_label])
+				else:
+					body.call("show_gameplay_message", "Picked up %s." % item_label)
 	queue_free()

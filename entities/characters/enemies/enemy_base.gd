@@ -46,6 +46,7 @@ enum RangedAttackStage {
 @export var hit_react_duration_sec: float = 0.3
 @export var hit_react_move_multiplier: float = 0.12
 @export var death_remove_delay_sec: float = 1.2
+@export var death_post_animation_extra_sec: float = 1.0
 
 @export var drop_profile: _EnemyDropProfile
 @export var xp_value: float = 8.0
@@ -530,7 +531,7 @@ func _die() -> void:
 	collision_mask = 0
 	_spawn_drops()
 	_play_best_clip(["Death_A", "Death_B", "Death", "Die", "death", "die"])
-	get_tree().create_timer(maxf(1.0, death_remove_delay_sec)).timeout.connect(func() -> void:
+	get_tree().create_timer(maxf(1.0, death_remove_delay_sec) + maxf(0.0, death_post_animation_extra_sec)).timeout.connect(func() -> void:
 		queue_free()
 	)
 
