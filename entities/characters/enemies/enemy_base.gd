@@ -18,6 +18,7 @@ enum State {
 enum RangedAttackStage {
 	NONE,
 	DRAW,
+	HOLD,
 	RECOVER,
 }
 
@@ -38,14 +39,19 @@ enum RangedAttackStage {
 @export var projectile_speed: float = 20.0
 @export var projectile_lifetime: float = 6.0
 @export var ranged_draw_time_sec: float = 0.38
+@export var ranged_hold_time_sec: float = 0.16
 @export var ranged_recover_time_sec: float = 0.34
+@export var hit_react_chance: float = 1.0
+@export var hit_interrupt_attack_chance: float = 0.18
+@export var hit_react_duration_sec: float = 0.3
+@export var hit_react_move_multiplier: float = 0.12
 @export var death_remove_delay_sec: float = 1.2
 
 @export var drop_profile: _EnemyDropProfile
 @export var xp_value: float = 8.0
 
 @export var show_health_bar: bool = true
-@export var health_bar_height: float = 1.35
+@export var health_bar_height: float = 1.65
 @export var health_bar_width: float = 0.95
 @export var health_bar_thickness: float = 0.08
 @export var health_bar_visible_seconds_after_hit: float = 3.5
@@ -65,6 +71,7 @@ var _target_player: Node3D = null
 var _ranged_attack_stage: RangedAttackStage = RangedAttackStage.NONE
 var _ranged_stage_left_sec: float = 0.0
 var _ranged_attack_target_ref: WeakRef = null
+var _hit_reaction_left_sec: float = 0.0
 
 var _health_bar_root: Node3D
 var _health_bar_fill: MeshInstance3D
@@ -102,6 +109,12 @@ func _apply_variant_data() -> void:
 		patrol_radius = profile.patrol_radius
 		return_stop_distance = profile.return_stop_distance
 		uses_ranged_attacks = profile.uses_ranged_attacks
+		ranged_draw_time_sec = profile.ranged_draw_time_sec
+		ranged_hold_time_sec = profile.ranged_hold_time_sec
+		ranged_recover_time_sec = profile.ranged_recover_time_sec
+		hit_react_chance = profile.hit_react_chance
+		hit_interrupt_attack_chance = profile.hit_interrupt_attack_chance
+		hit_react_duration_sec = profile.hit_react_duration_sec
 	if variant_data.visual_scene != null and visual_root != null:
 		for c in visual_root.get_children():
 			c.queue_free()
@@ -113,6 +126,7 @@ func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 	_attack_cooldown_left = maxf(0.0, _attack_cooldown_left - delta)
+	_hit_reaction_left_sec = maxf(0.0, _hit_reaction_left_sec - delta)
 	_update_ranged_attack_tick(delta)
 	_target_player = _find_player_target()
 	_update_state_machine(delta)
@@ -180,8 +194,15 @@ func _update_movement(delta: float) -> void:
 					if dist <= preferred_range:
 						chase_to = global_position - (_target_player.global_position - global_position).normalized() * 2.0
 				desired_planar = _move_towards(chase_to)
+		State.ATTACK:
+			if uses_ranged_attacks:
+				_face_target_player(0.26)
 		State.RETURN_TO_LEASH:
 			desired_planar = _move_towards(_spawn_position)
+
+	if _hit_reaction_left_sec > 0.0:
+		# Brief stagger: keep intent but heavily damp movement for readable flinch feedback.
+		desired_planar *= clampf(hit_react_move_multiplier, 0.0, 1.0)
 
 	velocity.x = desired_planar.x
 	velocity.z = desired_planar.z
@@ -211,6 +232,9 @@ func _update_animation(moving: bool) -> void:
 	if _dead:
 		_play_best_clip(["Death_A", "Death_B", "Death", "Die", "death", "die"])
 		return
+	if _hit_reaction_left_sec > 0.0:
+		_play_best_clip(["Hit_A", "Hit_B", "Hit", "hit"])
+		return
 	if _state == State.ATTACK:
 		_play_best_clip(_attack_animation_candidates())
 		return
@@ -239,6 +263,13 @@ func _attack_animation_candidates() -> Array[String]:
 			return [
 				"Ranged_Bow_Draw",
 				"Ranged_Bow_Draw_Up",
+				"Ranged_Bow_Idle",
+				"Ranged_Bow_Aiming_Idle",
+				"Ranged_Magic_Raise",
+				"Ranged_Magic_Spellcasting",
+			]
+		if _ranged_attack_stage == RangedAttackStage.HOLD:
+			return [
 				"Ranged_Bow_Aiming_Idle",
 				"Ranged_Bow_Idle",
 				"Ranged_Magic_Raise",
@@ -355,6 +386,9 @@ func _update_ranged_attack_tick(delta: float) -> void:
 		return
 	_ranged_stage_left_sec = maxf(0.0, _ranged_stage_left_sec - delta)
 	if _ranged_attack_stage == RangedAttackStage.DRAW and _ranged_stage_left_sec <= 0.0:
+		_ranged_attack_stage = RangedAttackStage.HOLD
+		_ranged_stage_left_sec = maxf(0.03, ranged_hold_time_sec)
+	elif _ranged_attack_stage == RangedAttackStage.HOLD and _ranged_stage_left_sec <= 0.0:
 		var target: Node3D = _resolve_ranged_attack_target()
 		if target != null:
 			_fire_projectile_towards(target)
@@ -384,6 +418,17 @@ func _resolve_ranged_attack_target() -> Node3D:
 	if _target_player != null and is_instance_valid(_target_player):
 		return _target_player
 	return null
+
+
+func _face_target_player(weight: float = 0.2) -> void:
+	if _target_player == null:
+		return
+	var to_target := _target_player.global_position - global_position
+	to_target.y = 0.0
+	if to_target.length_squared() < 1e-6:
+		return
+	var target_yaw := atan2(to_target.x, to_target.z)
+	rotation.y = lerp_angle(rotation.y, target_yaw, clampf(weight, 0.01, 1.0))
 
 
 func _fire_projectile_towards(target: Node3D) -> void:
@@ -451,7 +496,27 @@ func receive_hit(damage: float, _source: Node = null) -> bool:
 		_die()
 	else:
 		_state = State.CHASE
+		_maybe_play_hit_reaction()
 	return true
+
+
+func _maybe_play_hit_reaction() -> void:
+	if randf() > clampf(hit_react_chance, 0.0, 1.0):
+		return
+	_hit_reaction_left_sec = maxf(0.05, hit_react_duration_sec)
+	_play_best_clip(["Hit_A", "Hit_B", "Hit", "hit"])
+	if randf() <= clampf(hit_interrupt_attack_chance, 0.0, 1.0):
+		_interrupt_attack_for_hit_react()
+
+
+func _interrupt_attack_for_hit_react() -> void:
+	_attack_cooldown_left = maxf(_attack_cooldown_left, attack_cooldown * 0.35)
+	if uses_ranged_attacks:
+		_ranged_attack_stage = RangedAttackStage.NONE
+		_ranged_stage_left_sec = 0.0
+		_ranged_attack_target_ref = null
+	if _state == State.ATTACK:
+		_state = State.CHASE
 
 
 func _die() -> void:
