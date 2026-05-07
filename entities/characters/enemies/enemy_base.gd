@@ -187,7 +187,8 @@ func _move_towards(world_point: Vector3) -> Vector3:
 	if to_t.length_squared() < 1e-6:
 		return Vector3.ZERO
 	var dir := to_t.normalized()
-	var target_yaw := atan2(-dir.x, -dir.z)
+	# Match player-facing locomotion convention so enemies don't backpedal.
+	var target_yaw := atan2(dir.x, dir.z)
 	rotation.y = lerp_angle(rotation.y, target_yaw, 0.18)
 	return dir * move_speed
 
@@ -199,7 +200,17 @@ func _update_animation(moving: bool) -> void:
 		_play_best_clip(["Death", "Die", "death", "die"])
 		return
 	if _state == State.ATTACK:
-		_play_best_clip(["Attack", "Melee_Attack_1H", "Attack_01", "Shoot", "attack"])
+		_play_best_clip(
+			[
+				"Attack",
+				"Melee_1H_Attack_Chop",
+				"Melee_1H_Attack_Slice_Diagonal",
+				"Melee_Attack_1H",
+				"Attack_01",
+				"Shoot",
+				"attack",
+			]
+		)
 		return
 	if moving:
 		_play_best_clip(["Walk", "Run", "Walking_B", "walk"])
@@ -239,12 +250,14 @@ func _find_animation_player_deep(n: Node) -> AnimationPlayer:
 func _resolve_clip_name(preferred: String) -> String:
 	if _animation_player == null:
 		return ""
-	if _animation_player.has_animation(preferred):
-		return preferred
-	for clip in _animation_player.get_animation_list():
-		var s := String(clip)
-		if s == preferred or s.ends_with("/" + preferred) or s.get_file() == preferred:
-			return s
+	var candidates: Array[String] = [
+		preferred,
+		"Enemy/%s" % preferred,
+		"Base/%s" % preferred,
+	]
+	for c in candidates:
+		if _animation_player.has_animation(StringName(c)):
+			return c
 	return ""
 
 

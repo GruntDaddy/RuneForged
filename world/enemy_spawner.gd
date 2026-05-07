@@ -15,7 +15,7 @@ var _alive: Array[WeakRef] = []
 var _respawn_wait_sec: float = 0.0
 
 func _ready() -> void:
-	_seed_initial_spawn()
+	call_deferred("_seed_initial_spawn")
 
 
 func _process(delta: float) -> void:
@@ -45,7 +45,16 @@ func _spawn_one() -> void:
 	var enemy := inst as Node3D
 	if enemy.has_method("set"):
 		enemy.set("variant_data", variant_data)
-	get_parent().add_child(enemy)
+	var parent_node := get_parent()
+	if parent_node == null:
+		return
+	parent_node.add_child.call_deferred(enemy)
+	call_deferred("_finalize_spawn", enemy)
+
+
+func _finalize_spawn(enemy: Node3D) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
 	enemy.global_position = _pick_spawn_position()
 	_alive.append(weakref(enemy))
 

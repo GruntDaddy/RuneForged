@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EnemyBehaviorProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/schemas/enemy_behavior_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+aggro_range = 20.0
+leash_range = 36.0
+attack_range = 17.0
+preferred_range = 12.0
+attack_cooldown = 2.2
+patrol_radius = 9.5
+return_stop_distance = 1.6
+uses_ranged_attacks = true

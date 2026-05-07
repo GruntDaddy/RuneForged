@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://entities/characters/enemies/enemy_base.tscn" id="1_base"]
+[ext_resource type="Resource" path="res://data/enemies/variants/skeleton_mage_t1.tres" id="2_variant"]
+
+[node name="SkeletonMageT1" instance=ExtResource("1_base")]
+variant_data = ExtResource("2_variant")

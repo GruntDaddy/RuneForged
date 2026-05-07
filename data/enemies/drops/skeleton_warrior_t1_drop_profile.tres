@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyDropProfile" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://data/schemas/enemy_drop_profile.gd" id="1_profile"]
+[ext_resource type="Script" path="res://data/schemas/enemy_drop_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="DropEntry_bone"]
+script = ExtResource("2_entry")
+item_id = "bone"
+chance = 1.0
+min_count = 2
+max_count = 4
+
+[sub_resource type="Resource" id="DropEntry_hide"]
+script = ExtResource("2_entry")
+item_id = "hide_raw"
+chance = 0.2
+min_count = 1
+max_count = 1
+
+[resource]
+script = ExtResource("1_profile")
+entries = Array[Resource]([SubResource("DropEntry_bone"), SubResource("DropEntry_hide")])
