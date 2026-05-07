@@ -215,9 +215,10 @@ func _load_bgm_resource(mp3_path: String, wav_path: String) -> AudioStream:
 		var ogg: AudioStream = load(ogg_path) as AudioStream
 		if ogg != null and not _stream_seems_invalid(ogg):
 			return ogg
-	var w: AudioStream = load(wav_path) as AudioStream
-	if w != null and not _stream_seems_invalid(w):
-		return w
+	if ResourceLoader.exists(wav_path):
+		var w: AudioStream = load(wav_path) as AudioStream
+		if w != null and not _stream_seems_invalid(w):
+			return w
 	push_warning("GameAudio: no MP3/OGG/WAV for %s; using Campfire MP3." % wav_path.get_file())
 	return _snd_bgm_fallback
 

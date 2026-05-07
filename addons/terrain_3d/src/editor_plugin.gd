@@ -105,8 +105,7 @@ func _make_visible(p_visible: bool, p_redraw: bool = false) -> void:
 func _edit(p_object: Object) -> void:
 	if !p_object:
 		_clear()
-
-	if p_object is Terrain3D:
+	elif p_object is Terrain3D:
 		if p_object == terrain:
 			return
 		terrain = p_object
