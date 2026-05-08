@@ -55,14 +55,20 @@ const LOD_FROZEN := 2
 @export var use_simulation_lod: bool = true
 ## Fish / pond wildlife: planar roam only; Y follows active water surface (+ bob). Falls back to spawn Y if no water query.
 @export var aquatic: bool = false
-@export var swim_bob_amplitude: float = 0.045
-@export var swim_bob_speed: float = 1.8
-## Extra Y after sampling boujie/flat surface (negative slightly submerges mesh when crests read high vs shader).
-@export var aquatic_surface_vertical_offset: float = -0.16
-## Lower = smoother vertical follow (reduces popping when waves accelerate upward).
+@export var swim_bob_amplitude: float = 0.018
+@export var swim_bob_speed: float = 1.6
+## Scales only the **upward** half of the swim bob sine (0 = no upward bob; mesh pivots are usually low vs the back/dorsal).
+@export var aquatic_swim_bob_up_fraction: float = 0.0
+## Extra Y after sampling boujie/flat surface (negative submerges; stack with [member aquatic_min_depth_below_surface_m] for thick meshes).
+@export var aquatic_surface_vertical_offset: float = -0.32
+## Planar smoothing when the sampled surface is **falling** or holding (higher = snappier).
 @export var aquatic_surface_vertical_smoothing: float = 12.0
-## Final Y may not exceed sampled surface + offset + this (limits bob vs sharp wave fronts).
-@export var aquatic_max_above_surface_y: float = 0.018
+## Planar smoothing when the sampled surface is **rising** (lower = fish/trough lag crests more = less “pop ahead” of the visible wave).
+@export var aquatic_surface_rise_smoothing: float = 2.0
+## Max Y above the **smoothed** surface target (use 0 to forbid riding above the lag line; bob is mostly downward only).
+@export var aquatic_max_above_surface_y: float = 0.0
+## Body origin must stay at least this far **below** the offset sampled surface (m). Use ~0.2–0.35 for poly fish whose pivot sits at belly and fins stick up.
+@export var aquatic_min_depth_below_surface_m: float = 0.26
 ## Extra clearance when snapping by ray/frozen LOD only; keep small so meshes do not hover.
 @export var terrain_snap_y_offset: float = 0.02
 ## Wider floor snap when LOD is low so move_and_slide keeps contact before is_on_floor flaps at range.
@@ -248,13 +254,21 @@ func _aquatic_apply_bob_after_move(delta: float) -> void:
 	if is_nan(_aquatic_smoothed_base_y):
 		_aquatic_smoothed_base_y = raw_surface
 	else:
-		var st := clampf(aquatic_surface_vertical_smoothing * delta, 0.0, 1.0)
+		var rising := raw_surface > _aquatic_smoothed_base_y + 0.002
+		var smooth_rate := aquatic_surface_rise_smoothing if rising else aquatic_surface_vertical_smoothing
+		var st := clampf(smooth_rate * delta, 0.0, 1.0)
 		_aquatic_smoothed_base_y = lerpf(_aquatic_smoothed_base_y, raw_surface, st)
 	_swim_phase += delta * swim_bob_speed
-	var bob := sin(_swim_phase) * swim_bob_amplitude
+	var sp := sin(_swim_phase)
+	var bob := swim_bob_amplitude * (sp if sp < 0.0 else sp * aquatic_swim_bob_up_fraction)
 	var y := _aquatic_smoothed_base_y + bob
-	var ceiling := raw_surface + aquatic_max_above_surface_y
-	global_position.y = minf(y, ceiling)
+	# Smoothed cap: raw can lead the rendered wave on crests.
+	var cap_smoothed := _aquatic_smoothed_base_y + aquatic_max_above_surface_y
+	y = minf(y, cap_smoothed)
+	# Hard cap: keep origin under the CPU sample (imported fish pivots sit low; do not use raw_surface + margin or fins break the plane in troughs and crests).
+	var cap_below_sample := raw_surface - aquatic_min_depth_below_surface_m
+	y = minf(y, cap_below_sample)
+	global_position.y = y
 	_aquatic_lock_upright()
 
 

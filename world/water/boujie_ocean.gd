@@ -24,6 +24,8 @@ const _UVW2 := "res://assets/water/boujie/uv_waves/uvwave2.tres"
 @export var plane_size: Vector2 = Vector2(50000, 50000)
 ## Added to sampled Gerstner height. Negative pulls gameplay (player, fish buoyancy) slightly below the CPU-averaged vertex stack so bodies track troughs/refraction better than raw `sample_vertex_wave_average_y`.
 @export var gameplay_height_adjustment: float = -0.26
+## Seconds subtracted from the CPU wave clock so sampled Gerstner phase trails rendered crests slightly (shader uses built-in TIME + render clock; physics queries often run earlier in the frame).
+@export var gameplay_wave_sample_time_offset_sec: float = -0.072
 
 var _material_instance: ShaderMaterial
 
@@ -35,7 +37,7 @@ func get_water_surface_height_at(world_position: Vector3) -> float:
 		return water_level + gameplay_height_adjustment
 	var cam := get_viewport().get_camera_3d()
 	var cam_pos: Vector3 = cam.global_position if cam else world_position
-	var t: float = Time.get_ticks_msec() * 0.001
+	var t: float = Time.get_ticks_msec() * 0.001 + gameplay_wave_sample_time_offset_sec
 	var dy: float = _BoujieWaveHeight.sample_vertex_wave_average_y(
 		_material_instance,
 		world_position.x,
