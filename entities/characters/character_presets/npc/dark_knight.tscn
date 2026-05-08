@@ -3,9 +3,9 @@
 [ext_resource type="PackedScene" uid="uid://by2dihv026c7p" path="res://entities/characters/character_presets/human/base_knight.tscn" id="1_ynn6k"]
 [ext_resource type="Material" uid="uid://efh8jpryahqq" path="res://shared/materials/BlackKnight.tres" id="2_e2unx"]
 [ext_resource type="Texture2D" uid="uid://bvt4huodivnqv" path="res://assets/kaykit/characters/raw/Skeleton_Warrior_skeleton_texture_A.png" id="3_7f5wg"]
-[ext_resource type="PackedScene" uid="uid://bfc1itx4k8a8c" path="res://assets/kaykit/items/sword_E.gltf" id="4_ynf2h"]
+[ext_resource type="PackedScene" uid="uid://b6ljp8vixwykj" path="res://entities/equipment/weapons/enemy/dark_knight/sword_dark_knight.tscn" id="4_ynf2h"]
 [ext_resource type="PackedScene" uid="uid://b7pnqddunrelb" path="res://entities/equipment/off_hand/torch.tscn" id="5_hsdfw"]
-[ext_resource type="PackedScene" uid="uid://dt1qn3edicbg1" path="res://assets/kaykit/items/Skeleton_Shield_Large_B.gltf" id="6_33nl7"]
+[ext_resource type="PackedScene" uid="uid://dwde8dob27tqi" path="res://entities/equipment/shields/shield_dark_night_1.tscn" id="6_hsdfw"]
 [ext_resource type="AnimationLibrary" uid="uid://ksfk2vf6webk" path="res://data/enemies/Enemy.res" id="7_r6m7j"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_71hmt"]
@@ -82,8 +82,8 @@ bone_idx = 12
 [node name="EquippedWeaponRight" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_R" index="0" unique_id=1525257722]
 transform = Transform3D(0.40000007, 0, 0, 0, 0.40000013, 0, 0, 0, 0.40000015, 0, 0, 0)
 
-[node name="Sword_DarkKnight" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight" index="0" unique_id=1646347392 instance=ExtResource("4_ynf2h")]
-transform = Transform3D(-0.22905138, -1.2082027, -0.22423539, 1.2082026, -0.2630471, 0.183172, -0.22423474, -0.18317282, 1.2160044, -0.008642495, 0.24113047, -0.0013102293)
+[node name="Sword_DarkNight" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight" index="0" unique_id=1646347392 instance=ExtResource("4_ynf2h")]
+transform = Transform3D(-0.45934772, -1.1332879, -0.25914901, 1.1332881, -0.4986364, 0.17181332, -0.25914806, -0.17181477, 1.2107116, -0.034778863, 0.2835561, -0.005272746)
 
 [node name="HandAttach_L" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" index="10" unique_id=1271899200]
 transform = Transform3D(0.2628634, -3.5762787e-07, 0.9648324, 0, -0.9999993, 0, 0.96483254, -4.0233135e-07, -0.26286334, 0.5641312, 0.7322136, -0.03687204)
@@ -100,8 +100,8 @@ visible = false
 
 [node name="EquippedShield" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" index="2" unique_id=801960681]
 
-[node name="Skeleton_Shield_Large_B2" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield" index="0" unique_id=284021423 instance=ExtResource("6_33nl7")]
-transform = Transform3D(0.99840784, -0.05610095, -0.005843194, 0.05610094, 0.97695965, 0.20591715, -0.0058434755, -0.20591715, 0.97855186, 0.01285398, 0.10093081, 0.1392318)
+[node name="Shield_DarkNight_1" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield" index="0" unique_id=284021423 instance=ExtResource("6_hsdfw")]
+transform = Transform3D(0.99989897, -0.014012359, -0.0025120974, 0.013798501, 0.9105756, 0.4131122, -0.0035012066, -0.413105, 0.9106771, 0.045287915, 0.14428282, 0.16622764)
 
 [node name="AnimationPlayer" parent="." index="1" unique_id=1614902303]
 libraries/Enemy = ExtResource("7_r6m7j")

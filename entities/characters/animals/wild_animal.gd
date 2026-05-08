@@ -130,6 +130,12 @@ func _ready() -> void:
 	_set_idle_phase()
 
 
+## Call after external placement (e.g. [WildlifeSpawner]) sets [member Node3D.global_transform].
+## Otherwise [member _spawn_position] stays at the temporary origin used during [method _ready] and aquatic Y locks to the wrong height.
+func sync_spawn_anchor() -> void:
+	_spawn_position = global_position
+
+
 ## Called every frame from the region `WildlifeLod` controller. Simulation tier updates only when `apply_tiers` is true.
 func apply_lod_frame(
 	dist_sq: float,

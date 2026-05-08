@@ -1,5 +1,9 @@
 [gd_scene format=3 uid="uid://b6ljp8vixwykj"]
 
-[ext_resource type="PackedScene" uid="uid://bfc1itx4k8a8c" path="res://assets/kaykit/items/sword_E.gltf" id="1_1xw7q"]
+[ext_resource type="PackedScene" uid="uid://bfc1itx4k8a8c" path="res://assets/kaykit/items/sword_E.gltf" id="1_gu8yp"]
+[ext_resource type="Material" uid="uid://s2pcrjdh3fc6" path="res://shared/materials/survivalist.tres" id="2_27hcs"]
 
-[node name="Sword_DarkKnight" unique_id=1646347392 instance=ExtResource("1_1xw7q")]
+[node name="Sword_DarkNight" unique_id=1646347392 instance=ExtResource("1_gu8yp")]
+
+[node name="sword_E" parent="." index="0" unique_id=906404585]
+material_override = ExtResource("2_27hcs")

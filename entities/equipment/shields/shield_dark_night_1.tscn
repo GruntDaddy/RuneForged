@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dwde8dob27tqi"]
+
+[ext_resource type="PackedScene" uid="uid://dt1qn3edicbg1" path="res://assets/kaykit/items/Skeleton_Shield_Large_B.gltf" id="1_qkjsg"]
+[ext_resource type="Material" uid="uid://c1j0rtmslt8p3" path="res://shared/materials/vampire.tres" id="2_to8nh"]
+
+[node name="Shield_DarkNight_1" unique_id=284021423 instance=ExtResource("1_qkjsg")]
+
+[node name="Skeleton_Shield_Large_B" parent="." index="0" unique_id=237052975]
+material_override = ExtResource("2_to8nh")
