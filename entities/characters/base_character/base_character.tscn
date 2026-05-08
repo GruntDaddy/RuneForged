@@ -97,8 +97,15 @@
 [ext_resource type="Animation" uid="uid://m88fr24mqlqv" path="res://assets/animations/rig_medium/combat/Melee_Block_Attack.res" id="78_f4yw7"]
 [ext_resource type="Animation" uid="uid://565g5d0i45vj" path="res://assets/animations/rig_medium/combat/Melee_Block_Hit.res" id="79_24hmn"]
 [ext_resource type="PackedScene" uid="uid://dqtds13wn64w6" path="res://entities/equipment/accessories/backpacks/backpack_small.tscn" id="80_bkpsm"]
+[ext_resource type="Animation" uid="uid://bsad5esksjjrd" path="res://assets/animations/rig_medium/tools/Fishing_Bite.res" id="87_xsg2r"]
+[ext_resource type="Animation" uid="uid://b8rfvtg5h8uou" path="res://assets/animations/rig_medium/tools/Fishing_Cast.res" id="88_hdg06"]
+[ext_resource type="Animation" uid="uid://dn30bystee5ny" path="res://assets/animations/rig_medium/tools/Fishing_Catch.res" id="89_bil2f"]
+[ext_resource type="Animation" uid="uid://ihwhrva2g4w3" path="res://assets/animations/rig_medium/tools/Fishing_Idle.res" id="90_d6hbu"]
 [ext_resource type="Animation" uid="uid://c0lokorb3okag" path="res://assets/animations/rig_medium/tools/Lockpick.res" id="90_ir8bk"]
+[ext_resource type="Animation" uid="uid://gu4lov1onikt" path="res://assets/animations/rig_medium/tools/Fishing_Reeling.res" id="91_7dy06"]
 [ext_resource type="Animation" uid="uid://btisnps2ei021" path="res://assets/animations/rig_medium/tools/Lockpicking.res" id="91_db0n7"]
+[ext_resource type="Animation" uid="uid://da71pstce5gue" path="res://assets/animations/rig_medium/tools/Fishing_Struggling.res" id="92_n8rsp"]
+[ext_resource type="Animation" uid="uid://8kpxu7pcu4nr" path="res://assets/animations/rig_medium/tools/Fishing_Tug.res" id="93_hqaju"]
 [ext_resource type="Animation" uid="uid://cv36xnpa00t84" path="res://assets/animations/rig_medium/simulation/Sit_Floor_Down.res" id="104_41ygn"]
 [ext_resource type="Animation" uid="uid://brm848ltvnpgj" path="res://assets/animations/rig_medium/simulation/Sit_Floor_Idle.res" id="105_r0qaj"]
 [ext_resource type="Animation" uid="uid://frj2xqto1spe" path="res://assets/animations/rig_medium/simulation/Sit_Floor_StandUp.res" id="106_d3fn0"]
@@ -254,6 +261,13 @@ _data = {
 &"Bow_Release": ExtResource("comb_bow_rel"),
 &"Chop": ExtResource("comb_m1h_ch"),
 &"Chop 2": ExtResource("71_41cp6"),
+&"Fishing_Bite": ExtResource("87_xsg2r"),
+&"Fishing_Cast": ExtResource("88_hdg06"),
+&"Fishing_Catch": ExtResource("89_bil2f"),
+&"Fishing_Idle": ExtResource("90_d6hbu"),
+&"Fishing_Reeling": ExtResource("91_7dy06"),
+&"Fishing_Struggling": ExtResource("92_n8rsp"),
+&"Fishing_Tug": ExtResource("93_hqaju"),
 &"Idle_A": ExtResource("14_idle"),
 &"Interact": ExtResource("17_interact"),
 &"Jump_Idle": ExtResource("11_ey55c"),
