@@ -150,7 +150,7 @@ const INTERACT_EXTRA_ACTIONS: Array[String] = [
 @export var water_jump_multiplier: float = 0.55
 @export var water_max_effect_depth: float = 18.0
 ## Shift applied to sampled surface for buoyancy / in_water (negative = equilibrium slightly lower). Boujie `gameplay_height_adjustment` handles most of this; keep small unless tuning per-character feel.
-@export var water_surface_physics_offset: float = -0.05
+@export var water_surface_physics_offset: float = -0.08
 ## If set, receives underwater fog via `set_underwater_fog_override`. Otherwise uses group `day_night_cycle`.
 @export var day_night_controller_path: NodePath = NodePath("")
 @export var water_dive_accel: float = 12.0

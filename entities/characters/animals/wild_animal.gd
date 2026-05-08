@@ -55,10 +55,14 @@ const LOD_FROZEN := 2
 @export var use_simulation_lod: bool = true
 ## Fish / pond wildlife: planar roam only; Y follows active water surface (+ bob). Falls back to spawn Y if no water query.
 @export var aquatic: bool = false
-@export var swim_bob_amplitude: float = 0.06
+@export var swim_bob_amplitude: float = 0.045
 @export var swim_bob_speed: float = 1.8
 ## Extra Y after sampling boujie/flat surface (negative slightly submerges mesh when crests read high vs shader).
-@export var aquatic_surface_vertical_offset: float = -0.08
+@export var aquatic_surface_vertical_offset: float = -0.16
+## Lower = smoother vertical follow (reduces popping when waves accelerate upward).
+@export var aquatic_surface_vertical_smoothing: float = 12.0
+## Final Y may not exceed sampled surface + offset + this (limits bob vs sharp wave fronts).
+@export var aquatic_max_above_surface_y: float = 0.018
 ## Extra clearance when snapping by ray/frozen LOD only; keep small so meshes do not hover.
 @export var terrain_snap_y_offset: float = 0.02
 ## Wider floor snap when LOD is low so move_and_slide keeps contact before is_on_floor flaps at range.
@@ -106,6 +110,7 @@ var _hb_billboard_tick: int = 0
 var _saved_floor_snap_length: float = 0.18
 var _ground_snap_body_offset: float = 0.0
 var _terrain3d_cache: Terrain3D
+var _aquatic_smoothed_base_y: float = NAN
 
 
 func _ready() -> void:
@@ -137,6 +142,8 @@ func _ready() -> void:
 ## Otherwise [member _spawn_position] stays at the temporary origin used during [method _ready] and aquatic Y locks to the wrong height.
 func sync_spawn_anchor() -> void:
 	_spawn_position = global_position
+	if aquatic:
+		_aquatic_smoothed_base_y = NAN
 
 
 ## Called every frame from the region `WildlifeLod` controller. Simulation tier updates only when `apply_tiers` is true.
@@ -237,9 +244,17 @@ func _aquatic_surface_y_at_feet() -> float:
 func _aquatic_apply_bob_after_move(delta: float) -> void:
 	if not aquatic:
 		return
+	var raw_surface := _aquatic_surface_y_at_feet() + aquatic_surface_vertical_offset
+	if is_nan(_aquatic_smoothed_base_y):
+		_aquatic_smoothed_base_y = raw_surface
+	else:
+		var st := clampf(aquatic_surface_vertical_smoothing * delta, 0.0, 1.0)
+		_aquatic_smoothed_base_y = lerpf(_aquatic_smoothed_base_y, raw_surface, st)
 	_swim_phase += delta * swim_bob_speed
 	var bob := sin(_swim_phase) * swim_bob_amplitude
-	global_position.y = _aquatic_surface_y_at_feet() + aquatic_surface_vertical_offset + bob
+	var y := _aquatic_smoothed_base_y + bob
+	var ceiling := raw_surface + aquatic_max_above_surface_y
+	global_position.y = minf(y, ceiling)
 	_aquatic_lock_upright()
 
 
@@ -583,6 +598,8 @@ func _reset_to_spawn() -> void:
 	velocity = Vector3.ZERO
 	_flee_timeout = 0.0
 	_set_idle_phase()
+	if aquatic:
+		_aquatic_smoothed_base_y = NAN
 
 
 func apply_wind_push(source: Node3D, duration_sec: float, speed: float) -> void:

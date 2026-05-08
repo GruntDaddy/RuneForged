@@ -23,7 +23,7 @@ const _UVW2 := "res://assets/water/boujie/uv_waves/uvwave2.tres"
 ## Large horizontal extent so `_get_active_water_level` finds this ocean while the mesh follows the camera.
 @export var plane_size: Vector2 = Vector2(50000, 50000)
 ## Added to sampled Gerstner height. Negative pulls gameplay (player, fish buoyancy) slightly below the CPU-averaged vertex stack so bodies track troughs/refraction better than raw `sample_vertex_wave_average_y`.
-@export var gameplay_height_adjustment: float = -0.18
+@export var gameplay_height_adjustment: float = -0.26
 
 var _material_instance: ShaderMaterial
 
@@ -175,6 +175,11 @@ func _make_wave(
 func _apply_material_surface_tweaks(mat: ShaderMaterial) -> void:
 	if mat == null:
 		return
+	# CPU sampling (`boujie_wave_height.gd`) uses global +Y Gerstner displacement only. With this ON,
+	# Boujie rotates displacement by mesh normals (LOD ring seams / curvature), so rendered surface Y can
+	# sit below our gameplay height at the same XZ — entities look stranded above troughs. Flat ocean +
+	# global-up matches the CPU mirror.
+	mat.set_shader_parameter(&"vertex_displace_from_mesh_normal", false)
 	# Larger triplanar scale = less obvious texture repeat on foam/albedo.
 	mat.set_shader_parameter(&"uv_tri_scale", Vector3(52.0, 52.0, 52.0))
 	mat.set_shader_parameter(&"uv_blend_sharpness", 1.65)
