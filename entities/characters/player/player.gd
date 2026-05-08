@@ -149,6 +149,8 @@ const INTERACT_EXTRA_ACTIONS: Array[String] = [
 @export var water_horizontal_drag: float = 0.88
 @export var water_jump_multiplier: float = 0.55
 @export var water_max_effect_depth: float = 18.0
+## Shift applied to sampled surface for buoyancy / in_water (negative = equilibrium slightly lower). Boujie `gameplay_height_adjustment` handles most of this; keep small unless tuning per-character feel.
+@export var water_surface_physics_offset: float = -0.05
 ## If set, receives underwater fog via `set_underwater_fog_override`. Otherwise uses group `day_night_cycle`.
 @export var day_night_controller_path: NodePath = NodePath("")
 @export var water_dive_accel: float = 12.0
@@ -402,7 +404,10 @@ func _physics_process(delta: float) -> void:
 		base_character.set_blocking(wants_block)
 	var actively_blocking: bool = base_character != null and base_character.has_method("is_blocking") and base_character.is_blocking()
 
-	var wl: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), global_position)
+	var wl_raw: float = _WaterSurfaceQueries.get_active_water_height_at(get_tree(), global_position)
+	var wl: float = wl_raw
+	if wl_raw > -1e6:
+		wl = wl_raw + water_surface_physics_offset
 	var in_water: bool = (
 			wl > -1e6
 			and global_position.y < wl - 0.02

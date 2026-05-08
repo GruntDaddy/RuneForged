@@ -2,6 +2,7 @@ extends CharacterBody3D
 class_name WildAnimal
 
 const _AnimalDropEntry = preload("res://entities/characters/animals/animal_drop_entry.gd")
+const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd")
 
 const LOD_FULL := 0
 const LOD_LOW := 1
@@ -52,10 +53,12 @@ const LOD_FROZEN := 2
 
 ## Register with region `WildlifeLod`; tiers throttle AI + billboard work when far from anchor.
 @export var use_simulation_lod: bool = true
-## Fish / pond wildlife: planar roam only; Y locked to spawn with gentle bob (no gravity).
+## Fish / pond wildlife: planar roam only; Y follows active water surface (+ bob). Falls back to spawn Y if no water query.
 @export var aquatic: bool = false
 @export var swim_bob_amplitude: float = 0.06
 @export var swim_bob_speed: float = 1.8
+## Extra Y after sampling boujie/flat surface (negative slightly submerges mesh when crests read high vs shader).
+@export var aquatic_surface_vertical_offset: float = -0.08
 ## Extra clearance when snapping by ray/frozen LOD only; keep small so meshes do not hover.
 @export var terrain_snap_y_offset: float = 0.02
 ## Wider floor snap when LOD is low so move_and_slide keeps contact before is_on_floor flaps at range.
@@ -221,12 +224,33 @@ func _aquatic_zero_vertical_velocity() -> void:
 		velocity.y = 0.0
 
 
+func _aquatic_surface_y_at_feet() -> float:
+	var tree := get_tree()
+	if tree == null:
+		return _spawn_position.y
+	var h: float = _WaterSurfaceQueries.get_active_water_height_at(tree, global_position)
+	if h <= -1e6:
+		return _spawn_position.y
+	return h
+
+
 func _aquatic_apply_bob_after_move(delta: float) -> void:
 	if not aquatic:
 		return
 	_swim_phase += delta * swim_bob_speed
 	var bob := sin(_swim_phase) * swim_bob_amplitude
-	global_position.y = _spawn_position.y + bob
+	global_position.y = _aquatic_surface_y_at_feet() + aquatic_surface_vertical_offset + bob
+	_aquatic_lock_upright()
+
+
+## Fish AI only adjusts yaw; kill pitch/roll drift so imported swim clips / collisions cannot leave specimens upside down.
+func _aquatic_lock_upright() -> void:
+	rotation.x = 0.0
+	rotation.z = 0.0
+	var vr := get_node_or_null("VisualRoot") as Node3D
+	if vr != null:
+		vr.rotation.x = 0.0
+		vr.rotation.z = 0.0
 
 
 ## Physics ray straight down. With Terrain3D **Dynamic / Game** collision, shapes exist mainly near the camera, so rays often miss terrain far away — see [method _terrain_height_data_at_feet] fallback.
@@ -753,7 +777,11 @@ func _set_walk_phase() -> void:
 func _update_anim() -> void:
 	if _dead:
 		return
-	if _is_walking and velocity.length_squared() > 0.05:
+	var moving := _is_walking and velocity.length_squared() > 0.05
+	if aquatic:
+		# Imported poly fish swim clips often add root/bone roll; planar roam only needs a stable idle pose.
+		moving = false
+	if moving:
 		_play_clip(_walk_clip)
 	else:
 		_play_clip(_idle_clip)

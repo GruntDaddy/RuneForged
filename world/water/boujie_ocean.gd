@@ -22,6 +22,8 @@ const _UVW2 := "res://assets/water/boujie/uv_waves/uvwave2.tres"
 
 ## Large horizontal extent so `_get_active_water_level` finds this ocean while the mesh follows the camera.
 @export var plane_size: Vector2 = Vector2(50000, 50000)
+## Added to sampled Gerstner height. Negative pulls gameplay (player, fish buoyancy) slightly below the CPU-averaged vertex stack so bodies track troughs/refraction better than raw `sample_vertex_wave_average_y`.
+@export var gameplay_height_adjustment: float = -0.18
 
 var _material_instance: ShaderMaterial
 
@@ -30,7 +32,7 @@ func get_water_surface_height_at(world_position: Vector3) -> float:
 	if _material_instance == null:
 		_ensure_unique_material()
 	if _material_instance == null:
-		return water_level
+		return water_level + gameplay_height_adjustment
 	var cam := get_viewport().get_camera_3d()
 	var cam_pos: Vector3 = cam.global_position if cam else world_position
 	var t: float = Time.get_ticks_msec() * 0.001
@@ -42,7 +44,7 @@ func get_water_surface_height_at(world_position: Vector3) -> float:
 		cam_pos,
 		water_level
 	)
-	return water_level + dy
+	return water_level + dy + gameplay_height_adjustment
 
 
 func _enter_tree() -> void:
