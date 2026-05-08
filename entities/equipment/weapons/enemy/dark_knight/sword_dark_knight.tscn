@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://b6ljp8vixwykj"]
+
+[ext_resource type="PackedScene" uid="uid://bfc1itx4k8a8c" path="res://assets/kaykit/items/sword_E.gltf" id="1_1xw7q"]
+
+[node name="Sword_DarkKnight" unique_id=1646347392 instance=ExtResource("1_1xw7q")]

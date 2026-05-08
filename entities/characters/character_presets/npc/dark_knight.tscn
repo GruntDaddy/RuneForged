@@ -3,6 +3,10 @@
 [ext_resource type="PackedScene" uid="uid://by2dihv026c7p" path="res://entities/characters/character_presets/human/base_knight.tscn" id="1_ynn6k"]
 [ext_resource type="Material" uid="uid://efh8jpryahqq" path="res://shared/materials/BlackKnight.tres" id="2_e2unx"]
 [ext_resource type="Texture2D" uid="uid://bvt4huodivnqv" path="res://assets/kaykit/characters/raw/Skeleton_Warrior_skeleton_texture_A.png" id="3_7f5wg"]
+[ext_resource type="PackedScene" uid="uid://bfc1itx4k8a8c" path="res://assets/kaykit/items/sword_E.gltf" id="4_ynf2h"]
+[ext_resource type="PackedScene" uid="uid://b7pnqddunrelb" path="res://entities/equipment/off_hand/torch.tscn" id="5_hsdfw"]
+[ext_resource type="PackedScene" uid="uid://dt1qn3edicbg1" path="res://assets/kaykit/items/Skeleton_Shield_Large_B.gltf" id="6_33nl7"]
+[ext_resource type="AnimationLibrary" uid="uid://ksfk2vf6webk" path="res://data/enemies/Enemy.res" id="7_r6m7j"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_71hmt"]
 resource_name = "skeleton"
@@ -11,29 +15,93 @@ roughness = 0.5
 
 [node name="DarkKnight" unique_id=1264149320 instance=ExtResource("1_ynn6k")]
 
-[node name="Knight_ArmLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="0" unique_id=2137874589]
+[node name="Skeleton3D" parent="Rig_Medium" parent_id_path=PackedInt32Array(1838458708) index="0" unique_id=544417064]
+bones/1/rotation = Quaternion(0, -1.19209275e-07, 0, 1)
+bones/2/rotation = Quaternion(0, 7.1054274e-15, 0, 1)
+bones/3/rotation = Quaternion(0, -8.4703295e-22, 0, 1)
+bones/4/position = Vector3(0.21200737, 0.13413215, 8.402462e-08)
+bones/4/rotation = Quaternion(-0.5906445, -0.023508873, -0.61160964, 0.5258519)
+bones/5/rotation = Quaternion(3.775603e-08, -4.3281243e-08, -0.48953632, 0.87198293)
+bones/6/rotation = Quaternion(7.250843e-09, 9.200791e-09, 0.026658095, 0.99964464)
+bones/6/scale = Vector3(0.99999994, 1, 1.0000001)
+bones/7/rotation = Quaternion(-0.32292026, -0.31415555, 0.12592588, 0.8838391)
+bones/8/position = Vector3(7.96443e-09, 0.096125126, -0.057500005)
+bones/8/rotation = Quaternion(-3.58774e-09, 6.9489703e-09, -0.7071068, 0.7071067)
+bones/9/position = Vector3(-0.21200737, 0.13413215, 8.402462e-08)
+bones/9/rotation = Quaternion(-0.58579224, 0.119464844, 0.65431464, 0.46308532)
+bones/10/rotation = Quaternion(4.5805653e-09, 6.1468945e-08, 0.5126311, 0.858609)
+bones/11/rotation = Quaternion(7.300499e-09, -7.3388096e-09, -0.0266581, 0.99964464)
+bones/11/scale = Vector3(1.0000001, 1, 1)
+bones/12/rotation = Quaternion(-0.31817573, 0.30963024, -0.2420199, 0.8627396)
+bones/13/position = Vector3(-5.138636e-10, 0.096125185, -0.057500005)
+bones/13/rotation = Quaternion(1.6805932e-09, -1.6805914e-09, 0.7071068, 0.7071067)
+bones/14/rotation = Quaternion(0, 4.2351647e-22, 0, 1)
+bones/15/position = Vector3(-0.17094505, 0.11358726, 1.3923275e-08)
+bones/15/rotation = Quaternion(0.99596155, -0.026094949, -0.012284555, 0.08502202)
+bones/16/rotation = Quaternion(0.28522122, -6.619484e-08, 1.9993409e-07, 0.95846176)
+bones/17/rotation = Quaternion(-0.5482553, 0.114645705, -0.006628126, 0.82838917)
+bones/18/rotation = Quaternion(-9.7077216e-05, 0.92023534, -0.39136568, 2.2065622e-05)
+bones/19/position = Vector3(0.17094505, 0.11358726, 1.3923275e-08)
+bones/19/rotation = Quaternion(0.9941671, 0.044932444, 0.011819968, -0.097330436)
+bones/20/rotation = Quaternion(0.088800624, 6.8548104e-08, -5.9590977e-08, 0.99604946)
+bones/21/rotation = Quaternion(-0.5119417, -0.260832, -0.0087369, 0.8184169)
+bones/22/rotation = Quaternion(0.00029769458, 0.92024195, -0.39134988, -6.732267e-05)
+
+[node name="Knight_ArmLeft" parent="Rig_Medium/Skeleton3D" index="0" unique_id=192329009]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_ArmRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="1" unique_id=1009159868]
+[node name="Knight_ArmRight" parent="Rig_Medium/Skeleton3D" index="1" unique_id=10438793]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_Body" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="2" unique_id=510675508]
+[node name="Knight_Body" parent="Rig_Medium/Skeleton3D" index="2" unique_id=811461439]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_Cape" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="3" unique_id=1053539260]
+[node name="Knight_Cape" parent="Rig_Medium/Skeleton3D" index="3" unique_id=190083647]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_Head" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="4" unique_id=1614400112]
+[node name="Knight_Head" parent="Rig_Medium/Skeleton3D" index="4" unique_id=2043444156]
 material_override = SubResource("StandardMaterial3D_71hmt")
 
-[node name="Knight_Helmet" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="5" unique_id=97694089]
+[node name="Knight_Helmet" parent="Rig_Medium/Skeleton3D" index="5" unique_id=2105647222]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_HelmetVisor" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="6" unique_id=284845739]
+[node name="Knight_HelmetVisor" parent="Rig_Medium/Skeleton3D" index="6" unique_id=1425742659]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_LegLeft" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="7" unique_id=1299784863]
+[node name="Knight_LegLeft" parent="Rig_Medium/Skeleton3D" index="7" unique_id=198702036]
 material_override = ExtResource("2_e2unx")
 
-[node name="Knight_LegRight" parent="Rig_Medium/Skeleton3D" parent_id_path=PackedInt32Array(866997261) index="8" unique_id=1381952220]
+[node name="Knight_LegRight" parent="Rig_Medium/Skeleton3D" index="8" unique_id=1127612089]
 material_override = ExtResource("2_e2unx")
+
+[node name="HandAttach_R" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" index="9" unique_id=537425018]
+transform = Transform3D(0.1498938, 4.172325e-07, -0.9887016, 1.7881393e-07, -0.9999993, -5.9604645e-08, -0.9887015, -4.3213367e-07, -0.1498942, -0.5467917, 0.7380675, 0.10018939)
+bone_name = "hand.r"
+bone_idx = 12
+
+[node name="EquippedWeaponRight" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_R" index="0" unique_id=1525257722]
+transform = Transform3D(0.40000007, 0, 0, 0, 0.40000013, 0, 0, 0, 0.40000015, 0, 0, 0)
+
+[node name="Sword_DarkKnight" parent="Rig_Medium/Skeleton3D/HandAttach_R/EquippedWeaponRight" index="0" unique_id=1646347392 instance=ExtResource("4_ynf2h")]
+transform = Transform3D(-0.22905138, -1.2082027, -0.22423539, 1.2082026, -0.2630471, 0.183172, -0.22423474, -0.18317282, 1.2160044, -0.008642495, 0.24113047, -0.0013102293)
+
+[node name="HandAttach_L" type="BoneAttachment3D" parent="Rig_Medium/Skeleton3D" index="10" unique_id=1271899200]
+transform = Transform3D(0.2628634, -3.5762787e-07, 0.9648324, 0, -0.9999993, 0, 0.96483254, -4.0233135e-07, -0.26286334, 0.5641312, 0.7322136, -0.03687204)
+bone_name = "hand.l"
+bone_idx = 7
+
+[node name="EquippedToolLeft" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" index="0" unique_id=1663439370]
+
+[node name="Torch" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedToolLeft" index="0" unique_id=1765022816 instance=ExtResource("5_hsdfw")]
+transform = Transform3D(-0.10260871, 0.75432044, 0.24591093, -0.7543205, -0.16960569, 0.20550992, 0.24591029, -0.20551074, 0.73300296, -0.036603004, 0.13116366, 0.028621852)
+visible = false
+
+[node name="EquippedWeaponLeft" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" index="1" unique_id=1747217745]
+
+[node name="EquippedShield" type="Node3D" parent="Rig_Medium/Skeleton3D/HandAttach_L" index="2" unique_id=801960681]
+
+[node name="Skeleton_Shield_Large_B2" parent="Rig_Medium/Skeleton3D/HandAttach_L/EquippedShield" index="0" unique_id=284021423 instance=ExtResource("6_33nl7")]
+transform = Transform3D(0.99840784, -0.05610095, -0.005843194, 0.05610094, 0.97695965, 0.20591715, -0.0058434755, -0.20591715, 0.97855186, 0.01285398, 0.10093081, 0.1392318)
+
+[node name="AnimationPlayer" parent="." index="1" unique_id=1614902303]
+libraries/Enemy = ExtResource("7_r6m7j")

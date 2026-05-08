@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://dmtaijnebvsbr"]
+
+[ext_resource type="PackedScene" uid="uid://dt1qn3edicbg1" path="res://assets/kaykit/items/Skeleton_Shield_Large_B.gltf" id="1_vwjbo"]
+
+[node name="Skeleton_Shield_Large" unique_id=284021423 instance=ExtResource("1_vwjbo")]
