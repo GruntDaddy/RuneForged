@@ -307,6 +307,8 @@ func _input(event: InputEvent) -> void:
 			if _tackle_window != null and _tackle_window.visible and _tackle_inventory_slot >= 0:
 				if InventoryService.deposit_to_tackle_first_empty(_tackle_inventory_slot, inv_idx):
 					_refresh_tackle_panel()
+				elif s != null and str(s.get("id", "")) != InventoryService.TACKLEBOX_ID:
+					_toast("Can't store that in the tackle box.")
 				get_viewport().set_input_as_handled()
 				return
 	if event is InputEventMouseMotion and not _drag.is_empty():
@@ -2083,6 +2085,8 @@ func _equip_accepts(equip_slot: String, it: ItemData) -> bool:
 	if it == null:
 		return false
 	var item_id := str(it.id).to_lower()
+	if InventoryService.item_is_tackle_contents_only(item_id):
+		return false
 	match equip_slot:
 		"main_hand":
 			if _is_bow_weapon_item(it):
@@ -2133,6 +2137,8 @@ func _try_quick_equip_inventory_slot(inv_idx: int) -> bool:
 
 func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:
 	var id := item_id.to_lower()
+	if InventoryService.item_is_tackle_contents_only(id):
+		return ""
 	if _is_shield_item(it):
 		return "off_hand"
 	if it is ArmorData:
@@ -2425,10 +2431,20 @@ func _apply_slot_style(slot: Panel, filled: bool, equip_slot_id: String = "") ->
 
 func _ensure_tackle_window() -> void:
 	if _tackle_window != null:
-		return
+		if (
+			_tackle_hook_labels.size() == InventoryService.TACKLE_HOOKS
+			and _tackle_bobber_labels.size() == InventoryService.TACKLE_BOBBERS
+			and _tackle_bait_labels.size() == InventoryService.TACKLE_BAIT
+		):
+			return
+		_tackle_window.queue_free()
+		_tackle_window = null
+		_tackle_hook_labels.clear()
+		_tackle_bobber_labels.clear()
+		_tackle_bait_labels.clear()
 	_tackle_window = Window.new()
 	_tackle_window.title = "Tackle box"
-	_tackle_window.size = Vector2i(340, 460)
+	_tackle_window.size = Vector2i(400, 620)
 	_tackle_window.unresizable = true
 	_tackle_window.close_requested.connect(_close_tackle_window)
 	add_child(_tackle_window)
@@ -2443,7 +2459,7 @@ func _ensure_tackle_window() -> void:
 	vb.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_child(vb)
 	var help := Label.new()
-	help.text = "Right-click a hook, bobber, or bait in inventory to store it here."
+	help.text = "Drag supplies into these slots, right-click from inventory, or pick up spares on the beach."
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vb.add_child(help)
 	_append_tackle_row(vb, "Hooks", InventoryService.TACKLE_HOOKS, _tackle_hook_labels)
@@ -2476,7 +2492,17 @@ func _open_tackle_window(inv_slot: int) -> void:
 	_ensure_tackle_window()
 	_tackle_inventory_slot = inv_slot
 	_refresh_tackle_panel()
-	_tackle_window.popup_centered()
+	var margin := 14
+	var sz: Vector2i = _tackle_window.size
+	var br := _book.get_global_rect()
+	_tackle_window.popup(
+		Rect2i(
+			int(br.position.x + br.size.x - float(sz.x) - margin),
+			int(br.position.y + margin),
+			sz.x,
+			sz.y
+		)
+	)
 
 
 func _close_tackle_window() -> void:

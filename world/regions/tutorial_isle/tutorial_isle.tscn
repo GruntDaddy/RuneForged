@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://cj88e5jeos7lm"]
 
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
-[ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="4_isg8b"]
+[ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="4_dbqg5"]
 [ext_resource type="PackedScene" uid="uid://7yt3hmua68xq" path="res://world/pickups/sword_1h_bronze_pickup.tscn" id="10_ad2jt"]
 [ext_resource type="PackedScene" uid="uid://w8vscph1wpmv" path="res://world/regions/tutorial_isle/tutorial_isle_buildings.tscn" id="10_gypqo"]
 [ext_resource type="PackedScene" uid="uid://b7dacipqpquux" path="res://entities/building_parts/anvil.tscn" id="12_rwr6f"]
@@ -31,6 +31,8 @@
 [ext_resource type="Resource" path="res://data/enemies/variants/dark_knight_t1.tres" id="enemy_variant_dark_knight"]
 [ext_resource type="Resource" uid="uid://dwp0npoqfw7yu" path="res://data/enemies/variants/skeleton_archer_t1.tres" id="enemy_variant_skeleton_archer"]
 [ext_resource type="Resource" uid="uid://b82iui3pm0cq4" path="res://data/enemies/variants/skeleton_melee_t1.tres" id="enemy_variant_skeleton_melee"]
+[ext_resource type="PackedScene" uid="uid://dldr3xs7qshyd" path="res://world/pickups/fishing_pole_pickup.tscn" id="fishing_pole_pickup"]
+[ext_resource type="PackedScene" uid="uid://bnhs4jcmi56b1" path="res://world/pickups/fishing_tacklebox_pickup.tscn" id="fishing_tacklebox_pickup"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_bluegill.tscn" id="fish_bluegill"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_carp.tscn" id="fish_carp"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_catfish.tscn" id="fish_catfish"]
@@ -344,7 +346,7 @@ script = ExtResource("75_tutorial_isle_script")
 
 [node name="TutorialIsleMaterials" parent="." unique_id=1395670469 instance=ExtResource("tutorial_isle_mat_inst")]
 
-[node name="TutorialIsleGear" parent="." unique_id=1634643593 instance=ExtResource("4_isg8b")]
+[node name="TutorialIsleGear" parent="." unique_id=1398951794 instance=ExtResource("4_dbqg5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -1.5507965)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
@@ -555,7 +557,7 @@ transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747,
 [node name="ShipWreck" parent="Props" unique_id=702955149 instance=ExtResource("35_8pv40")]
 transform = Transform3D(0.75612813, 0.3269578, -2.3603756, 2.3491306, -0.5177703, 0.6808057, -0.39981487, -2.4238422, -0.4638273, 227.63412, 11.057743, 402.76392)
 
-[node name="Crate" parent="Props" unique_id=635671946 instance=ExtResource("36_3x6k3")]
+[node name="Crate" parent="Props" unique_id=305914073 instance=ExtResource("36_3x6k3")]
 transform = Transform3D(0.9536802, 0.3008225, -8.940697e-08, -0.28846714, 0.9145112, -0.28364718, -0.08532713, 0.2705088, 0.9589284, 233.30833, 9.292568, 395.41064)
 
 [node name="Tent" parent="Props" unique_id=134589951 instance=ExtResource("37_ad2jt")]
@@ -563,6 +565,12 @@ transform = Transform3D(0.745918, 0, -0.6660379, 0, 1, 0, 0.6660379, 0, 0.745918
 
 [node name="Campfire" parent="Props" unique_id=541966093 instance=ExtResource("39_mo44a")]
 transform = Transform3D(0.7451094, 0.034721408, -0.66603786, -0.010500949, 0.9991309, 0.040338352, 0.66685957, -0.023062464, 0.7448264, 223.02321, 9.760959, 376.7745)
+
+[node name="FishingPolePickup_Campfire" parent="Props" unique_id=662929891 instance=ExtResource("fishing_pole_pickup")]
+transform = Transform3D(-0.0925301, -0.99526334, -0.029820142, 0.9771315, -0.096521184, 0.18946658, -0.19144748, -0.011606835, 0.9814343, 223.30779, 9.952238, 375.73703)
+
+[node name="FishingTackleboxPickup_Campfire" parent="Props" unique_id=590666257 instance=ExtResource("fishing_tacklebox_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 222.65, 9.857712, 376.95)
 
 [node name="Skeleton_Minion" type="Node3D" parent="Props" unique_id=1724043614]
 transform = Transform3D(0.9822048, -0.18733832, -0.013349526, 0.0044840304, -0.047667857, 0.9988532, -0.1877599, -0.9811382, -0.04597956, 219.36903, 10.060676, 376.86588)

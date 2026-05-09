@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://fhookbpickuprf01"]
+
+[ext_resource type="Script" path="res://world/item_pickup_interactable.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c4tmdbiin4gw4" path="res://assets/kaykit/items/fishing_hook_B.gltf" id="2_visual"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_h"]
+radius = 0.22
+
+[node name="FishingHookBPickup" type="Node3D"]
+script = ExtResource("1_script")
+item_id = "tool_fishing_hook_barbed"
+
+[node name="Visual" parent="." instance=ExtResource("2_visual")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("SphereShape3D_h")

@@ -1,0 +1,107 @@
+[gd_scene load_steps=10 format=3 uid="uid://bfshspot001rfv"]
+
+[ext_resource type="Script" path="res://entities/fishing/fishing_spot.gd" id="1_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_spot"]
+size = Vector3(5.0, 2.2, 5.0)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_post"]
+top_radius = 0.07
+bottom_radius = 0.07
+height = 1.15
+
+[sub_resource type="SphereMesh" id="SphereMesh_buoy"]
+radius = 0.22
+height = 0.44
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_post"]
+shading_mode = 0
+albedo_color = Color(0.22, 0.48, 0.88, 1)
+emission_enabled = true
+emission = Color(0.1, 0.26, 0.48, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_buoy"]
+shading_mode = 0
+albedo_color = Color(0.95, 0.52, 0.15, 1)
+emission_enabled = true
+emission = Color(0.32, 0.15, 0.04, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_bubbles"]
+direction = Vector3(0, 1, 0)
+spread = 40.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.22
+angular_velocity_min = -1.2
+angular_velocity_max = 1.2
+gravity = Vector3(0, 1.35, 0)
+scale_min = 0.028
+scale_max = 0.095
+hue_variation_min = -0.06
+hue_variation_max = 0.08
+color = Color(0.68, 0.85, 1, 0.38)
+emission_shape = 1
+emission_sphere_radius = 0.52
+
+[sub_resource type="SphereMesh" id="SphereMesh_bubble_pass"]
+radius = 0.062
+height = 0.124
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_jumpfish"]
+radius = 0.05
+height = 0.23
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jumpfish"]
+shading_mode = 0
+albedo_color = Color(0.26, 0.54, 0.5, 1)
+metallic = 0.45
+roughness = 0.36
+
+[node name="FishingSpot" type="StaticBody3D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("BoxShape3D_spot")
+
+[node name="FxLayer" type="Node3D" parent="."]
+
+[node name="BubbleParticles" type="GPUParticles3D" parent="FxLayer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+amount = 56
+lifetime = 2.85
+preprocess = 1.25
+randomness = 0.5
+explosiveness = 0.025
+process_material = SubResource("ParticleProcessMaterial_bubbles")
+draw_pass_1 = SubResource("SphereMesh_bubble_pass")
+
+[node name="JumpFishVisual" type="MeshInstance3D" parent="FxLayer"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.1, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("CapsuleMesh_jumpfish")
+surface_material_override/0 = SubResource("StandardMaterial3D_jumpfish")
+
+[node name="MarkerVisual" type="Node3D" parent="."]
+visible = false
+
+[node name="Post" type="MeshInstance3D" parent="MarkerVisual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, 0)
+mesh = SubResource("CylinderMesh_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_post")
+
+[node name="Buoy" type="MeshInstance3D" parent="MarkerVisual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.18, 0)
+mesh = SubResource("SphereMesh_buoy")
+surface_material_override/0 = SubResource("StandardMaterial3D_buoy")
+
+[node name="SpotLabel" type="Label3D" parent="MarkerVisual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+text = "Fishing spot"
+font_size = 26
+outline_size = 10
+billboard = 1
+no_depth_test = true
+modulate = Color(0.82, 0.94, 1, 1)

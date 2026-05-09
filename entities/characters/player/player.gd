@@ -22,6 +22,7 @@ const _H_INV_FULL := 3
 const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 const _DefaultHitVfxScene: PackedScene = preload("res://entities/effects/hit_spark_burst.tscn")
 const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
+const _FishingSpotClass = preload("res://entities/fishing/fishing_spot.gd")
 
 ## Extra contextual interact keys forwarded to interactables that opt into multi-prompt UX.
 const INTERACT_EXTRA_ACTIONS: Array[String] = [
@@ -225,6 +226,8 @@ var _build_preview_valid: bool = false
 var _build_mode_active: bool = false
 var _campfire_resting: bool = false
 var _campfire_rest_source: WeakRef = null
+var _fishing_session_running: bool = false
+var _fishing_session_generation: int = 0
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
@@ -233,6 +236,11 @@ func apply_damage(amount: float) -> void:
 	health = maxf(health - amt, 0.0)
 	if _campfire_resting:
 		_stop_campfire_rest(true)
+	if _fishing_session_running:
+		_fishing_session_generation += 1
+		_fishing_session_running = false
+		if base_character != null and base_character.has_method("end_fishing_sequence"):
+			base_character.end_fishing_sequence()
 	# Taking a hit should break harvest automation immediately.
 	_stop_harvest_auto()
 	_clear_harvest_interact_approach()
@@ -2494,6 +2502,108 @@ func finish_campfire_ignite_animation() -> void:
 		base_character.cancel_tool_action()
 	velocity.x = 0.0
 	velocity.z = 0.0
+
+
+func try_begin_fishing_at_spot(spot: Node) -> void:
+	if _fishing_session_running:
+		return
+	if _gameplay_input_blocked():
+		return
+	if base_character == null:
+		return
+	if _equipped_main_hand_id_str() != "fishing_pole":
+		show_gameplay_message("Equip a fishing rod in your main hand.")
+		return
+	if InventoryService.count_fishing_bait_total() < 1:
+		show_gameplay_message("You need fishing bait.")
+		return
+	_fishing_session_running = true
+	var gen := _fishing_session_generation
+	_run_fishing_session_async(spot, gen)
+
+
+func _run_fishing_session_async(spot: Node, gen: int) -> void:
+	if gen != _fishing_session_generation:
+		return
+	var bait_used: Variant = InventoryService.consume_one_fishing_bait()
+	if str(bait_used).is_empty():
+		show_gameplay_message("You need fishing bait.")
+		_fishing_session_running = false
+		return
+
+	base_character.begin_fishing_sequence()
+
+	var d_cast: float = base_character.try_play_fishing_clip("Fishing_Cast")
+	if d_cast < 0.0:
+		InventoryService.add_item(str(bait_used), 1)
+		base_character.end_fishing_sequence()
+		_fishing_session_running = false
+		return
+
+	await get_tree().create_timer(d_cast).timeout
+	if gen != _fishing_session_generation:
+		_fishing_session_running = false
+		return
+
+	var bite_min := 2.2
+	var bite_max := 5.5
+	var fish_diff := 1
+	var base_c := 0.42
+	var bonus_pd := 0.028
+	var reward_id := "fish_raw"
+	var xp_r := 18
+	if spot != null and spot is _FishingSpotClass:
+		var fs = spot as _FishingSpotClass
+		bite_min = fs.bite_wait_min_sec
+		bite_max = fs.bite_wait_max_sec
+		fish_diff = fs.fish_difficulty
+		base_c = fs.base_catch_chance
+		bonus_pd = fs.bonus_chance_per_skill_over_diff
+		reward_id = fs.reward_item_id
+		xp_r = fs.xp_reward
+
+	await get_tree().create_timer(randf_range(bite_min, bite_max)).timeout
+	if gen != _fishing_session_generation:
+		_fishing_session_running = false
+		return
+
+	var d_str: float = base_character.try_play_fishing_clip("Fishing_Struggling")
+	if d_str < 0.0:
+		base_character.end_fishing_sequence()
+		_fishing_session_running = false
+		return
+
+	await get_tree().create_timer(d_str).timeout
+	if gen != _fishing_session_generation:
+		_fishing_session_running = false
+		return
+
+	var skill_lv: int = GameState.get_skill_level("fishing", 1)
+	var bonus: float = bonus_pd * maxf(0.0, float(skill_lv - maxi(fish_diff, 1)))
+	var p: float = clampf(base_c + bonus, 0.05, 0.95)
+	var caught: bool = randf() <= p
+
+	if caught:
+		var left: int = InventoryService.add_item(reward_id, 1)
+		if left > 0:
+			show_gameplay_message("Inventory full.")
+			base_character.end_fishing_sequence()
+			_fishing_session_running = false
+			return
+		GameState.add_fishing_xp(xp_r)
+		show_gameplay_message("You catch a fish!")
+		var d_catch: float = base_character.try_play_fishing_clip("Fishing_Catch")
+		if d_catch > 0.0:
+			await get_tree().create_timer(d_catch).timeout
+	else:
+		show_gameplay_message("The fish got away.")
+
+	if gen != _fishing_session_generation:
+		_fishing_session_running = false
+		return
+
+	base_character.end_fishing_sequence()
+	_fishing_session_running = false
 
 
 func _try_interact() -> void:

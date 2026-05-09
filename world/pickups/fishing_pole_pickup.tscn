@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dldr3xs7qshyd"]
+
+[ext_resource type="Script" path="res://world/item_pickup_interactable.gd" id="1_pickup_script"]
+[ext_resource type="PackedScene" uid="uid://lafnf4dbnsv3" path="res://entities/equipment/tools/fishing_pole.tscn" id="2_visual"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pickup"]
+radius = 0.26
+height = 1.15
+
+[node name="FishingPolePickup" type="Node3D"]
+script = ExtResource("1_pickup_script")
+item_id = "fishing_pole"
+
+[node name="Visual" parent="." instance=ExtResource("2_visual")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+shape = SubResource("CapsuleShape3D_pickup")

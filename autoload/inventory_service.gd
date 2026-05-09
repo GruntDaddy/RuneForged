@@ -16,11 +16,26 @@ const MAX_STACK := 99
 const TACKLEBOX_ID := "tool_tacklebox"
 const TACKLE_HOOKS := 5
 const TACKLE_BOBBERS := 5
-const TACKLE_BAIT := 10
+const TACKLE_BAIT := 20
 
 const TAG_FISHING_HOOK := "fishing_hook"
 const TAG_FISHING_BOBBER := "fishing_bobber"
 const TAG_FISHING_BAIT := "fishing_bait"
+const BAIT_ITEM_ID := "tool_fishing_bait"
+const WORM_ITEM_ID := "tool_fishing_worm"
+
+
+## Hooks, bobbers, and bait belong in the tackle box — not on the equipment sheet.
+func item_is_tackle_contents_only(item_id: String) -> bool:
+	var nid := _normalize_item_id(item_id)
+	var it: ItemData = ItemCatalog.get_item(nid)
+	if it == null:
+		return false
+	for t in it.tags:
+		var ts := str(t)
+		if ts == TAG_FISHING_HOOK or ts == TAG_FISHING_BOBBER or ts == TAG_FISHING_BAIT:
+			return true
+	return false
 
 const PICKUP_SCENES := {
 	# Legacy aliases retained as a compatibility fallback.
@@ -80,11 +95,15 @@ func is_slot_unlocked(slot_idx: int) -> bool:
 
 
 func _stack_cap_for(item_id: String) -> int:
-	var it: ItemData = ItemCatalog.get_item(item_id)
+	var nid := _normalize_item_id(item_id)
+	var it: ItemData = ItemCatalog.get_item(nid)
 	if it == null:
 		return MAX_STACK
 	var cap := clampi(it.max_stack, 1, 9999)
-	# Equipment-like categories should never stack even if authoring data is incorrect.
+	# Bait / hooks / bobbers use authored stack sizes (worm stacks; hooks stay 1).
+	if item_is_tackle_contents_only(nid):
+		return cap
+	# Other equipment-like categories should not stack even if data says otherwise.
 	if it.category in [
 		ItemData.Category.TOOL,
 		ItemData.Category.WEAPON,
@@ -125,6 +144,32 @@ func _normalize_tackle(t: Variant) -> Dictionary:
 	return out
 
 
+## Fills only empty tackle cells from `preset` (starter pickup / restock). Existing cells unchanged.
+func _fill_empty_tackle_from_preset(existing_tackle: Variant, preset: Variant) -> Dictionary:
+	var ex := _normalize_tackle(existing_tackle)
+	if typeof(preset) != TYPE_DICTIONARY:
+		return ex
+	var pr := _normalize_tackle(preset)
+	for cat_key in ["hooks", "bobbers", "bait"]:
+		var ea: Array = ex[cat_key] as Array
+		var pa: Array = pr[cat_key] as Array
+		for i in ea.size():
+			if ea[i] != null:
+				continue
+			if i >= pa.size():
+				continue
+			var pv: Variant = pa[i]
+			if pv == null or typeof(pv) != TYPE_DICTIONARY:
+				continue
+			var cid := str(pv.get("id", ""))
+			var cnt := int(pv.get("count", 0))
+			if cid.is_empty() or cnt < 1:
+				continue
+			var cap := _stack_cap_for(cid)
+			ea[i] = {"id": cid, "count": mini(cnt, cap)}
+	return ex
+
+
 func _copy_tackle_array(src: Variant, dst: Array, n: int) -> void:
 	if typeof(src) != TYPE_ARRAY:
 		return
@@ -147,7 +192,8 @@ func _copy_tackle_array(src: Variant, dst: Array, n: int) -> void:
 
 
 func tackle_category_for_item(item_id: String) -> String:
-	var it: ItemData = ItemCatalog.get_item(item_id)
+	var nid := _normalize_item_id(item_id)
+	var it: ItemData = ItemCatalog.get_item(nid)
 	if it == null:
 		return ""
 	for t in it.tags:
@@ -188,9 +234,7 @@ func get_tackle_for_slot(slot_idx: int) -> Dictionary:
 	var s: Variant = slots[slot_idx]
 	if s == null or str(s.get("id", "")) != TACKLEBOX_ID:
 		return empty_tackle()
-	if not s.has("tackle"):
-		return empty_tackle()
-	return _normalize_tackle(s["tackle"])
+	return _normalize_tackle(s.get("tackle", null))
 
 
 ## Moves items from a main inventory slot into the first empty (or merge) cell in the matching tackle category.
@@ -205,7 +249,7 @@ func deposit_to_tackle_first_empty(tackle_slot_idx: int, from_main_slot_idx: int
 		return false
 	if src == null:
 		return false
-	var item_id := str(src["id"])
+	var item_id := _normalize_item_id(str(src["id"]))
 	if item_id == TACKLEBOX_ID:
 		return false
 	var cat := tackle_category_for_item(item_id)
@@ -320,10 +364,23 @@ func get_pickup_scene_for_item(item_id: String) -> PackedScene:
 	return PICKUP_SCENES.get(item_id, null) as PackedScene
 
 
-func add_item(item_name: String, quantity: int = 1) -> int:
+## Optional `tackle_preset`: when `item_name` is `tool_tacklebox`, used for the new slot's tackle grids (normalized on write).
+## If the player already has a tacklebox, preset is merged into empty cells only (no duplicate box).
+func add_item(item_name: String, quantity: int = 1, tackle_preset: Variant = null) -> int:
 	if quantity < 1:
 		return 0
 	if item_name == TACKLEBOX_ID and _count_tackleboxes_in_grid() > 0:
+		if tackle_preset != null and typeof(tackle_preset) == TYPE_DICTIONARY:
+			var unlocked_early := get_unlocked_slot_count()
+			for bi in unlocked_early:
+				var bs: Variant = slots[bi]
+				if bs == null or str(bs.get("id", "")) != TACKLEBOX_ID:
+					continue
+				var tb: Dictionary = bs as Dictionary
+				tb["tackle"] = _fill_empty_tackle_from_preset(tb.get("tackle", null), tackle_preset)
+				slots[bi] = tb
+				inventory_changed.emit()
+				return maxi(0, quantity - 1)
 		return quantity
 	var left: int = quantity
 	var cap: int = _stack_cap_for(item_name)
@@ -345,6 +402,12 @@ func add_item(item_name: String, quantity: int = 1) -> int:
 		var new_count: int = c + add
 		var merged: Dictionary = {"id": item_name, "count": new_count}
 		_copy_slot_extras(s, merged)
+		if item_name == TACKLEBOX_ID:
+			var base_tackle: Variant = merged.get("tackle", null)
+			if tackle_preset != null and typeof(tackle_preset) == TYPE_DICTIONARY:
+				merged["tackle"] = _fill_empty_tackle_from_preset(base_tackle, tackle_preset)
+			else:
+				merged["tackle"] = _normalize_tackle(base_tackle)
 		slots[i] = merged
 		left -= add
 	if left > 0:
@@ -356,7 +419,10 @@ func add_item(item_name: String, quantity: int = 1) -> int:
 			var add: int = mini(left, cap)
 			var slot_dict: Dictionary = {"id": item_name, "count": add}
 			if item_name == TACKLEBOX_ID:
-				slot_dict["tackle"] = empty_tackle()
+				if tackle_preset != null and typeof(tackle_preset) == TYPE_DICTIONARY:
+					slot_dict["tackle"] = _normalize_tackle(tackle_preset)
+				else:
+					slot_dict["tackle"] = empty_tackle()
 			slots[i] = slot_dict
 			left -= add
 	inventory_changed.emit()
@@ -367,7 +433,9 @@ func _copy_slot_extras(from: Variant, to: Dictionary) -> void:
 	if typeof(from) != TYPE_DICTIONARY:
 		return
 	var fd: Dictionary = from
-	if fd.has("tackle") and str(fd.get("id", "")) == TACKLEBOX_ID:
+	if str(fd.get("id", "")) == TACKLEBOX_ID:
+		to["tackle"] = _normalize_tackle(fd.get("tackle", null))
+	elif fd.has("tackle"):
 		to["tackle"] = _normalize_tackle(fd["tackle"])
 
 
@@ -421,6 +489,66 @@ func get_item_count(item_name: String) -> int:
 		if s != null and str(s.get("id", "")) == item_name:
 			n += int(s.get("count", 0))
 	return n
+
+
+func count_fishing_bait_total() -> int:
+	var n: int = get_item_count(BAIT_ITEM_ID) + get_item_count(WORM_ITEM_ID)
+	var unlocked_count := get_unlocked_slot_count()
+	for i in unlocked_count:
+		var s: Variant = slots[i]
+		if s == null or str(s.get("id", "")) != TACKLEBOX_ID:
+			continue
+		var tackle: Dictionary = _normalize_tackle(s.get("tackle", null))
+		var bait_arr: Array = tackle["bait"] as Array
+		for cell in bait_arr:
+			if cell == null or typeof(cell) != TYPE_DICTIONARY:
+				continue
+			var cid := str(cell.get("id", ""))
+			if tackle_category_for_item(cid) != "bait":
+				continue
+			n += int(cell.get("count", 0))
+	return n
+
+
+## Consumes one bait from tacklebox bait cells first, then main inventory stacks.
+## Returns the consumed item id, or "" if none available.
+func consume_one_fishing_bait() -> String:
+	if count_fishing_bait_total() < 1:
+		return ""
+	var unlocked_count := get_unlocked_slot_count()
+	for i in unlocked_count:
+		var s: Variant = slots[i]
+		if s == null or str(s.get("id", "")) != TACKLEBOX_ID:
+			continue
+		var tb: Dictionary = s as Dictionary
+		var tackle: Dictionary = _normalize_tackle(tb.get("tackle", null))
+		var bait_arr: Array = tackle["bait"] as Array
+		for j in bait_arr.size():
+			var cell: Variant = bait_arr[j]
+			if cell == null or typeof(cell) != TYPE_DICTIONARY:
+				continue
+			var cid := str(cell.get("id", ""))
+			if tackle_category_for_item(cid) != "bait":
+				continue
+			var cc: int = int(cell.get("count", 0))
+			if cc < 1:
+				continue
+			cc -= 1
+			if cc <= 0:
+				bait_arr[j] = null
+			else:
+				bait_arr[j] = {"id": cid, "count": cc}
+			tb["tackle"] = tackle
+			slots[i] = tb
+			inventory_changed.emit()
+			return cid
+	if get_item_count(WORM_ITEM_ID) >= 1:
+		remove_item(WORM_ITEM_ID, 1)
+		return WORM_ITEM_ID
+	if get_item_count(BAIT_ITEM_ID) >= 1:
+		remove_item(BAIT_ITEM_ID, 1)
+		return BAIT_ITEM_ID
+	return ""
 
 
 func get_slot_data(index: int) -> Variant:
@@ -505,7 +633,20 @@ func move_or_merge(from_idx: int, to_idx: int) -> void:
 	var tmp: Variant = slots[to_idx]
 	slots[to_idx] = slots[from_idx]
 	slots[from_idx] = tmp
+	_normalize_tacklebox_slot_at(to_idx)
+	_normalize_tacklebox_slot_at(from_idx)
 	inventory_changed.emit()
+
+
+func _normalize_tacklebox_slot_at(slot_idx: int) -> void:
+	var s: Variant = slots[slot_idx]
+	if s == null or typeof(s) != TYPE_DICTIONARY:
+		return
+	var d: Dictionary = s
+	if str(d.get("id", "")) != TACKLEBOX_ID:
+		return
+	d["tackle"] = _normalize_tackle(d.get("tackle", null))
+	slots[slot_idx] = d
 
 
 func _merge_tackle_payload(into: Dictionary, from: Dictionary) -> void:
@@ -517,7 +658,9 @@ func _merge_tackle_payload(into: Dictionary, from: Dictionary) -> void:
 
 func _duplicate_slot(s: Variant) -> Dictionary:
 	var d: Dictionary = (s as Dictionary).duplicate(true)
-	if d.has("tackle"):
+	if str(d.get("id", "")) == TACKLEBOX_ID:
+		d["tackle"] = _normalize_tackle(d.get("tackle", null))
+	elif d.has("tackle"):
 		d["tackle"] = _normalize_tackle(d["tackle"])
 	return d
 
@@ -602,8 +745,8 @@ func get_save_dict() -> Dictionary:
 			arr.append(null)
 		else:
 			var e: Dictionary = {"id": str(s.get("id", "")), "count": int(s.get("count", 0))}
-			if s.has("tackle") and str(s.get("id", "")) == TACKLEBOX_ID:
-				e["tackle"] = _tackle_to_save_dict(s["tackle"])
+			if str(s.get("id", "")) == TACKLEBOX_ID:
+				e["tackle"] = _tackle_to_save_dict(s.get("tackle", null))
 			arr.append(e)
 	return {"slots": arr}
 
@@ -639,10 +782,8 @@ func apply_save_dict(d: Variant) -> void:
 			continue
 		var cap: int = _stack_cap_for(id)
 		var slot_d: Dictionary = {"id": id, "count": mini(c, cap)}
-		if id == TACKLEBOX_ID and entry.has("tackle"):
-			slot_d["tackle"] = _normalize_tackle(entry["tackle"])
-		elif id == TACKLEBOX_ID:
-			slot_d["tackle"] = empty_tackle()
+		if id == TACKLEBOX_ID:
+			slot_d["tackle"] = _normalize_tackle(entry.get("tackle", null))
 		slots[i] = slot_d
 	inventory_changed.emit()
 

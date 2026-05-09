@@ -195,6 +195,7 @@ var _active_melee_clip: String = ""
 var _active_rune_cast_clip: String = ""
 var _last_melee_attack_ms: int = -1
 var _rest_floor_looping: bool = false
+var _fishing_sequence_active: bool = false
 
 
 func _ready() -> void:
@@ -416,6 +417,8 @@ func _on_animation_finished(anim_name: StringName) -> void:
 
 	if _action_state != ActionState.TOOL_ACTION:
 		return
+	if _fishing_sequence_active:
+		return
 	if _rest_floor_looping and clip_name == _ANIM_SIT_FLOOR_DOWN:
 		if anim_player != null and anim_player.has_animation(_anim_path(_ANIM_SIT_FLOOR_IDLE)):
 			anim_player.speed_scale = 1.0
@@ -554,6 +557,7 @@ func cancel_tool_action() -> void:
 	_bow_phase = 0
 	_active_rune_cast_clip = ""
 	_rest_floor_looping = false
+	_fishing_sequence_active = false
 	_action_state = ActionState.LOCOMOTION
 	if anim_player != null:
 		anim_player.stop()
@@ -823,6 +827,37 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 
 ## Plays the shortest available clip from `clip_candidates` as a one-shot tool action.
 ## Returns the chosen clip duration in seconds, or `-1.0` when no clip could be played.
+func begin_fishing_sequence() -> void:
+	_fishing_sequence_active = true
+
+
+func end_fishing_sequence() -> void:
+	_fishing_sequence_active = false
+	cancel_tool_action()
+
+
+## Plays a fishing clip while keeping the rig in tool-action without chaining back to locomotion until [`end_fishing_sequence`].
+func try_play_fishing_clip(clip_base: String) -> float:
+	if anim_player == null:
+		return -1.0
+	var locked := is_animation_locked()
+	if locked:
+		if not (_fishing_sequence_active and _action_state == ActionState.TOOL_ACTION):
+			return -1.0
+	var path := _anim_path(clip_base)
+	if not anim_player.has_animation(path):
+		return -1.0
+	var anim_res: Animation = anim_player.get_animation(path)
+	if anim_res == null:
+		return -1.0
+	var dur := maxf(0.01, anim_res.length)
+	_apply_tool_kind(ToolKind.FISHING_ROD)
+	_action_state = ActionState.TOOL_ACTION
+	anim_player.speed_scale = 1.0
+	anim_player.play(path, 0.12)
+	return dur
+
+
 func try_play_shortest_tool_clip(clip_candidates: Array[String]) -> float:
 	if anim_player == null:
 		return -1.0

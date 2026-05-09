@@ -27,6 +27,8 @@
 - **`smithing_level`**: int smithing skill level used by smithing recipes (`skill_id = "smithing"`).
 - **`crafting_level`**: int crafting skill level used by utility/building recipes (`skill_id = "crafting"`).
 - **`skill_levels`**: dictionary (`skill_id -> int`) canonical skill registry. Legacy flat fields above remain supported and are synchronized for backward compatibility.
+- **`fishing_level`**: int fishing skill level (mirrors `skill_levels["fishing"]` via `GameState.SKILL_ID_TO_FIELD`). Missing key defaults to `1` on load.
+- **`fishing_xp`**: int partial progress toward the next fishing level (consumed when leveling through `GameState.add_fishing_xp`). Missing key defaults to `0`.
 - **`time_of_day`**: float in `[0, 1)`, used by `DayNightController` to resume cycle position.
 - **`moon_phase`**: float in `[0, 1)`, moon phase offset used by sky shader/controller.
 - **`world_fire_states`**: dictionary keyed by node path or explicit `fire_state_id` (string), values are dictionaries with fire runtime state:

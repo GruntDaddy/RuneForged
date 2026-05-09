@@ -37,6 +37,7 @@ const SKILL_ID_TO_FIELD := {
 	"survival": "survival_level",
 	"smithing": "smithing_level",
 	"crafting": "crafting_level",
+	"fishing": "fishing_level",
 }
 var region: String = ""
 ## Survival skills (harvest gates). Tune when XP/progression exists.
@@ -45,6 +46,9 @@ var mining_level: int = 10
 var survival_level: int = 10
 var smithing_level: int = 10
 var crafting_level: int = 10
+var fishing_level: int = 1
+## XP toward next fishing level; levels up via `add_fishing_xp`.
+var fishing_xp: int = 0
 ## Canonical skill registry persisted as skill_id -> level.
 var skill_levels: Dictionary = {}
 ## Day/night persistence used by world sky controller.
@@ -87,6 +91,8 @@ func reset() -> void:
 	survival_level = 10
 	smithing_level = 10
 	crafting_level = 10
+	fishing_level = 1
+	fishing_xp = 0
 	_sync_skill_registry_from_legacy_fields()
 	time_of_day = 0.32
 	moon_phase = 0.18
@@ -117,6 +123,8 @@ func to_dict() -> Dictionary:
 		"survival_level": survival_level,
 		"smithing_level": smithing_level,
 		"crafting_level": crafting_level,
+		"fishing_level": fishing_level,
+		"fishing_xp": fishing_xp,
 		"skill_levels": skill_levels.duplicate(true),
 		"time_of_day": time_of_day,
 		"moon_phase": moon_phase,
@@ -152,6 +160,8 @@ func from_dict(data: Variant) -> void:
 	survival_level = int(d.get("survival_level", 10))
 	smithing_level = int(d.get("smithing_level", 10))
 	crafting_level = int(d.get("crafting_level", 10))
+	fishing_level = int(d.get("fishing_level", 1))
+	fishing_xp = maxi(0, int(d.get("fishing_xp", 0)))
 	_sync_skill_registry_from_legacy_fields()
 	if typeof(d.get("skill_levels", null)) == TYPE_DICTIONARY:
 		_apply_skill_registry_dict(d.get("skill_levels", {}))
@@ -225,6 +235,21 @@ func set_skill_level(skill_id: String, level: int) -> void:
 	skill_levels[sid] = clamped
 	if SKILL_ID_TO_FIELD.has(sid):
 		set(str(SKILL_ID_TO_FIELD[sid]), clamped)
+
+
+func add_fishing_xp(amount: int) -> void:
+	if amount < 1:
+		return
+	fishing_xp = maxi(0, fishing_xp) + amount
+	while fishing_xp >= _fishing_xp_for_next_level():
+		fishing_xp -= _fishing_xp_for_next_level()
+		var lv := get_skill_level("fishing", 1)
+		set_skill_level("fishing", lv + 1)
+
+
+func _fishing_xp_for_next_level() -> int:
+	var lv := get_skill_level("fishing", 1)
+	return 28 + lv * 10
 
 
 func get_skill_levels_copy() -> Dictionary:

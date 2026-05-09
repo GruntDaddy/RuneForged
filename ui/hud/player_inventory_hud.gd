@@ -511,10 +511,20 @@ func _apply_slot_style(slot: Panel, filled: bool) -> void:
 
 func _ensure_tackle_window() -> void:
 	if _tackle_window != null:
-		return
+		if (
+			_tackle_hook_labels.size() == InventoryService.TACKLE_HOOKS
+			and _tackle_bobber_labels.size() == InventoryService.TACKLE_BOBBERS
+			and _tackle_bait_labels.size() == InventoryService.TACKLE_BAIT
+		):
+			return
+		_tackle_window.queue_free()
+		_tackle_window = null
+		_tackle_hook_labels.clear()
+		_tackle_bobber_labels.clear()
+		_tackle_bait_labels.clear()
 	_tackle_window = Window.new()
 	_tackle_window.title = "Tackle box"
-	_tackle_window.size = Vector2i(340, 460)
+	_tackle_window.size = Vector2i(400, 620)
 	_tackle_window.unresizable = true
 	_tackle_window.close_requested.connect(_close_tackle_window)
 	add_child(_tackle_window)
@@ -529,7 +539,7 @@ func _ensure_tackle_window() -> void:
 	vb.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_child(vb)
 	var help := Label.new()
-	help.text = "Right-click a hook, bobber, or bait in inventory to store it here."
+	help.text = "Drag supplies into these slots, right-click from inventory, or pick up spares on the beach."
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vb.add_child(help)
 	_append_tackle_row(vb, "Hooks", InventoryService.TACKLE_HOOKS, _tackle_hook_labels)
@@ -562,7 +572,15 @@ func _open_tackle_window(inv_slot: int) -> void:
 	_ensure_tackle_window()
 	_tackle_inventory_slot = inv_slot
 	_refresh_tackle_panel()
-	_tackle_window.popup_centered()
+	var vr := get_viewport().get_visible_rect()
+	var sz: Vector2i = _tackle_window.size
+	var margin := 16
+	_tackle_window.popup(
+		Rect2i(
+			Vector2i(int(vr.end.x) - sz.x - margin, int(vr.position.y + 52)),
+			sz
+		)
+	)
 
 
 func _close_tackle_window() -> void:

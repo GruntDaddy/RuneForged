@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://fwormpickuprf01"]
+
+[ext_resource type="Script" path="res://world/item_pickup_interactable.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://beo52su25gy8f" path="res://assets/kaykit/items/fishing_worm.gltf" id="2_visual"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_w"]
+radius = 0.14
+
+[node name="FishingWormPickup" type="Node3D"]
+script = ExtResource("1_script")
+item_id = "tool_fishing_worm"
+quantity = 1
+
+[node name="Visual" parent="." instance=ExtResource("2_visual")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("SphereShape3D_w")
