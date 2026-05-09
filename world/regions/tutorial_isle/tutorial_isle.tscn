@@ -15,7 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://cycycfc61gt0l" path="res://entities/building_parts/tent.tscn" id="37_ad2jt"]
 [ext_resource type="PackedScene" uid="uid://fqyxxm8kit2g" path="res://entities/building_parts/campfire.tscn" id="39_mo44a"]
 [ext_resource type="PackedScene" uid="uid://hjsgrguldp45" path="res://entities/building_parts/grindstone.tscn" id="42_ad2jt"]
-[ext_resource type="PackedScene" uid="uid://dqtds13wn64w6" path="res://entities/equipment/accessories/backpacks/backpack_small.tscn" id="47_euhjt"]
+[ext_resource type="PackedScene" uid="uid://cwiegunolb0ge" path="res://world/pickups/backpack_small_pickup.tscn" id="51_euhjt"]
 [ext_resource type="PackedScene" uid="uid://d2dhpb3cykk6e" path="res://entities/props/dock.tscn" id="53_71eoc"]
 [ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/tutorial_isle/tutorial_isle.gd" id="75_tutorial_isle_script"]
 [ext_resource type="PackedScene" uid="uid://cktg8oqrcdxr3" path="res://entities/characters/animals/bull.tscn" id="animal_bull"]
@@ -849,9 +849,6 @@ transform = Transform3D(-1.400895, 0, -3.7466643, 0, 4, 0, 3.7466643, 0, -1.4008
 [node name="FishingSpot_Dock" parent="Props/Dock_1" unique_id=-1447374095 instance=ExtResource("8_t7t3p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.083115, 0.059999943, 0.3139801)
 
-[node name="Backpack_Small" parent="Props/Dock_1" unique_id=6488400 instance=ExtResource("47_euhjt")]
-transform = Transform3D(-0.087555945, -0.06238922, 0.22570235, 0, 0.2409635, 0.06660775, -0.23416652, 0.023327617, -0.08439114, -8.441238, 1.0174022, -6.4687653)
-
 [node name="Anvil" parent="Props" unique_id=985244922 instance=ExtResource("12_rwr6f")]
 transform = Transform3D(-0.71151114, 0, -0.7026748, 0, 0.9999999, 0, 0.7026748, 0, -0.71151114, 204.08017, 10.097637, 383.38385)
 
@@ -863,3 +860,6 @@ transform = Transform3D(-1.4309607, 0, 0.44983518, 0, 1.5, 0, -0.44983518, 0, -1
 
 [node name="Sword1hBronzePickup" parent="Props" unique_id=1711562902 instance=ExtResource("10_ad2jt")]
 transform = Transform3D(0.66549236, -0.47137457, -0.57872796, -0.31016845, -0.8798848, 0.35999757, -0.6789076, -0.06007247, -0.7317622, 216.87296, 10.617497, 376.4443)
+
+[node name="BackpackSmallPickup" parent="." unique_id=788126623 instance=ExtResource("51_euhjt")]
+transform = Transform3D(0.98409414, 0.14334112, -0.10493885, -0.0873208, 0.90473026, 0.41693938, 0.15470587, -0.40114424, 0.9028564, 222.5856, 10.098685, 375.26712)
