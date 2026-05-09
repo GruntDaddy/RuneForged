@@ -4,13 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://mjq201k51687" path="res://world/pickups/tool_torch_pickup.tscn" id="2_1tm6k"]
 [ext_resource type="PackedScene" uid="uid://dsbck7u367kfk" path="res://world/pickups/tool_torch_burnt_pickup.tscn" id="3_dypwk"]
 [ext_resource type="PackedScene" uid="uid://dpbhu47xdy13l" path="res://entities/building_parts/tinderbox.tscn" id="4_7sten"]
-[ext_resource type="PackedScene" uid="uid://5e3s4nid00t8" path="res://entities/fishing/fishing_spot.tscn" id="5_5qnb2"]
 [ext_resource type="PackedScene" uid="uid://dbd6etcm4mjt5" path="res://world/pickups/fishing_worm_pickup.tscn" id="6_h8ytx"]
 [ext_resource type="PackedScene" uid="uid://ctwwhjmlo707u" path="res://world/pickups/fishing_bobber_pickup.tscn" id="7_vg88e"]
 [ext_resource type="PackedScene" uid="uid://bslyivr00xnme" path="res://world/pickups/fishing_hook_a_pickup.tscn" id="8_4gs34"]
 [ext_resource type="PackedScene" uid="uid://bsmyivr00xnme" path="res://world/pickups/fishing_hook_b_pickup.tscn" id="9_etm2w"]
 
-[node name="TutorialIsleGear" type="Node3D" unique_id=1398951794]
+[node name="TutorialIsleGear" type="Node3D" unique_id=308303590]
 
 [node name="Hatchet_Basic" parent="." unique_id=1017366543 instance=ExtResource("1_tv8y1")]
 transform = Transform3D(-0.15782088, -0.5123048, -0.8441786, 0.794588, 0.4416802, -0.4165914, 0.5862787, -0.7365206, 0.33736467, 218.67253, 11.458391, 376.66547)
@@ -24,32 +23,29 @@ transform = Transform3D(0.020789335, -0.587465, -0.8089828, -0.99931085, -0.0371
 [node name="Tinderbox" parent="." unique_id=635671946 instance=ExtResource("4_7sten")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 217.61766, 10.025494, 376.90564)
 
-[node name="FishingSpot_Beach" parent="." unique_id=650475013 instance=ExtResource("5_5qnb2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 221.5, 9.02, 379.8)
-
-[node name="FishingWorm_Beach" parent="." unique_id=870374854 instance=ExtResource("6_h8ytx")]
+[node name="FishingWorm_Beach" parent="." unique_id=1276728162 instance=ExtResource("6_h8ytx")]
 transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.1847, 10.002084, 378.79877)
 
-[node name="FishingWorm_Beach2" parent="." unique_id=1510951973 instance=ExtResource("6_h8ytx")]
+[node name="FishingWorm_Beach2" parent="." unique_id=1439428530 instance=ExtResource("6_h8ytx")]
 transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.01295, 10.002084, 378.75507)
 
-[node name="FishingWorm_Beach3" parent="." unique_id=187745535 instance=ExtResource("6_h8ytx")]
+[node name="FishingWorm_Beach3" parent="." unique_id=162557899 instance=ExtResource("6_h8ytx")]
 transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.09018, 10.002084, 378.89838)
 
-[node name="FishingBobber_Beach" parent="." unique_id=266414936 instance=ExtResource("7_vg88e")]
+[node name="FishingBobber_Beach" parent="." unique_id=1430129332 instance=ExtResource("7_vg88e")]
 transform = Transform3D(0.36484253, -0.34189168, 0, 0.34189168, 0.36484253, 0, 0, 0, 0.5, 220.76135, 9.979896, 378.64008)
 
-[node name="FishingBobber_Beach2" parent="." unique_id=718284725 instance=ExtResource("7_vg88e")]
+[node name="FishingBobber_Beach2" parent="." unique_id=2119893447 instance=ExtResource("7_vg88e")]
 transform = Transform3D(0.36484253, -0.34189168, 0, 0.34189168, 0.36484253, 0, 0, 0, 0.5, 220.97394, 9.979896, 378.45123)
 
 [node name="FishingHookA_Beach" parent="." unique_id=305329916 instance=ExtResource("8_4gs34")]
 transform = Transform3D(0.019869253, -0.49947333, 0.011471116, 0.0077237575, 0.011785904, 0.4998014, -0.49954534, -0.019684166, 0.008183976, 220.5805, 9.97159, 378.90125)
 
-[node name="FishingHookA_Beach2" parent="." unique_id=1270887353 instance=ExtResource("8_4gs34")]
+[node name="FishingHookA_Beach2" parent="." unique_id=1879726840 instance=ExtResource("8_4gs34")]
 transform = Transform3D(-0.44751993, -0.2226609, 0.012166422, 0.007723756, 0.011785903, 0.49980137, -0.22285922, 0.44753006, -0.007109296, 220.61607, 10.004516, 378.9757)
 
-[node name="FishingHookA_Beach3" parent="." unique_id=1715566360 instance=ExtResource("8_4gs34")]
+[node name="FishingHookA_Beach3" parent="." unique_id=769418061 instance=ExtResource("8_4gs34")]
 transform = Transform3D(0.4548477, 0.20729576, -0.011917337, 0.007723757, 0.011785903, 0.49980137, 0.20749433, -0.4548511, 0.007519378, 220.51637, 9.975757, 378.78033)
 
-[node name="FishingHookB_Beach" parent="." unique_id=434027265 instance=ExtResource("9_etm2w")]
+[node name="FishingHookB_Beach" parent="." unique_id=585736090 instance=ExtResource("9_etm2w")]
 transform = Transform3D(0.005365733, -0.4999616, -0.003097885, 0.07642885, 0.0038818764, -0.49410886, 0.49409497, 0.0048289765, 0.076464646, 220.69186, 9.99846, 379.06195)

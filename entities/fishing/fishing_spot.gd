@@ -11,6 +11,10 @@ extends StaticBody3D
 @export var reward_item_id: String = "fish_raw"
 @export var xp_reward: int = 18
 
+@export_group("Ambient FX")
+## Bubbles and procedural jump-fish mesh; turn off when you place real fish/props (e.g. dock end).
+@export var ambient_fx_enabled: bool = true
+
 @export_group("Spot presentation")
 @export var fish_jump_interval_min_sec: float = 4.2
 @export var fish_jump_interval_max_sec: float = 11.5
@@ -38,6 +42,12 @@ var _jump_timer: Timer
 
 
 func _ready() -> void:
+	if not ambient_fx_enabled:
+		var fx := get_node_or_null("FxLayer") as Node3D
+		if fx != null:
+			fx.visible = false
+		return
+
 	if _bubble_particles != null:
 		_bubble_particles.emitting = true
 	if _jump_fish != null:

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://entities/fishing/fishing_spot.gd" id="1_script"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_spot"]
-size = Vector3(5.0, 2.2, 5.0)
+size = Vector3(9.0, 3.4, 9.0)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_post"]
 top_radius = 0.07
@@ -40,7 +40,7 @@ hue_variation_min = -0.06
 hue_variation_max = 0.08
 color = Color(0.68, 0.85, 1, 0.38)
 emission_shape = 1
-emission_sphere_radius = 0.52
+emission_sphere_radius = 0.68
 
 [sub_resource type="SphereMesh" id="SphereMesh_bubble_pass"]
 radius = 0.062
@@ -62,14 +62,14 @@ collision_mask = 0
 script = ExtResource("1_script")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
 shape = SubResource("BoxShape3D_spot")
 
 [node name="FxLayer" type="Node3D" parent="."]
 
 [node name="BubbleParticles" type="GPUParticles3D" parent="FxLayer"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
-amount = 56
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+amount = 72
 lifetime = 2.85
 preprocess = 1.25
 randomness = 0.5
