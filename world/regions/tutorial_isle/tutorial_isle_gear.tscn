@@ -26,6 +26,24 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 217.61766, 10.025494, 376.905
 [node name="FishingWorm_Beach" parent="." unique_id=1276728162 instance=ExtResource("6_h8ytx")]
 transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.1847, 10.002084, 378.79877)
 
+[node name="FishingWorm_Beach4" parent="." unique_id=1811446881 instance=ExtResource("6_h8ytx")]
+transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.11447, 10.002084, 378.6542)
+
+[node name="FishingWorm_Beach5" parent="." unique_id=2134190577 instance=ExtResource("6_h8ytx")]
+transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 220.9293, 10.002084, 378.8813)
+
+[node name="FishingWorm_Beach6" parent="." unique_id=2001347764 instance=ExtResource("6_h8ytx")]
+transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.00328, 10.074289, 378.86038)
+
+[node name="FishingWorm_Beach7" parent="." unique_id=1487769852 instance=ExtResource("6_h8ytx")]
+transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.08858, 10.074289, 378.74292)
+
+[node name="FishingWorm_Beach8" parent="." unique_id=9225231 instance=ExtResource("6_h8ytx")]
+transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.13306, 10.074289, 378.8605)
+
+[node name="FishingWorm_Beach9" parent="." unique_id=624105631 instance=ExtResource("6_h8ytx")]
+transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.06328, 10.1459465, 378.81888)
+
 [node name="FishingWorm_Beach2" parent="." unique_id=1439428530 instance=ExtResource("6_h8ytx")]
 transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.01295, 10.002084, 378.75507)
 
@@ -33,10 +51,13 @@ transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0
 transform = Transform3D(-0.22313115, 0.7160394, 0, -0.7160394, -0.22313115, 0, 0, 0, 0.75, 221.09018, 10.002084, 378.89838)
 
 [node name="FishingBobber_Beach" parent="." unique_id=1430129332 instance=ExtResource("7_vg88e")]
-transform = Transform3D(0.36484253, -0.34189168, 0, 0.34189168, 0.36484253, 0, 0, 0, 0.5, 220.76135, 9.979896, 378.64008)
+transform = Transform3D(0.2004064, 0.45808, 0, -0.45808, 0.2004064, 0, 0, 0, 0.5, 220.76135, 9.979896, 378.64008)
 
 [node name="FishingBobber_Beach2" parent="." unique_id=2119893447 instance=ExtResource("7_vg88e")]
 transform = Transform3D(0.36484253, -0.34189168, 0, 0.34189168, 0.36484253, 0, 0, 0, 0.5, 220.97394, 9.979896, 378.45123)
+
+[node name="FishingBobber_Beach3" parent="." unique_id=1804450532 instance=ExtResource("7_vg88e")]
+transform = Transform3D(-0.09029468, 0.08461459, -0.4844453, 0.34189168, 0.36484253, 0, 0.3534925, -0.33125564, -0.12374473, 220.70782, 9.979896, 378.3967)
 
 [node name="FishingHookA_Beach" parent="." unique_id=305329916 instance=ExtResource("8_4gs34")]
 transform = Transform3D(0.019869253, -0.49947333, 0.011471116, 0.0077237575, 0.011785904, 0.4998014, -0.49954534, -0.019684166, 0.008183976, 220.5805, 9.97159, 378.90125)
@@ -46,6 +67,9 @@ transform = Transform3D(-0.44751993, -0.2226609, 0.012166422, 0.007723756, 0.011
 
 [node name="FishingHookA_Beach3" parent="." unique_id=769418061 instance=ExtResource("8_4gs34")]
 transform = Transform3D(0.4548477, 0.20729576, -0.011917337, 0.007723757, 0.011785903, 0.49980137, 0.20749433, -0.4548511, 0.007519378, 220.51637, 9.975757, 378.78033)
+
+[node name="FishingHookA_Beach4" parent="." unique_id=287029500 instance=ExtResource("8_4gs34")]
+transform = Transform3D(0.4548477, 0.20729578, -0.011917337, 0.041672587, -0.06302315, 0.49425852, 0.2034133, -0.45061797, -0.07460898, 220.80586, 9.975757, 378.82364)
 
 [node name="FishingHookB_Beach" parent="." unique_id=585736090 instance=ExtResource("9_etm2w")]
 transform = Transform3D(0.005365733, -0.4999616, -0.003097885, 0.07642885, 0.0038818764, -0.49410886, 0.49409497, 0.0048289765, 0.076464646, 220.69186, 9.99846, 379.06195)

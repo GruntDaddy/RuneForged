@@ -22,6 +22,9 @@ enum ActionState {
 	RUNE_CAST_ACTION,
 }
 
+## Mesh-local fine-tune for `fishing_rod_base` line attach (KayKit pole: +Y toward tip, X/Z across blank).
+const _FISHING_ROD_TIP_LOCAL_NUDGE := Vector3(0.065, 0.095, 0.065)
+
 @onready var skeleton: Skeleton3D = $Rig_Medium/Skeleton3D
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 
@@ -196,6 +199,8 @@ var _active_rune_cast_clip: String = ""
 var _last_melee_attack_ms: int = -1
 var _rest_floor_looping: bool = false
 var _fishing_sequence_active: bool = false
+## True while the cast line is active in the world (see [`player.gd`] fishing session).
+var _fishing_hand_line_deployed: bool = false
 
 
 func _ready() -> void:
@@ -440,6 +445,8 @@ func _on_animation_finished(anim_name: StringName) -> void:
 
 
 func _apply_tool_kind(kind: ToolKind) -> void:
+	if kind != ToolKind.FISHING_ROD:
+		_fishing_hand_line_deployed = false
 	_set_right_hand_meshes_visible(false)
 	_set_weapon_meshes_visible(false)
 	var show_tool_root := false
@@ -558,6 +565,7 @@ func cancel_tool_action() -> void:
 	_active_rune_cast_clip = ""
 	_rest_floor_looping = false
 	_fishing_sequence_active = false
+	_fishing_hand_line_deployed = false
 	_action_state = ActionState.LOCOMOTION
 	if anim_player != null:
 		anim_player.stop()
@@ -829,6 +837,53 @@ func try_play_action_for_harvest(harvest_action: String) -> bool:
 ## Returns the chosen clip duration in seconds, or `-1.0` when no clip could be played.
 func begin_fishing_sequence() -> void:
 	_fishing_sequence_active = true
+	_apply_off_hand_visibility()
+
+
+func set_fishing_hand_line_deployed(deployed: bool) -> void:
+	_fishing_hand_line_deployed = deployed
+
+
+func is_fishing_hand_line_deployed() -> bool:
+	return _fishing_hand_line_deployed
+
+
+func get_fishing_rod_tip_global() -> Vector3:
+	if fishing_pole_mesh != null:
+		var rod_mi := fishing_pole_mesh.find_child("fishing_rod_base", true, false) as MeshInstance3D
+		if rod_mi != null and rod_mi.mesh != null:
+			var aabb: AABB = rod_mi.mesh.get_aabb()
+			if aabb.size.length_squared() > 1e-10:
+				var tip_local := _fishing_rod_blank_tip_local_from_aabb(aabb) + _FISHING_ROD_TIP_LOCAL_NUDGE
+				return rod_mi.to_global(tip_local)
+		var marker := fishing_pole_mesh.find_child("RodTip", true, false) as Node3D
+		if marker != null:
+			if rod_mi != null:
+				return rod_mi.to_global(marker.position + _FISHING_ROD_TIP_LOCAL_NUDGE)
+			return marker.global_position
+	return _fishing_rod_tip_fallback_global()
+
+
+func _fishing_rod_blank_tip_local_from_aabb(aabb: AABB) -> Vector3:
+	var p := aabb.position
+	var s := aabb.size
+	var ax := s.x
+	var ay := s.y
+	var az := s.z
+	# KayKit rod is one mesh; length is longest axis. Use the center of the far end face so the line
+	# stays on the rod centerline (no sideways world-up bias).
+	if ay >= ax and ay >= az:
+		# Grip low Y, tip high Y — attach at center of max-Y face.
+		return Vector3(p.x + ax * 0.5, p.y + ay, p.z + az * 0.5)
+	if az >= ax and az >= ay:
+		return Vector3(p.x + ax * 0.5, p.y + ay * 0.5, p.z + az)
+	return Vector3(p.x + ax, p.y + ay * 0.5, p.z + az * 0.5)
+
+
+func _fishing_rod_tip_fallback_global() -> Vector3:
+	if hand_r_slot != null:
+		return hand_r_slot.global_position + global_transform.basis * Vector3(0.12, 1.05, 0.38)
+	return global_position + Vector3(0, 1.25, 0.55)
 
 
 func end_fishing_sequence() -> void:
@@ -1026,7 +1081,14 @@ func _pick_right_hand_tool(ids: Array[String], primary: Node3D, fallback: Node3D
 
 
 func _set_right_hand_meshes_visible(enabled: bool) -> void:
-	for n in [axe_mesh, axe_bronze_mesh, pickaxe_mesh, pickaxe_bronze_mesh, fishing_pole_mesh, hammer_mesh]:
+	for n in [
+		axe_mesh,
+		axe_bronze_mesh,
+		pickaxe_mesh,
+		pickaxe_bronze_mesh,
+		fishing_pole_mesh,
+		hammer_mesh,
+	]:
 		if n != null:
 			n.visible = enabled
 
@@ -1105,6 +1167,26 @@ func _apply_torch_addon_fire() -> void:
 
 
 func _apply_off_hand_visibility() -> void:
+	if _fishing_sequence_active:
+		if torch_mesh != null:
+			torch_mesh.visible = false
+		if chisel_mesh != null:
+			chisel_mesh.visible = false
+		if tacklebox_hand_mesh != null:
+			tacklebox_hand_mesh.visible = false
+		if tinderbox_mesh != null:
+			tinderbox_mesh.visible = false
+		if shield_bronze_mesh != null:
+			shield_bronze_mesh.visible = false
+		if shield_iron_mesh != null:
+			shield_iron_mesh.visible = false
+		if shield_square_bronze_mesh != null:
+			shield_square_bronze_mesh.visible = false
+		if shield_square_iron_mesh != null:
+			shield_square_iron_mesh.visible = false
+		if shield_wooden_mesh != null:
+			shield_wooden_mesh.visible = false
+		return
 	var off_id := _normalize_item_id(_equipped_off_hand_item_id)
 	if torch_mesh != null:
 		torch_mesh.visible = off_id == "tool_torch"

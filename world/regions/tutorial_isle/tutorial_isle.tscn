@@ -847,7 +847,7 @@ shape = SubResource("ConcavePolygonShape3D_gja2q")
 transform = Transform3D(-1.400895, 0, -3.7466643, 0, 4, 0, 3.7466643, 0, -1.400895, 186.41495, 6.074729, 397.761)
 
 [node name="FishingSpot_Dock" parent="Props/Dock_1" unique_id=-1447374095 instance=ExtResource("8_t7t3p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.083115, 0.059999943, 0.3139801)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.704575, 0.060000658, -0.50956726)
 
 [node name="Anvil" parent="Props" unique_id=985244922 instance=ExtResource("12_rwr6f")]
 transform = Transform3D(-0.71151114, 0, -0.7026748, 0, 0.9999999, 0, 0.7026748, 0, -0.71151114, 204.08017, 10.097637, 383.38385)

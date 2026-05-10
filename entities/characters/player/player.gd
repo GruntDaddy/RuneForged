@@ -66,6 +66,8 @@ const INTERACT_EXTRA_ACTIONS: Array[String] = [
 @export var harvest_click_cooldown_sec: float = 1.5
 ## Movement above this (Input.get_vector) immediately cancels harvest + tool clip.
 @export var harvest_move_cancel_deadzone: float = 0.08
+## Movement intent during an active fishing session cancels line/bobber and ends fishing (walk away).
+@export var fishing_session_cancel_move_deadzone: float = 0.14
 @export var chop_animation_duration_sec: float = 4.3333
 ## Chop clip has 3 impact beats.
 @export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.8, 2.2, 3.5])
@@ -169,6 +171,7 @@ var health: float = 100.0
 var stamina: float = 100.0
 
 @onready var base_character: Node3D = $BaseCharacter
+@onready var fishing_line_visual: Node3D = get_node_or_null("FishingLineVisual") as Node3D
 @onready var camera_rig: Node3D = $CameraRig
 @onready var spring_arm: SpringArm3D = $CameraRig/SpringArm3D
 @onready var camera_3d: Camera3D = $CameraRig/SpringArm3D/Camera3D
@@ -239,6 +242,7 @@ func apply_damage(amount: float) -> void:
 	if _fishing_session_running:
 		_fishing_session_generation += 1
 		_fishing_session_running = false
+		_clear_fishing_world_line()
 		if base_character != null and base_character.has_method("end_fishing_sequence"):
 			base_character.end_fishing_sequence()
 	# Taking a hit should break harvest automation immediately.
@@ -451,6 +455,7 @@ func _physics_process(delta: float) -> void:
 	if _campfire_resting:
 		raw_move = Vector2.ZERO
 	_cancel_harvest_on_movement_input(raw_move)
+	_cancel_fishing_session_on_move_input(raw_move)
 	var input_vec := raw_move
 	var approach_input := _harvest_interact_move_input()
 	if approach_input.length_squared() > 0.0001:
@@ -526,6 +531,19 @@ func _physics_process(delta: float) -> void:
 	_update_interaction_prompt()
 	_sync_equipped_hand_visuals()
 	_update_build_preview()
+
+	if (
+		fishing_line_visual != null
+		and base_character != null
+		and base_character.has_method("is_fishing_hand_line_deployed")
+		and bool(base_character.call("is_fishing_hand_line_deployed"))
+		and fishing_line_visual.has_method("tick")
+	):
+		fishing_line_visual.call(
+			"tick",
+			delta,
+			base_character.call("get_fishing_rod_tip_global")
+		)
 
 	if not anim_busy:
 		if Input.is_action_just_pressed("tool_axe"):
@@ -2504,6 +2522,24 @@ func finish_campfire_ignite_animation() -> void:
 	velocity.z = 0.0
 
 
+func _clear_fishing_world_line() -> void:
+	if fishing_line_visual != null and fishing_line_visual.has_method("clear_line"):
+		fishing_line_visual.call("clear_line")
+
+
+func _cancel_fishing_session_on_move_input(raw_move: Vector2) -> void:
+	if not _fishing_session_running:
+		return
+	var dz := clampf(fishing_session_cancel_move_deadzone, 0.0, 0.95)
+	if raw_move.length() <= dz:
+		return
+	_fishing_session_generation += 1
+	_fishing_session_running = false
+	_clear_fishing_world_line()
+	if base_character != null and base_character.has_method("end_fishing_sequence"):
+		base_character.end_fishing_sequence()
+
+
 func try_begin_fishing_at_spot(spot: Node) -> void:
 	if _fishing_session_running:
 		return
@@ -2533,15 +2569,33 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 
 	base_character.begin_fishing_sequence()
 
+	var spot_pos := global_position
+	if spot != null and spot is Node3D:
+		spot_pos = (spot as Node3D).global_position
+
+	if base_character.has_method("set_fishing_hand_line_deployed"):
+		base_character.call("set_fishing_hand_line_deployed", true)
+
 	var d_cast: float = base_character.try_play_fishing_clip("Fishing_Cast")
 	if d_cast < 0.0:
 		InventoryService.add_item(str(bait_used), 1)
+		_clear_fishing_world_line()
 		base_character.end_fishing_sequence()
 		_fishing_session_running = false
 		return
 
-	await get_tree().create_timer(d_cast).timeout
+	if fishing_line_visual != null and fishing_line_visual.has_method("cast_out_async"):
+		await fishing_line_visual.cast_out_async(
+			get_tree(),
+			spot_pos,
+			d_cast,
+			func(): return base_character.get_fishing_rod_tip_global()
+		)
+	else:
+		await get_tree().create_timer(d_cast).timeout
+
 	if gen != _fishing_session_generation:
+		_clear_fishing_world_line()
 		_fishing_session_running = false
 		return
 
@@ -2564,17 +2618,23 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 
 	await get_tree().create_timer(randf_range(bite_min, bite_max)).timeout
 	if gen != _fishing_session_generation:
+		_clear_fishing_world_line()
 		_fishing_session_running = false
 		return
 
+	if fishing_line_visual != null and fishing_line_visual.has_method("play_bite_dip_async"):
+		await fishing_line_visual.call("play_bite_dip_async")
+
 	var d_str: float = base_character.try_play_fishing_clip("Fishing_Struggling")
 	if d_str < 0.0:
+		_clear_fishing_world_line()
 		base_character.end_fishing_sequence()
 		_fishing_session_running = false
 		return
 
 	await get_tree().create_timer(d_str).timeout
 	if gen != _fishing_session_generation:
+		_clear_fishing_world_line()
 		_fishing_session_running = false
 		return
 
@@ -2587,6 +2647,7 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 		var left: int = InventoryService.add_item(reward_id, 1)
 		if left > 0:
 			show_gameplay_message("Inventory full.")
+			_clear_fishing_world_line()
 			base_character.end_fishing_sequence()
 			_fishing_session_running = false
 			return
@@ -2599,9 +2660,11 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 		show_gameplay_message("The fish got away.")
 
 	if gen != _fishing_session_generation:
+		_clear_fishing_world_line()
 		_fishing_session_running = false
 		return
 
+	_clear_fishing_world_line()
 	base_character.end_fishing_sequence()
 	_fishing_session_running = false
 
