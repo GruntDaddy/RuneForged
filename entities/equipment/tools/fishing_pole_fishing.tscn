@@ -1,5 +1,0 @@
-[gd_scene format=3 uid="uid://btmuyrwyax8mt"]
-
-[ext_resource type="PackedScene" uid="uid://b7pjrf31t7y7h" path="res://assets/kaykit/items/fishing_rod.gltf" id="1_edk58"]
-
-[node name="FishingPole_Fishing" unique_id=703384171 instance=ExtResource("1_edk58")]

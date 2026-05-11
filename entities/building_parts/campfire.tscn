@@ -143,15 +143,15 @@ stream = ExtResource("sf_audio")
 unit_size = 5.0
 max_distance = 24.0
 
-[node name="BurnTimerLabel" type="Label3D" parent="."]
+[node name="BurnTimerLabel" type="Label3D" parent="." unique_id=1861058856]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 2.05, 1.63)
 visible = false
-text = "0:00"
-font_size = 24
-outline_size = 8
 billboard = 1
 no_depth_test = true
 modulate = Color(1, 0.92, 0.72, 1)
+text = "0:00"
+font_size = 24
+outline_size = 8
 
 [node name="Campfire_Base" type="Node3D" parent="." unique_id=806418380]
 

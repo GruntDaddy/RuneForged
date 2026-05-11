@@ -32,13 +32,16 @@ func get_interaction_prompt(_player: Node) -> String:
 
 func interact(player: Node) -> void:
 	if player != null and player.has_method("try_begin_fishing_at_spot"):
-		player.call("try_begin_fishing_at_spot", self)
+		player.try_begin_fishing_at_spot(self)
 
 
-@onready var _bubble_particles: GPUParticles3D = $FxLayer/BubbleParticles
-@onready var _jump_fish: MeshInstance3D = $FxLayer/JumpFishVisual
+@onready var _splash_particles: GPUParticles3D = get_node_or_null("FxLayer/SplashParticles") as GPUParticles3D
+@onready var _mist_particles: GPUParticles3D = get_node_or_null("FxLayer/MistParticles") as GPUParticles3D
+@onready var _surface_ripple: MeshInstance3D = get_node_or_null("FxLayer/SurfaceRipple") as MeshInstance3D
+@onready var _jump_fish: Node3D = get_node_or_null("FxLayer/JumpFishVisual") as Node3D
 
 var _jump_timer: Timer
+var _ripple_phase: float = 0.0
 
 
 func _ready() -> void:
@@ -48,8 +51,10 @@ func _ready() -> void:
 			fx.visible = false
 		return
 
-	if _bubble_particles != null:
-		_bubble_particles.emitting = true
+	if _splash_particles != null:
+		_splash_particles.emitting = true
+	if _mist_particles != null:
+		_mist_particles.emitting = true
 	if _jump_fish != null:
 		_jump_fish.visible = false
 
@@ -58,6 +63,18 @@ func _ready() -> void:
 	add_child(_jump_timer)
 	_jump_timer.timeout.connect(_on_jump_timer_timeout)
 	_schedule_next_jump()
+
+
+func _process(delta: float) -> void:
+	if not ambient_fx_enabled or _surface_ripple == null:
+		return
+	_ripple_phase = fmod(_ripple_phase + delta * 0.55, TAU)
+	var pulse := 0.92 + 0.18 * sin(_ripple_phase)
+	var t := _surface_ripple.transform
+	_surface_ripple.transform = Transform3D(
+		Basis(Vector3(pulse, 0.0, 0.0), Vector3(0.0, 0.06, 0.0), Vector3(0.0, 0.0, pulse)),
+		t.origin
+	)
 
 
 func _schedule_next_jump() -> void:
@@ -113,10 +130,11 @@ func _apply_fish_jump_frame(t: float, start: Vector3, end: Vector3, peak: float)
 	pos.y = water_surface_y + peak * sin(PI * t)
 	_jump_fish.position = pos
 	var flat := Vector3(end.x - start.x, 0.0, end.z - start.z)
-	if flat.length_squared() > 1e-6:
-		var yaw := atan2(flat.x, flat.z)
-		_jump_fish.rotation = Vector3(
-			deg_to_rad(-22.0) * sin(PI * t),
-			yaw,
-			deg_to_rad(8.0) * sin(TAU * t)
-		)
+	if flat.length_squared() <= 1e-6:
+		return
+	var yaw := atan2(flat.x, flat.z)
+	# Pitch tracks the arc derivative: nose up on ascent (t<0.5), level at peak, nose down on descent (t>0.5).
+	# +pitch around local X tilts forward (+Z) toward -Y, so descent is positive.
+	var pitch := deg_to_rad(42.0) * -cos(PI * t)
+	var roll := deg_to_rad(6.0) * sin(TAU * t)
+	_jump_fish.rotation = Vector3(pitch, yaw, roll)

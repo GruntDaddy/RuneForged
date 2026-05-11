@@ -472,77 +472,77 @@ respawn_seconds = 48.0
 spawn_radius = 5.0
 
 [node name="WalleyeSpawner" parent="Wildlife" unique_id=1386688934 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(-0.010489196, 0, -0.999945, 0, 1, 0, 0.999945, 0, -0.010489196, 2.7276917, -12.118205, 78.08804)
+transform = Transform3D(-0.010489196, 0, -0.999945, 0, 1, 0, 0.999945, 0, -0.010489196, -4.109482, -12.118205, 78.08804)
 animal_scene = ExtResource("fish_walleye")
 max_alive = 1
 respawn_seconds = 38.0
 spawn_radius = 2.5
 
 [node name="TroutSpawner" parent="Wildlife" unique_id=1274225546 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(0.23582064, 0, 0.9717966, 0, 1, 0, -0.9717966, 0, 0.23582064, -6.973343, -11.7063675, 77.87363)
+transform = Transform3D(0.23582064, 0, 0.9717966, 0, 1, 0, -0.9717966, 0, 0.23582064, -13.810516, -11.7063675, 77.87363)
 animal_scene = ExtResource("fish_trout")
 max_alive = 1
 respawn_seconds = 36.0
 spawn_radius = 2.5
 
 [node name="SturgeonSpawner" parent="Wildlife" unique_id=2139675325 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(-0.23514207, 0.028834455, 0.97153324, -8.73843e-08, -0.9995599, 0.029666245, 0.971961, 0.0069756974, 0.23503858, -1.7698517, -12.442691, 80.08688)
+transform = Transform3D(-0.23514207, 0.028834455, 0.97153324, -8.73843e-08, -0.9995599, 0.029666245, 0.971961, 0.0069756974, 0.23503858, -8.607025, -12.442691, 80.08688)
 animal_scene = ExtResource("fish_sturgeon")
 max_alive = 1
 respawn_seconds = 45.0
 spawn_radius = 2.5
 
 [node name="RoachSpawner" parent="Wildlife" unique_id=956649581 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(-0.15988122, 1.3977261e-08, -0.9871361, -8.742277e-08, -1, 0, -0.9871361, 8.629819e-08, 0.15988122, 2.5950775, -11.891009, 74.28821)
+transform = Transform3D(-0.15988122, 1.3977261e-08, -0.9871361, -8.742277e-08, -1, 0, -0.9871361, 8.629819e-08, 0.15988122, -4.242096, -11.891009, 74.28821)
 animal_scene = ExtResource("fish_roach")
 max_alive = 1
 respawn_seconds = 32.0
 spawn_radius = 2.5
 
 [node name="PikeSpawner" parent="Wildlife" unique_id=1872764900 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(-0.03268415, 0, 0.9994657, 0, 1, 0, -0.9994657, 0, -0.03268415, -1.7625275, -12.026465, 71.957794)
+transform = Transform3D(-0.03268415, 0, 0.9994657, 0, 1, 0, -0.9994657, 0, -0.03268415, -8.599701, -12.026465, 71.957794)
 animal_scene = ExtResource("fish_pike")
 max_alive = 1
 respawn_seconds = 40.0
 spawn_radius = 2.5
 
 [node name="PerchSpawner" parent="Wildlife" unique_id=1973830982 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(0.31404215, 0, 0.94940907, 0, 1, 0, -0.94940907, 0, 0.31404215, -1.9806976, -12.025017, 76.40753)
+transform = Transform3D(0.31404215, 0, 0.94940907, 0, 1, 0, -0.94940907, 0, 0.31404215, -8.817871, -12.025017, 76.40753)
 animal_scene = ExtResource("fish_perch")
 max_alive = 1
 respawn_seconds = 34.0
 spawn_radius = 2.5
 
 [node name="LargemouthSpawner" parent="Wildlife" unique_id=752096755 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(-0.16640738, 0, 0.9860571, 0, 1, 0, -0.9860571, 0, -0.16640738, -5.924408, -11.979285, 74.70834)
+transform = Transform3D(-0.16640738, 0, 0.9860571, 0, 1, 0, -0.9860571, 0, -0.16640738, -12.761581, -11.979285, 74.70834)
 animal_scene = ExtResource("fish_largemouth")
 max_alive = 1
 respawn_seconds = 38.0
 spawn_radius = 2.5
 
 [node name="DrumSpawner" parent="Wildlife" unique_id=225244326 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(0.64187795, 0, 0.7668068, 0, 1, 0, -0.7668068, 0, 0.64187795, -12.839706, -11.906333, 76.155396)
+transform = Transform3D(0.64187795, 0, 0.7668068, 0, 1, 0, -0.7668068, 0, 0.64187795, -19.67688, -11.906333, 76.155396)
 animal_scene = ExtResource("fish_drum")
 max_alive = 1
 respawn_seconds = 36.0
 spawn_radius = 2.5
 
 [node name="CatfishSpawner" parent="Wildlife" unique_id=196509125 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(0.23203656, 0, 0.9727071, 0, 1, 0, -0.9727071, 0, 0.23203656, -9.983459, -11.578365, 73.618195)
+transform = Transform3D(0.23203656, 0, 0.9727071, 0, 1, 0, -0.9727071, 0, 0.23203656, -16.820633, -11.578365, 73.618195)
 animal_scene = ExtResource("fish_catfish")
 max_alive = 1
 respawn_seconds = 42.0
 spawn_radius = 2.5
 
 [node name="CarpSpawner" parent="Wildlife" unique_id=129961401 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(0.184243, 0, 0.9828807, 0, 1, 0, -0.9828807, 0, 0.184243, -8.001114, -11.751896, 71.62744)
+transform = Transform3D(0.184243, 0, 0.9828807, 0, 1, 0, -0.9828807, 0, 0.184243, -14.838287, -11.751896, 71.62744)
 animal_scene = ExtResource("fish_carp")
 max_alive = 1
 respawn_seconds = 38.0
 spawn_radius = 2.5
 
 [node name="BluegillSpawner" parent="Wildlife" unique_id=1175918509 instance=ExtResource("wildlife_spawner_scene")]
-transform = Transform3D(0.06604755, 0, -0.9978165, 0, 1, 0, 0.9978165, 0, 0.06604755, 2.3648987, -11.906169, 71.0845)
+transform = Transform3D(0.06604755, 0, -0.9978165, 0, 1, 0, 0.9978165, 0, 0.06604755, -4.472275, -11.906169, 71.0845)
 animal_scene = ExtResource("fish_bluegill")
 max_alive = 1
 respawn_seconds = 30.0
@@ -847,7 +847,7 @@ shape = SubResource("ConcavePolygonShape3D_gja2q")
 transform = Transform3D(-1.400895, 0, -3.7466643, 0, 4, 0, 3.7466643, 0, -1.400895, 186.41495, 6.074729, 397.761)
 
 [node name="FishingSpot_Dock" parent="Props/Dock_1" unique_id=-1447374095 instance=ExtResource("8_t7t3p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.704575, 0.060000658, -0.50956726)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.704567, -2.4488268, -0.5095825)
 
 [node name="Anvil" parent="Props" unique_id=985244922 instance=ExtResource("12_rwr6f")]
 transform = Transform3D(-0.71151114, 0, -0.7026748, 0, 0.9999999, 0, 0.7026748, 0, -0.71151114, 204.08017, 10.097637, 383.38385)

@@ -85,5 +85,5 @@ mesh = SubResource("ArrayMesh_mcko1")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11720657, 0.40973282, 0.18176937)
 mesh = SubResource("ArrayMesh_dq1ta")
 
-[node name="RodTip" type="Marker3D" parent="fishing_rod_base"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.26, 0.463)
+[node name="RodTip" type="Marker3D" parent="fishing_rod_base" unique_id=682859338]
+transform = Transform3D(1, -1.1641532e-10, 8.1490725e-10, 4.1618478e-09, 1, 0, 5.820766e-10, 0, 0.99999976, 0.0015323516, 2.185561, 0.95801985)

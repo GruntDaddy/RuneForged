@@ -23,6 +23,7 @@ const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 const _DefaultHitVfxScene: PackedScene = preload("res://entities/effects/hit_spark_burst.tscn")
 const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
 const _FishingSpotClass = preload("res://entities/fishing/fishing_spot.gd")
+const _TackleboxGroundScene: PackedScene = preload("res://entities/equipment/off_hand/tool_tacklebox.tscn")
 
 ## Extra contextual interact keys forwarded to interactables that opt into multi-prompt UX.
 const INTERACT_EXTRA_ACTIONS: Array[String] = [
@@ -68,6 +69,10 @@ const INTERACT_EXTRA_ACTIONS: Array[String] = [
 @export var harvest_move_cancel_deadzone: float = 0.08
 ## Movement intent during an active fishing session cancels line/bobber and ends fishing (walk away).
 @export var fishing_session_cancel_move_deadzone: float = 0.14
+## Pause between post-catch / bait emote clips (seconds).
+@export var fishing_emote_gap_sec: float = 0.1
+## Short beat between chained casts when auto-fishing (seconds).
+@export var fishing_auto_cast_gap_sec: float = 0.05
 @export var chop_animation_duration_sec: float = 4.3333
 ## Chop clip has 3 impact beats.
 @export var chop_impact_delays_sec: PackedFloat32Array = PackedFloat32Array([0.8, 2.2, 3.5])
@@ -231,6 +236,13 @@ var _campfire_resting: bool = false
 var _campfire_rest_source: WeakRef = null
 var _fishing_session_running: bool = false
 var _fishing_session_generation: int = 0
+var _fishing_ground_tacklebox: Node3D
+var _fishing_auto_active: bool = false
+var _fishing_auto_target: WeakRef
+var _fishing_auto_gen: int = 0
+## When true, movement in `_physics_process` may cancel fishing. Armed only after cast-out completes so
+## approach keys held while pressing E do not abort on the first physics tick.
+var _fishing_physics_move_cancel_armed: bool = false
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
@@ -243,8 +255,10 @@ func apply_damage(amount: float) -> void:
 		_fishing_session_generation += 1
 		_fishing_session_running = false
 		_clear_fishing_world_line()
+		_fishing_despawn_ground_tacklebox()
 		if base_character != null and base_character.has_method("end_fishing_sequence"):
 			base_character.end_fishing_sequence()
+	_stop_fishing_auto()
 	# Taking a hit should break harvest automation immediately.
 	_stop_harvest_auto()
 	_clear_harvest_interact_approach()
@@ -1970,6 +1984,32 @@ func _harvest_target_still_valid(c: Object) -> bool:
 	return fwd.dot(to_t) >= 0.35
 
 
+## Used when a forced interaction raycast misses on the same frame the HUD still shows a target (E press vs ray flicker).
+func _interact_collider_still_plausible(c: Object) -> bool:
+	if c == null or not is_instance_valid(c):
+		return false
+	_update_interaction_ray()
+	if interaction_ray != null and interaction_ray.is_colliding() and interaction_ray.get_collider() == c:
+		return true
+	if not (c is Node3D):
+		return false
+	var t := c as Node3D
+	var to_t: Vector3 = t.global_position - global_position
+	var flat := Vector3(to_t.x, 0.0, to_t.z)
+	var horiz: float = flat.length()
+	if horiz > interaction_range + 5.0:
+		return false
+	if base_character == null:
+		return horiz <= interaction_range + 2.0
+	var fwd := base_character.global_transform.basis.z
+	fwd.y = 0.0
+	if fwd.length_squared() < 0.0001 or flat.length_squared() < 0.0001:
+		return horiz <= interaction_range + 2.0
+	fwd = fwd.normalized()
+	flat = flat.normalized()
+	return fwd.dot(flat) >= 0.22
+
+
 func _stop_harvest_auto() -> void:
 	if not _harvest_auto_active:
 		return
@@ -2522,26 +2562,98 @@ func finish_campfire_ignite_animation() -> void:
 	velocity.z = 0.0
 
 
+func _fishing_despawn_ground_tacklebox() -> void:
+	if _fishing_ground_tacklebox != null and is_instance_valid(_fishing_ground_tacklebox):
+		_fishing_ground_tacklebox.queue_free()
+	_fishing_ground_tacklebox = null
+
+
+func _fishing_spawn_ground_tacklebox_if_needed() -> void:
+	_fishing_despawn_ground_tacklebox()
+	if base_character == null:
+		return
+	if _equipped_off_hand_id_str() != "tool_tacklebox":
+		return
+	var inst := _TackleboxGroundScene.instantiate() as Node3D
+	if inst == null:
+		return
+	add_child(inst)
+	var fwd: Vector3 = base_character.global_transform.basis.z.normalized()
+	inst.global_position = global_position + fwd * 0.52 + Vector3(0, 0.04, 0)
+	inst.global_rotation.y = base_character.global_rotation.y
+	var lid := inst.find_child("fishing_tacklebox_lid", true, false) as Node3D
+	if lid != null:
+		lid.visible = false
+	_fishing_ground_tacklebox = inst
+
+
+func _fishing_await_clip_or_cancel(seconds: float, gen: int) -> bool:
+	if seconds <= 0.0:
+		return gen == _fishing_session_generation
+	await get_tree().create_timer(seconds).timeout
+	return gen == _fishing_session_generation
+
+
+func _fishing_await_emote_gap(gen: int) -> bool:
+	var gap := maxf(0.0, fishing_emote_gap_sec)
+	if gap <= 0.0:
+		return gen == _fishing_session_generation
+	await get_tree().create_timer(gap).timeout
+	return gen == _fishing_session_generation
+
+
+func _fishing_bait_remain_suffix() -> String:
+	var n: int = InventoryService.count_fishing_bait_total()
+	if n == 1:
+		return " (1 bait left)"
+	return " (%d bait left)" % n
+
+
+func _stop_fishing_auto() -> void:
+	if not _fishing_auto_active:
+		return
+	_fishing_auto_active = false
+	_fishing_auto_target = null
+	_fishing_auto_gen += 1
+	_fishing_physics_move_cancel_armed = false
+
+
+func _fishing_spot_still_valid(s: Object) -> bool:
+	if s == null or not is_instance_valid(s):
+		return false
+	if not (s is Node3D):
+		return false
+	var t := s as Node3D
+	var to_t := t.global_position - global_position
+	to_t.y = 0.0
+	# Horizontal reach: interact ray can hit while 3D distance to spot center is larger (height offset, dock edge).
+	# Fishing volumes can be wide; ray hits the surface while horizontal distance to node origin is large.
+	var max_dist := maxf(interaction_range + 4.0, 28.0)
+	return to_t.length() <= max_dist
+
+
 func _clear_fishing_world_line() -> void:
 	if fishing_line_visual != null and fishing_line_visual.has_method("clear_line"):
 		fishing_line_visual.call("clear_line")
 
 
 func _cancel_fishing_session_on_move_input(raw_move: Vector2) -> void:
-	if not _fishing_session_running:
+	if not _fishing_session_running or not _fishing_physics_move_cancel_armed:
 		return
 	var dz := clampf(fishing_session_cancel_move_deadzone, 0.0, 0.95)
 	if raw_move.length() <= dz:
 		return
+	_stop_fishing_auto()
 	_fishing_session_generation += 1
 	_fishing_session_running = false
 	_clear_fishing_world_line()
+	_fishing_despawn_ground_tacklebox()
 	if base_character != null and base_character.has_method("end_fishing_sequence"):
 		base_character.end_fishing_sequence()
 
 
 func try_begin_fishing_at_spot(spot: Node) -> void:
-	if _fishing_session_running:
+	if _fishing_session_running or _fishing_auto_active:
 		return
 	if _gameplay_input_blocked():
 		return
@@ -2551,23 +2663,96 @@ func try_begin_fishing_at_spot(spot: Node) -> void:
 		show_gameplay_message("Equip a fishing rod in your main hand.")
 		return
 	if InventoryService.count_fishing_bait_total() < 1:
-		show_gameplay_message("You need fishing bait.")
+		show_gameplay_message("You need fishing bait.%s" % _fishing_bait_remain_suffix())
 		return
-	_fishing_session_running = true
-	var gen := _fishing_session_generation
-	_run_fishing_session_async(spot, gen)
+	_fishing_auto_gen += 1
+	var agen := _fishing_auto_gen
+	_fishing_auto_active = true
+	_fishing_auto_target = weakref(spot)
+	call_deferred("_deferred_begin_fishing_auto_loop", spot, agen)
 
 
-func _run_fishing_session_async(spot: Node, gen: int) -> void:
+func _deferred_begin_fishing_auto_loop(spot: Node, agen: int) -> void:
+	if not _fishing_auto_active or agen != _fishing_auto_gen:
+		return
+	if spot == null or not is_instance_valid(spot):
+		_stop_fishing_auto()
+		return
+	_run_fishing_auto_loop_async(spot, agen)
+
+
+func _fishing_abort_async_session_cleanup() -> void:
+	_fishing_physics_move_cancel_armed = false
+	_stop_fishing_auto()
+	_clear_fishing_world_line()
+	_fishing_despawn_ground_tacklebox()
+	if base_character != null and base_character.has_method("end_fishing_sequence"):
+		base_character.end_fishing_sequence()
+	_fishing_session_running = false
+
+
+func _run_fishing_auto_loop_async(spot: Node, agen: int) -> void:
+	while _fishing_auto_active and agen == _fishing_auto_gen:
+		var s: Object = _fishing_auto_target.get_ref() if _fishing_auto_target != null else null
+		if s == null:
+			s = spot
+		if s == null or not is_instance_valid(s):
+			_stop_fishing_auto()
+			return
+		if not _fishing_spot_still_valid(s):
+			_stop_fishing_auto()
+			return
+		if InventoryService.count_fishing_bait_total() < 1:
+			_stop_fishing_auto()
+			return
+		if _equipped_main_hand_id_str() != "fishing_pole":
+			_stop_fishing_auto()
+			return
+		var cast_gen := _fishing_session_generation
+		_fishing_session_running = true
+		await _run_one_fishing_cast_async(s, cast_gen)
+		_fishing_session_running = false
+		if not _fishing_auto_active or agen != _fishing_auto_gen:
+			return
+		if cast_gen != _fishing_session_generation:
+			return
+		# Between chained casts only (harvest auto checks move before the next swing, not before the first).
+		var raw_move := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		var dz := clampf(fishing_session_cancel_move_deadzone, 0.0, 0.95)
+		if raw_move.length() > dz:
+			_stop_fishing_auto()
+			return
+		if InventoryService.count_fishing_bait_total() < 1:
+			_stop_fishing_auto()
+			return
+		var gap_cast := maxf(0.0, fishing_auto_cast_gap_sec)
+		if gap_cast > 0.0:
+			await get_tree().create_timer(gap_cast).timeout
+		if not _fishing_auto_active or agen != _fishing_auto_gen:
+			return
+		if cast_gen != _fishing_session_generation:
+			return
+		# Session flag is false during the gap; re-check walk-away before the next cast.
+		var raw_move_gap := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		var dz_gap := clampf(fishing_session_cancel_move_deadzone, 0.0, 0.95)
+		if raw_move_gap.length() > dz_gap:
+			_stop_fishing_auto()
+			return
+
+
+func _run_one_fishing_cast_async(spot: Node, gen: int) -> void:
 	if gen != _fishing_session_generation:
 		return
 	var bait_used: Variant = InventoryService.consume_one_fishing_bait()
 	if str(bait_used).is_empty():
-		show_gameplay_message("You need fishing bait.")
+		show_gameplay_message("You need fishing bait.%s" % _fishing_bait_remain_suffix())
+		_stop_fishing_auto()
 		_fishing_session_running = false
 		return
 
+	_fishing_physics_move_cancel_armed = false
 	base_character.begin_fishing_sequence()
+	_fishing_spawn_ground_tacklebox_if_needed()
 
 	var spot_pos := global_position
 	if spot != null and spot is Node3D:
@@ -2578,9 +2763,12 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 
 	var d_cast: float = base_character.try_play_fishing_clip("Fishing_Cast")
 	if d_cast < 0.0:
+		show_gameplay_message("You can't fish right now (busy with another action).")
 		InventoryService.add_item(str(bait_used), 1)
 		_clear_fishing_world_line()
+		_fishing_despawn_ground_tacklebox()
 		base_character.end_fishing_sequence()
+		_stop_fishing_auto()
 		_fishing_session_running = false
 		return
 
@@ -2594,9 +2782,10 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 	else:
 		await get_tree().create_timer(d_cast).timeout
 
+	_fishing_physics_move_cancel_armed = true
+
 	if gen != _fishing_session_generation:
-		_clear_fishing_world_line()
-		_fishing_session_running = false
+		_fishing_abort_async_session_cleanup()
 		return
 
 	var bite_min := 2.2
@@ -2618,8 +2807,7 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 
 	await get_tree().create_timer(randf_range(bite_min, bite_max)).timeout
 	if gen != _fishing_session_generation:
-		_clear_fishing_world_line()
-		_fishing_session_running = false
+		_fishing_abort_async_session_cleanup()
 		return
 
 	if fishing_line_visual != null and fishing_line_visual.has_method("play_bite_dip_async"):
@@ -2628,51 +2816,86 @@ func _run_fishing_session_async(spot: Node, gen: int) -> void:
 	var d_str: float = base_character.try_play_fishing_clip("Fishing_Struggling")
 	if d_str < 0.0:
 		_clear_fishing_world_line()
+		_fishing_despawn_ground_tacklebox()
 		base_character.end_fishing_sequence()
+		_stop_fishing_auto()
 		_fishing_session_running = false
 		return
 
 	await get_tree().create_timer(d_str).timeout
 	if gen != _fishing_session_generation:
-		_clear_fishing_world_line()
-		_fishing_session_running = false
+		_fishing_abort_async_session_cleanup()
 		return
 
 	var skill_lv: int = GameState.get_skill_level("fishing", 1)
 	var bonus: float = bonus_pd * maxf(0.0, float(skill_lv - maxi(fish_diff, 1)))
 	var p: float = clampf(base_c + bonus, 0.05, 0.95)
 	var caught: bool = randf() <= p
+	var has_bait_left: bool = InventoryService.count_fishing_bait_total() >= 1
 
 	if caught:
 		var left: int = InventoryService.add_item(reward_id, 1)
 		if left > 0:
-			show_gameplay_message("Inventory full.")
+			show_gameplay_message("Inventory full.%s" % _fishing_bait_remain_suffix())
 			_clear_fishing_world_line()
+			_fishing_despawn_ground_tacklebox()
 			base_character.end_fishing_sequence()
+			_stop_fishing_auto()
 			_fishing_session_running = false
 			return
 		GameState.add_fishing_xp(xp_r)
-		show_gameplay_message("You catch a fish!")
+		show_gameplay_message("You catch a fish!%s" % _fishing_bait_remain_suffix())
 		var d_catch: float = base_character.try_play_fishing_clip("Fishing_Catch")
 		if d_catch > 0.0:
-			await get_tree().create_timer(d_catch).timeout
+			if not await _fishing_await_clip_or_cancel(d_catch, gen):
+				return
 	else:
-		show_gameplay_message("The fish got away.")
+		show_gameplay_message("The fish got away.%s" % _fishing_bait_remain_suffix())
 
 	if gen != _fishing_session_generation:
-		_clear_fishing_world_line()
-		_fishing_session_running = false
+		_fishing_abort_async_session_cleanup()
 		return
 
 	_clear_fishing_world_line()
+	if base_character.has_method("set_fishing_hand_line_deployed"):
+		base_character.call("set_fishing_hand_line_deployed", false)
+
+	if not await _fishing_await_emote_gap(gen):
+		return
+
+	if has_bait_left:
+		if caught:
+			var d_cheer: float = -1.0
+			if base_character is BaseCharacter:
+				d_cheer = (base_character as BaseCharacter).try_play_fishing_shortest_clip(["Interact", "Use_Item"])
+			if d_cheer > 0.0:
+				if not await _fishing_await_clip_or_cancel(d_cheer, gen):
+					return
+				if not await _fishing_await_emote_gap(gen):
+					return
+		var d_bait: float = base_character.try_play_fishing_clip("PickUp")
+		if d_bait > 0.0:
+			if not await _fishing_await_clip_or_cancel(d_bait, gen):
+				return
+	else:
+		show_gameplay_message("You're out of fishing bait.%s" % _fishing_bait_remain_suffix())
+
+	if gen != _fishing_session_generation:
+		_fishing_abort_async_session_cleanup()
+		return
+
 	base_character.end_fishing_sequence()
+	_fishing_despawn_ground_tacklebox()
 	_fishing_session_running = false
 
 
 func _try_interact() -> void:
 	if _gameplay_input_blocked():
 		return
+	var prior: Object = _get_interaction_collider_cached(false)
 	var collider: Object = _get_interaction_collider_cached(true)
+	if collider == null and prior != null and is_instance_valid(prior) and _interact_collider_still_plausible(prior):
+		collider = prior
 	if collider == null:
 		return
 	var harvest_target: Object = _resolve_harvest_target(collider)
@@ -2710,7 +2933,10 @@ func _try_interact() -> void:
 func _try_interact_action(action_id: String) -> void:
 	if _gameplay_input_blocked():
 		return
+	var prior_action: Object = _get_interaction_collider_cached(false)
 	var collider: Object = _get_interaction_collider_cached(true)
+	if collider == null and prior_action != null and is_instance_valid(prior_action) and _interact_collider_still_plausible(prior_action):
+		collider = prior_action
 	if collider == null:
 		return
 	var interactable: Object = _resolve_interactable_target(collider)

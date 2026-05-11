@@ -23,7 +23,7 @@ const _FLOATER_SCENE := preload("res://assets/kaykit/items/fishing_floater.gltf"
 
 @export_group("Bobber mesh")
 @export var use_kaykit_floater: bool = true
-@export var floater_mesh_scale: float = 0.26
+@export var floater_mesh_scale: float = 0.75
 
 @export_group("Aquatic bob (wild fish defaults)")
 ## Raw water sample + offset sets target height (floater sits slightly above plane vs fish body center).

@@ -22,8 +22,8 @@ enum ActionState {
 	RUNE_CAST_ACTION,
 }
 
-## Mesh-local fine-tune for `fishing_rod_base` line attach (KayKit pole: +Y toward tip, X/Z across blank).
-const _FISHING_ROD_TIP_LOCAL_NUDGE := Vector3(0.065, 0.095, 0.065)
+## Mesh-local fine-tune when using [`RodTip`] or AABB fallback (`fishing_rod_base` local space).
+const _FISHING_ROD_TIP_LOCAL_NUDGE := Vector3(0.0, 0.0, 0.0)
 
 @onready var skeleton: Skeleton3D = $Rig_Medium/Skeleton3D
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
@@ -851,15 +851,15 @@ func is_fishing_hand_line_deployed() -> bool:
 func get_fishing_rod_tip_global() -> Vector3:
 	if fishing_pole_mesh != null:
 		var rod_mi := fishing_pole_mesh.find_child("fishing_rod_base", true, false) as MeshInstance3D
+		var marker := fishing_pole_mesh.find_child("RodTip", true, false) as Node3D
+		if rod_mi != null and marker != null:
+			return rod_mi.to_global(marker.position + _FISHING_ROD_TIP_LOCAL_NUDGE)
 		if rod_mi != null and rod_mi.mesh != null:
 			var aabb: AABB = rod_mi.mesh.get_aabb()
 			if aabb.size.length_squared() > 1e-10:
 				var tip_local := _fishing_rod_blank_tip_local_from_aabb(aabb) + _FISHING_ROD_TIP_LOCAL_NUDGE
 				return rod_mi.to_global(tip_local)
-		var marker := fishing_pole_mesh.find_child("RodTip", true, false) as Node3D
 		if marker != null:
-			if rod_mi != null:
-				return rod_mi.to_global(marker.position + _FISHING_ROD_TIP_LOCAL_NUDGE)
 			return marker.global_position
 	return _fishing_rod_tip_fallback_global()
 
@@ -911,6 +911,36 @@ func try_play_fishing_clip(clip_base: String) -> float:
 	anim_player.speed_scale = 1.0
 	anim_player.play(path, 0.12)
 	return dur
+
+
+## Like [`try_play_shortest_tool_clip`], but allowed during an active fishing tool-action (rod mesh stays visible).
+func try_play_fishing_shortest_clip(clip_candidates: Array[String]) -> float:
+	if anim_player == null:
+		return -1.0
+	var locked := is_animation_locked()
+	if locked:
+		if not (_fishing_sequence_active and _action_state == ActionState.TOOL_ACTION):
+			return -1.0
+	var picked_path := ""
+	var picked_len := INF
+	for clip in clip_candidates:
+		var path := _anim_path(clip)
+		if not anim_player.has_animation(path):
+			continue
+		var anim_res: Animation = anim_player.get_animation(path)
+		if anim_res == null:
+			continue
+		var dur := maxf(0.01, anim_res.length)
+		if dur < picked_len:
+			picked_len = dur
+			picked_path = path
+	if picked_path.is_empty():
+		return -1.0
+	_apply_tool_kind(ToolKind.FISHING_ROD)
+	_action_state = ActionState.TOOL_ACTION
+	anim_player.speed_scale = 1.0
+	anim_player.play(picked_path, 0.12)
+	return picked_len
 
 
 func try_play_shortest_tool_clip(clip_candidates: Array[String]) -> float:
