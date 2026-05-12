@@ -734,6 +734,7 @@ transform = Transform3D(1, -1.2831064e-08, 3.455125e-10, 1.2831064e-08, 0.998550
 [node name="Helmets" type="Node3D" parent="Rig_Medium/Skeleton3D" unique_id=1565207411]
 
 [node name="FullHelm_Bronze" parent="Rig_Medium/Skeleton3D/Helmets" unique_id=135273441 instance=ExtResource("17_udusj")]
+visible = false
 
 [node name="FullHelm_Iron" parent="Rig_Medium/Skeleton3D/Helmets" unique_id=1833263464 instance=ExtResource("18_bccg2")]
 visible = false
