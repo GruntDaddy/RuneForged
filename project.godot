@@ -37,7 +37,7 @@ General/default_terrain_physics_layer=1
 
 config/name="RuneForged"
 config/version="1.1.0"
-run/main_scene="res://ui/boot_splash/splash_boot.tscn"
+run/main_scene="uid://c54e7o8nle0j6"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]

@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dldr3xs7qshyd" path="res://world/pickups/fishing_pole_pickup.tscn" id="7_1tm6k"]
 [ext_resource type="PackedScene" uid="uid://bnhs4jcmi56b1" path="res://world/pickups/fishing_tacklebox_pickup.tscn" id="8_dypwk"]
 
-[node name="TutorialIsleGear" type="Node3D" unique_id=1259116944]
+[node name="TutorialIsleGear" type="Node3D" unique_id=885021683]
 
 [node name="Hatchet_Basic" parent="." unique_id=1017366543 instance=ExtResource("1_tv8y1")]
 transform = Transform3D(0.5112931, 0.21609072, -0.83179563, 0.85927904, -0.14519371, 0.4904675, -0.014785961, -0.9655173, -0.2599196, 218.96451, 11.747576, 376.5464)
@@ -29,8 +29,8 @@ transform = Transform3D(0.9684873, 0.04901939, -0.2441908, 0.009858964, -0.98721
 [node name="BackpackSmallPickup" parent="." unique_id=788126623 instance=ExtResource("6_tv8y1")]
 transform = Transform3D(-0.99487585, -0.017297983, 0.099613026, -0.03789769, 0.9772232, -0.20880309, -0.09373229, -0.21150817, -0.97287136, 221.7165, 10.075845, 376.58936)
 
-[node name="FishingPolePickup" parent="." unique_id=1066401634 instance=ExtResource("7_1tm6k")]
+[node name="FishingPolePickup" parent="." unique_id=641886715 instance=ExtResource("7_1tm6k")]
 transform = Transform3D(0.33812907, -0.05896103, -0.93925107, -0.04635819, 0.9957802, -0.07919848, 0.93995696, 0.07032134, 0.33396888, 184.4374, 6.093204, 396.33813)
 
-[node name="FishingTackleboxPickup" parent="." unique_id=349254041 instance=ExtResource("8_dypwk")]
-transform = Transform3D(0.8005014, 0, 0.599331, 0, 1, 0, -0.599331, 0, 0.8005014, 184.66293, 6.3837147, 397.3042)
+[node name="FishingTackleboxPickup" parent="." unique_id=228324192 instance=ExtResource("8_dypwk")]
+transform = Transform3D(0.8005014, 0, 0.599331, 0, 1, 0, -0.599331, 0, 0.8005014, 184.66293, 6.2117605, 397.3042)

@@ -1,16 +1,39 @@
 [gd_scene format=3 uid="uid://cj88e5jeos7lm"]
 
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://cf750db6v0jph" path="res://entities/props/static/copper_bar.tscn" id="3_gb3ee"]
 [ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="4_dbqg5"]
+[ext_resource type="PackedScene" uid="uid://gd7iq0e8543w" path="res://entities/resource/resource_pickup_ingot_tin.tscn" id="4_r0t1d"]
+[ext_resource type="PackedScene" uid="uid://b31arwal73ifg" path="res://entities/props/static/copper_nuggets.tscn" id="5_v8n0v"]
+[ext_resource type="PackedScene" uid="uid://bcaukdul404il" path="res://entities/resource/resource_pickup_ore_tin.tscn" id="6_3nag6"]
+[ext_resource type="PackedScene" uid="uid://ccqrd3tma4c13" path="res://entities/props/static/iron_bar.tscn" id="7_ado1i"]
 [ext_resource type="PackedScene" uid="uid://dbd6etcm4mjt5" path="res://world/pickups/fishing_worm_pickup.tscn" id="8_0jevs"]
+[ext_resource type="PackedScene" uid="uid://bs8ahdtsyglpe" path="res://entities/props/static/iron_nuggets.tscn" id="8_6kivj"]
 [ext_resource type="PackedScene" uid="uid://5e3s4nid00t8" path="res://entities/fishing/fishing_spot.tscn" id="8_t7t3p"]
+[ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://entities/props/static/silver_bar.tscn" id="9_7spe6"]
 [ext_resource type="PackedScene" uid="uid://ctwwhjmlo707u" path="res://world/pickups/fishing_bobber_pickup.tscn" id="9_q4s3i"]
 [ext_resource type="PackedScene" uid="uid://w8vscph1wpmv" path="res://world/regions/tutorial_isle/tutorial_isle_buildings.tscn" id="10_gypqo"]
+[ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://entities/props/static/silver_nuggets.tscn" id="10_hloqf"]
 [ext_resource type="PackedScene" uid="uid://bslyivr00xnme" path="res://world/pickups/fishing_hook_a_pickup.tscn" id="10_txrpn"]
+[ext_resource type="PackedScene" uid="uid://bemiqtwiyc6tq" path="res://entities/resource/resource_pickup_ingot_gold.tscn" id="11_2y1ns"]
 [ext_resource type="PackedScene" uid="uid://bsmyivr00xnme" path="res://world/pickups/fishing_hook_b_pickup.tscn" id="11_n5r66"]
+[ext_resource type="PackedScene" uid="uid://dx26chob7rb8l" path="res://entities/resource/resource_pickup_ore_gold.tscn" id="12_5nfy5"]
 [ext_resource type="PackedScene" uid="uid://b7dacipqpquux" path="res://entities/building_parts/anvil.tscn" id="12_rwr6f"]
-[ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/tutorial_isle/tutorial_isle_harvestables.tscn" id="15_8pv40"]
+[ext_resource type="PackedScene" uid="uid://d1irxsv7w24c7" path="res://entities/resource/stone_brick.tscn" id="13_djm32"]
+[ext_resource type="PackedScene" uid="uid://cf5otocednxr4" path="res://entities/resource/stone_chunks_large.tscn" id="14_52oba"]
+[ext_resource type="PackedScene" uid="uid://chf431uk5oshi" path="res://entities/resource/stone_chunks_small.tscn" id="15_ju2nh"]
+[ext_resource type="PackedScene" uid="uid://blv2c22bxqknw" path="res://entities/resource/log_split_2.tscn" id="16_tite0"]
 [ext_resource type="PackedScene" uid="uid://d2bdr601l23of" path="res://entities/building_parts/smelter.tscn" id="17_gja2q"]
+[ext_resource type="PackedScene" uid="uid://b4t0wuc153jha" path="res://entities/building_parts/wood_log_stack.tscn" id="17_rqhkb"]
+[ext_resource type="PackedScene" uid="uid://d2cl2nb7ih1bb" path="res://entities/resource/wood_plank_c_2.tscn" id="18_xljxt"]
+[ext_resource type="PackedScene" uid="uid://di75elg6mtu2o" path="res://entities/resource/wood_plank_b_2.tscn" id="19_wkbyi"]
+[ext_resource type="PackedScene" uid="uid://ccrs4gkpawowf" path="res://entities/resource/wood_plank_a_2.tscn" id="20_j2q78"]
+[ext_resource type="PackedScene" uid="uid://d3l1kgkvcwj63" path="res://entities/building_parts/pallet_wood_large.tscn" id="21_6cpnn"]
+[ext_resource type="PackedScene" uid="uid://boircg2knd0uu" path="res://entities/building_parts/pallet_wood_medium.tscn" id="22_stwqx"]
+[ext_resource type="PackedScene" uid="uid://bwi448cwlxph2" path="res://entities/building_parts/pallet_wood_small.tscn" id="23_qx4jl"]
+[ext_resource type="PackedScene" uid="uid://dswpukycc0q5a" path="res://entities/building_parts/pallet_stone_medium.tscn" id="24_f8g1i"]
+[ext_resource type="PackedScene" uid="uid://px5gx4qbe4kb" path="res://entities/building_parts/pallet_stone_small.tscn" id="25_ua3ul"]
+[ext_resource type="PackedScene" uid="uid://dt0tl1qu11fy4" path="res://entities/building_parts/pallet_stone_large.tscn" id="26_mfb88"]
 [ext_resource type="PackedScene" uid="uid://bf7nf6psvau5s" path="res://entities/building_parts/building_church_red.tscn" id="33_rwr6f"]
 [ext_resource type="PackedScene" uid="uid://dlu8vg27pwe28" path="res://entities/building_parts/ship_wreck.tscn" id="35_8pv40"]
 [ext_resource type="PackedScene" uid="uid://d4kre64jiscmn" path="res://entities/building_parts/crate.tscn" id="36_3x6k3"]
@@ -21,6 +44,9 @@
 [ext_resource type="PackedScene" uid="uid://benqlw2wabm47" path="res://entities/props/skeleton_minion_prop.tscn" id="49_t7t3p"]
 [ext_resource type="PackedScene" uid="uid://baqnb1njfk6hj" path="res://entities/props/food_barrel_fish.tscn" id="49_whsid"]
 [ext_resource type="PackedScene" uid="uid://b8q2mtemn6kjk" path="res://entities/props/fishing_rod_base.tscn" id="50_0jevs"]
+[ext_resource type="PackedScene" uid="uid://dk5db657of85g" path="res://entities/building_parts/workbench.tscn" id="54_r30qo"]
+[ext_resource type="PackedScene" uid="uid://cqx0r21m71s3h" path="res://entities/building_parts/potionstation.tscn" id="55_4uh62"]
+[ext_resource type="PackedScene" uid="uid://crmllt4bmwncc" path="res://world/regions/tutorial_isle/harvestables.tscn" id="60_ae4o2"]
 [ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/tutorial_isle/tutorial_isle.gd" id="75_tutorial_isle_script"]
 [ext_resource type="PackedScene" uid="uid://cktg8oqrcdxr3" path="res://entities/characters/animals/bull.tscn" id="animal_bull"]
 [ext_resource type="PackedScene" uid="uid://c71f22kgv2gfw" path="res://entities/characters/animals/chick.tscn" id="animal_chick"]
@@ -50,7 +76,6 @@
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_trout.tscn" id="fish_trout"]
 [ext_resource type="PackedScene" path="res://entities/characters/animals/fish_walleye.tscn" id="fish_walleye"]
 [ext_resource type="PackedScene" uid="uid://dlwlceuuy3mu7" path="res://world/regions/tutorial_isle/tutorial_isle_environment.tscn" id="tutorial_isle_env_inst"]
-[ext_resource type="PackedScene" uid="uid://bo7qoslxeh56" path="res://world/regions/tutorial_isle/tutorial_isle_materials.tscn" id="tutorial_isle_mat_inst"]
 [ext_resource type="Script" uid="uid://brx4w4c1b6sny" path="res://entities/characters/animals/wildlife_lod_controller.gd" id="wildlife_lod_script"]
 [ext_resource type="PackedScene" path="res://world/wildlife_spawner.tscn" id="wildlife_spawner_scene"]
 
@@ -59,9 +84,81 @@ script = ExtResource("75_tutorial_isle_script")
 
 [node name="Environment" parent="." unique_id=726792238 instance=ExtResource("tutorial_isle_env_inst")]
 
-[node name="TutorialIsleMaterials" parent="." unique_id=999000002 instance=ExtResource("tutorial_isle_mat_inst")]
+[node name="TutorialIsleMaterials" type="Node3D" parent="." unique_id=999000002]
 
-[node name="TutorialIsleGear" parent="." unique_id=1259116944 instance=ExtResource("4_dbqg5")]
+[node name="Copper_Ingot" parent="TutorialIsleMaterials" unique_id=940789391 instance=ExtResource("3_gb3ee")]
+transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 201.73857, 10.551444, 375.62234)
+
+[node name="Tin_Ingot" parent="TutorialIsleMaterials" unique_id=2091598857 instance=ExtResource("4_r0t1d")]
+transform = Transform3D(0.7266226, 0, -0.6870367, 0, 1, 0, 0.6870367, 0, 0.7266226, 204.07799, 10.453113, 373.96704)
+
+[node name="Copper_Ore" parent="TutorialIsleMaterials" unique_id=1352546698 instance=ExtResource("5_v8n0v")]
+transform = Transform3D(0.8267415, 0.08816414, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.55780315, 0, 0.8299735, 199.64758, 10.886052, 375.0992)
+
+[node name="Tin_Ore" parent="TutorialIsleMaterials" unique_id=1571568342 instance=ExtResource("6_3nag6")]
+transform = Transform3D(0.82674146, 0.08816415, 0.5556311, -0.0731739, 0.99610597, -0.049178243, -0.5578031, -3.7252903e-09, 0.8299735, 201.96109, 10.774248, 373.36627)
+
+[node name="Iron_Ingot" parent="TutorialIsleMaterials" unique_id=778829037 instance=ExtResource("7_ado1i")]
+transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 199.87468, 10.5083685, 377.51666)
+
+[node name="Iron_Ore" parent="TutorialIsleMaterials" unique_id=1402091565 instance=ExtResource("8_6kivj")]
+transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 199.14311, 10.611365, 376.91153)
+
+[node name="Silver_Ingot" parent="TutorialIsleMaterials" unique_id=1703529473 instance=ExtResource("9_7spe6")]
+transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 197.70198, 10.440975, 379.5944)
+
+[node name="Silver_Ore" parent="TutorialIsleMaterials" unique_id=1156454490 instance=ExtResource("10_hloqf")]
+transform = Transform3D(0.8174969, 0, 0.5759332, 0, 1, 0, -0.5759332, 0, 0.8174969, 196.90857, 10.555809, 379.0154)
+
+[node name="Gold_Ingot" parent="TutorialIsleMaterials" unique_id=871071412 instance=ExtResource("11_2y1ns")]
+transform = Transform3D(0.7232564, 0, -0.6905795, 0, 1, 0, 0.6905795, 0, 0.7232564, 195.7233, 10.349287, 382.2438)
+
+[node name="Gold_Nuggets" parent="TutorialIsleMaterials" unique_id=727147956 instance=ExtResource("12_5nfy5")]
+transform = Transform3D(0.812928, 0, 0.5823644, 0, 1, 0, -0.5823644, 0, 0.812928, 194.93494, 10.464121, 381.66483)
+
+[node name="Stone_Brick" parent="TutorialIsleMaterials" unique_id=1308947424 instance=ExtResource("13_djm32")]
+transform = Transform3D(0.61279875, 0.06702108, -0.78739184, -0.04575255, 0.99773455, 0.04931745, 0.7889134, 0.0058035157, 0.6144769, 214.8533, 9.925252, 366.52216)
+
+[node name="Stone_Chunks_Large" parent="TutorialIsleMaterials" unique_id=1869045021 instance=ExtResource("14_52oba")]
+transform = Transform3D(-0.9846845, -0.06700142, -0.16095664, -0.06793628, 0.9976896, 0.00030565535, 0.16056429, 0.011235771, -0.9869614, 209.56691, 9.908934, 367.32327)
+
+[node name="Stone_Chunks_Small" parent="TutorialIsleMaterials" unique_id=687906080 instance=ExtResource("15_ju2nh")]
+transform = Transform3D(-0.96760637, 0.20274651, -0.15043856, 0.14171642, 0.9293342, 0.34096062, 0.2089363, 0.30859604, -0.92796236, 208.47716, 10.267285, 368.62518)
+
+[node name="Log_Split" parent="TutorialIsleMaterials" unique_id=13394712 instance=ExtResource("16_tite0")]
+transform = Transform3D(0.19719581, -0.03204532, 0.9798403, 0.4443645, -0.887978, -0.11847076, 0.8738731, 0.4587682, -0.16086596, 214.07297, 10.561078, 372.45102)
+
+[node name="Wood_Log_Stack" parent="TutorialIsleMaterials" unique_id=555006619 instance=ExtResource("17_rqhkb")]
+transform = Transform3D(0.99988186, 0, 0.015358418, 0, 1, 0, -0.015358418, 0, 0.99988186, 214.22702, 9.899187, 371.34952)
+
+[node name="Wood_Plank_C2" parent="TutorialIsleMaterials" unique_id=2126650943 instance=ExtResource("18_xljxt")]
+transform = Transform3D(0.5765307, 0.00011655316, -0.8170756, -0.02801322, 0.99941486, -0.01962363, 0.81659544, 0.034202535, 0.5761965, 217.54256, 9.930662, 374.88004)
+
+[node name="Wood_Plank_B2" parent="TutorialIsleMaterials" unique_id=6900788 instance=ExtResource("19_wkbyi")]
+transform = Transform3D(0.103681244, 0.0005396399, -0.9946105, -0.040732276, 0.99916315, -0.0037039453, 0.99377644, 0.040896762, 0.103616446, 216.86575, 9.984038, 374.3637)
+
+[node name="Wood_Plank_A2" parent="TutorialIsleMaterials" unique_id=1902227385 instance=ExtResource("20_j2q78")]
+transform = Transform3D(-0.5240321, 0.00011650285, -0.8516987, -0.046592224, 0.99849856, 0.028803796, 0.8504233, 0.054776624, -0.52324, 217.19289, 10.091052, 374.65985)
+
+[node name="Pallet_Wood_Large" parent="TutorialIsleMaterials" unique_id=1578122623 instance=ExtResource("21_6cpnn")]
+transform = Transform3D(-0.17687848, 3.4924597e-10, -0.9842328, -0.006888362, 0.9999755, 0.0012379221, 0.9842086, 0.006998713, -0.17687418, 217.83073, 9.85233, 369.41754)
+
+[node name="Pallet_Wood_Medium" parent="TutorialIsleMaterials" unique_id=504253046 instance=ExtResource("22_stwqx")]
+transform = Transform3D(-0.17687848, 3.4924597e-10, -0.9842328, -0.006888362, 0.9999755, 0.0012379221, 0.9842086, 0.006998713, -0.17687418, 217.5204, 9.839733, 371.2174)
+
+[node name="Pallet_Wood_Small" parent="TutorialIsleMaterials" unique_id=1159929944 instance=ExtResource("23_qx4jl")]
+transform = Transform3D(-0.17687848, 3.4924597e-10, -0.9842328, -0.006888362, 0.9999755, 0.0012379221, 0.9842086, 0.006998713, -0.17687418, 217.20268, 9.827723, 373.04526)
+
+[node name="Pallet_Stone_Medium" parent="TutorialIsleMaterials" unique_id=800124436 instance=ExtResource("24_f8g1i")]
+transform = Transform3D(0.6098686, -3.7252903e-09, -0.7925026, -0.044542506, 0.9984193, -0.034277588, 0.7912498, 0.056204878, 0.60890454, 212.98433, 9.991792, 364.21887)
+
+[node name="Pallet_Stone_Small" parent="TutorialIsleMaterials" unique_id=198842677 instance=ExtResource("25_ua3ul")]
+transform = Transform3D(0.6098686, -3.7252903e-09, -0.7925026, -0.044542506, 0.9984193, -0.034277588, 0.7912498, 0.056204878, 0.60890454, 214.04796, 9.916088, 365.5637)
+
+[node name="Pallet_Stone_Large" parent="TutorialIsleMaterials" unique_id=1950926652 instance=ExtResource("26_mfb88")]
+transform = Transform3D(0.6145496, -0.0030938888, -0.7888723, -0.039495263, 0.9986176, -0.034684204, 0.78788906, 0.052471865, 0.61357784, 211.91057, 10.068921, 362.84875)
+
+[node name="TutorialIsleGear" parent="." unique_id=885021683 instance=ExtResource("4_dbqg5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -1.5507965)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
@@ -267,11 +364,17 @@ transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747,
 
 [node name="Props" type="Node3D" parent="." unique_id=1982939143]
 
-[node name="Harvestables" parent="Props" unique_id=2143866182 instance=ExtResource("15_8pv40")]
+[node name="Harvestables" parent="Props" unique_id=1711705175 instance=ExtResource("60_ae4o2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84695435, 0, -0.5322113)
 
 [node name="ShipWreck" parent="Props" unique_id=702955149 instance=ExtResource("35_8pv40")]
 transform = Transform3D(-0.26465613, -2.332257, -0.86054283, 2.248105, -0.59393346, 0.9182943, -1.0611209, -0.6766234, 2.1601405, 247.66739, 11.073442, 402.76605)
+
+[node name="Workbench" parent="Props" unique_id=254282749 instance=ExtResource("54_r30qo")]
+transform = Transform3D(-0.6164315, 0, 0.7874086, 0, 1, 0, -0.7874086, 0, -0.6164315, 204.64793, 9.950524, 385.16507)
+
+[node name="Potionstation" parent="Props" unique_id=1352345568 instance=ExtResource("55_4uh62")]
+transform = Transform3D(0.7723346, 0, -0.6352159, 0, 1, 0, 0.6352159, 0, 0.7723346, 203.62303, 9.913072, 386.93344)
 
 [node name="Crate" parent="Props" unique_id=305914073 instance=ExtResource("36_3x6k3")]
 transform = Transform3D(0.9536802, 0.3008225, -8.940697e-08, -0.28846714, 0.9145112, -0.28364718, -0.08532713, 0.2705088, 0.9589284, 234.36917, 9.292568, 395.41064)
@@ -355,7 +458,7 @@ transform = Transform3D(0.018772367, 0.12352165, 0.0038741366, 0.019107213, 0.00
 transform = Transform3D(-0.71151114, 0, -0.7026748, 0, 0.9999999, 0, 0.7026748, 0, -0.71151114, 204.08017, 10.097637, 383.38385)
 
 [node name="Grindstone" parent="Props" unique_id=1000736053 instance=ExtResource("42_ad2jt")]
-transform = Transform3D(1, 0, 0, 0, 0.9982963, -0.058348104, 0, 0.058348104, 0.9982963, 199.43643, 10.183204, 382.74728)
+transform = Transform3D(-0.666077, 0.043520857, 0.7446122, 0, 0.99829626, -0.0583481, -0.7458829, -0.03886433, -0.6649422, 200.26753, 10.183204, 382.76343)
 
 [node name="Smelter" parent="Props" unique_id=2028400591 instance=ExtResource("17_gja2q")]
 transform = Transform3D(-1.4309607, 0, 0.44983518, 0, 1.5, 0, -0.44983518, 0, -1.4309607, 202.11319, 9.991051, 384.25137)

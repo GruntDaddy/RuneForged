@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dq2e0ujybhn8k" path="res://entities/harvestable/harvestable_resource.gd" id="1_45bqs"]
 [ext_resource type="PackedScene" uid="uid://cxxtur5k87o3a" path="res://entities/resource/resource_pickup_stone.tscn" id="2_4cy5d"]
 [ext_resource type="Material" uid="uid://4nomqj0shgvn" path="res://shared/materials/Stone.tres" id="3_ga282"]
-[ext_resource type="Texture2D" uid="uid://brcfquahc8iug" path="res://assets/kaykit/Forest & Nature Pack/Color1/forest_texture.png" id="4_aukam"]
+[ext_resource type="Texture2D" uid="uid://brcfquahc8iug" path="res://assets/kaykit/forest_and_nature_pack/Color1/forest_texture.png" id="4_aukam"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yogsb"]
 resource_name = "forest"
@@ -74,7 +74,7 @@ resource_display_name = "Stone"
 transform = Transform3D(0.73, 0, 0, 0, 0.73, 0, 0, 0, 0.73, 0, 0, 0)
 
 [node name="Rock_3_Q_Color1" type="MeshInstance3D" parent="Visual/Rock_3_Q_Color12" unique_id=1127055674]
-transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 0.45031616, 0)
+transform = Transform3D(0.71, 0, 0, 0, 0.71, 0, 0, 0, 0.71, 0, 0.45031616, 0)
 material_override = ExtResource("3_ga282")
 mesh = SubResource("ArrayMesh_cvbqh")
 surface_material_override/0 = SubResource("StandardMaterial3D_st2dg")
@@ -83,7 +83,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_st2dg")
 transform = Transform3D(-0.45247862, 0, -0.5728552, 0, 0.72999996, 0, 0.5728552, 0, -0.45247862, 1.8290756, 0, 0)
 
 [node name="Rock_3_Q_Color1" type="MeshInstance3D" parent="Visual/Rock_3_Q_Color13" unique_id=1291510937]
-transform = Transform3D(1, 0, 2.9802322e-08, 0, 1, 0, -2.9802322e-08, 0, 1, 0, 0.45031625, 0)
+transform = Transform3D(0.6380782, 0, 0.33355087, 0, 0.7200001, 0, -0.33355087, 0, 0.6380782, -0.90261126, 0.45031628, 0.71294165)
 material_override = ExtResource("3_ga282")
 mesh = SubResource("ArrayMesh_cvbqh")
 surface_material_override/0 = SubResource("StandardMaterial3D_st2dg")
@@ -92,19 +92,19 @@ surface_material_override/0 = SubResource("StandardMaterial3D_st2dg")
 transform = Transform3D(-0.55793244, -0.4487188, 0.14234729, 0.23860519, -0.079270154, 0.68533486, -0.40580648, 0.5703223, 0.20725207, 0.9506706, -0.20722604, -1.4723454)
 
 [node name="Rock_3_Q_Color1" type="MeshInstance3D" parent="Visual/Rock_3_Q_Color14" unique_id=1570308530]
-transform = Transform3D(1, 2.9802322e-08, 1.4901161e-08, 0, 0.99999994, 1.4901161e-08, 1.4901161e-08, -1.4901161e-08, 1, 0.14718872, -0.04889965, 0.42276347)
+transform = Transform3D(0.6499998, -5.9604645e-08, 7.450581e-09, -1.7881393e-07, 0.65, 5.9604645e-08, 4.4703484e-08, 2.9802322e-08, 0.65000004, -0.30713105, 0.66012096, 2.516882)
 material_override = ExtResource("3_ga282")
 mesh = SubResource("ArrayMesh_cvbqh")
 surface_material_override/0 = SubResource("StandardMaterial3D_st2dg")
 
 [node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=589798745]
-transform = Transform3D(0.9999999, 1.490116e-08, -3.7252903e-08, 1.490116e-08, 1, 0, 7.45058e-09, 2.980232e-08, 0.9999999, 0.17357741, 0.24018697, -0.11441946)
+transform = Transform3D(0.71, -1.0579825e-08, -5.2899125e-09, 1.0579825e-08, 0.71, -2.1159646e-08, 5.2899134e-09, 2.1159646e-08, 0.71, 0.17357741, 0.24018697, -0.11441946)
 shape = SubResource("SphereShape3D_rock")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=-366491682]
-transform = Transform3D(1, 0, 5.9604645e-08, 0, 1, 0, -5.9604645e-08, 0, 1, 1.6492786, 0.24018693, -0.11441942)
+transform = Transform3D(0.72, 0, 4.2915346e-08, 0, 0.72, 0, -4.2915346e-08, 0, 0.72, 1.6492786, 0.24018693, -0.817912)
 shape = SubResource("SphereShape3D_rock")
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=673898463]
-transform = Transform3D(0.9999997, 7.4505806e-08, -7.4505806e-08, 1.4901161e-08, 1.0000001, 5.9604645e-08, 3.7252903e-09, 8.940697e-08, 0.99999976, 0.7791321, 0.24018699, -1.6453304)
+transform = Transform3D(0.65, -9.685758e-09, -2.4214377e-09, 9.685758e-09, 0.65, -5.8114523e-08, 2.4214386e-09, 5.8114523e-08, 0.65, 1.012553, 1.510752, -0.62258387)
 shape = SubResource("SphereShape3D_rock")
