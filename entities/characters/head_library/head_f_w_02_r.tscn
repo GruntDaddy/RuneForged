@@ -103,7 +103,6 @@ bind/22/bone = -1
 bind/22/pose = Transform3D(-1.0000002, -4.352648e-09, -3.819581e-09, -2.3841864e-07, -8.936492e-09, 1.0000002, -4.7534914e-09, 1.0000002, -2.227898e-09, 0.88313264, 1.3397522e-07, -1.0492613)
 
 [node name="Head_F-W_02_R" type="MeshInstance3D" unique_id=1363515700]
-visible = false
 material_override = ExtResource("1_rn7fh")
 mesh = SubResource("ArrayMesh_u3cdf")
 skin = SubResource("Skin_bh4q3")

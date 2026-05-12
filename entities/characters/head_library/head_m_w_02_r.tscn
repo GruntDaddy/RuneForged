@@ -98,7 +98,6 @@ bind/22/pose = Transform3D(-1.0000002, -4.352648e-09, -3.819581e-09, -2.3841864e
 
 [node name="Head_M-W_02_R" type="MeshInstance3D" unique_id=1233801628]
 transform = Transform3D(0.99999994, 0, 4.9675467e-15, 0, 0.99999994, 1.4210855e-14, 4.9873063e-15, -1.4210855e-14, 1, 0, 0, 0)
-visible = false
 material_override = ExtResource("1_davmi")
 mesh = SubResource("ArrayMesh_8qk6a")
 skin = SubResource("Skin_mdn51")
