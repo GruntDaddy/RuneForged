@@ -4,9 +4,24 @@ class_name ModularBuildCatalog
 ## Authoritative list of medieval_village kit pieces exposed in the modular builder.
 ## Categories drive the UI tabs; ids are stable save keys.
 
-const CELL_SIZE: float = 2.0
-const STORY_HEIGHT: float = 3.0
-const MAX_PLACE_DISTANCE: float = 12.0
+## World grid in meters. Most kit pieces are ~`NATIVE_MODULE_METERS` wide; use `piece_scale_vector()` at runtime. Optional per-row `native_xz_span` fixes narrow corner trims.
+const CELL_SIZE: float = 3.0
+## Kit pieces are roughly laid out on a 2m module; with a 3m cell we scale meshes ~1.5× to fill the footprint.
+const NATIVE_MODULE_METERS: float = 2.0
+## Default kit floor slabs are ~2 cm thick with pivot near the middle; vertical placement uses this so they are not buried.
+const FLOOR_NATIVE_MESH_Y_MIN: float = -0.01
+## After aligning mesh bottom to the deck, nudge slightly down to reduce terrain z-fighting (must stay << slab thickness).
+const FLOOR_SURFACE_BIAS: float = 0.02
+## Raises full floor slabs above raw terrain (meters); foundation brick skirts align under the slab.
+const FLOOR_DECK_LIFT: float = 0.25
+## Brick straight wall mesh native max Y (~m); used so skirt tops tuck just under the floor.
+const FOUNDATION_SKIRT_WALL_NATIVE_Y_MAX: float = 3.125
+## Skirt wall top sits this far below the floor mesh bottom so the deck reads on top of the stem.
+const FOUNDATION_SKIRT_TOP_INSET: float = 0.02
+## Brick straight wall used as perimeter "concrete" skirting for `foundation_skirt` floors.
+const FOUNDATION_SKIRT_WALL_PIECE_ID = "wall_brick_straight"
+const STORY_HEIGHT: float = 3.25
+const MAX_PLACE_DISTANCE: float = 16.0
 const OWNER_PLAYER: String = "player"
 
 const _KIT: String = "res://assets/medieval_village kit/"
@@ -14,12 +29,12 @@ const _KIT: String = "res://assets/medieval_village kit/"
 static func all_piece_rows() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var rows: Array = [
-		# Floors
-		{"id": "floor_wood_light", "name": "Wood Floor (Light)", "category": "floors", "path": _KIT + "Floor_WoodLight.gltf"},
-		{"id": "floor_wood_dark", "name": "Wood Floor (Dark)", "category": "floors", "path": _KIT + "Floor_WoodDark.gltf"},
+		# Floors — `foundation_skirt` adds brick stem walls under the raised slab (see `foundation_skirt_wall_root_y`).
+		{"id": "floor_wood_light", "name": "Wood Floor (Light)", "category": "floors", "path": _KIT + "Floor_WoodLight.gltf", "foundation_skirt": true},
+		{"id": "floor_wood_dark", "name": "Wood Floor (Dark)", "category": "floors", "path": _KIT + "Floor_WoodDark.gltf", "foundation_skirt": true},
 		{"id": "floor_wood_dark_half1", "name": "Wood Floor Half", "category": "floors", "path": _KIT + "Floor_WoodDark_Half1.gltf"},
-		{"id": "floor_uneven_brick", "name": "Brick Floor (Uneven)", "category": "floors", "path": _KIT + "Floor_UnevenBrick.gltf"},
-		{"id": "floor_red_brick", "name": "Brick Floor (Red)", "category": "floors", "path": _KIT + "Floor_RedBrick.gltf"},
+		{"id": "floor_uneven_brick", "name": "Brick Floor (Uneven)", "category": "floors", "path": _KIT + "Floor_UnevenBrick.gltf", "foundation_skirt": true},
+		{"id": "floor_red_brick", "name": "Brick Floor (Red)", "category": "floors", "path": _KIT + "Floor_RedBrick.gltf", "foundation_skirt": true},
 		# Walls — plaster
 		{"id": "wall_plaster_straight", "name": "Plaster Wall", "category": "walls", "path": _KIT + "Wall_Plaster_Straight.gltf"},
 		{"id": "wall_plaster_straight_base", "name": "Plaster Wall (Base)", "category": "walls", "path": _KIT + "Wall_Plaster_Straight_Base.gltf"},
@@ -39,13 +54,13 @@ static func all_piece_rows() -> Array[Dictionary]:
 		{"id": "win_brick_wide_flat", "name": "Window (Brick Wide)", "category": "windows", "path": _KIT + "Wall_UnevenBrick_Window_Wide_Flat.gltf"},
 		{"id": "win_brick_thin_round", "name": "Window (Brick Thin Round)", "category": "windows", "path": _KIT + "Wall_UnevenBrick_Window_Thin_Round.gltf"},
 		# Corners / transitions
-		{"id": "corner_ext_brick", "name": "Ext. Corner (Brick)", "category": "corners", "path": _KIT + "Corner_Exterior_Brick.gltf"},
-		{"id": "corner_ext_wood", "name": "Ext. Corner (Wood)", "category": "corners", "path": _KIT + "Corner_Exterior_Wood.gltf"},
-		{"id": "corner_int_small", "name": "Int. Corner (Small)", "category": "corners", "path": _KIT + "Corner_Interior_Small.gltf"},
-		{"id": "corner_int_big", "name": "Int. Corner (Big)", "category": "corners", "path": _KIT + "Corner_Interior_Big.gltf"},
+		{"id": "corner_ext_brick", "name": "Ext. Corner (Brick)", "category": "corners", "path": _KIT + "Corner_Exterior_Brick.gltf", "native_xz_span": 0.58},
+		{"id": "corner_ext_wood", "name": "Ext. Corner (Wood)", "category": "corners", "path": _KIT + "Corner_Exterior_Wood.gltf", "native_xz_span": 0.24},
+		{"id": "corner_int_small", "name": "Int. Corner (Small)", "category": "corners", "path": _KIT + "Corner_Interior_Small.gltf", "native_xz_span": 0.24},
+		{"id": "corner_int_big", "name": "Int. Corner (Big)", "category": "corners", "path": _KIT + "Corner_Interior_Big.gltf", "native_xz_span": 0.37},
 		# Stairs
-		{"id": "stair_interior_simple", "name": "Interior Stair", "category": "stairs", "path": _KIT + "Stair_Interior_Simple.gltf"},
-		{"id": "stair_interior_rails", "name": "Interior Stair (Rails)", "category": "stairs", "path": _KIT + "Stair_Interior_Rails.gltf"},
+		{"id": "stair_interior_simple", "name": "Interior Stair", "category": "stairs", "path": _KIT + "Stair_Interior_Simple.gltf", "native_xz_span": 4.6},
+		{"id": "stair_interior_rails", "name": "Interior Stair (Rails)", "category": "stairs", "path": _KIT + "Stair_Interior_Rails.gltf", "native_xz_span": 8.35},
 		{"id": "stairs_ext_straight", "name": "Exterior Stairs", "category": "stairs", "path": _KIT + "Stairs_Exterior_Straight.gltf"},
 		# Roofs
 		{"id": "roof_tiles_4x4", "name": "Roof Tiles 4×4", "category": "roofs", "path": _KIT + "Roof_RoundTiles_4x4.gltf"},
@@ -111,6 +126,50 @@ static func display_name_for(piece_id: String) -> String:
 	if n.is_empty():
 		return piece_id
 	return n
+
+
+static func piece_scale_factor() -> float:
+	return CELL_SIZE / maxf(0.001, NATIVE_MODULE_METERS)
+
+
+## Horizontal span of the mesh in meters (max AABB size on X/Z). Defaults to `NATIVE_MODULE_METERS` (2 m walls/floors). Smaller trims (corners) need a smaller value so XZ scale reaches `CELL_SIZE`.
+static func native_xz_span_for(piece_id: String) -> float:
+	var d := find_def(piece_id)
+	var span := float(d.get("native_xz_span", NATIVE_MODULE_METERS))
+	return maxf(0.05, span)
+
+
+## Non-uniform scale: stretch narrow kit pieces on X/Z to one cell wide, keep Y on the standard module scale so heights still match walls.
+static func piece_scale_vector(piece_id: String) -> Vector3:
+	var sy := piece_scale_factor()
+	var span := native_xz_span_for(piece_id)
+	var sxz := CELL_SIZE / span
+	return Vector3(sxz, sy, sxz)
+
+
+static func is_floor_piece(piece_id: String) -> bool:
+	return String(find_def(piece_id).get("category", "")) == "floors"
+
+
+static func foundation_skirt_enabled(piece_id: String) -> bool:
+	return bool(find_def(piece_id).get("foundation_skirt", false))
+
+
+static func foundation_skirt_wall_piece_id() -> String:
+	return FOUNDATION_SKIRT_WALL_PIECE_ID
+
+
+## World Y for the skirt wall root (mesh bottom ~0) so the wall top sits just under the floor slab bottom.
+static func foundation_skirt_wall_root_y(floor_piece_root_y: float, floor_piece_scale_y: float) -> float:
+	var sy := maxf(0.001, absf(floor_piece_scale_y))
+	var floor_bottom := floor_piece_root_y + FLOOR_NATIVE_MESH_Y_MIN * sy
+	return floor_bottom - FOUNDATION_SKIRT_TOP_INSET - FOUNDATION_SKIRT_WALL_NATIVE_Y_MAX * sy
+
+
+## World Y for the piece root so the bottom of the default floor slab sits on `deck_y` (terrain or upper-story deck), with a tiny bias into the surface.
+static func floor_snap_y_for_deck(deck_y: float, piece_id: String) -> float:
+	var sy := piece_scale_vector(piece_id).y
+	return deck_y - FLOOR_SURFACE_BIAS - FLOOR_NATIVE_MESH_Y_MIN * sy
 
 
 static func grid_indices_from_world_xz(world_xz: Vector2) -> Vector2i:

@@ -28,7 +28,7 @@ func _ready() -> void:
 	_dock.mouse_filter = Control.MOUSE_FILTER_STOP
 	_dock.set_anchors_preset(Control.PRESET_LEFT_WIDE)
 	_dock.anchor_right = 0.0
-	_dock.offset_right = 320.0
+	_dock.offset_right = 420.0
 	root.add_child(_dock)
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -45,7 +45,7 @@ func _ready() -> void:
 	panel.add_child(vb)
 	var title := Label.new()
 	title.text = "Build [B]"
-	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_font_size_override("font_size", 22)
 	vb.add_child(title)
 	var row_floor := HBoxContainer.new()
 	row_floor.add_theme_constant_override("separation", 6)
@@ -69,7 +69,7 @@ func _ready() -> void:
 	vb.add_child(_demolish_btn)
 	_tab_container = TabContainer.new()
 	_tab_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_tab_container.custom_minimum_size = Vector2(0, 360)
+	_tab_container.custom_minimum_size = Vector2(0, 420)
 	vb.add_child(_tab_container)
 	_build_category_tabs()
 	var hint := Label.new()
@@ -78,7 +78,7 @@ func _ready() -> void:
 		"Choose a piece below, then you can look with the mouse while placing.\n"
 		+ "After picking: E place / demolish · Wheel rotate · [ / ] floor · X demolish · B close."
 	)
-	hint.add_theme_font_size_override("font_size", 12)
+	hint.add_theme_font_size_override("font_size", 14)
 	vb.add_child(hint)
 
 
@@ -171,6 +171,7 @@ func _build_category_tabs() -> void:
 				continue
 			var b := Button.new()
 			b.text = String(row.get("name", bid))
+			b.add_theme_font_size_override("font_size", 15)
 			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			b.pressed.connect(func() -> void: piece_selected.emit(bid))
 			inner.add_child(b)

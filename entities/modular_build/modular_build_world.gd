@@ -78,6 +78,12 @@ static func spawn_saved_for_current_scene(tree: SceneTree) -> void:
 			if pa.size() >= 3:
 				node3d.global_position = Vector3(float(pa[0]), float(pa[1]), float(pa[2]))
 		node3d.rotation.y = float(d.get("rotation_y", 0.0))
+		if node3d.has_method("apply_foundation_skirt"):
+			var iix := int(d.get("ix", 0))
+			var iiy := int(d.get("iy", 0))
+			var iiz := int(d.get("iz", 0))
+			var deck_y := terrain_deck_y_at_cell(tree, iix, iiy, iiz)
+			node3d.call("apply_foundation_skirt", deck_y, iiy)
 
 
 static func placement_dict(
@@ -137,11 +143,21 @@ static func remove_from_game_state(gs: Node, placement_id: String) -> bool:
 	return removed
 
 
-static func world_position_for_cell(tree: SceneTree, ix: int, iy: int, iz: int) -> Vector3:
+static func terrain_deck_y_at_cell(tree: SceneTree, ix: int, iy: int, iz: int) -> float:
 	var xz := ModularBuildCatalog.cell_center_xz(ix, iz)
-	var y := _terrain_height_at(tree, xz)
-	if iy >= 1:
-		y += ModularBuildCatalog.STORY_HEIGHT * float(iy)
+	var y0 := _terrain_height_at(tree, xz)
+	return y0 + ModularBuildCatalog.STORY_HEIGHT * float(iy)
+
+
+static func world_position_for_cell(tree: SceneTree, ix: int, iy: int, iz: int, piece_id: String = "") -> Vector3:
+	var xz := ModularBuildCatalog.cell_center_xz(ix, iz)
+	var y0 := _terrain_height_at(tree, xz)
+	var deck := y0 + ModularBuildCatalog.STORY_HEIGHT * float(iy)
+	var y: float
+	if ModularBuildCatalog.is_floor_piece(piece_id):
+		y = ModularBuildCatalog.floor_snap_y_for_deck(deck + ModularBuildCatalog.FLOOR_DECK_LIFT, piece_id)
+	else:
+		y = deck
 	return Vector3(xz.x, y, xz.y)
 
 

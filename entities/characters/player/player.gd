@@ -1794,6 +1794,7 @@ func _update_modular_ghost() -> void:
 		var hf: float = _Terrain3DPrimaryResolver.height_at_world(get_tree(), ap)
 		if is_nan(hf):
 			_modular_cell_valid = false
+			_modular_ghost.apply_foundation_skirt(0.0, -1)
 			_modular_ghost.refresh_preview_tint(false)
 			_update_modular_placement_prompt()
 			return
@@ -1804,7 +1805,7 @@ func _update_modular_ghost() -> void:
 	var ix := i2.x
 	var iz := i2.y
 	var iy := _modular_active_floor_iy()
-	var center := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz)
+	var center := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id)
 	var dist_h: float = Vector3(center.x, 0.0, center.z).distance_to(Vector3(global_position.x, 0.0, global_position.z))
 	var gs: Node = get_node_or_null("/root/GameState")
 	var region: String = _modular_effective_region()
@@ -1814,6 +1815,8 @@ func _update_modular_ghost() -> void:
 	_modular_cell_valid = valid
 	_modular_ghost.global_position = center
 	_sync_modular_ghost_rotation()
+	var deck_y := ModularBuildWorld.terrain_deck_y_at_cell(get_tree(), ix, iy, iz)
+	_modular_ghost.apply_foundation_skirt(deck_y, iy)
 	_modular_ghost.refresh_preview_tint(valid)
 	_update_modular_placement_prompt()
 
@@ -1859,7 +1862,7 @@ func _modular_try_place_selected() -> void:
 	var iy := _modular_last_cell.y
 	var iz := _modular_last_cell.z
 	var placement_id := "mod_%d" % Time.get_ticks_usec()
-	var world_pos := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz)
+	var world_pos := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id)
 	var rot_y := float(_modular_yaw_steps) * (PI * 0.5)
 	var scene: Node = get_tree().current_scene
 	if scene == null:
@@ -1873,6 +1876,8 @@ func _modular_try_place_selected() -> void:
 	piece.configure(_modular_piece_id, placement_id, ModularBuildCatalog.OWNER_PLAYER, false)
 	piece.global_position = world_pos
 	piece.rotation.y = rot_y
+	var deck_y := ModularBuildWorld.terrain_deck_y_at_cell(get_tree(), ix, iy, iz)
+	piece.apply_foundation_skirt(deck_y, iy)
 	var entry: Dictionary = ModularBuildWorld.placement_dict(
 		region,
 		placement_id,
