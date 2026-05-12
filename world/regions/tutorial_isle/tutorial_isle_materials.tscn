@@ -25,7 +25,7 @@
 [ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://entities/props/static/silver_bar.tscn" id="29_ts002"]
 [ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://entities/props/static/silver_nuggets.tscn" id="30_dr1td"]
 
-[node name="TutorialIsleMaterials" type="Node3D" unique_id=13956406]
+[node name="TutorialIsleMaterials" type="Node3D" unique_id=152166006]
 
 [node name="Copper_Ingot" parent="." unique_id=940789391 instance=ExtResource("20_3vu1e")]
 transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 201.73857, 10.551444, 375.62234)
@@ -67,10 +67,10 @@ transform = Transform3D(-0.9846845, -0.06700142, -0.16095664, -0.06793628, 0.997
 transform = Transform3D(-0.96760637, 0.20274651, -0.15043856, 0.14171642, 0.9293342, 0.34096062, 0.2089363, 0.30859604, -0.92796236, 208.47716, 10.267285, 368.62518)
 
 [node name="Log_Split" parent="." unique_id=13394712 instance=ExtResource("14_jevgs")]
-transform = Transform3D(0.19719581, -0.03204532, 0.9798403, 0.4443645, -0.887978, -0.11847076, 0.8738731, 0.4587682, -0.16086596, 215.16322, 10.561078, 372.34427)
+transform = Transform3D(0.19719581, -0.03204532, 0.9798403, 0.4443645, -0.887978, -0.11847076, 0.8738731, 0.4587682, -0.16086596, 214.07297, 10.561078, 372.45102)
 
 [node name="Wood_Log_Stack" parent="." unique_id=555006619 instance=ExtResource("15_g4y73")]
-transform = Transform3D(0.99988186, 0, 0.015358418, 0, 1, 0, -0.015358418, 0, 0.99988186, 214.73723, 9.899187, 371.34952)
+transform = Transform3D(0.99988186, 0, 0.015358418, 0, 1, 0, -0.015358418, 0, 0.99988186, 214.22702, 9.899187, 371.34952)
 
 [node name="Wood_Plank_C2" parent="." unique_id=2126650943 instance=ExtResource("16_f5eud")]
 transform = Transform3D(0.5765307, 0.00011655316, -0.8170756, -0.02801322, 0.99941486, -0.01962363, 0.81659544, 0.034202535, 0.5761965, 217.54256, 9.930662, 374.88004)
