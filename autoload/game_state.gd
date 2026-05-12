@@ -58,6 +58,8 @@ var moon_phase: float = 0.18
 var world_fire_states: Dictionary = {}
 ## Runtime placed fire props persisted per region.
 var placed_fire_nodes: Array = []
+## Player-placed modular building pieces (medieval village kit); see docs/save-format.md.
+var placed_modular_build_pieces: Array = []
 ## Temporary campfire warmth effect expiry in UTC milliseconds.
 var warmth_until_unix_ms: int = 0
 ## Run-speed tuning while in nighttime conditions.
@@ -98,6 +100,7 @@ func reset() -> void:
 	moon_phase = 0.18
 	world_fire_states = {}
 	placed_fire_nodes = []
+	placed_modular_build_pieces = []
 	warmth_until_unix_ms = 0
 	campfire_night_run_bonus = 0.2
 	campfire_night_penalty = 0.15
@@ -130,6 +133,7 @@ func to_dict() -> Dictionary:
 		"moon_phase": moon_phase,
 		"world_fire_states": world_fire_states.duplicate(true),
 		"placed_fire_nodes": placed_fire_nodes.duplicate(true),
+		"placed_modular_build_pieces": placed_modular_build_pieces.duplicate(true),
 		"warmth_until_unix_ms": warmth_until_unix_ms,
 		"campfire_night_run_bonus": campfire_night_run_bonus,
 		"campfire_night_penalty": campfire_night_penalty,
@@ -175,6 +179,10 @@ func from_dict(data: Variant) -> void:
 		placed_fire_nodes = (d.get("placed_fire_nodes", []) as Array).duplicate(true)
 	else:
 		placed_fire_nodes = []
+	if typeof(d.get("placed_modular_build_pieces", null)) == TYPE_ARRAY:
+		placed_modular_build_pieces = (d.get("placed_modular_build_pieces", []) as Array).duplicate(true)
+	else:
+		placed_modular_build_pieces = []
 	warmth_until_unix_ms = int(d.get("warmth_until_unix_ms", 0))
 	campfire_night_run_bonus = float(d.get("campfire_night_run_bonus", 0.2))
 	campfire_night_penalty = float(d.get("campfire_night_penalty", 0.15))
@@ -344,3 +352,14 @@ func scene_path_for_saved_region(saved_region: String) -> String:
 			return SCENE_CHARACTER_CREATOR
 		_:
 			return SCENE_MAIN_MENU
+
+
+## When `region` is empty (e.g. Run Current Scene), infer a stable id from the active main scene for saves / modular build.
+func region_effective_for_scene_path(scene_path: String) -> String:
+	var persisted := str(region).strip_edges()
+	if not persisted.is_empty():
+		return persisted
+	var p := str(scene_path).strip_edges()
+	if p == OVERWORLD_SCENE_PATH or p.ends_with("/tutorial_isle.tscn"):
+		return REGION_TUTORIAL_ISLE
+	return ""

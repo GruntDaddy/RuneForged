@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dgl5tq4lmknbr" path="res://ui/hud/gameplay_toast.tscn" id="4_toast"]
 [ext_resource type="PackedScene" uid="uid://bplayerhud001" path="res://ui/hud/player_hud.tscn" id="5_phud"]
 [ext_resource type="PackedScene" uid="uid://mt7stqvut2t0" path="res://ui/menus/game_menu.tscn" id="7_gmenu"]
+[ext_resource type="PackedScene" path="res://ui/modular_build/modular_build_ui.tscn" id="8_modui"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eoic6"]
 radius = 0.5332031
@@ -81,5 +82,7 @@ stretch_mode = 4
 [node name="PlayerHud" parent="." unique_id=1264199710 instance=ExtResource("5_phud")]
 
 [node name="GameMenu" parent="." unique_id=2016666143 instance=ExtResource("7_gmenu")]
+
+[node name="ModularBuildUi" parent="." instance=ExtResource("8_modui")]
 
 [node name="GameplayToast" parent="." unique_id=2138007592 instance=ExtResource("4_toast")]

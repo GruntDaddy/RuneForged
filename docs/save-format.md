@@ -49,6 +49,15 @@ Legacy `cook_slots` (array of 2) and array-form `cook_progress_sec` written by p
   - `state_id`: unique fire state id.
   - `position`: `[x, y, z]` world-space float array.
   - `rotation_y`: float radians.
+- **`placed_modular_build_pieces`**: array of dictionaries for player-placed modular kit pieces (2 m grid, see `ModularBuildCatalog` / `ModularBuildWorld`):
+  - `region`: string region id.
+  - `placement_id`: unique string id for dedupe and salvage.
+  - `piece_id`: catalog id (maps to a `res://assets/medieval_village kit/*.gltf` entry).
+  - `ix`, `iy`, `iz`: int grid indices (`iy` 0 = ground, 1 = one upper story offset).
+  - `rotation_y`: float radians (90° steps).
+  - `owner`: string owner key (`player` for solo).
+  - `position`: `[x, y, z]` world-space float array (authoritative pose on load).
+  - **Note:** `region` should match `GameState.region` when set. If `region` is empty on load (e.g. Run Current Scene), `GameState.region_effective_for_scene_path()` maps known overworld scene paths to `tutorial_isle` so pieces still spawn and validate.
 - **`warmth_until_unix_ms`**: int UTC epoch milliseconds when temporary campfire warmth buff expires.
 - **`campfire_night_run_bonus`** / **`campfire_night_penalty`**: float night movement tuning applied by player controller.
 

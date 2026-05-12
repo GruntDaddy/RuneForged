@@ -22,6 +22,7 @@ const _H_INV_FULL := 3
 const _UNDERWATER_FOG_DEPTH_MAX := 22.0
 const _DefaultHitVfxScene: PackedScene = preload("res://entities/effects/hit_spark_burst.tscn")
 const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
+const _ModularBuildPieceScene: PackedScene = preload("res://entities/modular_build/modular_build_piece.tscn")
 const _FishingSpotClass = preload("res://entities/fishing/fishing_spot.gd")
 const _TackleboxGroundScene: PackedScene = preload("res://entities/equipment/off_hand/tool_tacklebox.tscn")
 
@@ -182,6 +183,7 @@ var stamina: float = 100.0
 @onready var camera_3d: Camera3D = $CameraRig/SpringArm3D/Camera3D
 @onready var interaction_ray: RayCast3D = $RayCast3D
 @onready var game_menu: GameMenu = $GameMenu
+@onready var modular_build_ui: ModularBuildUi = $ModularBuildUi as ModularBuildUi
 @onready var player_hud: CanvasLayer = $PlayerHud
 @onready var interaction_prompt: Label = $InteractionPrompt
 @onready var reticle: TextureRect = $Reticle
@@ -232,6 +234,15 @@ var _build_preview_rotation_y: float = 0.0
 var _build_preview_node: Node3D = null
 var _build_preview_valid: bool = false
 var _build_mode_active: bool = false
+var _modular_panel_open: bool = false
+var _modular_catalog_hidden: bool = false
+var _modular_floor_iy_runtime: int = 0
+var _modular_demolish_runtime: bool = false
+var _modular_piece_id: String = ""
+var _modular_yaw_steps: int = 0
+var _modular_ghost: ModularBuildPiece = null
+var _modular_last_cell: Vector3i = Vector3i(-999999, -999999, -999999)
+var _modular_cell_valid: bool = false
 var _campfire_resting: bool = false
 var _campfire_rest_source: WeakRef = null
 var _fishing_session_running: bool = false
@@ -249,6 +260,8 @@ func apply_damage(amount: float) -> void:
 	if base_character != null and base_character.has_method("is_blocking") and base_character.is_blocking():
 		amt *= shield_block_damage_multiplier
 	health = maxf(health - amt, 0.0)
+	_close_modular_build_panel()
+	cancel_build_placement(_build_mode_active)
 	if _campfire_resting:
 		_stop_campfire_rest(true)
 	if _fishing_session_running:
@@ -266,6 +279,8 @@ func apply_damage(amount: float) -> void:
 
 func set_input_enabled(enabled: bool) -> void:
 	_input_enabled = enabled
+	if not enabled:
+		_close_modular_build_panel()
 	if enabled:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	else:
@@ -302,6 +317,11 @@ func _ready() -> void:
 		inv.inventory_changed.connect(_on_inventory_changed)
 	_refresh_tacklebox_back_visual()
 	_sync_equipped_hand_visuals()
+	if modular_build_ui != null:
+		modular_build_ui.piece_selected.connect(_on_modular_piece_selected)
+		modular_build_ui.floor_level_changed.connect(_on_modular_floor_level_changed)
+		modular_build_ui.demolish_mode_changed.connect(_on_modular_demolish_ui_toggled)
+	call_deferred("_spawn_modular_saved_deferred")
 
 
 func _on_inventory_changed() -> void:
@@ -338,13 +358,57 @@ func _unhandled_input(event: InputEvent) -> void:
 			game_menu.toggle(GameMenu.TAB_FORGE)
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed("build_menu") and game_menu:
-		if game_menu.has_method("open_forge_building"):
-			game_menu.open_forge_building()
-		else:
-			game_menu.toggle(GameMenu.TAB_FORGE)
+	if event.is_action_pressed("build_menu"):
+		if game_menu != null and game_menu.visible:
+			get_viewport().set_input_as_handled()
+			return
+		_toggle_modular_build_panel()
 		get_viewport().set_input_as_handled()
 		return
+	if _modular_panel_open and _modular_catalog_hidden:
+		if event.is_action_pressed("interact"):
+			_modular_try_use_primary()
+			get_viewport().set_input_as_handled()
+			return
+		if event is InputEventKey and event.pressed and not event.echo:
+			match event.physical_keycode:
+				KEY_BRACKETLEFT:
+					_modular_floor_iy_runtime = 0
+					if modular_build_ui != null:
+						modular_build_ui.set_floor_iy(0)
+					_update_modular_ghost()
+					get_viewport().set_input_as_handled()
+					return
+				KEY_BRACKETRIGHT:
+					_modular_floor_iy_runtime = 1
+					if modular_build_ui != null:
+						modular_build_ui.set_floor_iy(1)
+					_update_modular_ghost()
+					get_viewport().set_input_as_handled()
+					return
+				KEY_X:
+					_modular_demolish_runtime = not _modular_demolish_runtime
+					if modular_build_ui != null:
+						modular_build_ui.set_demolish_pressed(_modular_demolish_runtime)
+					show_gameplay_message(
+						"Demolish mode: ON (E to salvage)" if _modular_demolish_runtime else "Demolish mode: OFF"
+					)
+					_update_modular_placement_prompt()
+					get_viewport().set_input_as_handled()
+					return
+		if event is InputEventMouseButton and event.pressed:
+			if (
+				event.button_index == MOUSE_BUTTON_WHEEL_UP
+				or event.button_index == MOUSE_BUTTON_WHEEL_DOWN
+			):
+				if modular_build_ui == null or not modular_build_ui.is_pointer_over_ui():
+					if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+						_modular_yaw_steps = (_modular_yaw_steps + 1) % 4
+					else:
+						_modular_yaw_steps = (_modular_yaw_steps + 3) % 4
+					_sync_modular_ghost_rotation()
+				get_viewport().set_input_as_handled()
+				return
 	if _gameplay_input_blocked():
 		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
@@ -409,6 +473,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if not _input_enabled:
 		return
+
+	if game_menu != null and game_menu.visible and _modular_panel_open:
+		_close_modular_build_panel()
+	if _modular_panel_open and _modular_catalog_hidden:
+		_update_modular_ghost()
 
 	if _melee_hitstop_active and Time.get_ticks_msec() >= _melee_hitstop_end_ticks_ms:
 		Engine.time_scale = _melee_hitstop_prev_time_scale
@@ -1589,9 +1658,265 @@ func begin_build_placement(item_id: String, rotation_y: float = 0.0) -> void:
 	set_build_preview_item(item_id)
 
 
-func cancel_build_placement() -> void:
+func cancel_build_placement(show_message: bool = true) -> void:
 	clear_build_preview()
-	show_gameplay_message("Build placement canceled.")
+	if show_message:
+		show_gameplay_message("Build placement canceled.")
+
+
+func _spawn_modular_saved_deferred() -> void:
+	ModularBuildWorld.spawn_saved_for_current_scene(get_tree())
+
+
+func _toggle_modular_build_panel() -> void:
+	if _modular_panel_open:
+		_close_modular_build_panel()
+	else:
+		cancel_build_placement(false)
+		if modular_build_ui == null:
+			return
+		modular_build_ui.reset_for_session()
+		modular_build_ui.set_piece_picker_focus_first_tab()
+		_modular_catalog_hidden = false
+		_modular_floor_iy_runtime = 0
+		_modular_demolish_runtime = false
+		_modular_piece_id = ""
+		_modular_yaw_steps = 0
+		_modular_panel_open = true
+		modular_build_ui.set_panel_visible(true)
+		if player_hud != null:
+			player_hud.visible = true
+		if _input_enabled:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_free_modular_ghost()
+
+
+func _close_modular_build_panel() -> void:
+	_modular_panel_open = false
+	_modular_catalog_hidden = false
+	if modular_build_ui != null:
+		modular_build_ui.set_panel_visible(false)
+		modular_build_ui.set_dock_visible(true)
+	_free_modular_ghost()
+	if _input_enabled:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_modular_piece_selected(piece_id: String) -> void:
+	_modular_piece_id = String(piece_id)
+	if modular_build_ui != null:
+		_modular_floor_iy_runtime = modular_build_ui.get_selected_floor_iy()
+		_modular_demolish_runtime = modular_build_ui.is_demolish_mode()
+	_modular_catalog_hidden = true
+	if modular_build_ui != null:
+		modular_build_ui.set_dock_visible(false)
+	if _input_enabled and _modular_panel_open:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_rebuild_modular_ghost()
+
+
+func _on_modular_floor_level_changed(_iy: int) -> void:
+	if _modular_panel_open and _modular_catalog_hidden:
+		_update_modular_ghost()
+
+
+func _on_modular_demolish_ui_toggled(active: bool) -> void:
+	if not _modular_catalog_hidden:
+		_modular_demolish_runtime = active
+
+
+func _free_modular_ghost() -> void:
+	if _modular_ghost != null and is_instance_valid(_modular_ghost):
+		_modular_ghost.queue_free()
+	_modular_ghost = null
+
+
+func _rebuild_modular_ghost() -> void:
+	_free_modular_ghost()
+	if not _modular_panel_open or not _modular_catalog_hidden or _modular_piece_id.is_empty():
+		return
+	var parent: Node = get_tree().current_scene
+	if parent == null:
+		parent = get_parent()
+	if parent == null:
+		return
+	var inst := _ModularBuildPieceScene.instantiate()
+	if not (inst is ModularBuildPiece):
+		return
+	_modular_ghost = inst as ModularBuildPiece
+	parent.add_child(_modular_ghost)
+	_modular_ghost.configure(_modular_piece_id, "", ModularBuildCatalog.OWNER_PLAYER, true)
+	_sync_modular_ghost_rotation()
+	_update_modular_ghost()
+
+
+func _sync_modular_ghost_rotation() -> void:
+	if _modular_ghost == null or not is_instance_valid(_modular_ghost):
+		return
+	_modular_ghost.rotation.y = float(_modular_yaw_steps) * (PI * 0.5)
+
+
+func _modular_active_floor_iy() -> int:
+	if modular_build_ui != null and not _modular_catalog_hidden:
+		return modular_build_ui.get_selected_floor_iy()
+	return _modular_floor_iy_runtime
+
+
+func _modular_effective_region() -> String:
+	var sc := get_tree().current_scene
+	var pth := ""
+	if sc != null:
+		pth = String(sc.scene_file_path)
+	return GameState.region_effective_for_scene_path(pth)
+
+
+func _update_modular_ghost() -> void:
+	if not _modular_panel_open or not _modular_catalog_hidden:
+		return
+	if _modular_ghost == null or not is_instance_valid(_modular_ghost):
+		return
+	if _modular_piece_id.is_empty():
+		return
+	var aim: Dictionary = _get_reticle_world_aim(ModularBuildCatalog.MAX_PLACE_DISTANCE)
+	var ap: Vector3 = aim.get("aim_point", global_position) as Vector3
+	var from := ap + Vector3.UP * 2.5
+	var to := ap + Vector3.DOWN * 50.0
+	var q := PhysicsRayQueryParameters3D.create(from, to)
+	q.collide_with_areas = false
+	q.collide_with_bodies = true
+	q.exclude = _projectile_exclude_rids()
+	var w3d := get_world_3d()
+	if w3d == null:
+		return
+	var hit := w3d.direct_space_state.intersect_ray(q)
+	var land: Vector3
+	if hit.is_empty():
+		var hf: float = _Terrain3DPrimaryResolver.height_at_world(get_tree(), ap)
+		if is_nan(hf):
+			_modular_cell_valid = false
+			_modular_ghost.refresh_preview_tint(false)
+			_update_modular_placement_prompt()
+			return
+		land = Vector3(ap.x, hf, ap.z)
+	else:
+		land = hit["position"] as Vector3
+	var i2: Vector2i = ModularBuildCatalog.grid_indices_from_world_xz(Vector2(land.x, land.z))
+	var ix := i2.x
+	var iz := i2.y
+	var iy := _modular_active_floor_iy()
+	var center := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz)
+	var dist_h: float = Vector3(center.x, 0.0, center.z).distance_to(Vector3(global_position.x, 0.0, global_position.z))
+	var gs: Node = get_node_or_null("/root/GameState")
+	var region: String = _modular_effective_region()
+	var occupied: bool = ModularBuildWorld.cell_occupied(gs, region, ix, iy, iz)
+	var valid: bool = dist_h <= ModularBuildCatalog.MAX_PLACE_DISTANCE and not occupied and not region.is_empty()
+	_modular_last_cell = Vector3i(ix, iy, iz)
+	_modular_cell_valid = valid
+	_modular_ghost.global_position = center
+	_sync_modular_ghost_rotation()
+	_modular_ghost.refresh_preview_tint(valid)
+	_update_modular_placement_prompt()
+
+
+func _update_modular_placement_prompt() -> void:
+	if interaction_prompt == null:
+		return
+	var status := "PLACEMENT VALID" if _modular_cell_valid else "PLACEMENT BLOCKED"
+	var label := ModularBuildCatalog.display_name_for(_modular_piece_id)
+	var mode := "DEMOLISH (E)" if _modular_demolish_runtime else "PLACE (E)"
+	var floor_l := "Ground" if _modular_floor_iy_runtime == 0 else "Upper"
+	interaction_prompt.text = (
+		"[%s]  %s\n%s  Floor: %s   [ / ] floor   X demolish   Wheel turn   B close"
+		% [status, label, mode, floor_l]
+	)
+	interaction_prompt.add_theme_color_override(
+		"font_color",
+		Color(0.78, 0.91, 0.78, 1.0) if _modular_cell_valid else Color(0.9, 0.47, 0.47, 1.0)
+	)
+	interaction_prompt.add_theme_color_override("font_shadow_color", Color(0.03, 0.03, 0.03, 0.95))
+	interaction_prompt.visible = true
+
+
+func _modular_try_use_primary() -> void:
+	if _modular_demolish_runtime:
+		_modular_try_demolish()
+	else:
+		_modular_try_place_selected()
+
+
+func _modular_try_place_selected() -> void:
+	if not _modular_cell_valid or _modular_piece_id.is_empty():
+		show_gameplay_message("Cannot place here.")
+		return
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null or not ("placed_modular_build_pieces" in gs):
+		return
+	var region: String = _modular_effective_region()
+	if region.is_empty():
+		show_gameplay_message("Cannot build in this area yet.")
+		return
+	var ix := _modular_last_cell.x
+	var iy := _modular_last_cell.y
+	var iz := _modular_last_cell.z
+	var placement_id := "mod_%d" % Time.get_ticks_usec()
+	var world_pos := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz)
+	var rot_y := float(_modular_yaw_steps) * (PI * 0.5)
+	var scene: Node = get_tree().current_scene
+	if scene == null:
+		return
+	var root := ModularBuildWorld.ensure_root(scene)
+	var inst := _ModularBuildPieceScene.instantiate()
+	if not (inst is ModularBuildPiece):
+		return
+	var piece: ModularBuildPiece = inst as ModularBuildPiece
+	root.add_child(piece)
+	piece.configure(_modular_piece_id, placement_id, ModularBuildCatalog.OWNER_PLAYER, false)
+	piece.global_position = world_pos
+	piece.rotation.y = rot_y
+	var entry: Dictionary = ModularBuildWorld.placement_dict(
+		region,
+		placement_id,
+		_modular_piece_id,
+		ix,
+		iy,
+		iz,
+		rot_y,
+		ModularBuildCatalog.OWNER_PLAYER,
+		world_pos
+	)
+	gs.placed_modular_build_pieces.append(entry)
+	var sm: Node = get_node_or_null("/root/SaveManager")
+	if sm != null and sm.has_method("save_game"):
+		sm.save_game()
+	show_gameplay_message("Placed: %s" % ModularBuildCatalog.display_name_for(_modular_piece_id))
+	_update_modular_ghost()
+
+
+func _modular_try_demolish() -> void:
+	var aim: Dictionary = _get_reticle_world_aim(ModularBuildCatalog.MAX_PLACE_DISTANCE)
+	var origin: Vector3 = aim.get("origin", global_position) as Vector3
+	var dir: Vector3 = (aim.get("aim_point", origin + Vector3.FORWARD) as Vector3) - origin
+	var picked: Node3D = ModularBuildWorld.ray_pick_piece(get_tree(), origin, dir, ModularBuildCatalog.MAX_PLACE_DISTANCE)
+	if picked == null or not (picked is ModularBuildPiece):
+		show_gameplay_message("No modular piece there.")
+		return
+	var mp := picked as ModularBuildPiece
+	if String(mp.owner_key) != ModularBuildCatalog.OWNER_PLAYER:
+		show_gameplay_message("You can only salvage your own builds.")
+		return
+	var pid := String(mp.placement_id)
+	if pid.is_empty():
+		return
+	var gs: Node = get_node_or_null("/root/GameState")
+	if gs == null:
+		return
+	if not ModularBuildWorld.remove_from_game_state(gs, pid):
+		return
+	mp.queue_free()
+	var sm: Node = get_node_or_null("/root/SaveManager")
+	if sm != null and sm.has_method("save_game"):
+		sm.save_game()
+	show_gameplay_message("Salvaged piece. (Material refund: coming later.)")
 
 
 func _rebuild_build_preview_node() -> void:
@@ -2428,6 +2753,15 @@ func _update_interaction_prompt() -> void:
 		return
 	if _build_mode_active:
 		_update_build_mode_prompt()
+		return
+	if _modular_panel_open:
+		if not _modular_catalog_hidden:
+			interaction_prompt.text = "Pick a piece from the Build list. Hotbar stays visible; then you can look around to place."
+			interaction_prompt.add_theme_color_override("font_color", Color(0.95, 0.9, 0.73, 1.0))
+			interaction_prompt.add_theme_color_override("font_shadow_color", Color(0.03, 0.03, 0.03, 0.95))
+			interaction_prompt.visible = true
+			return
+		_update_modular_placement_prompt()
 		return
 	var collider: Object = _get_interaction_collider_cached()
 	if collider == null:

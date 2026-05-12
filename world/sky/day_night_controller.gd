@@ -158,6 +158,7 @@ func _ready() -> void:
 	_ensure_sky_material()
 	if not Engine.is_editor_hint():
 		_spawn_saved_fire_props()
+		ModularBuildWorld.spawn_saved_for_current_scene(get_tree())
 		_load_persisted_cycle_state()
 	_apply_time()
 

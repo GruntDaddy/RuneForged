@@ -4,6 +4,7 @@ All notable changes for packaged milestones are summarized here. Internal refact
 
 ## [Unreleased]
 
+- Modular building: press **[B]** for the categorized medieval village kit builder (2 m grid, ground + upper floor; pick a piece from the list first, then mouse-look to aim; place with **E**, demolish own pieces; **[** / **]** floor, **X** demolish toggle, wheel rotates). New `game_state.placed_modular_build_pieces` save array; overworld `GameState.region` may be inferred from the active scene when empty so placement validates. **[B]** no longer opens the forge “Building” tab directly (use **Forge** from the **[C]** craft menu for campfire/torch placement UI).
 - Tutorial isle: gear/materials/props pickups use `world/pickups/*_pickup.tscn` wrappers; added `wood_planks` material and aligned `pickup_scene_path` on affected items (torch pickup scene is now the gltf wrapper, not `torch_light.tscn`).
 
 ## [1.1.0] — stable audit tag

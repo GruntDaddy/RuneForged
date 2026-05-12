@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmodularui001"]
+
+[ext_resource type="Script" path="res://ui/modular_build/modular_build_ui.gd" id="1_script"]
+
+[node name="ModularBuildUi" type="CanvasLayer"]
+layer = 50
+script = ExtResource("1_script")

@@ -1101,8 +1101,8 @@ func _build_building_page(page: Control) -> void:
 	body.bbcode_enabled = true
 	body.add_theme_color_override("default_color", _COL_INK)
 	body.text = (
-		"Place structures and furniture from a build palette (planned).\n\n"
-		+ "For now, use placeable items such as [b]campfire kits[/b] and [b]torches[/b] from inventory."
+		"Press [b]B[/b] in the world for the modular home builder (walls, floors, roofs, stairs, and props from the medieval village kit).\n\n"
+		+ "For placeable items such as [b]campfire kits[/b] and [b]torches[/b], open [b]C[/b] → Forge → Building tab."
 	)
 	vb.add_child(body)
 
