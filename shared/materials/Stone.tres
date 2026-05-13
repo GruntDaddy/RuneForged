@@ -1,7 +1,40 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://4nomqj0shgvn"]
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_stone_alb"]
+noise_type = 3
+seed = 7712
+frequency = 0.088
+fractal_lacunarity = 2.15
+fractal_gain = 0.44
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_stone_alb"]
+width = 256
+height = 256
+noise = SubResource("FastNoiseLite_stone_alb")
+seamless = true
+seamless_blend_skirt = 1.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_stone_nrm"]
+noise_type = 3
+seed = 331
+frequency = 0.26
+fractal_octaves = 4
+fractal_gain = 0.48
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_stone_nrm"]
+width = 18
+height = 1
+noise = SubResource("FastNoiseLite_stone_nrm")
+seamless = true
+as_normal_map = true
+
 [resource]
 disable_ambient_light = true
-albedo_color = Color(0.35031357, 0.35031378, 0.3503137, 1)
-metallic = 0.05
-roughness = 0.73
+albedo_color = Color(0.45711088, 0.45711094, 0.45711076, 1)
+albedo_texture = SubResource("NoiseTexture2D_stone_alb")
+roughness = 0.65
+normal_enabled = true
+normal_scale = 0.5
+normal_texture = SubResource("NoiseTexture2D_stone_nrm")
+uv1_offset = Vector3(0.46, 13.23, 0.315)
+uv2_offset = Vector3(4.345, 0, 0)

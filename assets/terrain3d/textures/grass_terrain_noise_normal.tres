@@ -1,0 +1,18 @@
+[gd_resource type="NoiseTexture2D" format=3]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_grass_nrm"]
+noise_type = 4
+seed = 619
+frequency = 0.36
+fractal_type = 1
+fractal_octaves = 4
+fractal_lacunarity = 2.0
+fractal_gain = 0.5
+
+[resource]
+width = 512
+height = 512
+seamless = true
+seamless_blend_skirt = 0.26
+as_normal_map = true
+noise = SubResource("FastNoiseLite_grass_nrm")

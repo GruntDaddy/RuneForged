@@ -33,16 +33,16 @@ extends Node3D
 		_editor_apply_preview()
 
 @export_group("Light")
-@export var sun_energy_max: float = 0.85
+@export var sun_energy_max: float = 0.92
 @export var moon_light_energy: float = 0.22
 @export var sun_color_day: Color = Color(1.0, 0.97, 0.88)
 @export var sun_color_sunset: Color = Color(1.0, 0.62, 0.38)
 @export var moon_light_color: Color = Color(0.52, 0.62, 0.92)
 
 @export_group("Ambient")
-@export var ambient_energy_day: float = 0.5
-@export var ambient_energy_night: float = 0.22
-@export var ambient_color_day: Color = Color(0.45, 0.52, 0.58)
+@export var ambient_energy_day: float = 0.72
+@export var ambient_energy_night: float = 0.3
+@export var ambient_color_day: Color = Color(0.58, 0.64, 0.7)
 @export var ambient_color_night: Color = Color(0.16, 0.18, 0.28)
 
 @export_group("Fog")

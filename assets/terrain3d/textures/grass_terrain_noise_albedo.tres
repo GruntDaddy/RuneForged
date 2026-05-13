@@ -1,0 +1,22 @@
+[gd_resource type="NoiseTexture2D" load_steps=3 format=3]
+
+[sub_resource type="Gradient" id="Gradient_grass_breakup"]
+offsets = PackedFloat32Array(0, 0.42, 1)
+colors = PackedColorArray(0.28, 0.28, 0.27, 1, 0.52, 0.52, 0.5, 1, 0.82, 0.82, 0.78, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_grass_alb"]
+noise_type = 5
+seed = 2188
+frequency = 0.14
+fractal_type = 1
+fractal_octaves = 5
+fractal_lacunarity = 2.15
+fractal_gain = 0.48
+
+[resource]
+width = 512
+height = 512
+seamless = true
+seamless_blend_skirt = 0.28
+color_ramp = SubResource("Gradient_grass_breakup")
+noise = SubResource("FastNoiseLite_grass_alb")

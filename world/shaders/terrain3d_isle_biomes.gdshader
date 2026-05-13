@@ -73,7 +73,7 @@ uniform float snow_height_start_m = 18.0;
 uniform float snow_height_full_m = 28.0;
 uniform float snow_rock_suppression : hint_range(0.0, 1.0) = 0.85;
 // Noise steals weight from grass → dirt (inland); avoids relying on spray paint for variation.
-uniform float grass_dirt_variation : hint_range(0.0, 1.0) = 0.4;
+uniform float grass_dirt_variation : hint_range(0.0, 1.0) = 0.28;
 uniform float grass_dirt_noise_scale = 0.052;
 // World XZ patches (xy), radius z (m), strength w — filled by script (e.g. tree trunks).
 uniform int tree_dirt_patch_count : hint_range(0, 48) = 0;
@@ -312,7 +312,10 @@ void fragment() {
 			// Break up uniform grass: steal weight to dirt using macro noise (smooth, not paint-sized blocks).
 			float n_coarse = texture(noise_texture, uv_s * grass_dirt_noise_scale + noise1_offset).r;
 			float n_fine = texture(noise_texture, uv_s * grass_dirt_noise_scale * 2.65 + noise1_offset + vec2(0.41, 0.17)).r;
-			float patch = smoothstep(0.38, 0.9, sqrt(max(0.0, n_coarse * n_fine)));
+			// Soft, high-threshold patch so dirt reads as subtle ground variation, not chunky plops.
+			float n_mix = sqrt(max(0.0, n_coarse * n_fine));
+			float patch = smoothstep(0.52, 0.86, n_mix);
+			patch = patch * patch;
 			float steal_noise = patch * grass_dirt_variation * grass_f;
 			dirt_f += steal_noise;
 			grass_f = max(grass_f - steal_noise, 0.0);
