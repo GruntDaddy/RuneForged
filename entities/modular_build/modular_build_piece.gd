@@ -11,6 +11,8 @@ const _FOUNDATION_SKIRT_NAME := "FoundationSkirt"
 var _preview_mode: bool = false
 ## -2 = needs tint after rebuild; 0/1 = last applied invalid/valid (skip duplicate work each frame).
 var _preview_tint_state: int = -2
+## Skip rebuilding skirt meshes when cell/pose unchanged (ghost runs every frame).
+var _skirt_last_key: String = ""
 
 
 func configure(p_pid: String, p_placement_id: String, p_owner: String, preview: bool = false) -> void:
@@ -19,6 +21,7 @@ func configure(p_pid: String, p_placement_id: String, p_owner: String, preview: 
 	owner_key = p_owner
 	_preview_mode = preview
 	_preview_tint_state = -2
+	_skirt_last_key = ""
 	if not preview:
 		add_to_group(GROUP_NAME)
 		name = "ModularPiece_%s" % p_placement_id
@@ -95,15 +98,37 @@ func _foundation_deck_xz_extents_local() -> Dictionary:
 	return {"min_x": min_x, "max_x": max_x, "min_z": min_z, "max_z": max_z}
 
 
+func _skirt_cache_key(floor_iy: int) -> String:
+	return "%s|%d|%d|%.4f|%.4f|%.5f" % [
+		piece_id,
+		1 if _preview_mode else 0,
+		floor_iy,
+		global_position.x,
+		global_position.z,
+		rotation.y,
+	]
+
+
 ## Box foundation rim under the slab (shared material, works in preview). Pass `floor_iy < 0` to clear only.
 func apply_foundation_skirt(_terrain_deck_y: float, floor_iy: int = 0) -> void:
-	_clear_foundation_skirt()
 	if floor_iy < 0:
+		_clear_foundation_skirt()
+		_skirt_last_key = ""
 		return
 	if floor_iy != 0:
+		_clear_foundation_skirt()
+		_skirt_last_key = ""
 		return
 	if not ModularBuildCatalog.foundation_skirt_enabled(piece_id):
+		_clear_foundation_skirt()
+		_skirt_last_key = ""
 		return
+	var ky := _skirt_cache_key(floor_iy)
+	if ky == _skirt_last_key and get_node_or_null(_FOUNDATION_SKIRT_NAME) != null:
+		return
+	_skirt_last_key = ky
+	_clear_foundation_skirt()
+
 	var skirt_root := Node3D.new()
 	skirt_root.name = _FOUNDATION_SKIRT_NAME
 	add_child(skirt_root)
@@ -111,12 +136,21 @@ func apply_foundation_skirt(_terrain_deck_y: float, floor_iy: int = 0) -> void:
 	var depth := ModularBuildCatalog.FOUNDATION_BOX_DEPTH
 	var thick := ModularBuildCatalog.FOUNDATION_BOX_THICK
 	var b := _foundation_deck_xz_extents_local()
-	var ix0 := float(b["min_x"])
-	var ix1 := float(b["max_x"])
-	var iz0 := float(b["min_z"])
-	var iz1 := float(b["max_z"])
-	var cx := (ix0 + ix1) * 0.5
-	var cz := (iz0 + iz1) * 0.5
+	var min_x := float(b["min_x"])
+	var max_x := float(b["max_x"])
+	var min_z := float(b["min_z"])
+	var max_z := float(b["max_z"])
+	# Symmetric about piece origin so the rim matches the wall grid (cell-centered), even if the GLTF AABB is offset.
+	var sym_half := maxf(
+		maxf(absf(min_x), absf(max_x)),
+		maxf(absf(min_z), absf(max_z)),
+	)
+	var ix0 := -sym_half
+	var ix1 := sym_half
+	var iz0 := -sym_half
+	var iz1 := sym_half
+	var cx := 0.0
+	var cz := 0.0
 	var span_x := ix1 - ix0 + 2.0 * thick
 	var span_z := iz1 - iz0 + 2.0 * thick
 	var sy := maxf(0.001, absf(scale.y))
@@ -142,12 +176,15 @@ func apply_foundation_skirt(_terrain_deck_y: float, floor_iy: int = 0) -> void:
 		var body := get_node_or_null("CollisionRoot") as StaticBody3D
 		if body != null:
 			var inv_body := body.global_transform.affine_inverse()
+			var si := 0
 			for mi2 in skirt_root.get_children():
 				if mi2 is MeshInstance3D:
 					var mesh: Mesh = (mi2 as MeshInstance3D).mesh
 					if mesh == null or not (mesh is BoxMesh):
 						continue
 					var cs := CollisionShape3D.new()
+					cs.name = "ModularSkirtCol_%d" % si
+					si += 1
 					var bxsh := BoxShape3D.new()
 					bxsh.size = (mesh as BoxMesh).size
 					cs.shape = bxsh
@@ -156,6 +193,11 @@ func apply_foundation_skirt(_terrain_deck_y: float, floor_iy: int = 0) -> void:
 
 
 func _clear_foundation_skirt() -> void:
+	var body := get_node_or_null("CollisionRoot") as StaticBody3D
+	if body != null:
+		for c in body.get_children():
+			if String(c.name).begins_with("ModularSkirtCol_"):
+				c.queue_free()
 	var n := get_node_or_null(_FOUNDATION_SKIRT_NAME)
 	if n != null:
 		n.queue_free()
@@ -163,6 +205,7 @@ func _clear_foundation_skirt() -> void:
 
 func _rebuild_visual() -> void:
 	_clear_foundation_skirt()
+	_skirt_last_key = ""
 	scale = ModularBuildCatalog.piece_scale_vector(piece_id)
 	for c in get_children():
 		c.queue_free()

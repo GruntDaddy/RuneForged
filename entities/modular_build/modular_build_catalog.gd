@@ -15,7 +15,8 @@ const FLOOR_SURFACE_BIAS: float = 0.02
 ## Raises full floor slabs above raw terrain (meters); foundation brick skirts align under the slab.
 const FLOOR_DECK_LIFT: float = 0.25
 ## Short foundation stem under floor slabs (meters); built as shared-material box meshes in `ModularBuildPiece`.
-const FOUNDATION_BOX_DEPTH: float = 0.5
+## Deeper stem reads better on sloped terrain (less floating above sand).
+const FOUNDATION_BOX_DEPTH: float = 0.95
 const FOUNDATION_BOX_THICK: float = 0.15
 const FOUNDATION_SKIRT_ALBEDO := Color(0.48, 0.44, 0.4, 1.0)
 const STORY_HEIGHT: float = 3.25
