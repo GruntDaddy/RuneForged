@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bvejfuehuyfxj"]
+
+[resource]
+disable_ambient_light = true
+albedo_color = Color(0.40029413, 0.34290263, 0.20597553, 1)
+metallic = 0.05
+roughness = 0.73

@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://tj6pvjcbonk"]
+
+[ext_resource type="PackedScene" uid="uid://cbjnmhty8gdpp" path="res://assets/kaykit/medieval_pack/Objects/house.gltf.glb" id="1_xt7jq"]
+[ext_resource type="Material" uid="uid://c5j2r0ysqtqko" path="res://shared/materials/dirt.tres" id="2_0j8bg"]
+
+[node name="house_gltf" unique_id=1880947831 instance=ExtResource("1_xt7jq")]
+
+[node name="house" parent="." index="0" unique_id=225794199]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+surface_material_override/0 = ExtResource("2_0j8bg")
