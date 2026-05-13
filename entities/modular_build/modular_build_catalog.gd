@@ -14,12 +14,10 @@ const FLOOR_NATIVE_MESH_Y_MIN: float = -0.01
 const FLOOR_SURFACE_BIAS: float = 0.02
 ## Raises full floor slabs above raw terrain (meters); foundation brick skirts align under the slab.
 const FLOOR_DECK_LIFT: float = 0.25
-## Brick straight wall mesh native max Y (~m); used so skirt tops tuck just under the floor.
-const FOUNDATION_SKIRT_WALL_NATIVE_Y_MAX: float = 3.125
-## Skirt wall top sits this far below the floor mesh bottom so the deck reads on top of the stem.
-const FOUNDATION_SKIRT_TOP_INSET: float = 0.02
-## Brick straight wall used as perimeter "concrete" skirting for `foundation_skirt` floors.
-const FOUNDATION_SKIRT_WALL_PIECE_ID = "wall_brick_straight"
+## Short foundation stem under floor slabs (meters); built as shared-material box meshes in `ModularBuildPiece`.
+const FOUNDATION_BOX_DEPTH: float = 0.5
+const FOUNDATION_BOX_THICK: float = 0.15
+const FOUNDATION_SKIRT_ALBEDO := Color(0.48, 0.44, 0.4, 1.0)
 const STORY_HEIGHT: float = 3.25
 const MAX_PLACE_DISTANCE: float = 16.0
 const OWNER_PLAYER: String = "player"
@@ -29,7 +27,7 @@ const _KIT: String = "res://assets/medieval_village kit/"
 static func all_piece_rows() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var rows: Array = [
-		# Floors — `foundation_skirt` adds brick stem walls under the raised slab (see `foundation_skirt_wall_root_y`).
+		# Floors — `foundation_skirt` adds a simple rim mesh under the slab (see `ModularBuildPiece`).
 		{"id": "floor_wood_light", "name": "Wood Floor (Light)", "category": "floors", "path": _KIT + "Floor_WoodLight.gltf", "foundation_skirt": true},
 		{"id": "floor_wood_dark", "name": "Wood Floor (Dark)", "category": "floors", "path": _KIT + "Floor_WoodDark.gltf", "foundation_skirt": true},
 		{"id": "floor_wood_dark_half1", "name": "Wood Floor Half", "category": "floors", "path": _KIT + "Floor_WoodDark_Half1.gltf"},
@@ -153,17 +151,6 @@ static func is_floor_piece(piece_id: String) -> bool:
 
 static func foundation_skirt_enabled(piece_id: String) -> bool:
 	return bool(find_def(piece_id).get("foundation_skirt", false))
-
-
-static func foundation_skirt_wall_piece_id() -> String:
-	return FOUNDATION_SKIRT_WALL_PIECE_ID
-
-
-## World Y for the skirt wall root (mesh bottom ~0) so the wall top sits just under the floor slab bottom.
-static func foundation_skirt_wall_root_y(floor_piece_root_y: float, floor_piece_scale_y: float) -> float:
-	var sy := maxf(0.001, absf(floor_piece_scale_y))
-	var floor_bottom := floor_piece_root_y + FLOOR_NATIVE_MESH_Y_MIN * sy
-	return floor_bottom - FOUNDATION_SKIRT_TOP_INSET - FOUNDATION_SKIRT_WALL_NATIVE_Y_MAX * sy
 
 
 ## World Y for the piece root so the bottom of the default floor slab sits on `deck_y` (terrain or upper-story deck), with a tiny bias into the surface.

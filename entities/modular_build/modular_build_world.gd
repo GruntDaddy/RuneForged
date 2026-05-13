@@ -144,21 +144,84 @@ static func remove_from_game_state(gs: Node, placement_id: String) -> bool:
 
 
 static func terrain_deck_y_at_cell(tree: SceneTree, ix: int, iy: int, iz: int) -> float:
+	if iy == 0:
+		return _terrain_mean_3x3(tree, ix, iz)
 	var xz := ModularBuildCatalog.cell_center_xz(ix, iz)
 	var y0 := _terrain_height_at(tree, xz)
 	return y0 + ModularBuildCatalog.STORY_HEIGHT * float(iy)
 
 
-static func world_position_for_cell(tree: SceneTree, ix: int, iy: int, iz: int, piece_id: String = "") -> Vector3:
+## Mean terrain height over a 3×3 cell neighborhood so adjacent ground-floor decks stay level with each other.
+static func _terrain_mean_3x3(tree: SceneTree, ix: int, iz: int) -> float:
+	var sum := 0.0
+	var cnt := 0
+	for dx in range(-1, 2):
+		for dz in range(-1, 2):
+			var xz2 := ModularBuildCatalog.cell_center_xz(ix + dx, iz + dz)
+			sum += _terrain_height_at(tree, xz2)
+			cnt += 1
+	return sum / float(cnt)
+
+
+## Average `position.y` of orthogonally adjacent placed ground-floor pieces (floors only) for raft alignment.
+static func _neighbor_floor_root_y_avg(gs: Node, region: String, ix: int, iz: int) -> float:
+	if gs == null or not ("placed_modular_build_pieces" in gs):
+		return NAN
+	var sum := 0.0
+	var n := 0
+	for e in gs.placed_modular_build_pieces:
+		if typeof(e) != TYPE_DICTIONARY:
+			continue
+		var d: Dictionary = e
+		if String(d.get("region", "")) != region:
+			continue
+		if int(d.get("iy", -99)) != 0:
+			continue
+		var pid := String(d.get("piece_id", ""))
+		if not ModularBuildCatalog.is_floor_piece(pid):
+			continue
+		var ox := int(d.get("ix", -99999))
+		var oz := int(d.get("iz", -99999))
+		if absi(ox - ix) + absi(oz - iz) != 1:
+			continue
+		var pa: Variant = d.get("position", [])
+		if typeof(pa) == TYPE_ARRAY:
+			var ar: Array = pa
+			if ar.size() >= 2:
+				sum += float(ar[1])
+				n += 1
+	if n == 0:
+		return NAN
+	return sum / float(n)
+
+
+static func world_position_for_cell(
+	tree: SceneTree,
+	ix: int,
+	iy: int,
+	iz: int,
+	piece_id: String = "",
+	gs: Node = null,
+	region: String = ""
+) -> Vector3:
 	var xz := ModularBuildCatalog.cell_center_xz(ix, iz)
+	if ModularBuildCatalog.is_floor_piece(piece_id) and iy == 0:
+		if gs != null and not region.is_empty():
+			var nby := _neighbor_floor_root_y_avg(gs, region, ix, iz)
+			if not is_nan(nby):
+				return Vector3(xz.x, nby, xz.y)
+		var terr_s := _terrain_mean_3x3(tree, ix, iz)
+		var deck := terr_s + ModularBuildCatalog.FLOOR_DECK_LIFT
+		var yf := ModularBuildCatalog.floor_snap_y_for_deck(deck, piece_id)
+		return Vector3(xz.x, yf, xz.y)
 	var y0 := _terrain_height_at(tree, xz)
-	var deck := y0 + ModularBuildCatalog.STORY_HEIGHT * float(iy)
-	var y: float
+	var deck2 := y0 + ModularBuildCatalog.STORY_HEIGHT * float(iy)
+	var y2: float
 	if ModularBuildCatalog.is_floor_piece(piece_id):
-		y = ModularBuildCatalog.floor_snap_y_for_deck(deck + ModularBuildCatalog.FLOOR_DECK_LIFT, piece_id)
+		y2 = ModularBuildCatalog.floor_snap_y_for_deck(deck2 + ModularBuildCatalog.FLOOR_DECK_LIFT, piece_id)
 	else:
-		y = deck
-	return Vector3(xz.x, y, xz.y)
+		y2 = deck2
+	return Vector3(xz.x, y2, xz.y)
 
 
 static func _terrain_height_at(tree: SceneTree, xz: Vector2) -> float:

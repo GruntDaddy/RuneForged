@@ -38,75 +38,127 @@ func refresh_preview_tint(valid: bool) -> void:
 	_apply_preview_tint(valid)
 
 
-## Builds or rebuilds uneven-brick perimeter walls under the raised floor slab (tops just below deck). Pass `floor_iy < 0` to only remove the skirt (e.g. invalid ghost cell).
+static var _foundation_shared_mat: StandardMaterial3D
+
+
+func _foundation_shared_material() -> StandardMaterial3D:
+	if _foundation_shared_mat == null:
+		_foundation_shared_mat = StandardMaterial3D.new()
+		_foundation_shared_mat.albedo_color = ModularBuildCatalog.FOUNDATION_SKIRT_ALBEDO
+		_foundation_shared_mat.roughness = 0.92
+	return _foundation_shared_mat
+
+
+func _is_under_foundation_skirt(mi: MeshInstance3D) -> bool:
+	var p := mi.get_parent()
+	return p != null and String(p.name) == _FOUNDATION_SKIRT_NAME
+
+
+## Deck footprint in piece-local XZ from merged `Visual` mesh AABBs; falls back to full cell if missing.
+func _foundation_deck_xz_extents_local() -> Dictionary:
+	var cell := ModularBuildCatalog.CELL_SIZE
+	var half := cell * 0.5
+	var fallback := {"min_x": -half, "max_x": half, "min_z": -half, "max_z": half}
+	var visual := get_node_or_null("Visual") as Node3D
+	if visual == null:
+		return fallback
+	var inv_piece := global_transform.affine_inverse()
+	var first := true
+	var min_x := 0.0
+	var max_x := 0.0
+	var min_z := 0.0
+	var max_z := 0.0
+	for n in visual.find_children("*", "MeshInstance3D", true, false):
+		var meshi := n as MeshInstance3D
+		if meshi == null or meshi.mesh == null:
+			continue
+		var laabb: AABB = meshi.get_aabb()
+		var to_piece: Transform3D = inv_piece * meshi.global_transform
+		var baabb: AABB = to_piece * laabb
+		if first:
+			min_x = baabb.position.x
+			max_x = baabb.end.x
+			min_z = baabb.position.z
+			max_z = baabb.end.z
+			first = false
+		else:
+			min_x = minf(min_x, baabb.position.x)
+			max_x = maxf(max_x, baabb.end.x)
+			min_z = minf(min_z, baabb.position.z)
+			max_z = maxf(max_z, baabb.end.z)
+	if first:
+		return fallback
+	var span_x := max_x - min_x
+	var span_z := max_z - min_z
+	if span_x < 0.05 or span_z < 0.05:
+		return fallback
+	return {"min_x": min_x, "max_x": max_x, "min_z": min_z, "max_z": max_z}
+
+
+## Box foundation rim under the slab (shared material, works in preview). Pass `floor_iy < 0` to clear only.
 func apply_foundation_skirt(_terrain_deck_y: float, floor_iy: int = 0) -> void:
 	_clear_foundation_skirt()
 	if floor_iy < 0:
-		return
-	# Preview ghost: skip 4× full wall meshes (huge material/descriptor churn when this runs every frame).
-	if _preview_mode:
 		return
 	if floor_iy != 0:
 		return
 	if not ModularBuildCatalog.foundation_skirt_enabled(piece_id):
 		return
-	var skirt_path := ModularBuildCatalog.gltf_path_for(ModularBuildCatalog.foundation_skirt_wall_piece_id())
-	if skirt_path.is_empty():
-		return
-	var res: Resource = load(skirt_path)
-	if res == null or not (res is PackedScene):
-		return
-	var wall_scene: PackedScene = res as PackedScene
-
 	var skirt_root := Node3D.new()
 	skirt_root.name = _FOUNDATION_SKIRT_NAME
 	add_child(skirt_root)
 
-	var half := ModularBuildCatalog.CELL_SIZE * 0.5
-	var bx := global_transform.basis.x.normalized()
-	var bz := global_transform.basis.z.normalized()
-
-	var specs: Array[Dictionary] = [
-		{"pos": global_position - bz * half, "xax": bx},
-		{"pos": global_position + bz * half, "xax": bx},
-		{"pos": global_position - bx * half, "xax": bz},
-		{"pos": global_position + bx * half, "xax": bz},
+	var depth := ModularBuildCatalog.FOUNDATION_BOX_DEPTH
+	var thick := ModularBuildCatalog.FOUNDATION_BOX_THICK
+	var b := _foundation_deck_xz_extents_local()
+	var ix0 := float(b["min_x"])
+	var ix1 := float(b["max_x"])
+	var iz0 := float(b["min_z"])
+	var iz1 := float(b["max_z"])
+	var cx := (ix0 + ix1) * 0.5
+	var cz := (iz0 + iz1) * 0.5
+	var span_x := ix1 - ix0 + 2.0 * thick
+	var span_z := iz1 - iz0 + 2.0 * thick
+	var sy := maxf(0.001, absf(scale.y))
+	var slab_bottom_local_y := ModularBuildCatalog.FLOOR_NATIVE_MESH_Y_MIN * sy
+	var rim_center_y := slab_bottom_local_y - depth * 0.5 - 0.005
+	var mat := _foundation_shared_material()
+	var faces: Array[Dictionary] = [
+		{"size": Vector3(span_x, depth, thick), "pos": Vector3(cx, rim_center_y, iz0 - thick * 0.5)},
+		{"size": Vector3(span_x, depth, thick), "pos": Vector3(cx, rim_center_y, iz1 + thick * 0.5)},
+		{"size": Vector3(thick, depth, span_z), "pos": Vector3(ix0 - thick * 0.5, rim_center_y, cz)},
+		{"size": Vector3(thick, depth, span_z), "pos": Vector3(ix1 + thick * 0.5, rim_center_y, cz)},
 	]
-	var skirt_y := ModularBuildCatalog.foundation_skirt_wall_root_y(global_position.y, scale.y)
-	for spec in specs:
-		var wpos: Vector3 = spec["pos"]
-		wpos.y = skirt_y
-		var xax: Vector3 = spec["xax"]
-		var seg := Node3D.new()
-		skirt_root.add_child(seg)
-		seg.global_transform = Transform3D(_ortho_basis_x_up(xax), wpos)
-		var inst: Node = wall_scene.instantiate()
-		seg.add_child(inst)
+	for f in faces:
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = f["size"] as Vector3
+		mi.mesh = box
+		mi.material_override = mat
+		mi.position = f["pos"] as Vector3
+		skirt_root.add_child(mi)
 
 	if not _preview_mode:
 		var body := get_node_or_null("CollisionRoot") as StaticBody3D
 		if body != null:
-			for seg2 in skirt_root.get_children():
-				_collect_mesh_collision(seg2, body)
+			var inv_body := body.global_transform.affine_inverse()
+			for mi2 in skirt_root.get_children():
+				if mi2 is MeshInstance3D:
+					var mesh: Mesh = (mi2 as MeshInstance3D).mesh
+					if mesh == null or not (mesh is BoxMesh):
+						continue
+					var cs := CollisionShape3D.new()
+					var bxsh := BoxShape3D.new()
+					bxsh.size = (mesh as BoxMesh).size
+					cs.shape = bxsh
+					cs.transform = inv_body * (mi2 as Node3D).global_transform
+					body.add_child(cs)
 
 
 func _clear_foundation_skirt() -> void:
 	var n := get_node_or_null(_FOUNDATION_SKIRT_NAME)
 	if n != null:
 		n.queue_free()
-
-
-func _ortho_basis_x_up(x_axis: Vector3) -> Basis:
-	var x := x_axis.normalized()
-	var up := Vector3.UP
-	if absf(x.dot(up)) > 0.98:
-		up = Vector3.FORWARD
-	var z := x.cross(up)
-	if z.length_squared() < 1e-8:
-		z = x.cross(Vector3.RIGHT)
-	z = z.normalized()
-	var y := z.cross(x).normalized()
-	return Basis(x, y, z).orthonormalized()
 
 
 func _rebuild_visual() -> void:
@@ -162,6 +214,8 @@ func _clear_preview_surface_overrides() -> void:
 		var mi := n as MeshInstance3D
 		if mi == null:
 			continue
+		if _is_under_foundation_skirt(mi):
+			continue
 		mi.material_override = null
 		var surf_count := mi.mesh.get_surface_count() if mi.mesh != null else 0
 		for s in range(surf_count):
@@ -174,6 +228,8 @@ func _apply_preview_tint(valid: bool) -> void:
 	for n in meshes:
 		var mi := n as MeshInstance3D
 		if mi == null:
+			continue
+		if _is_under_foundation_skirt(mi):
 			continue
 		var surf_count := mi.mesh.get_surface_count() if mi.mesh != null else 0
 		for s in range(surf_count):

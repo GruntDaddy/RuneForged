@@ -1805,10 +1805,10 @@ func _update_modular_ghost() -> void:
 	var ix := i2.x
 	var iz := i2.y
 	var iy := _modular_active_floor_iy()
-	var center := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id)
-	var dist_h: float = Vector3(center.x, 0.0, center.z).distance_to(Vector3(global_position.x, 0.0, global_position.z))
 	var gs: Node = get_node_or_null("/root/GameState")
 	var region: String = _modular_effective_region()
+	var center := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id, gs, region)
+	var dist_h: float = Vector3(center.x, 0.0, center.z).distance_to(Vector3(global_position.x, 0.0, global_position.z))
 	var occupied: bool = ModularBuildWorld.cell_occupied(gs, region, ix, iy, iz)
 	var valid: bool = dist_h <= ModularBuildCatalog.MAX_PLACE_DISTANCE and not occupied and not region.is_empty()
 	_modular_last_cell = Vector3i(ix, iy, iz)
@@ -1862,7 +1862,7 @@ func _modular_try_place_selected() -> void:
 	var iy := _modular_last_cell.y
 	var iz := _modular_last_cell.z
 	var placement_id := "mod_%d" % Time.get_ticks_usec()
-	var world_pos := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id)
+	var world_pos := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id, gs, region)
 	var rot_y := float(_modular_yaw_steps) * (PI * 0.5)
 	var scene: Node = get_tree().current_scene
 	if scene == null:

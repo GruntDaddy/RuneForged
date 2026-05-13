@@ -198,10 +198,9 @@ swim_down={
 
 [rendering]
 
+rendering_device/d3d12/max_resource_descriptors=131072
 textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
-; Large kits + modular previews need a bigger D3D12 descriptor heap (default can exhaust and stall).
-rendering_device/d3d12/max_resource_descriptors=131072
 textures/decals/filter=0
 textures/light_projectors/filter=0
 environment/glow/upscale_mode=0
