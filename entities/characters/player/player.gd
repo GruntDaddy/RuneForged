@@ -240,9 +240,11 @@ var _modular_floor_iy_runtime: int = 0
 var _modular_demolish_runtime: bool = false
 var _modular_piece_id: String = ""
 var _modular_yaw_steps: int = 0
+var _modular_last_floor_snap_key: Vector4i = Vector4i(-2147483648, -2147483648, -2147483648, -2147483648)
 var _modular_ghost: ModularBuildPiece = null
 var _modular_last_cell: Vector3i = Vector3i(-999999, -999999, -999999)
 var _modular_cell_valid: bool = false
+var _modular_block_reason: String = ""
 var _campfire_resting: bool = false
 var _campfire_rest_source: WeakRef = null
 var _fishing_session_running: bool = false
@@ -1704,6 +1706,7 @@ func _close_modular_build_panel() -> void:
 
 func _on_modular_piece_selected(piece_id: String) -> void:
 	_modular_piece_id = String(piece_id)
+	_modular_last_floor_snap_key = Vector4i(-2147483648, -2147483648, -2147483648, -2147483648)
 	if modular_build_ui != null:
 		_modular_floor_iy_runtime = modular_build_ui.get_selected_floor_iy()
 		_modular_demolish_runtime = modular_build_ui.is_demolish_mode()
@@ -1729,6 +1732,7 @@ func _free_modular_ghost() -> void:
 	if _modular_ghost != null and is_instance_valid(_modular_ghost):
 		_modular_ghost.queue_free()
 	_modular_ghost = null
+	_modular_last_floor_snap_key = Vector4i(-2147483648, -2147483648, -2147483648, -2147483648)
 
 
 func _rebuild_modular_ghost() -> void:
@@ -1794,6 +1798,7 @@ func _update_modular_ghost() -> void:
 		var hf: float = _Terrain3DPrimaryResolver.height_at_world(get_tree(), ap)
 		if is_nan(hf):
 			_modular_cell_valid = false
+			_modular_block_reason = "no_terrain"
 			_modular_ghost.apply_foundation_skirt(0.0, -1)
 			_modular_ghost.refresh_preview_tint(false)
 			_update_modular_placement_prompt()
@@ -1802,20 +1807,45 @@ func _update_modular_ghost() -> void:
 	else:
 		land = hit["position"] as Vector3
 	var i2: Vector2i = ModularBuildCatalog.grid_indices_from_world_xz(Vector2(land.x, land.z))
-	var ix := i2.x
-	var iz := i2.y
+	var ix0 := i2.x
+	var iz0 := i2.y
+	var ix := ix0
+	var iz := iz0
 	var iy := _modular_active_floor_iy()
 	var gs: Node = get_node_or_null("/root/GameState")
 	var region: String = _modular_effective_region()
-	var center := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id, gs, region)
-	var dist_h: float = Vector3(center.x, 0.0, center.z).distance_to(Vector3(global_position.x, 0.0, global_position.z))
-	var occupied: bool = ModularBuildWorld.cell_occupied(gs, region, ix, iy, iz)
-	var valid: bool = dist_h <= ModularBuildCatalog.MAX_PLACE_DISTANCE and not occupied and not region.is_empty()
+	var nudged: Vector2i = ModularBuildWorld.nudge_cell_to_empty_for_wall_like(
+		gs,
+		region,
+		_modular_piece_id,
+		ix,
+		iz,
+		iy,
+		Vector2(land.x, land.z),
+		Vector2(global_position.x, global_position.z)
+	)
+	ix = nudged.x
+	iz = nudged.y
+	if ModularBuildCatalog.floor_ring_auto_yaw_supported(_modular_piece_id):
+		if ModularBuildWorld.cell_has_ground_floor(gs, region, ix0, iz0) and (ix != ix0 or iz != iz0):
+			var snap_key := Vector4i(ix0, iz0, ix, iz)
+			if snap_key != _modular_last_floor_snap_key:
+				_modular_yaw_steps = ModularBuildCatalog.floor_ring_wall_yaw_steps(ix - ix0, iz - iz0)
+				_modular_last_floor_snap_key = snap_key
+		else:
+			_modular_last_floor_snap_key = Vector4i(-2147483648, -2147483648, -2147483648, -2147483648)
+	var player_xz := Vector2(global_position.x, global_position.z)
+	var ev: Dictionary = ModularBuildWorld.evaluate_cell(
+		get_tree(), ix, iy, iz, _modular_piece_id, player_xz, gs, region, _modular_yaw_steps
+	)
+	var center: Vector3 = ev["world_pos"] as Vector3
+	var valid: bool = bool(ev["valid"])
+	var deck_y: float = float(ev["deck_y"])
 	_modular_last_cell = Vector3i(ix, iy, iz)
 	_modular_cell_valid = valid
+	_modular_block_reason = String(ev.get("block_reason", ""))
 	_modular_ghost.global_position = center
 	_sync_modular_ghost_rotation()
-	var deck_y := ModularBuildWorld.terrain_deck_y_at_cell(get_tree(), ix, iy, iz)
 	_modular_ghost.apply_foundation_skirt(deck_y, iy)
 	_modular_ghost.refresh_preview_tint(valid)
 	_update_modular_placement_prompt()
@@ -1828,9 +1858,12 @@ func _update_modular_placement_prompt() -> void:
 	var label := ModularBuildCatalog.display_name_for(_modular_piece_id)
 	var mode := "DEMOLISH (E)" if _modular_demolish_runtime else "PLACE (E)"
 	var floor_l := "Ground" if _modular_floor_iy_runtime == 0 else "Upper"
+	var reason_line := ""
+	if not _modular_cell_valid:
+		reason_line = "\n%s" % ModularBuildWorld.block_reason_message(_modular_block_reason)
 	interaction_prompt.text = (
-		"[%s]  %s\n%s  Floor: %s   [ / ] floor   X demolish   Wheel turn   B close"
-		% [status, label, mode, floor_l]
+		"[%s]  %s%s\n%s  Floor: %s   [ / ] floor   X demolish   Wheel turn   B close"
+		% [status, label, reason_line, mode, floor_l]
 	)
 	interaction_prompt.add_theme_color_override(
 		"font_color",
@@ -1848,21 +1881,25 @@ func _modular_try_use_primary() -> void:
 
 
 func _modular_try_place_selected() -> void:
-	if not _modular_cell_valid or _modular_piece_id.is_empty():
-		show_gameplay_message("Cannot place here.")
+	if _modular_piece_id.is_empty():
 		return
 	var gs: Node = get_node_or_null("/root/GameState")
 	if gs == null or not ("placed_modular_build_pieces" in gs):
 		return
-	var region: String = _modular_effective_region()
-	if region.is_empty():
-		show_gameplay_message("Cannot build in this area yet.")
-		return
 	var ix := _modular_last_cell.x
 	var iy := _modular_last_cell.y
 	var iz := _modular_last_cell.z
+	var region: String = _modular_effective_region()
+	var player_xz := Vector2(global_position.x, global_position.z)
+	var ev: Dictionary = ModularBuildWorld.evaluate_cell(
+		get_tree(), ix, iy, iz, _modular_piece_id, player_xz, gs, region, _modular_yaw_steps
+	)
+	if not bool(ev.get("valid", false)):
+		show_gameplay_message(ModularBuildWorld.block_reason_message(String(ev.get("block_reason", ""))))
+		return
+	var world_pos: Vector3 = ev["world_pos"] as Vector3
+	var deck_y: float = float(ev["deck_y"])
 	var placement_id := "mod_%d" % Time.get_ticks_usec()
-	var world_pos := ModularBuildWorld.world_position_for_cell(get_tree(), ix, iy, iz, _modular_piece_id, gs, region)
 	var rot_y := float(_modular_yaw_steps) * (PI * 0.5)
 	var scene: Node = get_tree().current_scene
 	if scene == null:
@@ -1876,7 +1913,6 @@ func _modular_try_place_selected() -> void:
 	piece.configure(_modular_piece_id, placement_id, ModularBuildCatalog.OWNER_PLAYER, false)
 	piece.global_position = world_pos
 	piece.rotation.y = rot_y
-	var deck_y := ModularBuildWorld.terrain_deck_y_at_cell(get_tree(), ix, iy, iz)
 	piece.apply_foundation_skirt(deck_y, iy)
 	var entry: Dictionary = ModularBuildWorld.placement_dict(
 		region,

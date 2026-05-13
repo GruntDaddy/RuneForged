@@ -225,8 +225,38 @@ func _rebuild_visual() -> void:
 	holder.name = "Visual"
 	add_child(holder)
 	holder.add_child(inst)
+	force_update_transform()
+	_recenter_visual_holder_xz(holder)
 	if not _preview_mode:
 		_add_collision(holder)
+
+
+## KayKit pivots are often off the mesh XZ centroid; use Visual holder space so the shift stays correct when the piece root rotates.
+func _recenter_visual_holder_xz(holder: Node3D) -> void:
+	if not ModularBuildCatalog.recenter_mesh_xz(piece_id):
+		return
+	var inv_h := holder.global_transform.affine_inverse()
+	var merged: AABB
+	var first := true
+	for n in holder.find_children("*", "MeshInstance3D", true, false):
+		var meshi := n as MeshInstance3D
+		if meshi == null or meshi.mesh == null:
+			continue
+		var laabb: AABB = meshi.get_aabb()
+		var to_h: Transform3D = inv_h * meshi.global_transform
+		var baabb: AABB = to_h * laabb
+		if first:
+			merged = baabb
+			first = false
+		else:
+			merged = merged.merge(baabb)
+	if first:
+		return
+	var cx := merged.position.x + merged.size.x * 0.5
+	var cz := merged.position.z + merged.size.z * 0.5
+	if absf(cx) < 0.0001 and absf(cz) < 0.0001:
+		return
+	holder.position = Vector3(-cx, 0.0, -cz)
 
 
 func _add_collision(visual_root: Node3D) -> void:

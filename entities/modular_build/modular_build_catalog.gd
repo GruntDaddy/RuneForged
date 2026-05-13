@@ -4,7 +4,7 @@ class_name ModularBuildCatalog
 ## Authoritative list of medieval_village kit pieces exposed in the modular builder.
 ## Categories drive the UI tabs; ids are stable save keys.
 
-## World grid in meters. Most kit pieces are ~`NATIVE_MODULE_METERS` wide; use `piece_scale_vector()` at runtime. Optional per-row `native_xz_span` fixes narrow corner trims.
+## World grid in meters. Most kit pieces are ~`NATIVE_MODULE_METERS` wide; use `piece_scale_vector()` at runtime. Optional per-row `native_xz_span` fixes narrow corner trims; optional `bulk_scale` uniformly upsizes a mesh (used on corners vs thin KayKit posts).
 const CELL_SIZE: float = 3.0
 ## Kit pieces are roughly laid out on a 2m module; with a 3m cell we scale meshes ~1.5× to fill the footprint.
 const NATIVE_MODULE_METERS: float = 2.0
@@ -22,6 +22,8 @@ const FOUNDATION_SKIRT_ALBEDO := Color(0.48, 0.44, 0.4, 1.0)
 const STORY_HEIGHT: float = 3.25
 const MAX_PLACE_DISTANCE: float = 16.0
 const OWNER_PLAYER: String = "player"
+## Pivot math for pieces with `align_to_floor_deck` (walls/doors/windows): match a standard full floor slab.
+const DECK_ALIGN_REFERENCE_FLOOR_ID: String = "floor_wood_light"
 
 const _KIT: String = "res://assets/medieval_village kit/"
 
@@ -37,8 +39,8 @@ static func all_piece_rows() -> Array[Dictionary]:
 		# Walls — plaster
 		{"id": "wall_plaster_straight", "name": "Plaster Wall", "category": "walls", "path": _KIT + "Wall_Plaster_Straight.gltf"},
 		{"id": "wall_plaster_straight_base", "name": "Plaster Wall (Base)", "category": "walls", "path": _KIT + "Wall_Plaster_Straight_Base.gltf"},
-		{"id": "wall_plaster_straight_l", "name": "Plaster Wall (L)", "category": "walls", "path": _KIT + "Wall_Plaster_Straight_L.gltf"},
-		{"id": "wall_plaster_straight_r", "name": "Plaster Wall (R)", "category": "walls", "path": _KIT + "Wall_Plaster_Straight_R.gltf"},
+		{"id": "wall_plaster_straight_l", "name": "Plaster Wall (L)", "category": "walls", "path": _KIT + "Wall_Plaster_Straight_L.gltf", "recenter_mesh_xz": false},
+		{"id": "wall_plaster_straight_r", "name": "Plaster Wall (R)", "category": "walls", "path": _KIT + "Wall_Plaster_Straight_R.gltf", "recenter_mesh_xz": false},
 		{"id": "wall_plaster_woodgrid", "name": "Plaster Wood Grid", "category": "walls", "path": _KIT + "Wall_Plaster_WoodGrid.gltf"},
 		# Walls — brick
 		{"id": "wall_brick_straight", "name": "Brick Wall", "category": "walls", "path": _KIT + "Wall_UnevenBrick_Straight.gltf"},
@@ -52,11 +54,11 @@ static func all_piece_rows() -> Array[Dictionary]:
 		{"id": "win_plaster_thin_round", "name": "Window (Plaster Thin Round)", "category": "windows", "path": _KIT + "Wall_Plaster_Window_Thin_Round.gltf"},
 		{"id": "win_brick_wide_flat", "name": "Window (Brick Wide)", "category": "windows", "path": _KIT + "Wall_UnevenBrick_Window_Wide_Flat.gltf"},
 		{"id": "win_brick_thin_round", "name": "Window (Brick Thin Round)", "category": "windows", "path": _KIT + "Wall_UnevenBrick_Window_Thin_Round.gltf"},
-		# Corners / transitions
-		{"id": "corner_ext_brick", "name": "Ext. Corner (Brick)", "category": "corners", "path": _KIT + "Corner_Exterior_Brick.gltf", "native_xz_span": 0.58},
-		{"id": "corner_ext_wood", "name": "Ext. Corner (Wood)", "category": "corners", "path": _KIT + "Corner_Exterior_Wood.gltf", "native_xz_span": 0.24},
-		{"id": "corner_int_small", "name": "Int. Corner (Small)", "category": "corners", "path": _KIT + "Corner_Interior_Small.gltf", "native_xz_span": 0.24},
-		{"id": "corner_int_big", "name": "Int. Corner (Big)", "category": "corners", "path": _KIT + "Corner_Interior_Big.gltf", "native_xz_span": 0.37},
+		# Corners — default 2 m span like walls; `bulk_scale` nudges KayKit corner posts wider/taller so they read with wall framing.
+		{"id": "corner_ext_brick", "name": "Ext. Corner (Brick)", "category": "corners", "path": _KIT + "Corner_Exterior_Brick.gltf", "vertex_anchor": "outside", "bulk_scale": 1.14},
+		{"id": "corner_ext_wood", "name": "Ext. Corner (Wood)", "category": "corners", "path": _KIT + "Corner_Exterior_Wood.gltf", "vertex_anchor": "outside", "bulk_scale": 1.14},
+		{"id": "corner_int_small", "name": "Int. Corner (Small)", "category": "corners", "path": _KIT + "Corner_Interior_Small.gltf", "bulk_scale": 1.12},
+		{"id": "corner_int_big", "name": "Int. Corner (Big)", "category": "corners", "path": _KIT + "Corner_Interior_Big.gltf", "bulk_scale": 1.1},
 		# Stairs
 		{"id": "stair_interior_simple", "name": "Interior Stair", "category": "stairs", "path": _KIT + "Stair_Interior_Simple.gltf", "native_xz_span": 4.6},
 		{"id": "stair_interior_rails", "name": "Interior Stair (Rails)", "category": "stairs", "path": _KIT + "Stair_Interior_Rails.gltf", "native_xz_span": 8.35},
@@ -139,11 +141,19 @@ static func native_xz_span_for(piece_id: String) -> float:
 
 
 ## Non-uniform scale: stretch narrow kit pieces on X/Z to one cell wide, keep Y on the standard module scale so heights still match walls.
+## Optional per-row `bulk_scale` multiplies the whole vector (uniform chunk-up for corners, etc.).
 static func piece_scale_vector(piece_id: String) -> Vector3:
 	var sy := piece_scale_factor()
 	var span := native_xz_span_for(piece_id)
 	var sxz := CELL_SIZE / span
-	return Vector3(sxz, sy, sxz)
+	var v := Vector3(sxz, sy, sxz)
+	var d := find_def(piece_id)
+	if d.is_empty():
+		return v
+	var bulk := float(d.get("bulk_scale", 1.0))
+	if bulk <= 0.001:
+		bulk = 1.0
+	return v * bulk
 
 
 static func is_floor_piece(piece_id: String) -> bool:
@@ -152,6 +162,88 @@ static func is_floor_piece(piece_id: String) -> bool:
 
 static func foundation_skirt_enabled(piece_id: String) -> bool:
 	return bool(find_def(piece_id).get("foundation_skirt", false))
+
+
+## When true (default for walls/doors/windows/corners), ground-level Y matches the raised deck plane used by floors so modules meet flush.
+static func align_to_floor_deck(piece_id: String) -> bool:
+	var d := find_def(piece_id)
+	if d.is_empty():
+		return false
+	if d.has("align_to_floor_deck"):
+		return bool(d.get("align_to_floor_deck", false))
+	var cat := String(d.get("category", ""))
+	return cat == "walls" or cat == "doors" or cat == "windows" or cat == "corners"
+
+
+## Extra world-space Y on the piece root after placement rules (kit pivot tweaks). Optional per catalog row.
+static func ground_offset_y_for(piece_id: String) -> float:
+	return float(find_def(piece_id).get("ground_offset_y", 0.0))
+
+
+## Shift loaded mesh in XZ so merged bounds are centered on the piece root (KayKit walls/corners often have off-center pivots vs floors).
+static func recenter_mesh_xz(piece_id: String) -> bool:
+	var d := find_def(piece_id)
+	if d.is_empty():
+		return false
+	if d.has("recenter_mesh_xz"):
+		return bool(d.get("recenter_mesh_xz", true))
+	var cat := String(d.get("category", ""))
+	return cat == "walls" or cat == "doors" or cat == "windows" or cat == "corners"
+
+
+## Yaw steps (0..3 → 0°, 90°, …) so a straight KayKit wall’s long axis runs along the shared edge between
+## a floor cell and the chosen ring neighbor (+X east, +Z north in grid/world XZ).
+static func floor_ring_wall_yaw_steps(delta_ix: int, delta_iz: int) -> int:
+	if delta_ix == 1 and delta_iz == 0:
+		return 1
+	if delta_ix == -1 and delta_iz == 0:
+		return 3
+	if delta_ix == 0 and delta_iz == 1:
+		return 0
+	if delta_ix == 0 and delta_iz == -1:
+		return 2
+	return 0
+
+
+## L/R trim pieces need manual rotation; straight walls/doors/windows use `floor_ring_wall_yaw_steps`.
+static func floor_ring_auto_yaw_supported(piece_id: String) -> bool:
+	var d := find_def(piece_id)
+	if d.is_empty():
+		return false
+	var cat := String(d.get("category", ""))
+	if cat == "doors" or cat == "windows":
+		return true
+	if cat == "walls":
+		return not piece_id.ends_with("_l") and not piece_id.ends_with("_r")
+	return false
+
+
+## Walls/doors/windows snap off occupied tiles toward the edge you point at (see `ModularBuildWorld.nudge_cell_to_empty_for_wall_like`).
+static func nudges_off_floor_cell(piece_id: String) -> bool:
+	var d := find_def(piece_id)
+	if d.is_empty():
+		return false
+	if d.has("nudge_off_floor_cell"):
+		return bool(d.get("nudge_off_floor_cell", true))
+	var cat := String(d.get("category", ""))
+	return cat == "walls" or cat == "doors" or cat == "windows"
+
+
+## World XZ offset from cell center for `vertex_anchor` (exterior corners: pivot sits on outer cell vertex).
+static func vertex_anchor_world_offset_xz(piece_id: String, yaw_steps: int) -> Vector2:
+	var d := find_def(piece_id)
+	if d.is_empty():
+		return Vector2.ZERO
+	var anchor := String(d.get("vertex_anchor", "")).strip_edges()
+	if anchor.is_empty():
+		return Vector2.ZERO
+	if anchor != "outside" and anchor != "inside":
+		return Vector2.ZERO
+	var h := CELL_SIZE * 0.5
+	var local := Vector3(h, 0.0, h) if anchor == "outside" else Vector3(-h, 0.0, -h)
+	var yaw := float(yaw_steps % 4) * (PI * 0.5)
+	var wv: Vector3 = Basis.from_euler(Vector3(0.0, yaw, 0.0)) * local
+	return Vector2(wv.x, wv.z)
 
 
 ## World Y for the piece root so the bottom of the default floor slab sits on `deck_y` (terrain or upper-story deck), with a tiny bias into the surface.
