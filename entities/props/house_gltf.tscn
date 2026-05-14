@@ -21,5 +21,4 @@ surface_material_override/4 = ExtResource("5_wk2f6")
 [node name="StaticBody3D" type="StaticBody3D" parent="house" index="0" unique_id=858968680]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="house/StaticBody3D" index="0" unique_id=2074790904]
-visible = false
 shape = SubResource("ConcavePolygonShape3D_svrdx")
