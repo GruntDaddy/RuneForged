@@ -25,8 +25,8 @@ width = 256
 height = 256
 noise = SubResource("FastNoiseLite_wood_nrm")
 seamless = true
-as_normal_map = true
-seamless_blend_skirt = 0.28
+seamless_blend_skirt = 0.0
+bump_strength = 0.0
 
 [resource]
 albedo_color = Color(0.32210642, 0.23329273, 0.11936093, 1)
@@ -35,4 +35,4 @@ roughness = 0.88
 normal_enabled = true
 normal_scale = 0.32
 normal_texture = SubResource("NoiseTexture2D_wood_nrm")
-uv1_scale = Vector3(4, 4, 4)
+uv1_scale = Vector3(0, 0, 0)

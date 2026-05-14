@@ -15,17 +15,11 @@ seamless = true
 seamless_blend_skirt = 0.28
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_wood_nrm"]
-noise_type = 5
-seed = 902
-frequency = 0.2
 fractal_octaves = 3
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wood_nrm"]
-width = 256
-height = 256
 noise = SubResource("FastNoiseLite_wood_nrm")
 seamless = true
-as_normal_map = true
 seamless_blend_skirt = 0.28
 
 [resource]
@@ -33,6 +27,6 @@ albedo_color = Color(0.2607046, 0.17562038, 0.05491145, 1)
 albedo_texture = SubResource("NoiseTexture2D_wood_alb")
 roughness = 0.88
 normal_enabled = true
-normal_scale = 0.32
 normal_texture = SubResource("NoiseTexture2D_wood_nrm")
-uv1_scale = Vector3(4, 4, 4)
+uv1_scale = Vector3(0, 0, 0)
+uv1_offset = Vector3(2.535, 0, 0)
