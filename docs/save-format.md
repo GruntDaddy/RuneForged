@@ -57,7 +57,7 @@ Legacy `cook_slots` (array of 2) and array-form `cook_progress_sec` written by p
   - `rotation_y`: float radians (90° steps).
   - `owner`: string owner key (`player` for solo).
   - `position`: `[x, y, z]` world-space float array (authoritative pose on load).
-  - **Note:** `region` should match `GameState.region` when set. If `region` is empty on load (e.g. Run Current Scene), `GameState.region_effective_for_scene_path()` maps known overworld scene paths to `tutorial_isle` so pieces still spawn and validate.
+  - **Note:** `region` should match `GameState.region` when set (canonical id `jorvik`). Legacy saves may still store `tutorial_isle` or `overworld`; `GameState.from_dict()` normalizes those to `jorvik` and rewrites `region` on placed fire/build entries. If `region` is empty on load (e.g. Run Current Scene), `GameState.region_effective_for_scene_path()` maps known overworld scene paths (`jorvik.tscn`, legacy `tutorial_isle.tscn`) so pieces still spawn and validate.
 - **`warmth_until_unix_ms`**: int UTC epoch milliseconds when temporary campfire warmth buff expires.
 - **`campfire_night_run_bonus`** / **`campfire_night_penalty`**: float night movement tuning applied by player controller.
 

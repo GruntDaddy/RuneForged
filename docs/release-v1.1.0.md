@@ -7,7 +7,7 @@ This document implements the main-branch stable audit for **RuneForged v1.1.0**,
 ### Ship scope (this stable)
 
 - **Primary platform:** Desktop (Godot 4.6, Forward Plus per [`project.godot`](../project.godot)).
-- **Content focus:** Tutorial isle and integrated systems exercised since v1.0.0 (inventory, equipment, backpack slots, crafting/build menus, harvesting, combat vs wildlife, ranged ammo/quiver, campfires/torches, day/night and fires where persisted).
+- **Content focus:** Jorvik and integrated systems exercised since v1.0.0 (inventory, equipment, backpack slots, crafting/build menus, harvesting, combat vs wildlife, ranged ammo/quiver, campfires/torches, day/night and fires where persisted).
 - **Mobile / virtual joystick:** Included in project addons; treat as **best-effort** for this milestone unless a dedicated mobile preset is added to export presets and smoke-tested.
 
 ### Stop-ship rules
@@ -108,7 +108,7 @@ git tag -a v1.1.0 -m "RuneForged v1.1.0 stable"
 
 ### Release notes (short)
 
-**RuneForged v1.1.0** builds on **v1.0.0** with major gameplay and systems work: expanded inventory (including backpack and tackle), crafting/build flows, harvesting and skills, ranged ammunition and quiver support, campfire/torch and persistence-related game state, tutorial isle and environment updates, UI/inventory/hotbar improvements, and wildlife/combat iteration. Saves remain backward-compatible per [save-format.md](save-format.md); validate critical paths before publishing.
+**RuneForged v1.1.0** builds on **v1.0.0** with major gameplay and systems work: expanded inventory (including backpack and tackle), crafting/build flows, harvesting and skills, ranged ammunition and quiver support, campfire/torch and persistence-related game state, Jorvik and environment updates, UI/inventory/hotbar improvements, and wildlife/combat iteration. Saves remain backward-compatible per [save-format.md](save-format.md); validate critical paths before publishing.
 
 ### Build identification
 
