@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bf7nf6psvau5s" path="res://entities/building_parts/building_church_red.tscn" id="33_rwr6f"]
 [ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/tutorial_isle/tutorial_isle_harvestables.tscn" id="37_8pv40"]
 [ext_resource type="PackedScene" uid="uid://bat2p6ta1rwj1" path="res://world/regions/tutorial_isle/tutorial_isle_props.tscn" id="38_3x6k3"]
+[ext_resource type="PackedScene" uid="uid://dyn8ch50ciolb" path="res://entities/props/castle_forge_isle.tscn" id="45_dbqg5"]
 [ext_resource type="PackedScene" uid="uid://tj6pvjcbonk" path="res://entities/props/house_gltf.tscn" id="56_4uh62"]
 [ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/tutorial_isle/tutorial_isle.gd" id="75_tutorial_isle_script"]
 [ext_resource type="PackedScene" uid="uid://bey2j3c7ak20q" path="res://entities/props/lumbermill.tscn" id="82_6kivj"]
@@ -51,6 +52,9 @@ script = ExtResource("75_tutorial_isle_script")
 
 [node name="TutorialIsleGear" parent="." unique_id=885021683 instance=ExtResource("4_dbqg5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -1.5507965)
+
+[node name="TutorialIsleHarvestables" parent="." unique_id=449583681 instance=ExtResource("37_8pv40")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84695435, 0, -0.5322113)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 223.44919, 9.953686, 382.90683)
@@ -253,9 +257,6 @@ spawn_radius = 2.5
 [node name="Building_Church_Red" parent="Buildings" unique_id=970642371 instance=ExtResource("33_rwr6f")]
 transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747, 24.38453, 34.724457, 148.02827)
 
-[node name="Harvestables" parent="." unique_id=445283785 instance=ExtResource("37_8pv40")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84695435, 0, -0.5322113)
-
 [node name="Props" parent="." unique_id=576046898 instance=ExtResource("38_3x6k3")]
 
 [node name="house_gltf" parent="." unique_id=1880947831 instance=ExtResource("56_4uh62")]
@@ -266,3 +267,6 @@ transform = Transform3D(0.4430086, 0, 0.89651734, 0, 1, 0, -0.89651734, 0, 0.443
 
 [node name="well_gltf" parent="." unique_id=886514937 instance=ExtResource("83_7spe6")]
 transform = Transform3D(0.44286776, 0, 0.89658695, 0, 1, 0, -0.89658695, 0, 0.44286776, 127.48892, 19.989466, 335.45444)
+
+[node name="Castle_ForgeIsle" parent="." unique_id=2140750770 instance=ExtResource("45_dbqg5")]
+transform = Transform3D(8.138013, 0, 5.8114347, 0, 9.999999, 0, -5.8114347, 0, 8.138013, -250.07643, 34.785515, 77.519104)
