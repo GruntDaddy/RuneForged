@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://cj88e5jeos7lm"]
 
 [ext_resource type="PackedScene" uid="uid://cgxgvqxmqo225" path="res://entities/characters/player/player.tscn" id="1_player"]
-[ext_resource type="PackedScene" uid="uid://dlwlceuuy3mu7" path="res://world/regions/tutorial_isle/tutorial_isle_environment.tscn" id="2_rwr6f"]
+[ext_resource type="PackedScene" uid="uid://dlwlceuuy3mu7" path="res://world/regions/tutorial_isle/tutorial_isle_environment.tscn" id="2_8pv40"]
 [ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="4_dbqg5"]
 [ext_resource type="PackedScene" uid="uid://w8vscph1wpmv" path="res://world/regions/tutorial_isle/tutorial_isle_buildings.tscn" id="10_gypqo"]
-[ext_resource type="PackedScene" uid="uid://bf7nf6psvau5s" path="res://entities/building_parts/building_church_red.tscn" id="33_rwr6f"]
 [ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/tutorial_isle/tutorial_isle_harvestables.tscn" id="37_8pv40"]
 [ext_resource type="PackedScene" uid="uid://bat2p6ta1rwj1" path="res://world/regions/tutorial_isle/tutorial_isle_props.tscn" id="38_3x6k3"]
 [ext_resource type="PackedScene" uid="uid://dyn8ch50ciolb" path="res://entities/props/castle_forge_isle.tscn" id="45_dbqg5"]
@@ -46,7 +45,7 @@
 [node name="TutorialIsle" type="Node3D" unique_id=1741229412]
 script = ExtResource("75_tutorial_isle_script")
 
-[node name="Environment" parent="." unique_id=290363497 instance=ExtResource("2_rwr6f")]
+[node name="Environment" parent="." unique_id=1624713350 instance=ExtResource("2_8pv40")]
 
 [node name="TutorialIsleMaterials" parent="." unique_id=152166006 instance=ExtResource("tutorial_isle_mat_inst")]
 
@@ -254,9 +253,6 @@ spawn_radius = 2.5
 
 [node name="Buildings" parent="." unique_id=576262690 instance=ExtResource("10_gypqo")]
 
-[node name="Building_Church_Red" parent="Buildings" unique_id=970642371 instance=ExtResource("33_rwr6f")]
-transform = Transform3D(-7.4068747, 0, 6.7185, 0, 10, 0, -6.7185, 0, -7.4068747, 24.38453, 34.724457, 148.02827)
-
 [node name="Props" parent="." unique_id=576046898 instance=ExtResource("38_3x6k3")]
 
 [node name="house_gltf" parent="." unique_id=1880947831 instance=ExtResource("56_4uh62")]
@@ -268,5 +264,5 @@ transform = Transform3D(0.4430086, 0, 0.89651734, 0, 1, 0, -0.89651734, 0, 0.443
 [node name="well_gltf" parent="." unique_id=886514937 instance=ExtResource("83_7spe6")]
 transform = Transform3D(0.44286776, 0, 0.89658695, 0, 1, 0, -0.89658695, 0, 0.44286776, 127.48892, 19.989466, 335.45444)
 
-[node name="Castle_ForgeIsle" parent="." unique_id=2140750770 instance=ExtResource("45_dbqg5")]
-transform = Transform3D(8.138013, 0, 5.8114347, 0, 9.999999, 0, -5.8114347, 0, 8.138013, -250.07643, 34.785515, 77.519104)
+[node name="Castle_Jorvik" parent="." unique_id=2140750770 instance=ExtResource("45_dbqg5")]
+transform = Transform3D(8.138013, 0, 5.8114357, 0, 9.999999, 0, -5.8114357, 0, 8.138013, -250.07643, 34.785515, 77.519104)
