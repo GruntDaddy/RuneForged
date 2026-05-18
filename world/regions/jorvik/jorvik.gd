@@ -1,5 +1,7 @@
 extends Node3D
 
+const _GameState = preload("res://autoload/game_state.gd")
+
 const _AnimalChickenScene = preload("res://entities/characters/animals/chicken.tscn")
 const _AnimalRabbitScene = preload("res://entities/characters/animals/rabbit.tscn")
 const _AnimalRoosterScene = preload("res://entities/characters/animals/rooster.tscn")
@@ -8,6 +10,28 @@ const _AnimalChickScene = preload("res://entities/characters/animals/chick.tscn"
 
 func _ready() -> void:
 	_setup_tutorial_animals_if_needed()
+	call_deferred("_maybe_shore_wake_after_intro")
+
+
+func _maybe_shore_wake_after_intro() -> void:
+	var gs := get_node_or_null("/root/GameState")
+	if gs == null or not (gs is _GameState):
+		return
+	var state := gs as _GameState
+	if not state.pending_shore_wake:
+		return
+	state.pending_shore_wake = false
+	var player := get_node_or_null("Player") as CharacterBody3D
+	if player == null:
+		return
+	if player.has_method("set_input_enabled"):
+		player.set_input_enabled(false)
+	var toast: Node = player.get_node_or_null("GameplayToast")
+	if toast != null and toast.has_method("show_message"):
+		toast.call("show_message", "You wake on a strange shore.")
+	await get_tree().create_timer(3.5).timeout
+	if player != null and is_instance_valid(player) and player.has_method("set_input_enabled"):
+		player.set_input_enabled(true)
 
 
 func _setup_tutorial_animals_if_needed() -> void:

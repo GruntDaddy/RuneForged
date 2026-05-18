@@ -28,6 +28,10 @@ const _UVW2 := "res://assets/water/boujie/uv_waves/uvwave2.tres"
 @export var gameplay_wave_sample_time_offset_sec: float = -0.072
 
 var _material_instance: ShaderMaterial
+var _height_wave_specs: Array[Dictionary] = []
+var _foam_wave_specs: Array[Dictionary] = []
+var _uv_wave_specs: Array[Dictionary] = []
+var _wave_amplitude_scale: float = 1.0
 
 
 func get_water_surface_height_at(world_position: Vector3) -> float:
@@ -148,12 +152,76 @@ func _configure_north_swell_waves() -> void:
 
 	var uv_waves: Array[GerstnerWave] = [uv1, uv2, uv3]
 
+	_height_wave_specs = _snapshot_waves(height_waves)
+	_foam_wave_specs = _snapshot_waves(foam_waves)
+	_uv_wave_specs = _snapshot_waves(uv_waves)
+	_wave_amplitude_scale = 1.0
+	_apply_designer_waves(height_waves, foam_waves, uv_waves)
+
+	_apply_material_surface_tweaks(_material_instance)
+
+
+## Scales Gerstner height/foam amplitudes (intro storm ramp). Re-applies designer when value changes.
+func set_wave_amplitude_scale(amplitude_scale: float) -> void:
+	var clamped := clampf(amplitude_scale, 0.2, 4.0)
+	if is_equal_approx(clamped, _wave_amplitude_scale):
+		return
+	_wave_amplitude_scale = clamped
+	if _height_wave_specs.is_empty():
+		return
+	_apply_designer_waves(
+		_waves_from_specs(_height_wave_specs, _wave_amplitude_scale),
+		_waves_from_specs(_foam_wave_specs, minf(_wave_amplitude_scale * 1.15, 3.5)),
+		_waves_from_specs(_uv_wave_specs, 1.0)
+	)
+
+
+func _apply_designer_waves(
+	height_waves: Array[GerstnerWave],
+	foam_waves: Array[GerstnerWave],
+	uv_waves: Array[GerstnerWave],
+) -> void:
+	var designer := get_node_or_null("DeepOcean/WaterMaterialDesigner") as WaterMaterialDesigner
+	if designer == null:
+		return
+	if _material_instance == null:
+		_ensure_unique_material()
 	designer.height_waves = height_waves
 	designer.foam_waves = foam_waves
 	designer.uv_waves = uv_waves
 	designer.update()
 
-	_apply_material_surface_tweaks(_material_instance)
+
+func _snapshot_waves(waves: Array[GerstnerWave]) -> Array[Dictionary]:
+	var specs: Array[Dictionary] = []
+	for w in waves:
+		if w is GerstnerWave:
+			var gw := w as GerstnerWave
+			specs.append({
+				"steepness": gw.steepness,
+				"amplitude": gw.amplitude,
+				"direction_degrees": gw.direction_degrees,
+				"frequency": gw.frequency,
+				"speed": gw.speed,
+				"phase_degrees": gw.phase_degrees,
+			})
+	return specs
+
+
+func _waves_from_specs(specs: Array[Dictionary], amplitude_scale: float) -> Array[GerstnerWave]:
+	var waves: Array[GerstnerWave] = []
+	var amp_scale := maxf(amplitude_scale, 0.01)
+	var steep_scale := sqrt(amp_scale)
+	for spec in specs:
+		waves.append(_make_wave(
+			float(spec.steepness) * steep_scale,
+			float(spec.amplitude) * amp_scale,
+			float(spec.direction_degrees),
+			float(spec.frequency),
+			float(spec.speed),
+			float(spec.phase_degrees),
+		))
+	return waves
 
 
 func _make_wave(

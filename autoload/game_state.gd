@@ -23,6 +23,7 @@ const LEGACY_JORVIK_SCENE_SUFFIX := "/tutorial_isle.tscn"
 const SCENE_BOOT_SPLASH := "res://ui/boot_splash/splash_boot.tscn"
 const SCENE_MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const SCENE_CHARACTER_CREATOR := "res://ui/character_creator/character_creator.tscn"
+const SCENE_SHIPWRECK_INTRO := "res://world/cutscenes/shipwreck_intro.tscn"
 const SCENE_OPTIONS_MENU := "res://ui/menus/options_menu.tscn"
 const LEGACY_ITEM_ID_ALIASES := {
 	"wood": "logs",
@@ -42,6 +43,8 @@ const SKILL_ID_TO_FIELD := {
 	"fishing": "fishing_level",
 }
 var region: String = ""
+## Set by shipwreck intro before Jorvik load; not persisted (see jorvik shore wake).
+var pending_shore_wake: bool = false
 ## Survival skills (harvest gates). Tune when XP/progression exists.
 var woodcutting_level: int = 10
 var mining_level: int = 10

@@ -152,6 +152,11 @@ func apply_music_for_scene_path(scene_path: String) -> void:
 		mp3_path = _PATH_BGM_CREATOR_MP3
 		wav_path = _PATH_BGM_CREATOR_WAV
 		track_key = "creator"
+	elif p.contains("shipwreck_intro"):
+		mp3_path = _PATH_BGM_WORLD_MP3
+		wav_path = _PATH_BGM_WORLD_WAV
+		track_key = "intro_storm"
+		vol = -10.0
 	elif p.contains("world/regions") or p.contains("jorvik"):
 		mp3_path = _PATH_BGM_WORLD_MP3
 		wav_path = _PATH_BGM_WORLD_WAV

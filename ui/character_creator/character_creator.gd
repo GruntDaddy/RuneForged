@@ -248,7 +248,7 @@ func _on_confirm_pressed() -> void:
 	GameState.region = GameState.REGION_JORVIK
 
 	SaveManager.save_game()
-	SceneManager.fade_to_scene(GameState.OVERWORLD_SCENE_PATH)
+	SceneManager.fade_to_scene(GameState.SCENE_SHIPWRECK_INTRO)
 
 
 # --- Helpers ---
