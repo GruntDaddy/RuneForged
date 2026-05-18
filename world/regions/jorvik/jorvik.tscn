@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" uid="uid://hjsgrguldp45" path="res://entities/building_parts/grindstone.tscn" id="53_1umda"]
 [ext_resource type="PackedScene" uid="uid://d2bdr601l23of" path="res://entities/building_parts/smelter.tscn" id="54_r0ygv"]
 [ext_resource type="PackedScene" uid="uid://tj6pvjcbonk" path="res://entities/props/house_gltf.tscn" id="56_4uh62"]
+[ext_resource type="PackedScene" uid="uid://cdn8iemuygm1g" path="res://world/regions/jorvik/npcs/woodsman.tscn" id="59_6l455"]
 [ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/jorvik/jorvik.gd" id="75_jorvik_script"]
 [ext_resource type="PackedScene" uid="uid://bey2j3c7ak20q" path="res://entities/props/lumbermill.tscn" id="82_6kivj"]
 [ext_resource type="PackedScene" uid="uid://be6xjbsrkk7p7" path="res://entities/props/water_well.tscn" id="83_7spe6"]
@@ -368,10 +369,10 @@ transform = Transform3D(0.29000074, -0.05584068, -0.9553958, 0, 0.9982963, -0.05
 [node name="Smelter" parent="Props" unique_id=2028400591 instance=ExtResource("54_r0ygv")]
 transform = Transform3D(-0.73728764, 0, -1.8591415, 0, 2, 0, 1.8591415, 0, -0.73728764, 200.99422, 19.924723, 161.84268)
 
-[node name="house_gltf" parent="." unique_id=1880947831 instance=ExtResource("56_4uh62")]
+[node name="House_Lumberjack" parent="." unique_id=1880947831 instance=ExtResource("56_4uh62")]
 transform = Transform3D(-0.31894276, 0, 0.947774, 0, 1, 0, -0.947774, 0, -0.31894276, 120.95788, 20.005741, 347.9669)
 
-[node name="house_gltf2" parent="." unique_id=1383698669 instance=ExtResource("56_4uh62")]
+[node name="House_Blacksmith" parent="." unique_id=1383698669 instance=ExtResource("56_4uh62")]
 transform = Transform3D(0.78741944, 0, -0.61641765, 0, 1, 0, 0.61641765, 0, 0.78741944, 195.81609, 20.005741, 146.54752)
 
 [node name="lumbermill_gltf" parent="." unique_id=1158069169 instance=ExtResource("82_6kivj")]
@@ -382,3 +383,6 @@ transform = Transform3D(0.44286776, 0, 0.89658695, 0, 1, 0, -0.89658695, 0, 0.44
 
 [node name="Castle_Jorvik" parent="." unique_id=2140750770 instance=ExtResource("45_dbqg5")]
 transform = Transform3D(8.138013, 0, 5.8114357, 0, 9.999999, 0, -5.8114357, 0, 8.138013, -250.07643, 34.785515, 77.519104)
+
+[node name="Woodsman" parent="." unique_id=492815826 instance=ExtResource("59_6l455")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 129.82184, 19.938442, 322.04486)

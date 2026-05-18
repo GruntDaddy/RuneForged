@@ -40,8 +40,8 @@ extends Node3D
 @export var moon_light_color: Color = Color(0.52, 0.62, 0.92)
 
 @export_group("Ambient")
-@export var ambient_energy_day: float = 0.12
-@export var ambient_energy_night: float = 0.08
+@export var ambient_energy_day: float = 0.16
+@export var ambient_energy_night: float = 0.1
 @export var ambient_color_day: Color = Color(0.32, 0.32, 0.34)
 @export var ambient_color_night: Color = Color(0.12, 0.12, 0.14)
 
