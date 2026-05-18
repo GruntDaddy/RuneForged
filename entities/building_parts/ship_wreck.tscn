@@ -5,6 +5,7 @@
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ft0vp"]
 resource_name = "colormap"
 cull_mode = 2
+albedo_color = Color(0.43134022, 0.43134025, 0.43134025, 1)
 albedo_texture = ExtResource("1_rojay")
 texture_filter = 2
 
