@@ -23,6 +23,7 @@ seamless = true
 seamless_blend_skirt = 0.28
 
 [resource]
+disable_ambient_light = true
 albedo_color = Color(0.2607046, 0.17562038, 0.05491145, 1)
 albedo_texture = SubResource("NoiseTexture2D_wood_alb")
 roughness = 0.88

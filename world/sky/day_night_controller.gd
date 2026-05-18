@@ -40,10 +40,10 @@ extends Node3D
 @export var moon_light_color: Color = Color(0.52, 0.62, 0.92)
 
 @export_group("Ambient")
-@export var ambient_energy_day: float = 0.72
-@export var ambient_energy_night: float = 0.3
-@export var ambient_color_day: Color = Color(0.58, 0.64, 0.7)
-@export var ambient_color_night: Color = Color(0.16, 0.18, 0.28)
+@export var ambient_energy_day: float = 0.12
+@export var ambient_energy_night: float = 0.08
+@export var ambient_color_day: Color = Color(0.32, 0.32, 0.34)
+@export var ambient_color_night: Color = Color(0.12, 0.12, 0.14)
 
 @export_group("Fog")
 @export var fog_enabled: bool = true
