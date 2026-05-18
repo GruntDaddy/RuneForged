@@ -25,7 +25,7 @@
 [ext_resource type="PackedScene" uid="uid://8ul7x4sta6rf" path="res://entities/props/static/silver_bar.tscn" id="29_ts002"]
 [ext_resource type="PackedScene" uid="uid://ddlobyuq0883t" path="res://entities/props/static/silver_nuggets.tscn" id="30_dr1td"]
 
-[node name="TutorialIsleMaterials" type="Node3D" unique_id=152166006]
+[node name="JorvikMaterials" type="Node3D" unique_id=152166006]
 
 [node name="Copper_Ingot" parent="." unique_id=940789391 instance=ExtResource("20_3vu1e")]
 transform = Transform3D(0.72662264, 0, -0.68703675, 0, 1, 0, 0.68703675, 0, 0.72662264, 201.73857, 10.551444, 375.62234)

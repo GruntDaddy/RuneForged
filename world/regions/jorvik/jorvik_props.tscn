@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://cycycfc61gt0l" path="res://entities/building_parts/tent.tscn" id="5_6amxb"]
 [ext_resource type="PackedScene" uid="uid://fqyxxm8kit2g" path="res://entities/building_parts/campfire.tscn" id="6_tx6x2"]
 [ext_resource type="PackedScene" uid="uid://benqlw2wabm47" path="res://entities/props/skeleton_minion_prop.tscn" id="7_5kx42"]
-[ext_resource type="PackedScene" uid="uid://bkhh8n46ed6bn" path="res://world/regions/tutorial_isle/dock_1.tscn" id="8_o7152"]
+[ext_resource type="PackedScene" uid="uid://bkhh8n46ed6bn" path="res://world/regions/jorvik/dock_1.tscn" id="8_o7152"]
 [ext_resource type="PackedScene" uid="uid://baqnb1njfk6hj" path="res://entities/props/food_barrel_fish.tscn" id="9_sa10f"]
 [ext_resource type="PackedScene" uid="uid://b8q2mtemn6kjk" path="res://entities/props/fishing_rod_base.tscn" id="10_7vdxu"]
 [ext_resource type="PackedScene" uid="uid://5e3s4nid00t8" path="res://entities/fishing/fishing_spot.tscn" id="11_kufgj"]

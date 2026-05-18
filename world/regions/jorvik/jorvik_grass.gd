@@ -1,7 +1,7 @@
 @tool
 extends "res://addons/simplegrasstextured/grass.gd"
 
-## Tutorial isle grass: KayKit mesh + texture, SimpleGrassTextured wind shader.
+## Jorvik grass: KayKit mesh + texture, SimpleGrassTextured wind shader.
 ## Paint in editor with SimpleGrassTextured tools (airbrush/pencil) after selecting this node.
 
 const _KAYKIT_GLTF := "res://assets/kaykit/forest_and_nature_pack/Color3/Grass_1_D_Singlesided_Color3.gltf"
@@ -19,7 +19,7 @@ static func _get_kaykit_mesh() -> Mesh:
 		return _mesh_cache
 	var ps: PackedScene = load(_KAYKIT_GLTF) as PackedScene
 	if ps == null:
-		push_warning("TutorialIsleGrass: could not load KayKit GLTF, using addon default mesh in editor.")
+		push_warning("JorvikGrass: could not load KayKit GLTF, using addon default mesh in editor.")
 		return null
 	var root := ps.instantiate()
 	var stack: Array[Node] = [root]
@@ -36,5 +36,5 @@ static func _get_kaykit_mesh() -> Mesh:
 	root.queue_free()
 	_mesh_cache = found
 	if found == null:
-		push_warning("TutorialIsleGrass: no MeshInstance3D in KayKit GLTF.")
+		push_warning("JorvikGrass: no MeshInstance3D in KayKit GLTF.")
 	return found

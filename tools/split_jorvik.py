@@ -1,30 +1,30 @@
-"""Split world/regions/tutorial_isle/tutorial_isle.tscn into instanced sub-scenes.
+"""Split world/regions/jorvik/jorvik.tscn into instanced sub-scenes.
 
 Writes:
-  tutorial_isle_environment.tscn   (terrain, grass, ocean, sky env, day/night, sun)
-  tutorial_isle_harvestables.tscn  (Props/Harvestables subtree, re-parented to scene root)
-  tutorial_isle_materials.tscn     (bars, nuggets, stone/wood props lane)
-  tutorial_isle_gear.tscn          (weapon rack lane + armor / smelter / ranged row)
+  jorvik_environment.tscn   (terrain, grass, ocean, sky env, day/night, sun)
+  jorvik_harvestables.tscn  (Props/Harvestables subtree, re-parented to scene root)
+  jorvik_materials.tscn     (bars, nuggets, stone/wood props lane)
+  jorvik_gear.tscn          (weapon rack lane + armor / smelter / ranged row)
 
-Overwrites tutorial_isle.tscn with instances + trimmed node tree.
+Overwrites jorvik.tscn with instances + trimmed node tree.
 
-Run from repo root: python tools/split_tutorial_isle.py
+Run from repo root: python tools/split_jorvik.py
 """
 from __future__ import annotations
 
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = ROOT / "world/regions/tutorial_isle/tutorial_isle.tscn"
-ENV = ROOT / "world/regions/tutorial_isle/tutorial_isle_environment.tscn"
-HARV = ROOT / "world/regions/tutorial_isle/tutorial_isle_harvestables.tscn"
-MAT = ROOT / "world/regions/tutorial_isle/tutorial_isle_materials.tscn"
-GEAR = ROOT / "world/regions/tutorial_isle/tutorial_isle_gear.tscn"
+MAIN = ROOT / "world/regions/jorvik/jorvik.tscn"
+ENV = ROOT / "world/regions/jorvik/jorvik_environment.tscn"
+HARV = ROOT / "world/regions/jorvik/jorvik_harvestables.tscn"
+MAT = ROOT / "world/regions/jorvik/jorvik_materials.tscn"
+GEAR = ROOT / "world/regions/jorvik/jorvik_gear.tscn"
 
-UID_ENV = "uid://c8tutorialisleenv1"
-UID_HARV = "uid://c8tutorialisleharv1"
-UID_MAT = "uid://c8tutorialisle_mat1"
-UID_GEAR = "uid://c8tutorialisle_gear1"
+UID_ENV = "uid://c8jorvikenv1"
+UID_HARV = "uid://c8jorvikharv1"
+UID_MAT = "uid://c8jorvik_mat1"
+UID_GEAR = "uid://c8jorvik_gear1"
 
 
 def _find(lines: list[str], prefix: str) -> int:
@@ -51,7 +51,7 @@ def main() -> None:
 
     idx_gradient = _find(lines, '[sub_resource type="Gradient"')
     idx_dg2jo = _find(lines, '[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dg2jo"')
-    idx_tutorial_root = _find(lines, '[node name="TutorialIsle"')
+    idx_tutorial_root = _find(lines, '[node name="Jorvik"')
     idx_terrain = _find(lines, '[node name="Terrain3D"')
     idx_player = _find(lines, '[node name="Player"')
     idx_shield = _find(lines, '[node name="Shield_Bronze"')
@@ -66,7 +66,7 @@ def main() -> None:
     env_subs = lines[idx_gradient:idx_dg2jo]
     props_subs = lines[idx_dg2jo:idx_tutorial_root]
     env_body_nodes = lines[idx_terrain:idx_player]
-    wrap_env = '[node name="TutorialIsleEnvironment" type="Node3D" unique_id=999000001]\n'
+    wrap_env = '[node name="JorvikEnvironment" type="Node3D" unique_id=999000001]\n'
 
     env_doc = (
         f'[gd_scene format=4 uid="{UID_ENV}"]\n\n'
@@ -87,7 +87,7 @@ def main() -> None:
     HARV.write_text(harv_doc, encoding="utf-8")
 
     material_nodes = lines[idx_shield:idx_weaponrack]
-    wrap_mat = '[node name="TutorialIsleMaterials" type="Node3D" unique_id=999000002]\n'
+    wrap_mat = '[node name="JorvikMaterials" type="Node3D" unique_id=999000002]\n'
     mat_doc = (
         f'[gd_scene format=4 uid="{UID_MAT}"]\n\n'
         + "".join(ext_lines)
@@ -98,7 +98,7 @@ def main() -> None:
     MAT.write_text(mat_doc, encoding="utf-8")
 
     gear_nodes = lines[idx_weaponrack:idx_buildings] + lines[idx_fullhelm:]
-    wrap_gear = '[node name="TutorialIsleGear" type="Node3D" unique_id=999000003]\n'
+    wrap_gear = '[node name="JorvikGear" type="Node3D" unique_id=999000003]\n'
     gear_doc = (
         f'[gd_scene format=4 uid="{UID_GEAR}"]\n\n'
         + "".join(ext_lines)
@@ -109,18 +109,18 @@ def main() -> None:
     GEAR.write_text(gear_doc, encoding="utf-8")
 
     new_ext = [
-        f'[ext_resource type="PackedScene" uid="{UID_ENV}" path="res://world/regions/tutorial_isle/tutorial_isle_environment.tscn" id="tutorial_isle_env_inst"]\n',
-        f'[ext_resource type="PackedScene" uid="{UID_HARV}" path="res://world/regions/tutorial_isle/tutorial_isle_harvestables.tscn" id="tutorial_isle_harv_inst"]\n',
-        f'[ext_resource type="PackedScene" uid="{UID_MAT}" path="res://world/regions/tutorial_isle/tutorial_isle_materials.tscn" id="tutorial_isle_mat_inst"]\n',
-        f'[ext_resource type="PackedScene" uid="{UID_GEAR}" path="res://world/regions/tutorial_isle/tutorial_isle_gear.tscn" id="tutorial_isle_gear_inst"]\n',
+        f'[ext_resource type="PackedScene" uid="{UID_ENV}" path="res://world/regions/jorvik/jorvik_environment.tscn" id="jorvik_env_inst"]\n',
+        f'[ext_resource type="PackedScene" uid="{UID_HARV}" path="res://world/regions/jorvik/jorvik_harvestables.tscn" id="jorvik_harv_inst"]\n',
+        f'[ext_resource type="PackedScene" uid="{UID_MAT}" path="res://world/regions/jorvik/jorvik_materials.tscn" id="jorvik_mat_inst"]\n',
+        f'[ext_resource type="PackedScene" uid="{UID_GEAR}" path="res://world/regions/jorvik/jorvik_gear.tscn" id="jorvik_gear_inst"]\n',
     ]
     instances_under_root = [
-        '[node name="Environment" parent="." instance=ExtResource("tutorial_isle_env_inst")]\n',
-        '[node name="TutorialIsleMaterials" parent="." instance=ExtResource("tutorial_isle_mat_inst")]\n',
-        '[node name="TutorialIsleGear" parent="." instance=ExtResource("tutorial_isle_gear_inst")]\n',
+        '[node name="Environment" parent="." instance=ExtResource("jorvik_env_inst")]\n',
+        '[node name="JorvikMaterials" parent="." instance=ExtResource("jorvik_mat_inst")]\n',
+        '[node name="JorvikGear" parent="." instance=ExtResource("jorvik_gear_inst")]\n',
     ]
     harvest_under_props = (
-        '[node name="Harvestables" parent="Props" instance=ExtResource("tutorial_isle_harv_inst")]\n'
+        '[node name="Harvestables" parent="Props" instance=ExtResource("jorvik_harv_inst")]\n'
     )
 
     main_parts: list[str] = []

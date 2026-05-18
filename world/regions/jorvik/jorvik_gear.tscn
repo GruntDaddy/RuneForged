@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dldr3xs7qshyd" path="res://world/pickups/fishing_pole_pickup.tscn" id="7_1tm6k"]
 [ext_resource type="PackedScene" uid="uid://bnhs4jcmi56b1" path="res://world/pickups/fishing_tacklebox_pickup.tscn" id="8_dypwk"]
 
-[node name="TutorialIsleGear" type="Node3D" unique_id=885021683]
+[node name="JorvikGear" type="Node3D" unique_id=885021683]
 
 [node name="Hatchet_Basic" parent="." unique_id=1017366543 instance=ExtResource("1_tv8y1")]
 transform = Transform3D(0.5112931, 0.21609072, -0.83179563, 0.85927904, -0.14519371, 0.4904675, -0.014785961, -0.9655173, -0.2599196, 218.96451, 11.747576, 376.5464)

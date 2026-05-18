@@ -12,12 +12,14 @@ var trait_id_1: int = 0
 var trait_id_2: int = 1
 var birthsign_id: int = 0
 ## Region ids persisted in saves; load routing uses `scene_path_for_saved_region`.
+const REGION_JORVIK := "jorvik"
 const REGION_OVERWORLD := "overworld"
-## Legacy save value remapped to `REGION_TUTORIAL_ISLE` in `from_dict`.
-const REGION_TUTORIAL_ISLE := "tutorial_isle"
+const LEGACY_REGION_TUTORIAL_ISLE := "tutorial_isle"
 const REGION_CHARACTER_CREATOR := "character_creator"
 
-const OVERWORLD_SCENE_PATH := "res://world/regions/tutorial_isle/tutorial_isle.tscn"
+const JORVIK_SCENE_PATH := "res://world/regions/jorvik/jorvik.tscn"
+const OVERWORLD_SCENE_PATH := JORVIK_SCENE_PATH
+const LEGACY_JORVIK_SCENE_SUFFIX := "/tutorial_isle.tscn"
 const SCENE_BOOT_SPLASH := "res://ui/boot_splash/splash_boot.tscn"
 const SCENE_MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const SCENE_CHARACTER_CREATOR := "res://ui/character_creator/character_creator.tscn"
@@ -156,9 +158,7 @@ func from_dict(data: Variant) -> void:
 	trait_id_1 = int(d.get("trait_id_1", 0))
 	trait_id_2 = int(d.get("trait_id_2", 1))
 	birthsign_id = int(d.get("birthsign_id", 0))
-	region = str(d.get("region", ""))
-	if region == REGION_OVERWORLD:
-		region = REGION_TUTORIAL_ISLE
+	region = normalize_region_id(str(d.get("region", "")))
 	woodcutting_level = int(d.get("woodcutting_level", 10))
 	mining_level = int(d.get("mining_level", 10))
 	survival_level = int(d.get("survival_level", 10))
@@ -176,11 +176,11 @@ func from_dict(data: Variant) -> void:
 	else:
 		world_fire_states = {}
 	if typeof(d.get("placed_fire_nodes", null)) == TYPE_ARRAY:
-		placed_fire_nodes = (d.get("placed_fire_nodes", []) as Array).duplicate(true)
+		placed_fire_nodes = _migrate_placed_region_ids(d.get("placed_fire_nodes", []) as Array)
 	else:
 		placed_fire_nodes = []
 	if typeof(d.get("placed_modular_build_pieces", null)) == TYPE_ARRAY:
-		placed_modular_build_pieces = (d.get("placed_modular_build_pieces", []) as Array).duplicate(true)
+		placed_modular_build_pieces = _migrate_placed_region_ids(d.get("placed_modular_build_pieces", []) as Array)
 	else:
 		placed_modular_build_pieces = []
 	warmth_until_unix_ms = int(d.get("warmth_until_unix_ms", 0))
@@ -344,10 +344,19 @@ func _apply_skill_registry_dict(v: Variant) -> void:
 			set(str(SKILL_ID_TO_FIELD[key]), lvl)
 
 
+func normalize_region_id(region_id: String) -> String:
+	var rid := str(region_id).strip_edges()
+	match rid:
+		REGION_OVERWORLD, LEGACY_REGION_TUTORIAL_ISLE:
+			return REGION_JORVIK
+		_:
+			return rid
+
+
 func scene_path_for_saved_region(saved_region: String) -> String:
-	match saved_region:
-		REGION_OVERWORLD, REGION_TUTORIAL_ISLE:
-			return OVERWORLD_SCENE_PATH
+	match normalize_region_id(saved_region):
+		REGION_JORVIK:
+			return JORVIK_SCENE_PATH
 		REGION_CHARACTER_CREATOR:
 			return SCENE_CHARACTER_CREATOR
 		_:
@@ -356,10 +365,23 @@ func scene_path_for_saved_region(saved_region: String) -> String:
 
 ## When `region` is empty (e.g. Run Current Scene), infer a stable id from the active main scene for saves / modular build.
 func region_effective_for_scene_path(scene_path: String) -> String:
-	var persisted := str(region).strip_edges()
+	var persisted := normalize_region_id(str(region).strip_edges())
 	if not persisted.is_empty():
 		return persisted
 	var p := str(scene_path).strip_edges()
-	if p == OVERWORLD_SCENE_PATH or p.ends_with("/tutorial_isle.tscn"):
-		return REGION_TUTORIAL_ISLE
+	if p == JORVIK_SCENE_PATH or p.ends_with("/jorvik.tscn") or p.ends_with(LEGACY_JORVIK_SCENE_SUFFIX):
+		return REGION_JORVIK
 	return ""
+
+
+func _migrate_placed_region_ids(entries: Array) -> Array:
+	var out: Array = entries.duplicate(true)
+	for i in out.size():
+		var entry: Variant = out[i]
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var d: Dictionary = (entry as Dictionary).duplicate(true)
+		if d.has("region"):
+			d["region"] = normalize_region_id(str(d.get("region", "")))
+		out[i] = d
+	return out

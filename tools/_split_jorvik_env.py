@@ -1,9 +1,9 @@
-"""One-off helper: split environment nodes into tutorial_isle_environment.tscn."""
+"""One-off helper: split environment nodes into jorvik_environment.tscn."""
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = ROOT / "world/regions/tutorial_isle/tutorial_isle.tscn"
-ENV = ROOT / "world/regions/tutorial_isle/tutorial_isle_environment.tscn"
+MAIN = ROOT / "world/regions/jorvik/jorvik.tscn"
+ENV = ROOT / "world/regions/jorvik/jorvik_environment.tscn"
 
 
 def main() -> None:
@@ -21,7 +21,7 @@ def main() -> None:
     hdr = "".join(ext_lines)
     body = "".join(env_sub_lines + env_node_lines)
     out = (
-        '[gd_scene format=4 uid="uid://c8tutorialisleenv1"]\n\n'
+        '[gd_scene format=4 uid="uid://c8jorvikenv1"]\n\n'
         + hdr
         + "\n"
         + body

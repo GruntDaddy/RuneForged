@@ -1,4 +1,4 @@
-"""Rewire tutorial isle scenes to world/pickup wrapper scenes; strip duplicate pickup scripts/collision."""
+"""Rewire Jorvik scenes to world/pickup wrapper scenes; strip duplicate pickup scripts/collision."""
 from __future__ import annotations
 
 import re
@@ -25,7 +25,7 @@ def strip_pickup_children(text: str) -> str:
     return pattern.sub("\n", text)
 
 
-def patch_ext_resources_tutorial_isle(text: str) -> str:
+def patch_ext_resources_jorvik(text: str) -> str:
     repl = {
         'path="res://entities/equipment/tools/hammer.tscn" id="8_rwr6f"': 'path="res://world/pickups/tool_hammer_pickup.tscn" id="8_rwr6f"',
         'path="res://entities/equipment/tools/pickaxe_bronze.tscn" id="10_3x6k3"': 'path="res://world/pickups/pickaxe_bronze_pickup.tscn" id="10_3x6k3"',
@@ -50,7 +50,7 @@ def patch_ext_resources_tutorial_isle(text: str) -> str:
     return text
 
 
-def patch_ext_resources_tutorial_isle_gear(text: str) -> str:
+def patch_ext_resources_jorvik_gear(text: str) -> str:
     repl = {
         'path="res://entities/equipment/accessories/backpacks/backpack_engineer.tscn" id="26_w8lkd"': 'path="res://world/pickups/backpack_large_pickup.tscn" id="26_w8lkd"',
         'path="res://entities/equipment/weapons/melee/dagger_bronze.tscn" id="45_txrpn"': 'path="res://world/pickups/dagger_bronze_pickup.tscn" id="45_txrpn"',
@@ -92,9 +92,9 @@ def insert_shield_ext_gear(text: str) -> str:
 
 
 def replace_shield_block_main(text: str) -> str:
-    old = r'\[node name="Shield_Bronze" type="Node3D" parent="TutorialIsleGear" unique_id=180006820\][\s\S]*?\[node name="Backpack_Large"'
+    old = r'\[node name="Shield_Bronze" type="Node3D" parent="JorvikGear" unique_id=180006820\][\s\S]*?\[node name="Backpack_Large"'
     new = (
-        '[node name="Shield_Bronze" parent="TutorialIsleGear" unique_id=180006820 instance=ExtResource("30_shield_pickup")]\n'
+        '[node name="Shield_Bronze" parent="JorvikGear" unique_id=180006820 instance=ExtResource("30_shield_pickup")]\n'
         "transform = Transform3D(0.9809028, -0.11814359, 0.15450668, 0.0028403942, 0.8029955, 0.59597826, -0.1944792, -0.58415765, 0.7879962, 203.20865, 10.309912, 390.1378)\n"
         "\n"
         '[node name="Backpack_Large"'
@@ -149,32 +149,32 @@ def patch_props_scene(text: str) -> str:
 
 
 def main() -> None:
-    main_isle = REPO / "world/regions/tutorial_isle/tutorial_isle.tscn"
+    main_isle = REPO / "world/regions/jorvik/jorvik.tscn"
     t = main_isle.read_text(encoding="utf-8")
-    t = patch_ext_resources_tutorial_isle(t)
+    t = patch_ext_resources_jorvik(t)
     t = insert_shield_ext_main(t)
     t = replace_shield_block_main(t)
     t = strip_pickup_children(t)
     main_isle.write_text(t, encoding="utf-8")
     print("Patched", main_isle.relative_to(REPO))
 
-    gear = REPO / "world/regions/tutorial_isle/tutorial_isle_gear.tscn"
+    gear = REPO / "world/regions/jorvik/jorvik_gear.tscn"
     t2 = gear.read_text(encoding="utf-8")
-    t2 = patch_ext_resources_tutorial_isle_gear(t2)
+    t2 = patch_ext_resources_jorvik_gear(t2)
     t2 = insert_shield_ext_gear(t2)
     t2 = replace_shield_block_gear(t2)
     t2 = strip_pickup_children(t2)
     gear.write_text(t2, encoding="utf-8")
     print("Patched", gear.relative_to(REPO))
 
-    mats = REPO / "world/regions/tutorial_isle/tutorial_isle_materials.tscn"
+    mats = REPO / "world/regions/jorvik/jorvik_materials.tscn"
     t3 = mats.read_text(encoding="utf-8")
     t3 = patch_materials_ext(t3)
     t3 = strip_pickup_children(t3)
     mats.write_text(t3, encoding="utf-8")
     print("Patched", mats.relative_to(REPO))
 
-    props = REPO / "world/regions/tutorial_isle/tutorial_isle_props.tscn"
+    props = REPO / "world/regions/jorvik/jorvik_props.tscn"
     t4 = props.read_text(encoding="utf-8")
     t4 = patch_props_scene(t4)
     t4 = strip_pickup_children(t4)

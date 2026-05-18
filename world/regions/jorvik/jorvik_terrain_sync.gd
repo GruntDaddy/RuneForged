@@ -2,14 +2,14 @@ extends Node3D
 ## Keeps Terrain3D isle biome `sea_level_y` in sync with the `Water` node, and pushes tree XZ
 ## positions for procedural dirt rings under trunks (shader reads `tree_dirt_patches`).
 ##
-## **Terrain3D:** Main island uses node `Terrain3D`, group `terrain3d`, data `res://data/terrain3d`. If you add a second overlay terrain (e.g. paths), resolve gameplay height via [Terrain3DPrimaryResolver] or group `terrain3d`, not arbitrary `find_children` order.
+## **Terrain3D:** Jorvik ground uses node `Terrain3D`, group `terrain3d`, data `res://data/terrain3d`. If you add a second overlay terrain (e.g. paths), resolve gameplay height via [Terrain3DPrimaryResolver] or group `terrain3d`, not arbitrary `find_children` order.
 
 const _MAX_TREE_PATCHES := 48
 
 @onready var _terrain: Terrain3D = $Terrain3D
 @onready var _water: Node3D = $Water
 
-## Harvestables root under the **main region scene** (e.g. tutorial_isle.tscn → Props/Harvestables).
+## Harvestables root under the **main region scene** (e.g. jorvik.tscn → Props/Harvestables).
 ## Resolved via `current_scene`, not this node's parent (terrain sync lives on the environment subtree).
 @export var trees_scan_root: NodePath = ^"Props/Harvestables"
 ## World-space radius (meters) of extra dirt around each collected tree node.
@@ -93,10 +93,10 @@ func _get_terrain_shader_material() -> Variant:
 	if _terrain == null:
 		return null
 	if _terrain.material == null:
-		push_warning("tutorial_isle_terrain_sync: Terrain3D has no material; skipping shader sync.")
+		push_warning("jorvik_terrain_sync: Terrain3D has no material; skipping shader sync.")
 		return null
 	if not _terrain.material.has_method("set_shader_param"):
-		push_warning("tutorial_isle_terrain_sync: Terrain3D material has no shader param API; skipping shader sync.")
+		push_warning("jorvik_terrain_sync: Terrain3D material has no shader param API; skipping shader sync.")
 		return null
 	return _terrain.material
 

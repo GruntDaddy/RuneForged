@@ -2,7 +2,7 @@ extends Object
 class_name Terrain3DPrimaryResolver
 
 ## Resolves the gameplay Terrain3D (main ground), skipping overlay datasets such as `Terrain3DPaths`.
-## Prefer nodes in group `terrain3d` (registered by region scenes such as tutorial_isle_terrain_sync).
+## Prefer nodes in group `terrain3d` (registered by region scenes such as jorvik_terrain_sync).
 
 
 static func find_primary(tree: SceneTree, terrain_override: Terrain3D = null) -> Terrain3D:
@@ -31,7 +31,10 @@ static func _is_paths_overlay(t: Terrain3D) -> bool:
 	if String(t.name) == "Terrain3DPaths":
 		return true
 	var dd: Variant = t.get("data_directory")
-	return dd is String and String(dd).ends_with("terrain3d_tutorial_paths")
+	if not dd is String:
+		return false
+	var path := String(dd)
+	return path.ends_with("terrain3d_jorvik_paths") or path.ends_with("terrain3d_tutorial_paths")
 
 
 static func _dfs_primary(n: Node) -> Terrain3D:

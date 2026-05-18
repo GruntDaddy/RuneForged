@@ -10,7 +10,7 @@ const _InventoryService = preload("res://autoload/inventory_service.gd")
 ## - **Move / duplicate:** Select the instance, move/rotate in the viewport. **Ctrl+D** duplicates. Adjust **Transform** in the inspector for fine placement.
 ## - **Exports:** Per-instance you can change `max_hits`, drops, particle color, `harvest_interaction` (Chop vs Mine) on rocks if you duplicate the rock scene or override in the inspector.
 ##
-## ## Terrain3D (overworld / main island)
+## ## Terrain3D (Jorvik / overworld)
 ## - The island uses a **TerrainObjects** node (`terrain_3d_objects.gd` — Terrain3D addon) as a parent for world props.
 ## - **Best for sculpted ground:** Make each tree/rock a **direct child** of that **TerrainObjects** node so Terrain3D can keep each object’s height in sync when you sculpt (addon tracks direct children).
 ## - **Grouping:** You can add an empty `Node3D` (e.g. “ForestPatch”) under **TerrainObjects**, parent instances under it for organization; height sync then applies per group node unless you use direct children — for strict per-prop follow, prefer **direct** children of **TerrainObjects** or re-run placement after big terrain edits.

@@ -5,5 +5,7 @@
 [resource]
 resource_name = "knight"
 cull_mode = 2
+shading_mode = 2
+disable_ambient_light = true
 albedo_texture = ExtResource("1_b560w")
 roughness = 0.5

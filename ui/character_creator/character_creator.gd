@@ -245,7 +245,7 @@ func _on_confirm_pressed() -> void:
 	GameState.trait_id_2 = trait_id_2
 	GameState.birthsign_id = birthsign_id
 
-	GameState.region = GameState.REGION_TUTORIAL_ISLE
+	GameState.region = GameState.REGION_JORVIK
 
 	SaveManager.save_game()
 	SceneManager.fade_to_scene(GameState.OVERWORLD_SCENE_PATH)
