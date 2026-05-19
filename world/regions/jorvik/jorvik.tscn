@@ -4,26 +4,10 @@
 [ext_resource type="PackedScene" uid="uid://dlwlceuuy3mu7" path="res://world/regions/jorvik/jorvik_environment.tscn" id="2_8pv40"]
 [ext_resource type="PackedScene" uid="uid://d0akejah1t7y6" path="res://world/regions/jorvik/jorvik_gear.tscn" id="4_dbqg5"]
 [ext_resource type="PackedScene" uid="uid://w8vscph1wpmv" path="res://world/regions/jorvik/jorvik_buildings.tscn" id="10_gypqo"]
+[ext_resource type="PackedScene" uid="uid://bat2p6ta1rwj1" path="res://world/regions/jorvik/jorvik_props.tscn" id="36_pbxu2"]
 [ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/jorvik/jorvik_harvestables.tscn" id="37_8pv40"]
-[ext_resource type="PackedScene" uid="uid://dlu8vg27pwe28" path="res://entities/building_parts/ship_wreck.tscn" id="37_m3eqx"]
 [ext_resource type="PackedScene" uid="uid://dk5db657of85g" path="res://entities/building_parts/workbench.tscn" id="38_6l455"]
-[ext_resource type="PackedScene" uid="uid://cqx0r21m71s3h" path="res://entities/building_parts/potionstation.tscn" id="39_7ytdc"]
-[ext_resource type="PackedScene" uid="uid://d4kre64jiscmn" path="res://entities/building_parts/crate.tscn" id="40_12ixb"]
-[ext_resource type="PackedScene" uid="uid://cycycfc61gt0l" path="res://entities/building_parts/tent.tscn" id="41_y6shd"]
-[ext_resource type="PackedScene" uid="uid://fqyxxm8kit2g" path="res://entities/building_parts/campfire.tscn" id="42_vt8la"]
-[ext_resource type="PackedScene" uid="uid://benqlw2wabm47" path="res://entities/props/skeleton_minion_prop.tscn" id="43_d01wg"]
-[ext_resource type="PackedScene" uid="uid://bkhh8n46ed6bn" path="res://world/regions/jorvik/dock_1.tscn" id="44_qnffi"]
-[ext_resource type="PackedScene" uid="uid://baqnb1njfk6hj" path="res://entities/props/food_barrel_fish.tscn" id="45_5c3tk"]
 [ext_resource type="PackedScene" uid="uid://dyn8ch50ciolb" path="res://entities/props/castle_forge_isle.tscn" id="45_dbqg5"]
-[ext_resource type="PackedScene" uid="uid://b8q2mtemn6kjk" path="res://entities/props/fishing_rod_base.tscn" id="46_k3je4"]
-[ext_resource type="PackedScene" uid="uid://5e3s4nid00t8" path="res://entities/fishing/fishing_spot.tscn" id="47_doy6d"]
-[ext_resource type="PackedScene" uid="uid://dbd6etcm4mjt5" path="res://world/pickups/fishing_worm_pickup.tscn" id="48_q4bon"]
-[ext_resource type="PackedScene" uid="uid://ctwwhjmlo707u" path="res://world/pickups/fishing_bobber_pickup.tscn" id="49_k3is3"]
-[ext_resource type="PackedScene" uid="uid://bslyivr00xnme" path="res://world/pickups/fishing_hook_a_pickup.tscn" id="50_1uie5"]
-[ext_resource type="PackedScene" uid="uid://bsmyivr00xnme" path="res://world/pickups/fishing_hook_b_pickup.tscn" id="51_psgnp"]
-[ext_resource type="PackedScene" uid="uid://b7dacipqpquux" path="res://entities/building_parts/anvil.tscn" id="52_2qm64"]
-[ext_resource type="PackedScene" uid="uid://hjsgrguldp45" path="res://entities/building_parts/grindstone.tscn" id="53_1umda"]
-[ext_resource type="PackedScene" uid="uid://d2bdr601l23of" path="res://entities/building_parts/smelter.tscn" id="54_r0ygv"]
 [ext_resource type="PackedScene" uid="uid://tj6pvjcbonk" path="res://entities/props/house_gltf.tscn" id="56_4uh62"]
 [ext_resource type="PackedScene" uid="uid://cdn8iemuygm1g" path="res://world/regions/jorvik/npcs/woodsman.tscn" id="59_6l455"]
 [ext_resource type="Script" uid="uid://4xplm28he4mf" path="res://world/regions/jorvik/jorvik.gd" id="75_jorvik_script"]
@@ -269,105 +253,9 @@ max_alive = 1
 respawn_seconds = 30.0
 spawn_radius = 2.5
 
+[node name="Props" parent="." unique_id=1050995651 instance=ExtResource("36_pbxu2")]
+
 [node name="Buildings" parent="." unique_id=576262690 instance=ExtResource("10_gypqo")]
-
-[node name="Props" type="Node3D" parent="." unique_id=576046898]
-
-[node name="ShipWreck" parent="Props" unique_id=702955149 instance=ExtResource("37_m3eqx")]
-transform = Transform3D(-0.26465613, -2.332257, -0.86054283, 2.248105, -0.59393346, 0.9182943, -1.0611209, -0.6766234, 2.1601405, 247.66739, 11.073442, 402.76605)
-
-[node name="Workbench" parent="Props" unique_id=254282749 instance=ExtResource("38_6l455")]
-transform = Transform3D(0.6273923, 0, 0.77870333, 0, 1, 0, -0.77870333, 0, 0.6273923, 199.58836, 19.987328, 149.10912)
-
-[node name="Potionstation" parent="Props" unique_id=1352345568 instance=ExtResource("39_7ytdc")]
-transform = Transform3D(0.97245944, 0, 0.23307204, 0, 1, 0, -0.23307204, 0, 0.97245944, 179.65248, 19.978403, 143.46947)
-
-[node name="Crate" parent="Props" unique_id=635671946 instance=ExtResource("40_12ixb")]
-transform = Transform3D(0.9536802, 0.3008225, -8.940697e-08, -0.28846714, 0.9145112, -0.28364718, -0.08532713, 0.2705088, 0.9589284, 234.36917, 9.292568, 395.41064)
-
-[node name="Tent" parent="Props" unique_id=134589951 instance=ExtResource("41_y6shd")]
-transform = Transform3D(0.745918, 0, -0.6660379, 0, 1, 0, 0.6660379, 0, 0.745918, 221.80356, 10.0974045, 374.50104)
-
-[node name="Campfire" parent="Props" unique_id=541966093 instance=ExtResource("42_vt8la")]
-transform = Transform3D(0.7451094, 0.034721408, -0.66603786, -0.010500949, 0.9991309, 0.040338352, 0.66685957, -0.023062464, 0.7448264, 222.18814, 9.760959, 376.1053)
-
-[node name="Skeleton_Minion_Prop" parent="Props" unique_id=53436515 instance=ExtResource("43_d01wg")]
-transform = Transform3D(0.9822047, -0.18733844, -0.013349389, 0.004483967, -0.04766724, 0.9988532, -0.18775994, -0.98113817, -0.045978967, 219.36903, 10.060676, 376.86588)
-
-[node name="Dock" type="Node3D" parent="Props" unique_id=534667314]
-transform = Transform3D(-1.4008949, 0, -3.7466643, 0, 4, 0, 3.7466643, 0, -1.4008949, 186.41495, 6.1295204, 397.761)
-
-[node name="Dock_1" parent="Props/Dock" unique_id=117566679 instance=ExtResource("44_qnffi")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Food_Barrel_Fish" parent="Props/Dock" unique_id=1356937088 instance=ExtResource("45_5c3tk")]
-transform = Transform3D(-0.08755593, 0, 0.23416652, 0, 0.25, 0, -0.23416652, 0, -0.08755593, 5.346298, 0.028018951, 0.34126282)
-
-[node name="fishing_rod_base" parent="Props/Dock" unique_id=668500150 instance=ExtResource("46_k3je4")]
-transform = Transform3D(-0.24865633, 0.00059337914, 0.02587828, -0.011848375, -0.22482368, -0.10869195, 0.023014218, -0.10933427, 0.22364338, 5.384903, 0.6568346, 0.43275452)
-
-[node name="FishingSpot_Dock" parent="Props/Dock" unique_id=438344528 instance=ExtResource("47_doy6d")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.004303, -2.4488268, -0.19052124)
-
-[node name="FishingWorm_Beach" parent="Props/Dock" unique_id=1722990662 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.28159332, 0.034079194, 0.27334595)
-
-[node name="FishingWorm_Beach4" parent="Props/Dock" unique_id=920255136 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.2577896, 0.034079194, 0.30570984)
-
-[node name="FishingWorm_Beach5" parent="Props/Dock" unique_id=2052172608 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.22257996, 0.034079194, 0.24142456)
-
-[node name="FishingWorm_Beach6" parent="Props/Dock" unique_id=891284245 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.23980713, 0.05213058, 0.24996948)
-
-[node name="FishingWorm_Beach7" parent="Props/Dock" unique_id=1563858906 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.2554474, 0.05213058, 0.28269958)
-
-[node name="FishingWorm_Beach8" parent="Props/Dock" unique_id=331963089 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.27171326, 0.05213058, 0.25582886)
-
-[node name="FishingWorm_Beach9" parent="Props/Dock" unique_id=390486322 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.25267792, 0.070044875, 0.26289368)
-
-[node name="FishingWorm_Beach2" parent="Props/Dock" unique_id=453114821 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.2374115, 0.034079194, 0.27627563)
-
-[node name="FishingWorm_Beach3" parent="Props/Dock" unique_id=273118413 instance=ExtResource("48_q4bon")]
-transform = Transform3D(0.05485101, -0.17601973, -0.03412734, -0.17900985, -0.055782788, 0, -0.010153166, 0.032582022, -0.18436807, -0.2629013, 0.034079194, 0.24456787)
-
-[node name="FishingBobber_Beach" parent="Props/Dock" unique_id=1084069899 instance=ExtResource("49_k3is3")]
-transform = Transform3D(-0.049264725, -0.11260707, -0.022751562, -0.11452, 0.050101604, 3.0493617e-09, 0.009119123, 0.020844065, -0.122912034, -0.17032623, 0.037958384, 0.29310608)
-
-[node name="FishingBobber_Beach2" parent="Props/Dock" unique_id=653925519 instance=ExtResource("49_k3is3")]
-transform = Transform3D(-0.089687094, 0.08404518, -0.022751559, 0.08547292, 0.09121063, 3.0493617e-09, 0.01660148, -0.015557158, -0.12291203, -0.21398926, 0.033456564, 0.3491974)
-
-[node name="FishingBobber_Beach3" parent="Props/Dock" unique_id=1342054198 instance=ExtResource("49_k3is3")]
-transform = Transform3D(0.0061115734, -0.005727155, 0.12471912, 0.08547292, 0.09121063, -4.005195e-10, -0.091005646, 0.085280806, 0.008375652, -0.14605713, 0.036143422, 0.35050964)
-
-[node name="FishingHookA_Beach" parent="Props/Dock" unique_id=305329916 instance=ExtResource("50_1uie5")]
-transform = Transform3D(0.017846538, 0.12367827, -0.0031922725, 0.0019309394, 0.002946476, 0.12495035, 0.12370438, -0.017888745, -0.0014898462, -0.13772583, 0.02645576, 0.22065735)
-
-[node name="FishingHookA_Beach2" parent="Props/Dock" unique_id=320493931 instance=ExtResource("50_1uie5")]
-transform = Transform3D(0.12015194, 0.034371402, -0.0026673041, 0.0019309393, 0.0029464762, 0.12495036, 0.034420606, -0.120145455, 0.0023012469, -0.14987183, 0.03468716, 0.20396423)
-
-[node name="FishingHookA_Beach3" parent="Props/Dock" unique_id=2015581875 instance=ExtResource("50_1uie5")]
-transform = Transform3D(-0.121254176, -0.030261155, 0.0025874134, 0.0019309395, 0.0029464762, 0.12495036, -0.030310094, 0.121245936, -0.0023907197, -0.11645508, 0.02749741, 0.24745941)
-
-[node name="FishingHookA_Beach4" parent="Props/Dock" unique_id=1530924564 instance=ExtResource("50_1uie5")]
-transform = Transform3D(-0.12106843, -0.030453749, 0.006324506, 0.010418145, -0.015755786, 0.12356462, -0.029306889, 0.120205335, 0.017798407, -0.18962097, 0.02749741, 0.24999237)
-
-[node name="FishingHookB_Beach" parent="Props/Dock" unique_id=1142397427 instance=ExtResource("51_psgnp")]
-transform = Transform3D(0.018772367, 0.12352165, 0.0038741366, 0.019107213, 0.0009704694, -0.12352723, -0.1220963, 0.019143384, -0.018735487, -0.1409607, 0.033173203, 0.174469)
-
-[node name="Anvil" parent="Props" unique_id=985244922 instance=ExtResource("52_2qm64")]
-transform = Transform3D(-0.63882154, 0, 0.76935494, 0, 0.9999999, 0, -0.76935494, 0, -0.63882154, 196.44185, 20.001608, 151.02925)
-
-[node name="Grindstone" parent="Props" unique_id=1000736053 instance=ExtResource("53_1umda")]
-transform = Transform3D(0.29000074, -0.05584068, -0.9553958, 0, 0.9982963, -0.058348104, 0.95702624, 0.016920991, 0.2895066, 190.78146, 19.962036, 148.00763)
-
-[node name="Smelter" parent="Props" unique_id=2028400591 instance=ExtResource("54_r0ygv")]
-transform = Transform3D(-0.73728764, 0, -1.8591415, 0, 2, 0, 1.8591415, 0, -0.73728764, 200.99422, 19.924723, 161.84268)
 
 [node name="House_Lumberjack" parent="." unique_id=1880947831 instance=ExtResource("56_4uh62")]
 transform = Transform3D(-0.31894276, 0, 0.947774, 0, 1, 0, -0.947774, 0, -0.31894276, 120.95788, 20.005741, 347.9669)
@@ -382,7 +270,7 @@ transform = Transform3D(0.4430086, 0, 0.89651734, 0, 1, 0, -0.89651734, 0, 0.443
 transform = Transform3D(0.42674232, 0, 0.9043733, 0, 1, 0, -0.9043733, 0, 0.42674232, 121.91843, 19.95, 318.59665)
 
 [node name="WoodsmanWorkSpot" type="Marker3D" parent="." unique_id=863587849 groups=["woodsman_work_spot"]]
-transform = Transform3D(-0.6917572, 0, -0.72213215, 0, 1, 0, 0.72213215, 0, -0.6917572, 122.45, 19.95, 319.15)
+transform = Transform3D(-0.6917572, 0, -0.72213215, 0, 1, 0, 0.72213215, 0, -0.6917572, 122.81836, 19.95, 318.87067)
 gizmo_extents = 0.0
 
 [node name="well_gltf" parent="." unique_id=886514937 instance=ExtResource("83_7spe6")]

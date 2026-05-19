@@ -28,7 +28,7 @@ enum _AmbientState { IDLE, WALK, WORK }
 @export_range(0.0, 1.0, 0.05) var work_chance_after_idle: float = 0.55
 @export var face_turn_speed: float = 5.0
 ## Extra yaw after facing the workbench (degrees). Tune in editor if the rig faces sideways/backward.
-@export var work_face_yaw_offset_deg: float = -90.0
+@export var work_face_yaw_offset_deg: float = 0.0
 ## Optional fixed spot in the level (e.g. Marker3D by the lumbermill workbench). Falls back to group `woodsman_work_spot`.
 @export var work_spot_path: NodePath = NodePath("")
 ## What to face while working (e.g. the lumbermill workbench). Falls back to group `woodsman_work_face`.
@@ -133,7 +133,9 @@ func _tick_idle(delta: float) -> void:
 		return
 	if randf() < work_chance_after_idle and _resolve_work_spot() != null:
 		_begin_work_approach()
-	elif randf() < 0.4 and not _is_in_work_keepout(global_position):
+	elif _is_in_work_keepout(global_position):
+		_begin_walk_away_from_work_zone()
+	elif randf() < 0.4:
 		_begin_walk()
 	else:
 		_state_timer = _random_idle_wait()
@@ -272,9 +274,33 @@ func _tick_work(delta: float) -> void:
 	_state_timer -= delta
 	if _state_timer > 0.0:
 		return
-	_ambient = _AmbientState.IDLE
-	_state_timer = _random_idle_wait()
-	_play_anim(["Idle_A", "Idle"])
+	if _is_in_work_keepout(global_position):
+		_begin_walk_away_from_work_zone()
+	else:
+		_ambient = _AmbientState.IDLE
+		_state_timer = _random_idle_wait()
+		_play_anim(["Idle_A", "Idle"])
+
+
+func _begin_walk_away_from_work_zone() -> void:
+	if not _is_in_work_keepout(global_position):
+		return
+	_walk_arrival_state = _AmbientState.IDLE
+	_ambient = _AmbientState.WALK
+	_reset_walk_obstacle_state()
+	var pos_xz := Vector2(global_position.x, global_position.z)
+	var dir := _roam_home_xz - pos_xz
+	if dir.length_squared() < 0.25:
+		dir = pos_xz - _work_zone_center_xz
+	if dir.length_squared() < 0.01:
+		dir = Vector2(1.0, 0.0)
+	dir = dir.normalized()
+	var dist_inside := _work_zone_center_xz.distance_to(pos_xz)
+	var step := maxf(work_zone_keepout_radius - dist_inside + 1.5, 2.5)
+	var dest := pos_xz + dir * step
+	if dest.distance_to(_work_zone_center_xz) < work_zone_keepout_radius:
+		dest = _work_zone_center_xz + dir * (work_zone_keepout_radius + 1.5)
+	_walk_target = _snap_to_terrain(Vector3(dest.x, global_position.y, dest.y))
 
 
 func _begin_walk() -> void:
