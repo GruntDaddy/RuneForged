@@ -369,9 +369,9 @@ func _build_woodsman_trial_quest() -> QuestData:
 			],
 			[
 				"Fire keeps the cold and the dark at bay.",
-				"I'll spare you some stone. Bring five logs and craft a campfire kit at your Forge.",
+				"I'll spare you some stone and a tinderbox. Bring five logs and craft a campfire kit at your Forge.",
 			],
-			["Open the menu with C, use Forge, and craft a Campfire kit."],
+			["Open the menu with C, use Forge, and craft a Campfire kit.", "Use the tinderbox to light your campfire after you place it."],
 		),
 		_make_woodsman_stage(
 			"campfire",

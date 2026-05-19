@@ -1,6 +1,7 @@
 extends Node3D
 
 const _PickupScript: Script = preload("res://world/item_pickup_interactable.gd")
+const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
 
 enum _AmbientState { IDLE, WALK, CHOP }
 
@@ -221,7 +222,7 @@ func _start_quest(player: Node) -> void:
 func _handle_after_chop(player: Node) -> void:
 	QuestService.clear_awaiting_checkpoint()
 	QuestService.set_flag("woodsman_stone_granted", true)
-	_grant_items(player, [{"id": "stone", "count": 5}])
+	_grant_items(player, [{"id": "stone", "count": 5}, {"id": "tinderbox", "count": 1}])
 	var stage := QuestService.get_quest(QuestService.WOODSMAN_TRIAL_ID)
 	var lines := PackedStringArray()
 	var hints := PackedStringArray()
