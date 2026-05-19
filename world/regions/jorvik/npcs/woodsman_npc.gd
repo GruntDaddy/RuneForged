@@ -1,34 +1,62 @@
-extends Node3D
+extends CharacterBody3D
 
 const _PickupScript: Script = preload("res://world/item_pickup_interactable.gd")
 const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolver.gd")
 
-enum _AmbientState { IDLE, WALK, CHOP }
+const WORK_SPOT_GROUP := "woodsman_work_spot"
+const WORK_FACE_GROUP := "woodsman_work_face"
+const WORK_ANIM := "Work_C"
+const WORK_ANIM_DURATION_SEC := 3.666
+
+enum _AmbientState { IDLE, WALK, WORK }
 
 @export var interact_radius: float = 2.4
 @export var interact_height: float = 1.6
-@export var roam_radius: float = 6.0
+@export var roam_radius: float = 5.0
+## Random idle walks stay outside this radius around the lumbermill workbench (only work approach enters).
+@export var work_zone_keepout_radius: float = 8.0
 @export var roam_speed: float = 1.05
+@export var walk_arrival_dist: float = 0.4
+@export var work_arrival_dist: float = 1.35
+@export var walk_stuck_move_eps: float = 0.045
+@export var walk_stuck_time_sec: float = 0.65
+@export var walk_avoid_time_sec: float = 1.4
+@export var walk_give_up_time_sec: float = 2.75
 @export var idle_time_min: float = 2.5
 @export var idle_time_max: float = 6.0
-@export var chop_duration_sec: float = 3.8
-@export_range(0.0, 1.0, 0.05) var chop_chance_after_walk: float = 0.4
+@export var work_duration_sec: float = WORK_ANIM_DURATION_SEC
+@export_range(0.0, 1.0, 0.05) var work_chance_after_idle: float = 0.55
 @export var face_turn_speed: float = 5.0
+## Extra yaw after facing the workbench (degrees). Tune in editor if the rig faces sideways/backward.
+@export var work_face_yaw_offset_deg: float = -90.0
+## Optional fixed spot in the level (e.g. Marker3D by the lumbermill workbench). Falls back to group `woodsman_work_spot`.
+@export var work_spot_path: NodePath = NodePath("")
+## What to face while working (e.g. the lumbermill workbench). Falls back to group `woodsman_work_face`.
+@export var work_face_path: NodePath = NodePath("")
 
 @onready var _interact_area: Area3D = $InteractArea
 @onready var _anim: AnimationPlayer = $AnimationPlayer
-@onready var _chop_spot: Node3D = get_node_or_null("ChopSpot") as Node3D
 
-var _home_xz: Vector2 = Vector2.ZERO
+var _roam_home_xz: Vector2 = Vector2.ZERO
+var _work_zone_center_xz: Vector2 = Vector2.ZERO
 var _ambient: _AmbientState = _AmbientState.IDLE
 var _walk_target: Vector3 = Vector3.ZERO
+var _walk_arrival_state: _AmbientState = _AmbientState.IDLE
 var _state_timer: float = 0.0
 var _current_anim: String = ""
+var _work_spot: Node3D
+var _work_face: Node3D
+var _walk_no_progress_timer: float = 0.0
+var _walk_avoid_timer: float = 0.0
+var _walk_avoid_sign: float = 1.0
 
 
 func _ready() -> void:
+	_work_face = _resolve_work_face()
 	add_to_group("quest_npc_woodsman")
-	_home_xz = Vector2(global_position.x, global_position.z)
+	_work_spot = _resolve_work_spot()
+	_roam_home_xz = Vector2(global_position.x, global_position.z)
+	_work_zone_center_xz = _resolve_work_zone_center_xz()
 	if _interact_area != null:
 		var shape := _interact_area.get_node_or_null("CollisionShape3D") as CollisionShape3D
 		if shape != null and shape.shape is CapsuleShape3D:
@@ -41,6 +69,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if QuestDialogue.is_busy():
+		velocity = Vector3.ZERO
 		_play_anim(["Idle_A", "Idle"])
 		return
 	match _ambient:
@@ -48,8 +77,8 @@ func _process(delta: float) -> void:
 			_tick_idle(delta)
 		_AmbientState.WALK:
 			_tick_walk(delta)
-		_AmbientState.CHOP:
-			_tick_chop(delta)
+		_AmbientState.WORK:
+			_tick_work(delta)
 
 
 func get_interaction_prompt(_player: Node) -> String:
@@ -73,6 +102,7 @@ func interact(player: Node) -> bool:
 		return false
 	_ambient = _AmbientState.IDLE
 	_state_timer = _random_idle_wait()
+	velocity = Vector3.ZERO
 	_face_player(player)
 	if QuestService.is_quest_completed(QuestService.WOODSMAN_TRIAL_ID):
 		_show_lines(player, PackedStringArray(["You're doing fine out here. Keep your fire fed."]), [])
@@ -96,14 +126,17 @@ func interact(player: Node) -> bool:
 
 
 func _tick_idle(delta: float) -> void:
+	velocity = Vector3.ZERO
 	_play_anim(["Idle_A", "Idle"])
 	_state_timer -= delta
 	if _state_timer > 0.0:
 		return
-	if randf() < chop_chance_after_walk and _chop_spot != null:
-		_begin_chop()
-	else:
+	if randf() < work_chance_after_idle and _resolve_work_spot() != null:
+		_begin_work_approach()
+	elif randf() < 0.4 and not _is_in_work_keepout(global_position):
 		_begin_walk()
+	else:
+		_state_timer = _random_idle_wait()
 
 
 func _tick_walk(delta: float) -> void:
@@ -111,19 +144,131 @@ func _tick_walk(delta: float) -> void:
 	var to := _walk_target - pos
 	to.y = 0.0
 	var dist := to.length()
-	if dist < 0.35:
-		_ambient = _AmbientState.IDLE
-		_state_timer = _random_idle_wait()
-		_play_anim(["Idle_A", "Idle"])
+	var arrival := _walk_arrival_distance()
+	if dist < arrival:
+		_finish_walk_arrival()
 		return
-	var step := roam_speed * delta
-	var move := to.normalized() * minf(step, dist)
-	global_position = pos + move
-	_face_direction(move, delta)
+	var prev_dist := dist
+	var prev_pos := global_position
+	velocity = _compute_walk_velocity(to, dist)
+	move_and_slide()
+	global_position = _snap_to_terrain(global_position)
+	to = _walk_target - global_position
+	to.y = 0.0
+	dist = to.length()
+	if dist < arrival:
+		_finish_walk_arrival()
+		return
+	if _update_walk_obstacle_response(delta, prev_pos, prev_dist, dist, arrival):
+		return
+	_face_direction(velocity, delta)
 	_play_anim(["Walking_A", "Walking_B", "Walk"])
 
 
-func _tick_chop(delta: float) -> void:
+func _compute_walk_velocity(to_target: Vector3, dist: float) -> Vector3:
+	if dist < 0.01:
+		return Vector3.ZERO
+	var forward := to_target / dist
+	if _walk_avoid_timer > 0.0:
+		var side := Vector3(-forward.z, 0.0, forward.x) * _walk_avoid_sign
+		return (forward + side * 0.9).normalized() * roam_speed
+	if get_slide_collision_count() > 0:
+		var slide := _slide_along_blocking_surface(forward)
+		if slide.length_squared() > 0.01:
+			return slide * roam_speed
+	return forward * roam_speed
+
+
+func _slide_along_blocking_surface(forward: Vector3) -> Vector3:
+	var best := Vector3.ZERO
+	var best_len_sq := 0.0
+	for i in range(get_slide_collision_count()):
+		var collision := get_slide_collision(i)
+		if collision == null:
+			continue
+		var normal := collision.get_normal()
+		normal.y = 0.0
+		if normal.length_squared() < 0.01:
+			continue
+		normal = normal.normalized()
+		var tangent := forward - normal * forward.dot(normal)
+		if tangent.length_squared() > best_len_sq:
+			best = tangent
+			best_len_sq = tangent.length_squared()
+	return best.normalized() if best_len_sq > 0.01 else Vector3.ZERO
+
+
+func _update_walk_obstacle_response(
+	delta: float,
+	prev_pos: Vector3,
+	prev_dist: float,
+	dist: float,
+	arrival: float
+) -> bool:
+	var moved_pos := prev_pos.distance_to(global_position)
+	var progressed := prev_dist - dist
+	var colliding := get_slide_collision_count() > 0
+	var making_progress := (
+		moved_pos >= walk_stuck_move_eps
+		and progressed >= walk_stuck_move_eps * 0.5
+		and not colliding
+	)
+	if making_progress:
+		_walk_no_progress_timer = maxf(0.0, _walk_no_progress_timer - delta * 2.0)
+		if _walk_avoid_timer > 0.0:
+			_walk_avoid_timer -= delta
+		return false
+	_walk_no_progress_timer += delta
+	if _walk_no_progress_timer >= walk_stuck_time_sec and _walk_avoid_timer <= 0.0:
+		_walk_avoid_sign = 1.0 if randf() > 0.5 else -1.0
+		_walk_avoid_timer = walk_avoid_time_sec
+		_walk_no_progress_timer = 0.0
+		return false
+	if _walk_avoid_timer > 0.0:
+		_walk_avoid_timer -= delta
+	if _walk_no_progress_timer < walk_give_up_time_sec:
+		return false
+	_abandon_walk(dist, arrival)
+	return true
+
+
+func _abandon_walk(dist: float, arrival: float) -> void:
+	_walk_no_progress_timer = 0.0
+	_walk_avoid_timer = 0.0
+	if _walk_arrival_state == _AmbientState.WORK:
+		_finish_walk_arrival()
+		return
+	if dist <= arrival * 1.75:
+		_finish_walk_arrival()
+		return
+	_ambient = _AmbientState.IDLE
+	_state_timer = _random_idle_wait()
+	velocity = Vector3.ZERO
+	_play_anim(["Idle_A", "Idle"])
+
+
+func _walk_arrival_distance() -> float:
+	if _walk_arrival_state == _AmbientState.WORK:
+		return work_arrival_dist
+	return walk_arrival_dist
+
+
+func _finish_walk_arrival() -> void:
+	velocity = Vector3.ZERO
+	_walk_no_progress_timer = 0.0
+	_walk_avoid_timer = 0.0
+	match _walk_arrival_state:
+		_AmbientState.WORK:
+			_begin_work()
+		_:
+			_ambient = _AmbientState.IDLE
+			_state_timer = _random_idle_wait()
+			_play_anim(["Idle_A", "Idle"])
+
+
+func _tick_work(delta: float) -> void:
+	velocity = Vector3.ZERO
+	_apply_work_facing()
 	_state_timer -= delta
 	if _state_timer > 0.0:
 		return
@@ -133,28 +278,88 @@ func _tick_chop(delta: float) -> void:
 
 
 func _begin_walk() -> void:
+	_walk_arrival_state = _AmbientState.IDLE
 	_ambient = _AmbientState.WALK
-	for _attempt in 8:
+	_reset_walk_obstacle_state()
+	for _attempt in 16:
 		var ang := randf() * TAU
 		var r := randf_range(roam_radius * 0.35, roam_radius)
 		var offset := Vector2(cos(ang), sin(ang)) * r
-		var dest := _home_xz + offset
-		if dest.distance_to(_home_xz) <= roam_radius:
-			var y := global_position.y
-			var hf := _Terrain3DPrimaryResolver.height_at_world(get_tree(), Vector3(dest.x, 0.0, dest.y))
-			if not is_nan(hf):
-				y = hf
-			_walk_target = Vector3(dest.x, y, dest.y)
-			return
-	_walk_target = global_position
+		var dest := _roam_home_xz + offset
+		if dest.distance_to(_roam_home_xz) > roam_radius:
+			continue
+		if _is_in_work_keepout(Vector3(dest.x, global_position.y, dest.y)):
+			continue
+		_walk_target = _snap_to_terrain(Vector3(dest.x, global_position.y, dest.y))
+		return
+	_ambient = _AmbientState.IDLE
+	_state_timer = _random_idle_wait()
 
 
-func _begin_chop() -> void:
-	_ambient = _AmbientState.CHOP
-	_state_timer = chop_duration_sec
-	if _chop_spot != null:
-		_face_direction(_chop_spot.global_position - global_position, 1.0)
-	_play_anim(["Melee_1H_Attack_Chop"], false)
+func _begin_work_approach() -> void:
+	var spot := _resolve_work_spot()
+	if spot == null:
+		return
+	var stand := _work_stand_position(spot, true)
+	var to_stand := stand - global_position
+	to_stand.y = 0.0
+	if to_stand.length() <= work_arrival_dist:
+		_begin_work()
+		return
+	_walk_arrival_state = _AmbientState.WORK
+	_ambient = _AmbientState.WALK
+	_reset_walk_obstacle_state()
+	_walk_target = _work_walk_target(spot)
+
+
+func _reset_walk_obstacle_state() -> void:
+	_walk_no_progress_timer = 0.0
+	_walk_avoid_timer = 0.0
+
+
+func _begin_work() -> void:
+	var spot := _resolve_work_spot()
+	_ambient = _AmbientState.WORK
+	_state_timer = _work_anim_duration()
+	var stand := _work_stand_position(spot)
+	global_position = stand
+	_apply_work_facing()
+	velocity = Vector3.ZERO
+	_play_anim([WORK_ANIM], false)
+
+
+func _work_walk_target(spot: Node3D) -> Vector3:
+	return _snap_to_terrain(_work_stand_position(spot, false))
+
+
+func _work_stand_position(spot: Node3D, prefer_current_if_close: bool = true) -> Vector3:
+	if spot == null:
+		return _snap_to_terrain(global_position)
+	var spot_pos := spot.global_position
+	if prefer_current_if_close:
+		var to_spot := spot_pos - global_position
+		to_spot.y = 0.0
+		if to_spot.length() <= work_arrival_dist + 0.25:
+			return _snap_to_terrain(global_position)
+	var face := _resolve_work_face()
+	if face != null:
+		var outward := spot_pos - face.global_position
+		outward.y = 0.0
+		if outward.length_squared() > 0.04:
+			return _snap_to_terrain(face.global_position + outward.normalized() * outward.length())
+	return _snap_to_terrain(spot_pos)
+
+
+func _work_anim_duration() -> float:
+	if _anim != null:
+		var resolved := _resolve_anim_name(WORK_ANIM)
+		if not resolved.is_empty():
+			var anim_res: Animation = _anim.get_animation(resolved)
+			if anim_res != null and anim_res.length > 0.001:
+				return anim_res.length
+	if work_duration_sec > 0.0:
+		return work_duration_sec
+	return WORK_ANIM_DURATION_SEC
 
 
 func _pick_idle() -> void:
@@ -164,6 +369,96 @@ func _pick_idle() -> void:
 
 func _random_idle_wait() -> float:
 	return randf_range(idle_time_min, idle_time_max)
+
+
+func _resolve_work_zone_center_xz() -> Vector2:
+	var spot := _resolve_work_spot()
+	var face := _resolve_work_face()
+	if spot != null and face != null:
+		var s := spot.global_position
+		var f := face.global_position
+		return Vector2((s.x + f.x) * 0.5, (s.z + f.z) * 0.5)
+	if spot != null:
+		return Vector2(spot.global_position.x, spot.global_position.z)
+	if face != null:
+		return Vector2(face.global_position.x, face.global_position.z)
+	return _roam_home_xz
+
+
+func _is_in_work_keepout(world_pos: Vector3) -> bool:
+	if work_zone_keepout_radius <= 0.0:
+		return false
+	var xz := Vector2(world_pos.x, world_pos.z)
+	return xz.distance_to(_work_zone_center_xz) < work_zone_keepout_radius
+
+
+func _resolve_work_face() -> Node3D:
+	if work_face_path != NodePath(""):
+		var linked := get_node_or_null(work_face_path) as Node3D
+		if linked != null:
+			return linked
+	if _work_face != null and is_instance_valid(_work_face):
+		return _work_face
+	var tree := get_tree()
+	if tree == null:
+		return null
+	for node in tree.get_nodes_in_group(WORK_FACE_GROUP):
+		if node is Node3D:
+			_work_face = node as Node3D
+			return _work_face
+	return null
+
+
+func _apply_work_facing() -> void:
+	var spot := _resolve_work_spot()
+	if spot != null:
+		rotation.y = spot.global_rotation.y + deg_to_rad(work_face_yaw_offset_deg)
+		return
+	var look_pos := _resolve_work_face_look_position()
+	var flat := look_pos - global_position
+	flat.y = 0.0
+	if flat.length_squared() < 1e-6:
+		return
+	rotation.y = atan2(flat.x, flat.z) + deg_to_rad(work_face_yaw_offset_deg)
+
+
+func _resolve_work_face_look_position() -> Vector3:
+	var face := _resolve_work_face()
+	if face == null:
+		return global_position
+	var bench := face.global_position
+	bench.y = global_position.y
+	var spot := _resolve_work_spot()
+	if spot == null:
+		return bench
+	var spot_pos := spot.global_position
+	spot_pos.y = global_position.y
+	return (bench + spot_pos) * 0.5
+
+
+func _resolve_work_spot() -> Node3D:
+	if work_spot_path != NodePath(""):
+		var linked := get_node_or_null(work_spot_path) as Node3D
+		if linked != null:
+			return linked
+	if _work_spot != null and is_instance_valid(_work_spot):
+		return _work_spot
+	var tree := get_tree()
+	if tree == null:
+		return null
+	for node in tree.get_nodes_in_group(WORK_SPOT_GROUP):
+		if node is Node3D:
+			_work_spot = node as Node3D
+			return _work_spot
+	return null
+
+
+func _snap_to_terrain(world_pos: Vector3) -> Vector3:
+	var y := world_pos.y
+	var hf := _Terrain3DPrimaryResolver.height_at_world(get_tree(), Vector3(world_pos.x, 0.0, world_pos.z))
+	if not is_nan(hf):
+		y = hf
+	return Vector3(world_pos.x, y, world_pos.z)
 
 
 func _face_player(player: Node) -> void:

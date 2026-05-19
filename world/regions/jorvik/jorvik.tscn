@@ -74,7 +74,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86909485, -1.5258789e-05, -
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84695435, 0, -0.5322113)
 
 [node name="Player" parent="." unique_id=1879451005 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 223.44919, 9.953686, 382.90683)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 135.5671, 19.928764, 328.57532)
 day_night_controller_path = NodePath("../Environment/DayNightCycle")
 stamina_drain_run = 1.0
 
@@ -377,6 +377,13 @@ transform = Transform3D(0.78741944, 0, -0.61641765, 0, 1, 0, 0.61641765, 0, 0.78
 
 [node name="lumbermill_gltf" parent="." unique_id=1158069169 instance=ExtResource("82_6kivj")]
 transform = Transform3D(0.4430086, 0, 0.89651734, 0, 1, 0, -0.89651734, 0, 0.4430086, 114.091385, 19.701187, 317.5815)
+
+[node name="Workbench_Lumbermill" parent="." unique_id=254282750 groups=["woodsman_work_face"] instance=ExtResource("38_6l455")]
+transform = Transform3D(0.42674232, 0, 0.9043733, 0, 1, 0, -0.9043733, 0, 0.42674232, 121.91843, 19.95, 318.59665)
+
+[node name="WoodsmanWorkSpot" type="Marker3D" parent="." unique_id=863587849 groups=["woodsman_work_spot"]]
+transform = Transform3D(-0.6917572, 0, -0.72213215, 0, 1, 0, 0.72213215, 0, -0.6917572, 122.45, 19.95, 319.15)
+gizmo_extents = 0.0
 
 [node name="well_gltf" parent="." unique_id=886514937 instance=ExtResource("83_7spe6")]
 transform = Transform3D(0.44286776, 0, 0.89658695, 0, 1, 0, -0.89658695, 0, 0.44286776, 127.48892, 19.989466, 335.45444)
