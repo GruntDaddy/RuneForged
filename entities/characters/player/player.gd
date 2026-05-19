@@ -26,6 +26,7 @@ const _Terrain3DPrimaryResolver = preload("res://world/terrain3d_primary_resolve
 const _ModularBuildPieceScene: PackedScene = preload("res://entities/modular_build/modular_build_piece.tscn")
 const _FishingSpotClass = preload("res://entities/fishing/fishing_spot.gd")
 const _TackleboxGroundScene: PackedScene = preload("res://entities/equipment/off_hand/tool_tacklebox.tscn")
+const _GamepadPromptLabels = preload("res://systems/input/gamepad_prompt_labels.gd")
 
 ## Extra contextual interact keys forwarded to interactables that opt into multi-prompt UX.
 const INTERACT_EXTRA_ACTIONS: Array[String] = [
@@ -39,6 +40,8 @@ const INTERACT_EXTRA_ACTIONS: Array[String] = [
 @export var turn_speed: float = 12.0
 @export var jump_velocity: float = 5.5
 @export var mouse_sensitivity: float = 0.003
+@export var gamepad_look_sensitivity: float = 2.75
+@export var gamepad_zoom_light_trigger_max: float = 0.42
 @export var min_pitch_rad: float = -1.2
 @export var max_pitch_rad: float = 0.65
 @export var gravity_multiplier: float = 1.35
@@ -350,6 +353,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_forward") or event.is_action_pressed("move_back"):
 		_cancel_harvest_on_movement_press()
+	if event.is_action_pressed("pause_menu") and game_menu:
+		if game_menu.visible:
+			game_menu.close_menu()
+		else:
+			game_menu.toggle(GameMenu.TAB_VITALS)
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("character_menu") and game_menu:
 		game_menu.toggle(GameMenu.TAB_VITALS)
 		get_viewport().set_input_as_handled()
@@ -365,7 +375,35 @@ func _unhandled_input(event: InputEvent) -> void:
 			game_menu.toggle(GameMenu.TAB_FORGE)
 		get_viewport().set_input_as_handled()
 		return
+	if _gamepad_chord_pressed(event, "pause_menu", "craft_menu") and game_menu:
+		if game_menu.has_method("open_forge_crafting_basic"):
+			game_menu.open_forge_crafting_basic()
+		else:
+			game_menu.toggle(GameMenu.TAB_FORGE)
+		get_viewport().set_input_as_handled()
+		return
+	if _gamepad_chord_pressed(event, "pause_menu", "tool_pickaxe") and game_menu:
+		if game_menu.has_method("open_forge_crafting_basic"):
+			game_menu.open_forge_crafting_basic()
+		else:
+			game_menu.toggle(GameMenu.TAB_FORGE)
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("build_menu"):
+		if game_menu != null and game_menu.visible:
+			get_viewport().set_input_as_handled()
+			return
+		_toggle_modular_build_panel()
+		get_viewport().set_input_as_handled()
+		return
+	if _gamepad_chord_pressed(event, "pause_menu", "build_menu"):
+		if game_menu != null and game_menu.visible:
+			get_viewport().set_input_as_handled()
+			return
+		_toggle_modular_build_panel()
+		get_viewport().set_input_as_handled()
+		return
+	if _gamepad_chord_pressed(event, "pause_menu", "tool_fishing"):
 		if game_menu != null and game_menu.visible:
 			get_viewport().set_input_as_handled()
 			return
@@ -375,6 +413,42 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _modular_panel_open and _modular_catalog_hidden:
 		if event.is_action_pressed("interact"):
 			_modular_try_use_primary()
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("modular_floor_down"):
+			_modular_floor_iy_runtime = 0
+			if modular_build_ui != null:
+				modular_build_ui.set_floor_iy(0)
+			_update_modular_ghost()
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("modular_floor_up"):
+			_modular_floor_iy_runtime = 1
+			if modular_build_ui != null:
+				modular_build_ui.set_floor_iy(1)
+			_update_modular_ghost()
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("modular_demolish"):
+			_modular_demolish_runtime = not _modular_demolish_runtime
+			if modular_build_ui != null:
+				modular_build_ui.set_demolish_pressed(_modular_demolish_runtime)
+			show_gameplay_message(
+				"Demolish mode: ON (E to salvage)" if _modular_demolish_runtime else "Demolish mode: OFF"
+			)
+			_update_modular_placement_prompt()
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("modular_rotate_cw"):
+			if modular_build_ui == null or not modular_build_ui.is_pointer_over_ui():
+				_modular_yaw_steps = (_modular_yaw_steps + 1) % 4
+				_sync_modular_ghost_rotation()
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("modular_rotate_ccw"):
+			if modular_build_ui == null or not modular_build_ui.is_pointer_over_ui():
+				_modular_yaw_steps = (_modular_yaw_steps + 3) % 4
+				_sync_modular_ghost_rotation()
 			get_viewport().set_input_as_handled()
 			return
 		if event is InputEventKey and event.pressed and not event.echo:
@@ -431,6 +505,22 @@ func _unhandled_input(event: InputEvent) -> void:
 				show_gameplay_message("Placed: %s" % InventoryService.get_item_display_name(_build_preview_item_id))
 			get_viewport().set_input_as_handled()
 			return
+		if event.is_action_pressed("build_cancel"):
+			cancel_build_placement()
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("build_rotate_cw"):
+			_build_preview_rotation_y = wrapf(_build_preview_rotation_y + deg_to_rad(build_rotate_step_deg), -PI, PI)
+			if game_menu != null and game_menu.has_method("_set_build_rotation_from_player"):
+				game_menu.call("_set_build_rotation_from_player", _build_preview_rotation_y)
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("build_rotate_ccw"):
+			_build_preview_rotation_y = wrapf(_build_preview_rotation_y - deg_to_rad(build_rotate_step_deg), -PI, PI)
+			if game_menu != null and game_menu.has_method("_set_build_rotation_from_player"):
+				game_menu.call("_set_build_rotation_from_player", _build_preview_rotation_y)
+			get_viewport().set_input_as_handled()
+			return
 		if event is InputEventMouseButton and event.pressed:
 			if event.button_index == MOUSE_BUTTON_RIGHT:
 				cancel_build_placement()
@@ -463,10 +553,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom_target_distance = clampf(_zoom_target_distance - zoom_step, zoom_min_distance, zoom_max_distance)
+			_adjust_camera_zoom(-zoom_step)
 			return
 		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom_target_distance = clampf(_zoom_target_distance + zoom_step, zoom_min_distance, zoom_max_distance)
+			_adjust_camera_zoom(zoom_step)
 			return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		camera_rig.rotate_y(-event.relative.x * mouse_sensitivity)
@@ -480,6 +570,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if not _input_enabled:
 		return
+
+	_apply_gamepad_camera_look(delta)
+	_poll_gamepad_light_trigger_zoom(delta)
 
 	if game_menu != null and game_menu.visible and _modular_panel_open:
 		_close_modular_build_panel()
@@ -3465,7 +3558,13 @@ func _build_multi_prompt_text(interactable: Object) -> String:
 func _action_key_label(action_id: String) -> String:
 	if not InputMap.has_action(action_id):
 		return ""
+	var pads := Input.get_connected_joypads()
+	var prefer_gamepad := not pads.is_empty()
 	for ev in InputMap.action_get_events(action_id):
+		if prefer_gamepad and (ev is InputEventJoypadButton or ev is InputEventJoypadMotion):
+			var label := _GamepadPromptLabels.label_for_event(ev)
+			if not label.is_empty():
+				return label
 		if ev is InputEventKey:
 			var ek := ev as InputEventKey
 			var pk: int = ek.physical_keycode
@@ -3484,7 +3583,69 @@ func _action_key_label(action_id: String) -> String:
 					return "RMB"
 				MOUSE_BUTTON_MIDDLE:
 					return "MMB"
+	if prefer_gamepad:
+		for ev in InputMap.action_get_events(action_id):
+			if ev is InputEventJoypadButton or ev is InputEventJoypadMotion:
+				var pad_label := _GamepadPromptLabels.label_for_event(ev)
+				if not pad_label.is_empty():
+					return pad_label
 	return ""
+
+
+func _get_primary_joypad() -> int:
+	var pads := Input.get_connected_joypads()
+	if pads.is_empty():
+		return -1
+	return int(pads[0])
+
+
+func _apply_gamepad_camera_look(delta: float) -> void:
+	if _gameplay_input_blocked() or camera_rig == null or spring_arm == null:
+		return
+	var pad := _get_primary_joypad()
+	if pad < 0:
+		return
+	var dx := Input.get_joy_axis(pad, JOY_AXIS_RIGHT_X)
+	var dy := Input.get_joy_axis(pad, JOY_AXIS_RIGHT_Y)
+	const STICK_DEADZONE := 0.18
+	if absf(dx) < STICK_DEADZONE and absf(dy) < STICK_DEADZONE:
+		return
+	var look_scale := gamepad_look_sensitivity * delta
+	camera_rig.rotate_y(-dx * look_scale)
+	spring_arm.rotation.x = clamp(
+		spring_arm.rotation.x - dy * look_scale,
+		min_pitch_rad,
+		max_pitch_rad
+	)
+
+
+func _poll_gamepad_light_trigger_zoom(delta: float) -> void:
+	if _gameplay_input_blocked():
+		return
+	var pad := _get_primary_joypad()
+	if pad < 0:
+		return
+	var lt := Input.get_joy_axis(pad, JOY_AXIS_TRIGGER_LEFT)
+	var rt := Input.get_joy_axis(pad, JOY_AXIS_TRIGGER_RIGHT)
+	var light_max := gamepad_zoom_light_trigger_max
+	if lt > 0.12 and lt < light_max and not Input.is_action_pressed("block"):
+		_adjust_camera_zoom(zoom_step * delta * 4.0)
+	if rt > 0.12 and rt < light_max and not Input.is_action_pressed("attack"):
+		_adjust_camera_zoom(-zoom_step * delta * 4.0)
+
+
+func _adjust_camera_zoom(delta_distance: float) -> void:
+	_zoom_target_distance = clampf(
+		_zoom_target_distance + delta_distance,
+		zoom_min_distance,
+		zoom_max_distance
+	)
+
+
+func _gamepad_chord_pressed(event: InputEvent, held_action: String, pressed_action: String) -> bool:
+	if not event.is_action_pressed(pressed_action):
+		return false
+	return Input.is_action_pressed(held_action)
 
 
 func _try_pickup_item_from_world(collider: Object) -> bool:

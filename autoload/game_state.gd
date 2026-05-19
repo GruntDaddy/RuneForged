@@ -1,5 +1,7 @@
 extends Node
 
+const _GamepadBindings = preload("res://systems/input/gamepad_bindings.gd")
+
 ## Persistent run data. SaveManager serializes these fields to user://savegame.json
 
 var player_name: String = ""
@@ -81,6 +83,7 @@ var quest_progress: Dictionary = {}
 
 
 func _ready() -> void:
+	_GamepadBindings.apply()
 	_sync_skill_registry_from_legacy_fields()
 
 

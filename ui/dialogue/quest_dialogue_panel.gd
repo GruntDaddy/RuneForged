@@ -36,6 +36,14 @@ func _show_current_line() -> void:
 	_continue_btn.text = "Continue" if _line_index < _lines.size() - 1 else "Done"
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed("interact"):
+		_on_continue_pressed()
+		get_viewport().set_input_as_handled()
+
+
 func _on_continue_pressed() -> void:
 	_line_index += 1
 	_show_current_line()
