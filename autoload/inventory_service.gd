@@ -43,6 +43,12 @@ const PICKUP_SCENES := {
 	"tin_ore": preload("res://entities/resource/resource_pickup_stone.tscn"),
 }
 
+## World scenes spawned when the player confirms build placement (not inventory drops).
+const PLACEABLE_FIRE_SCENES := {
+	"tool_torch": preload("res://world/torch_light.tscn"),
+	"campfire_kit": preload("res://entities/building_parts/campfire.tscn"),
+}
+
 ## Each entry: null or Dictionary with "id", "count", optional "tackle"
 var slots: Array = []
 
@@ -356,12 +362,20 @@ func get_item_display_name(item_id: String) -> String:
 
 
 func get_pickup_scene_for_item(item_id: String) -> PackedScene:
-	var it: ItemData = ItemCatalog.get_item(item_id)
+	var norm_id := GameState.normalize_item_id(item_id)
+	var it: ItemData = ItemCatalog.get_item(norm_id)
 	if it != null and not it.pickup_scene_path.is_empty():
 		var res: Resource = load(it.pickup_scene_path)
 		if res is PackedScene:
 			return res as PackedScene
-	return PICKUP_SCENES.get(item_id, null) as PackedScene
+	return PICKUP_SCENES.get(norm_id, null) as PackedScene
+
+
+func get_place_scene_for_item(item_id: String) -> PackedScene:
+	var norm_id := GameState.normalize_item_id(item_id)
+	if PLACEABLE_FIRE_SCENES.has(norm_id):
+		return PLACEABLE_FIRE_SCENES[norm_id] as PackedScene
+	return get_pickup_scene_for_item(norm_id)
 
 
 ## Optional `tackle_preset`: when `item_name` is `tool_tacklebox`, used for the new slot's tackle grids (normalized on write).
@@ -685,6 +699,8 @@ func drop_slot_to_world(slot_idx: int, drop_global_position: Vector3, world_pare
 	world_parent.add_child(node)
 	if node is Node3D:
 		(node as Node3D).global_position = drop_global_position
+	# Dropped torches plant a world light; campfire kits drop as a pickable item only.
+	if id == "tool_torch":
 		_persist_placeable_fire_if_needed(id, node as Node3D)
 	if node.has_method("set_resource_type"):
 		node.set_resource_type(id)

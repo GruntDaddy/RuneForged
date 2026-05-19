@@ -1789,12 +1789,11 @@ func _has_build_placeable_item(item_id: String) -> bool:
 
 func _consume_build_placeable_item(item_id: String) -> void:
 	var norm_id := GameState.normalize_item_id(item_id)
+	var equip_slot := _equipped_slot_holding_item(norm_id)
+	if not equip_slot.is_empty():
+		GameState.clear_equipment_slot(equip_slot)
 	if InventoryService.has_item(norm_id):
 		InventoryService.remove_item(norm_id, 1)
-		return
-	var slot := _equipped_slot_holding_item(norm_id)
-	if not slot.is_empty():
-		GameState.clear_equipment_slot(slot)
 
 
 func try_place_build_item(item_id: String, rotation_y: float = 0.0) -> bool:
@@ -1808,7 +1807,7 @@ func try_place_build_item(item_id: String, rotation_y: float = 0.0) -> bool:
 	if not bool(p.get("valid", false)):
 		show_gameplay_message(str(p.get("reason", "Cannot place here.")))
 		return false
-	var scene: PackedScene = InventoryService.get_pickup_scene_for_item(norm_id)
+	var scene: PackedScene = InventoryService.get_place_scene_for_item(norm_id)
 	if scene == null:
 		show_gameplay_message("Cannot place this item.")
 		return false
@@ -2174,7 +2173,7 @@ func _rebuild_build_preview_node() -> void:
 	_build_preview_valid = false
 	if _build_preview_item_id.is_empty():
 		return
-	var scene: PackedScene = InventoryService.get_pickup_scene_for_item(_build_preview_item_id)
+	var scene: PackedScene = InventoryService.get_place_scene_for_item(_build_preview_item_id)
 	if scene == null:
 		return
 	var inst := scene.instantiate()

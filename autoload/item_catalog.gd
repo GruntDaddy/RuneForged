@@ -47,6 +47,7 @@ const _RPG_ICON_BY_ITEM_ID := {
 	"tool_fishing_bait": "I_Rock05.png",
 	"tool_fishing_worm": "I_Rock05.png",
 	"tool_hammer": "S_Axe05.png",
+	"tool_tongs": "S_Axe06.png",
 	"tool_chisel": "S_Axe06.png",
 	"tool_tacklebox": "I_Mirror.png",
 	"backpack_large": "I_Mirror.png",

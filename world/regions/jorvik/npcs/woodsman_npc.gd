@@ -105,7 +105,10 @@ func interact(player: Node) -> bool:
 	velocity = Vector3.ZERO
 	_face_player(player)
 	if QuestService.is_quest_completed(QuestService.WOODSMAN_TRIAL_ID):
-		_show_lines(player, PackedStringArray(["You're doing fine out here. Keep your fire fed."]), [])
+		var lines := PackedStringArray(["You're doing fine out here. Keep your fire fed."])
+		if not QuestService.is_quest_completed(QuestService.BLACKSMITH_TRIAL_ID):
+			lines.append("The blacksmith lives down the road if you're ready to learn metalwork.")
+		_show_lines(player, lines, [])
 		return true
 	var checkpoint := QuestService.get_awaiting_checkpoint()
 	if not QuestService.is_quest_active(QuestService.WOODSMAN_TRIAL_ID):
@@ -603,6 +606,7 @@ func _handle_finale(player: Node) -> void:
 		[
 			"You've got fire, meat, and a steady hand. That's more than most who wash ashore.",
 			"Take these—may they keep you alive when the night turns cruel.",
+			"Follow the road to the blacksmith's house—he'll teach you ore and the forge.",
 		]
 	)
 	_show_lines(player, lines, PackedStringArray())

@@ -5,10 +5,14 @@ extends Node
 signal quest_updated
 
 const WOODSMAN_TRIAL_ID := &"woodsman_trial"
+const BLACKSMITH_TRIAL_ID := &"blacksmith_trial"
 const CHECKPOINT_AFTER_CHOP := &"after_chop"
 const CHECKPOINT_AFTER_CAMPFIRE := &"after_campfire"
 const CHECKPOINT_AFTER_HUNT := &"after_hunt"
 const CHECKPOINT_AFTER_COOK := &"after_cook"
+const CHECKPOINT_AFTER_MINE := &"after_mine"
+const CHECKPOINT_AFTER_SMELT := &"after_smelt"
+const CHECKPOINT_AFTER_HATCHET := &"after_hatchet"
 
 var _quests: Dictionary = {}
 
@@ -78,6 +82,20 @@ func clear_awaiting_checkpoint() -> void:
 	_persist_and_emit()
 
 
+func get_awaiting_blacksmith_checkpoint() -> String:
+	return str(flags.get("awaiting_blacksmith_talk", ""))
+
+
+func set_awaiting_blacksmith_checkpoint(checkpoint_id: String) -> void:
+	flags["awaiting_blacksmith_talk"] = checkpoint_id
+	_persist_and_emit()
+
+
+func clear_awaiting_blacksmith_checkpoint() -> void:
+	flags.erase("awaiting_blacksmith_talk")
+	_persist_and_emit()
+
+
 func get_flag(key: String, default: Variant = null) -> Variant:
 	return flags.get(key, default)
 
@@ -101,10 +119,14 @@ func start_quest(quest_id: String, stage: int = 0) -> bool:
 		return false
 	if not _quests.has(quest_id):
 		return false
+	if quest_id == BLACKSMITH_TRIAL_ID and not is_quest_completed(WOODSMAN_TRIAL_ID):
+		return false
 	active_quest_id = quest_id
 	stage_index = maxi(0, stage)
-	if not flags.has("woodsman_met") and quest_id == WOODSMAN_TRIAL_ID:
+	if quest_id == WOODSMAN_TRIAL_ID:
 		flags["woodsman_met"] = true
+	elif quest_id == BLACKSMITH_TRIAL_ID:
+		flags["blacksmith_met"] = true
 	_persist_and_emit()
 	return true
 
@@ -118,9 +140,21 @@ func complete_quest(quest_id: String) -> void:
 		active_quest_id = ""
 		stage_index = 0
 		counters = {}
-		flags = {"woodsman_met": true}
-	clear_awaiting_checkpoint()
+		flags = _preserved_completion_flags(quest_id)
+	if quest_id == WOODSMAN_TRIAL_ID:
+		clear_awaiting_checkpoint()
+	elif quest_id == BLACKSMITH_TRIAL_ID:
+		clear_awaiting_blacksmith_checkpoint()
 	_persist_and_emit()
+
+
+func _preserved_completion_flags(completed_id: String) -> Dictionary:
+	var preserved := {}
+	if bool(flags.get("woodsman_met", false)) or completed_id == WOODSMAN_TRIAL_ID:
+		preserved["woodsman_met"] = true
+	if bool(flags.get("blacksmith_met", false)) or completed_id == BLACKSMITH_TRIAL_ID:
+		preserved["blacksmith_met"] = true
+	return preserved
 
 
 func advance_stage() -> void:
@@ -163,6 +197,19 @@ func notify_rabbit_killed() -> void:
 func notify_item_crafted(output_item_id: String) -> void:
 	if output_item_id == "campfire_kit":
 		reevaluate_active_quest()
+		return
+	if not is_quest_active(BLACKSMITH_TRIAL_ID):
+		return
+	match output_item_id:
+		"ingot_bronze":
+			if stage_index == 1 and bool(flags.get("blacksmith_tongs_granted", false)):
+				flags["crafted_ingot_bronze"] = true
+				set_awaiting_blacksmith_checkpoint(CHECKPOINT_AFTER_SMELT)
+		"hatchet_bronze":
+			if stage_index == 2 and bool(flags.get("blacksmith_hammer_granted", false)):
+				flags["crafted_hatchet_bronze"] = true
+				stage_index = 3
+				set_awaiting_blacksmith_checkpoint(CHECKPOINT_AFTER_HATCHET)
 
 
 func reevaluate_active_quest() -> void:
@@ -171,6 +218,8 @@ func reevaluate_active_quest() -> void:
 	match active_quest_id:
 		WOODSMAN_TRIAL_ID:
 			_evaluate_woodsman_trial()
+		BLACKSMITH_TRIAL_ID:
+			_evaluate_blacksmith_trial()
 		_:
 			pass
 
@@ -206,9 +255,32 @@ func _maybe_set_hunt_checkpoint() -> void:
 	set_awaiting_checkpoint(CHECKPOINT_AFTER_HUNT)
 
 
+func _evaluate_blacksmith_trial() -> void:
+	if stage_index != 0:
+		return
+	if _blacksmith_stage0_ores_met():
+		stage_index = 1
+		set_awaiting_blacksmith_checkpoint(CHECKPOINT_AFTER_MINE)
+
+
+func _blacksmith_stage0_ores_met() -> bool:
+	return (
+		InventoryService.get_item_count("ore_copper") >= 1
+		and InventoryService.get_item_count("ore_tin") >= 2
+	)
+
+
 func is_stage_objective_met() -> bool:
-	if active_quest_id != WOODSMAN_TRIAL_ID:
-		return false
+	match active_quest_id:
+		WOODSMAN_TRIAL_ID:
+			return _is_woodsman_stage_objective_met()
+		BLACKSMITH_TRIAL_ID:
+			return _is_blacksmith_stage_objective_met()
+		_:
+			return false
+
+
+func _is_woodsman_stage_objective_met() -> bool:
 	match stage_index:
 		0:
 			return InventoryService.get_item_count("logs") >= 1
@@ -220,6 +292,20 @@ func is_stage_objective_met() -> bool:
 			return get_counter("rabbits_killed") >= 3 and InventoryService.get_item_count("meat_raw") >= 3
 		4:
 			return bool(flags.get("cooked_on_quest_fire", false))
+		_:
+			return false
+
+
+func _is_blacksmith_stage_objective_met() -> bool:
+	match stage_index:
+		0:
+			return _blacksmith_stage0_ores_met()
+		1:
+			return bool(flags.get("crafted_ingot_bronze", false))
+		2:
+			return bool(flags.get("crafted_hatchet_bronze", false))
+		3:
+			return bool(flags.get("crafted_hatchet_bronze", false))
 		_:
 			return false
 
@@ -244,9 +330,18 @@ func get_journal_lines() -> PackedStringArray:
 			lines.append(obj.description)
 		else:
 			lines.append("%s (%s)" % [obj.description, prog])
-	if not get_awaiting_checkpoint().is_empty():
-		lines.append("Return to the Woodsman.")
+	var return_hint := _journal_return_hint()
+	if not return_hint.is_empty():
+		lines.append(return_hint)
 	return lines
+
+
+func _journal_return_hint() -> String:
+	if active_quest_id == WOODSMAN_TRIAL_ID and not get_awaiting_checkpoint().is_empty():
+		return "Return to the Woodsman."
+	if active_quest_id == BLACKSMITH_TRIAL_ID and not get_awaiting_blacksmith_checkpoint().is_empty():
+		return "Return to the Blacksmith."
+	return ""
 
 
 func _objectives_for_active_stage() -> Array:
@@ -263,6 +358,9 @@ func _objective_progress_text(obj: QuestObjectiveData) -> String:
 		QuestObjectiveData.ObjectiveType.INVENTORY_COUNT:
 			var have := InventoryService.get_item_count(obj.target_id)
 			return "%d/%d" % [have, obj.target_count]
+		QuestObjectiveData.ObjectiveType.HAS_ITEM:
+			var owned := 1 if InventoryService.has_item(obj.target_id) else 0
+			return "%d/%d" % [owned, maxi(1, obj.target_count)]
 		QuestObjectiveData.ObjectiveType.KILL_COUNT:
 			return "%d/%d" % [get_counter("rabbits_killed"), obj.target_count]
 		QuestObjectiveData.ObjectiveType.PLACED_FIRE:
@@ -337,9 +435,10 @@ func _index_quests_under(dir_path: String) -> void:
 
 
 func _ensure_builtin_quests() -> void:
-	if _quests.has(WOODSMAN_TRIAL_ID):
-		return
-	_quests[WOODSMAN_TRIAL_ID] = _build_woodsman_trial_quest()
+	if not _quests.has(WOODSMAN_TRIAL_ID):
+		_quests[WOODSMAN_TRIAL_ID] = _build_woodsman_trial_quest()
+	if not _quests.has(BLACKSMITH_TRIAL_ID):
+		_quests[BLACKSMITH_TRIAL_ID] = _build_blacksmith_trial_quest()
 
 
 func _build_woodsman_trial_quest() -> QuestData:
@@ -432,3 +531,102 @@ func _make_woodsman_stage(
 		obj.description = str(spec.get("desc", ""))
 		stage.objectives.append(obj)
 	return stage
+
+
+func _build_blacksmith_trial_quest() -> QuestData:
+	var q := QuestData.new()
+	q.id = BLACKSMITH_TRIAL_ID
+	q.title = "The Blacksmith's Trial"
+	q.summary = "Learn to mine ore, smelt bronze, and forge your first metal tool."
+	q.stages = [
+		_make_quest_stage(
+			"mine",
+			"Ore in the hills",
+			"Mine copper and tin from the rocks near the forge.",
+			[
+				{
+					"type": QuestObjectiveData.ObjectiveType.INVENTORY_COUNT,
+					"id": "ore_copper",
+					"count": 1,
+					"desc": "Collect copper ore",
+				},
+				{
+					"type": QuestObjectiveData.ObjectiveType.INVENTORY_COUNT,
+					"id": "ore_tin",
+					"count": 2,
+					"desc": "Collect tin ore",
+				},
+			],
+			[
+				"You've got the hang of wood and fire. Metal is the next lesson.",
+				"Take this pickaxe. Mine one copper and two tin from the rocks out back, then come find me.",
+			],
+			["Equip the pickaxe and strike tin or copper rocks to mine."],
+		),
+		_make_quest_stage(
+			"smelt",
+			"Bronze in the furnace",
+			"Smelt a bronze ingot at the Smelter beside my house.",
+			[
+				{
+					"type": QuestObjectiveData.ObjectiveType.HAS_ITEM,
+					"id": "ingot_bronze",
+					"count": 1,
+					"desc": "Smelt a bronze ingot",
+				},
+			],
+			[
+				"Hot metal needs steady hands. These tongs are for the crucible—not your fingers.",
+				"Use the Smelter: two tin ore and one copper ore make one bronze ingot. Return when it's done.",
+			],
+			[
+				"Press E on the Smelter near the blacksmith house.",
+				"Craft Bronze ingot from the recipe list.",
+			],
+		),
+		_make_quest_stage(
+			"forge_hatchet",
+			"Steel on the anvil",
+			"Forge a bronze hatchet at the Anvil.",
+			[
+				{
+					"type": QuestObjectiveData.ObjectiveType.HAS_ITEM,
+					"id": "hatchet_bronze",
+					"count": 1,
+					"desc": "Forge a bronze hatchet",
+				},
+			],
+			[
+				"Now the real work. A hammer turns ingots into tools.",
+				"Forge a bronze hatchet at my anvil—you'll need two bronze ingots and this hammer.",
+			],
+			["Press E on the Anvil and craft Bronze hatchet while the hammer is in your bag."],
+		),
+		_make_quest_stage(
+			"finale",
+			"A smith's reward",
+			"Return to the Blacksmith for your pay and next lesson.",
+			[],
+			[
+				"Not bad for a castaway. You've earned more than scraps.",
+				"Take these bronze ingots. Raise your smithing skill and forge yourself a bronze pickaxe when you're ready.",
+				"Keep traveling the road until you find the healer—she'll teach you what steel cannot.",
+			],
+			[
+				"Keep smithing at the Smelter and Anvil to gain smithing levels.",
+				"Craft a bronze pickaxe at the Anvil (two bronze ingots, hammer required).",
+			],
+		),
+	]
+	return q
+
+
+func _make_quest_stage(
+	stage_id: String,
+	title: String,
+	journal_text: String,
+	objective_specs: Array,
+	dialogue_lines: Array,
+	toast_hints: Array,
+) -> QuestStageData:
+	return _make_woodsman_stage(stage_id, title, journal_text, objective_specs, dialogue_lines, toast_hints)

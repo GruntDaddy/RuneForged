@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bat2p6ta1rwj1" path="res://world/regions/jorvik/jorvik_props.tscn" id="36_pbxu2"]
 [ext_resource type="PackedScene" uid="uid://btq3a77osed3u" path="res://world/regions/jorvik/jorvik_harvestables.tscn" id="37_8pv40"]
 [ext_resource type="PackedScene" uid="uid://dk5db657of85g" path="res://entities/building_parts/workbench.tscn" id="38_6l455"]
+[ext_resource type="PackedScene" uid="uid://5x2xh66ev77r" path="res://world/regions/jorvik/npcs/blacksmith.tscn" id="44_1msq3"]
 [ext_resource type="PackedScene" uid="uid://dyn8ch50ciolb" path="res://entities/props/castle_forge_isle.tscn" id="45_dbqg5"]
 [ext_resource type="PackedScene" uid="uid://tj6pvjcbonk" path="res://entities/props/house_gltf.tscn" id="56_4uh62"]
 [ext_resource type="PackedScene" uid="uid://cdn8iemuygm1g" path="res://world/regions/jorvik/npcs/woodsman.tscn" id="59_6l455"]
@@ -281,3 +282,6 @@ transform = Transform3D(8.138013, 0, 5.8114357, 0, 9.999999, 0, -5.8114357, 0, 8
 
 [node name="Woodsman" parent="." unique_id=492815826 instance=ExtResource("59_6l455")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 129.82184, 19.938442, 322.04486)
+
+[node name="Blacksmith" parent="." unique_id=55236419 instance=ExtResource("44_1msq3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 195.72041, 20.019007, 153.27713)

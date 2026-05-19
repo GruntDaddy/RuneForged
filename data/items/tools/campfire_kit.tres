@@ -10,4 +10,4 @@ description = "A simple kit of logs and tinder for setting up camp."
 category = 2
 max_stack = 1
 tags = PackedStringArray("tool", "campfire", "survival")
-pickup_scene_path = "res://entities/building_parts/campfire.tscn"
+pickup_scene_path = "res://world/pickups/campfire_kit_pickup.tscn"

@@ -74,6 +74,12 @@ Legacy saves missing these keys default safely in `GameState.from_dict()`.
   - **`quest_campfire_state_id`**: string `fire_state_id` of the player-placed campfire used for the cooking lesson.
   - **`campfire_placed`**: bool — stage-3 placement objective met.
   - **`cooked_on_quest_fire`**: bool — cooking lesson objective met.
+  - **`blacksmith_met`**: bool — player has started the blacksmith quest at least once.
+  - **`awaiting_blacksmith_talk`**: string checkpoint id (`after_mine`, `after_smelt`, `after_hatchet`) when the player must return to the Blacksmith.
+  - **`blacksmith_tongs_granted`**: bool — tongs granted after the mining lesson talk.
+  - **`blacksmith_hammer_granted`**: bool — hammer granted after the smelting lesson talk.
+  - **`crafted_ingot_bronze`**: bool — player smelted bronze during the blacksmith quest (stage 1).
+  - **`crafted_hatchet_bronze`**: bool — player forged a bronze hatchet during the blacksmith quest (stage 2).
 - **`completed_quest_ids`**: array of completed quest id strings.
 
 Missing `quest_progress` defaults to an empty dictionary. `QuestService` owns runtime updates and syncs through `GameState`.
