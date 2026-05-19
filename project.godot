@@ -47,6 +47,8 @@ buses/default_bus_layout="uid://cud47xy0iomx"
 [autoload]
 
 GameState="*res://autoload/game_state.gd"
+QuestService="*res://autoload/quest_service.gd"
+QuestDialogue="*res://autoload/quest_dialogue.gd"
 SaveManager="*res://autoload/save_manager.gd"
 SceneManager="*res://autoload/scene_manager.gd"
 GameAudio="*res://autoload/game_audio.gd"

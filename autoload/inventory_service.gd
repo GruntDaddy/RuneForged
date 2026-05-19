@@ -727,6 +727,10 @@ func _persist_placeable_fire_if_needed(item_id: String, node: Node3D) -> void:
 	var state_id := "placed_fire_%s" % str(int(Time.get_unix_time_from_system() * 1000.0))
 	if "fire_state_id" in node:
 		node.fire_state_id = state_id
+	if item_id == "campfire_kit":
+		var qs: Node = get_node_or_null("/root/QuestService")
+		if qs != null and qs.has_method("notify_campfire_placed"):
+			qs.call("notify_campfire_placed", state_id)
 	var entry := {
 		"region": String(gs.region),
 		"scene_path": fire_scene_path,

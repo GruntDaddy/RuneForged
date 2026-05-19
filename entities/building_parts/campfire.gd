@@ -182,6 +182,9 @@ func _finish_cook() -> void:
 		_notify_nearby("You burned the %s." % raw_name.to_lower())
 	else:
 		_notify_nearby("%s cooked." % produced_name)
+	var qs: Node = get_node_or_null("/root/QuestService")
+	if qs != null and qs.has_method("notify_cooked_at_fire"):
+		qs.call("notify_cooked_at_fire", fire_state_id, produced_id)
 	_save_state()
 
 

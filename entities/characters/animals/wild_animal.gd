@@ -695,6 +695,10 @@ func _die() -> void:
 	if _dead:
 		return
 	_dead = true
+	if species_id == "rabbit":
+		var qs: Node = get_node_or_null("/root/QuestService")
+		if qs != null and qs.has_method("notify_rabbit_killed"):
+			qs.call("notify_rabbit_killed")
 	if _health_bar_root != null:
 		_health_bar_root.visible = false
 	collision_layer = 0

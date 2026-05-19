@@ -55,4 +55,7 @@ func craft(recipe: RecipeData, station: RecipeData.CraftStation) -> bool:
 		for r in removed:
 			InventoryService.add_item(str(r["id"]), int(r["count"]))
 		return false
+	var qs: Node = get_node_or_null("/root/QuestService")
+	if qs != null and qs.has_method("notify_item_crafted"):
+		qs.call("notify_item_crafted", recipe.output_item_id)
 	return true

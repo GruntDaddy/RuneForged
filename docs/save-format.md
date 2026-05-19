@@ -63,6 +63,21 @@ Legacy `cook_slots` (array of 2) and array-form `cook_progress_sec` written by p
 
 Legacy saves missing these keys default safely in `GameState.from_dict()`.
 
+## Quest progress (`game_state.quest_progress`)
+
+- **`active_quest_id`**: string quest id (e.g. `woodsman_trial`) or empty when none active.
+- **`stage_index`**: int zero-based stage within the active quest.
+- **`counters`**: dictionary (`counter_id -> int`), e.g. `rabbits_killed`.
+- **`flags`**: dictionary for hybrid gating and quest-specific state:
+  - **`woodsman_met`**: bool — player has spoken to the Woodsman at least once.
+  - **`awaiting_woodsman_talk`**: string checkpoint id (`after_chop`, `after_campfire`, `after_hunt`, `after_cook`) when the player must return to the NPC.
+  - **`quest_campfire_state_id`**: string `fire_state_id` of the player-placed campfire used for the cooking lesson.
+  - **`campfire_placed`**: bool — stage-3 placement objective met.
+  - **`cooked_on_quest_fire`**: bool — cooking lesson objective met.
+- **`completed_quest_ids`**: array of completed quest id strings.
+
+Missing `quest_progress` defaults to an empty dictionary. `QuestService` owns runtime updates and syncs through `GameState`.
+
 ## Equipment persistence contract
 
 - `game_state.equipment` remains a dictionary of slots to `{ "id": String, "count": int }` plus optional fields when needed:

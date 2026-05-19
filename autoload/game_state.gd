@@ -76,6 +76,8 @@ var equipment: Dictionary = {}
 var hotbar_item_ids: Array[String] = ["", "", "", ""]
 ## If set, hotbar key casts this spell id instead of using `hotbar_item_ids` for that slot (parallel index).
 var hotbar_spell_ids: Array[String] = ["", "", "", ""]
+## Quest chain progress; synced by QuestService (see docs/save-format.md).
+var quest_progress: Dictionary = {}
 
 
 func _ready() -> void:
@@ -112,6 +114,7 @@ func reset() -> void:
 	equipment = {}
 	hotbar_item_ids = ["", "", "", ""]
 	hotbar_spell_ids = ["", "", "", ""]
+	quest_progress = {}
 
 
 func to_dict() -> Dictionary:
@@ -145,6 +148,7 @@ func to_dict() -> Dictionary:
 		"equipment": equipment.duplicate(true),
 		"hotbar_item_ids": hotbar_item_ids.duplicate(),
 		"hotbar_spell_ids": hotbar_spell_ids.duplicate(),
+		"quest_progress": quest_progress.duplicate(true),
 	}
 
 
@@ -206,6 +210,13 @@ func from_dict(data: Variant) -> void:
 		var sa: Array = hs
 		for i in mini(4, sa.size()):
 			hotbar_spell_ids[i] = str(sa[i])
+	if typeof(d.get("quest_progress", null)) == TYPE_DICTIONARY:
+		quest_progress = (d.get("quest_progress") as Dictionary).duplicate(true)
+	else:
+		quest_progress = {}
+	var qs: Node = get_node_or_null("/root/QuestService")
+	if qs != null and qs.has_method("load_progress_dict"):
+		qs.call("load_progress_dict", quest_progress)
 
 
 func ensure_hotbar_arrays() -> void:

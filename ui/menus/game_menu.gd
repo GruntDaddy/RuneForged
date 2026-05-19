@@ -158,6 +158,7 @@ var _build_preview_rotation_y: float = 0.0
 var _magic_spell_picker: OptionButton
 var _magic_slot_picker: OptionButton
 var _selected_build_item_id: String = "campfire_kit"
+var _quests_body: RichTextLabel
 
 
 func _ready() -> void:
@@ -165,6 +166,8 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_forge_tab.setup(self)
+	if QuestService.has_signal("quest_updated"):
+		QuestService.quest_updated.connect(_refresh_quests_page)
 	_style_book_panel()
 	_apply_header_style()
 	_build_tabs()
@@ -1198,15 +1201,30 @@ func _build_quests_page(page: Control) -> void:
 	_apply_section_title(t)
 	t.add_theme_font_size_override("font_size", 21)
 	vb.add_child(t)
-	var body := RichTextLabel.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.bbcode_enabled = true
-	body.add_theme_color_override("default_color", _COL_INK)
-	body.text = (
-		"No sworn oaths logged yet.\n\n"
-		+ "When the quest journal is wired, [b]active[/b] and [b]completed[/b] tasks will appear here with rewards and map hints."
-	)
-	vb.add_child(body)
+	_quests_body = RichTextLabel.new()
+	_quests_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_quests_body.bbcode_enabled = true
+	_quests_body.scroll_active = true
+	_quests_body.add_theme_color_override("default_color", _COL_INK)
+	vb.add_child(_quests_body)
+	_refresh_quests_page()
+
+
+func _refresh_quests_page() -> void:
+	if _quests_body == null:
+		return
+	var parts: PackedStringArray = PackedStringArray()
+	if QuestService.is_quest_completed(QuestService.WOODSMAN_TRIAL_ID):
+		parts.append("[b]Completed[/b]")
+		parts.append("The Woodsman's Trial")
+	if QuestService.is_quest_active(QuestService.WOODSMAN_TRIAL_ID):
+		parts.append("[b]Active[/b]")
+		for line in QuestService.get_journal_lines():
+			parts.append(line)
+	elif parts.is_empty():
+		parts.append("No sworn oaths logged yet.")
+		parts.append("Seek out folk who need a hand—the journal will record your tasks here.")
+	_quests_body.text = "\n\n".join(parts)
 
 
 func _build_codex_page(page: Control) -> void:
@@ -1416,6 +1434,8 @@ func _swap_book_page(old_idx: int, new_idx: int) -> void:
 	out_p.scale = Vector2.ONE
 	out_p.modulate = Color.WHITE
 	_current_tab = new_idx
+	if new_idx == TAB_QUESTS:
+		_refresh_quests_page()
 	_ensure_page_pivot(in_p)
 	in_p.visible = true
 	in_p.scale = Vector2(0.0, 1.0)
@@ -2132,7 +2152,18 @@ func _try_quick_equip_inventory_slot(inv_idx: int) -> bool:
 		_toast("That item has no equipment slot.")
 		return false
 	_try_drop_inv_on_equip(inv_idx, target_slot)
+	if item_id == "campfire_kit" or item_id == "tool_torch":
+		_start_player_placeable_build(item_id)
 	return true
+
+
+func _start_player_placeable_build(item_id: String) -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or not player.has_method("begin_build_placement"):
+		return
+	if visible:
+		close_menu()
+	player.call("begin_build_placement", item_id, 0.0)
 
 
 func _preferred_equip_slot_for_item(it: ItemData, item_id: String) -> String:

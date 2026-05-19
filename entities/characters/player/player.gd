@@ -6,6 +6,7 @@ const _WaterSurfaceQueries = preload("res://world/water/water_surface_queries.gd
 const _WeaponStats = preload("res://data/schemas/weapon_stats.gd")
 const _CombatFormulaService = preload("res://systems/combat/combat_formula_service.gd")
 const _RuneEffectService = preload("res://systems/magic/rune_effect_service.gd")
+const _ConsumableEffectService = preload("res://systems/items/consumable_effect_service.gd")
 const _SpellCatalog = preload("res://systems/magic/spell_catalog.gd")
 
 const _ArrowProjectileScene = preload("res://entities/projectiles/arrow_projectile.tscn")
@@ -256,6 +257,10 @@ var _fishing_auto_gen: int = 0
 ## When true, movement in `_physics_process` may cancel fishing. Armed only after cast-out completes so
 ## approach keys held while pressing E do not abort on the first physics tick.
 var _fishing_physics_move_cancel_armed: bool = false
+
+func heal(amount: float) -> void:
+	health = minf(health + maxf(0.0, amount), max_health)
+
 
 func apply_damage(amount: float) -> void:
 	var amt: float = absf(amount)
@@ -805,6 +810,21 @@ func _sync_equipped_hand_visuals() -> void:
 			elif harvest_action == "chop":
 				desired_tool = _BaseCharacter.ToolKind.AXE
 		base_character.set_active_tool(desired_tool)
+	_sync_placeable_build_mode_from_equipment(main_id, off_id)
+
+
+func _sync_placeable_build_mode_from_equipment(main_id: String, off_id: String) -> void:
+	var place_id := ""
+	if _is_placeable_fire_item(main_id):
+		place_id = main_id
+	elif _is_placeable_fire_item(off_id):
+		place_id = off_id
+	if not place_id.is_empty():
+		if not _build_mode_active or _build_preview_item_id != place_id:
+			begin_build_placement(place_id, _build_preview_rotation_y)
+		return
+	if _build_mode_active and _is_placeable_fire_item(_build_preview_item_id):
+		clear_build_preview()
 
 
 func _off_hand_has_shield_equipped() -> bool:
@@ -1263,6 +1283,43 @@ func _projectile_exclude_rids() -> Array:
 	return rids
 
 
+func _placement_overlap_exclude_rids() -> Array:
+	var rids: Array = _projectile_exclude_rids()
+	var tree := get_tree()
+	if tree != null:
+		var terr := _Terrain3DPrimaryResolver.find_primary(tree)
+		if terr != null:
+			_gather_collision_rids_recursive(terr, rids)
+	if _build_preview_node != null and is_instance_valid(_build_preview_node):
+		_gather_collision_rids_recursive(_build_preview_node, rids)
+	return rids
+
+
+func _get_character_forward_xz() -> Vector3:
+	var fwd := global_transform.basis.z
+	if base_character != null:
+		fwd = base_character.global_transform.basis.z
+	fwd.y = 0.0
+	if fwd.length_squared() < 1e-6:
+		fwd = Vector3(0.0, 0.0, 1.0)
+	return fwd.normalized()
+
+
+func _resolve_build_placement_target(max_dist: float) -> Vector3:
+	var aim := _get_reticle_world_aim(max_dist)
+	var target: Vector3 = aim.aim_point
+	var origin := global_position
+	var flat := target - origin
+	flat.y = 0.0
+	var fwd := _get_character_forward_xz()
+	var min_dist := 1.25
+	if flat.length_squared() < 0.05 or flat.normalized().dot(fwd) < 0.2:
+		flat = fwd * min_dist
+	else:
+		flat = flat.normalized() * clampf(flat.length(), min_dist, max_dist)
+	return origin + flat
+
+
 func _get_reticle_world_aim(max_dist: float) -> Dictionary:
 	var vp := get_viewport()
 	if vp == null or camera_3d == null:
@@ -1391,6 +1448,13 @@ func _use_hotbar_item(item_id: String) -> void:
 	if it != null and it.category == ItemData.Category.RUNE:
 		_try_cast_rune_item(item_id)
 		return
+	if it != null and it.category == ItemData.Category.CONSUMABLE:
+		_try_use_consumable_item(item_id)
+		return
+	if _is_placeable_fire_item(item_id):
+		_quick_equip_hotbar_item(item_id)
+		begin_build_placement(item_id, _build_preview_rotation_y)
+		return
 	_quick_equip_hotbar_item(item_id)
 	var tool_kind: _BaseCharacter.ToolKind = _tool_kind_for_item(item_id)
 	if tool_kind != _BaseCharacter.ToolKind.NONE:
@@ -1441,6 +1505,19 @@ func _tool_kind_for_item(item_id: String) -> _BaseCharacter.ToolKind:
 		if t == "fishing_rod" or t == "fishing":
 			return _BaseCharacter.ToolKind.FISHING_ROD
 	return _BaseCharacter.ToolKind.NONE
+
+
+func _try_use_consumable_item(item_id: String) -> bool:
+	var item: ItemData = ItemCatalog.get_item(item_id)
+	if item == null:
+		return false
+	var result: Dictionary = _ConsumableEffectService.use(item_id, item, self)
+	if not bool(result.get("success", false)):
+		show_gameplay_message(str(result.get("message", "Nothing happens.")))
+		return false
+	InventoryService.remove_item(item_id, 1)
+	show_gameplay_message(str(result.get("message", "")))
+	return true
 
 
 func _try_cast_rune_item(item_id: String) -> bool:
@@ -1592,11 +1669,46 @@ func open_crafting_station(station_id: int) -> bool:
 	return true
 
 
+func _is_placeable_fire_item(item_id: String) -> bool:
+	var id := GameState.normalize_item_id(item_id)
+	return id == "campfire_kit" or id == "tool_torch"
+
+
+func _equipped_slot_holding_item(item_id: String) -> String:
+	var norm := GameState.normalize_item_id(item_id)
+	for slot in ["main_hand", "off_hand"]:
+		var v: Variant = GameState.equipment.get(slot, null)
+		if v == null:
+			continue
+		if GameState.normalize_item_id(str(v.get("id", ""))) == norm:
+			return slot
+	return ""
+
+
+func _has_build_placeable_item(item_id: String) -> bool:
+	var norm_id := GameState.normalize_item_id(item_id)
+	if norm_id.is_empty():
+		return false
+	if InventoryService.has_item(norm_id):
+		return true
+	return not _equipped_slot_holding_item(norm_id).is_empty()
+
+
+func _consume_build_placeable_item(item_id: String) -> void:
+	var norm_id := GameState.normalize_item_id(item_id)
+	if InventoryService.has_item(norm_id):
+		InventoryService.remove_item(norm_id, 1)
+		return
+	var slot := _equipped_slot_holding_item(norm_id)
+	if not slot.is_empty():
+		GameState.clear_equipment_slot(slot)
+
+
 func try_place_build_item(item_id: String, rotation_y: float = 0.0) -> bool:
 	var norm_id := GameState.normalize_item_id(item_id)
 	if norm_id.is_empty():
 		return false
-	if not InventoryService.has_item(norm_id):
+	if not _has_build_placeable_item(norm_id):
 		show_gameplay_message("Missing: %s" % InventoryService.get_item_display_name(norm_id))
 		return false
 	var p := _compute_build_placement(norm_id, rotation_y)
@@ -1626,7 +1738,9 @@ func try_place_build_item(item_id: String, rotation_y: float = 0.0) -> bool:
 		place_node.rotation.y = rotation_y
 	if norm_id == "tool_torch" or norm_id == "campfire_kit":
 		InventoryService._persist_placeable_fire_if_needed(norm_id, place_node)
-	InventoryService.remove_item(norm_id, 1)
+	_consume_build_placeable_item(norm_id)
+	clear_build_preview()
+	_sync_equipped_hand_visuals()
 	return true
 
 
@@ -2046,11 +2160,7 @@ func _update_build_preview() -> void:
 
 
 func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
-	var aim := _get_reticle_world_aim(build_place_distance)
-	var origin := global_position + Vector3.UP * 0.25
-	var target: Vector3 = aim.aim_point
-	if origin.distance_to(target) > build_place_distance:
-		target = origin + (target - origin).normalized() * build_place_distance
+	var target: Vector3 = _resolve_build_placement_target(build_place_distance)
 	var from := target + Vector3.UP * 2.5
 	var to := target + Vector3.DOWN * 5.0
 	var q := PhysicsRayQueryParameters3D.create(from, to)
@@ -2069,17 +2179,22 @@ func _compute_build_placement(item_id: String, rotation_y: float) -> Dictionary:
 	else:
 		place_pos = hit["position"] as Vector3
 		nrm = (hit.get("normal", Vector3.UP) as Vector3).normalized()
+	if item_id == "campfire_kit":
+		var fwd_on_plane := _get_character_forward_xz().slide(nrm)
+		if fwd_on_plane.length_squared() > 1e-6:
+			place_pos += fwd_on_plane.normalized() * 0.55
 	var check := SphereShape3D.new()
 	var radius := 0.35
 	if item_id == "campfire_kit":
-		radius = 0.75
+		radius = 0.55
 	check.radius = radius
 	var sq := PhysicsShapeQueryParameters3D.new()
 	sq.shape = check
-	sq.transform = Transform3D(Basis.IDENTITY, place_pos + Vector3.UP * 0.35)
+	sq.transform = Transform3D(Basis.IDENTITY, place_pos + Vector3.UP * 0.85)
 	sq.collide_with_areas = false
 	sq.collide_with_bodies = true
-	sq.exclude = _projectile_exclude_rids()
+	sq.collision_mask = 2
+	sq.exclude = _placement_overlap_exclude_rids()
 	var blockers := get_world_3d().direct_space_state.intersect_shape(sq, 8)
 	if blockers.size() > 0:
 		return {"valid": false, "position": place_pos, "normal": nrm, "reason": "Not enough space to place here."}
@@ -2869,6 +2984,8 @@ func _resolve_interactable_target(collider: Object) -> Object:
 
 
 func _gameplay_input_blocked() -> bool:
+	if QuestDialogue != null and QuestDialogue.is_busy():
+		return true
 	if game_menu != null and game_menu.visible:
 		return true
 	return false
